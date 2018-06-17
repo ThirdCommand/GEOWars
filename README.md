@@ -9,8 +9,10 @@ game visually spicy.  
 
 ### GEOWars production steps: 
 
-The first step is to make a functional base on which to build the rest of the game.
+#### Weekend/Monday
+The first step is to make a functional base on which to build the rest of the game. This will include the ship movement mechanics, shooting mechanics, and the simplist enemy type. Visuals for the ship and explosions will also be included. 
 
+#### Tuesday-Thursday
 The next steps will include the addition of more challenging/smarter enemies. Each enemy will become more and more challenging to add to the game, scaling nicely with how much work I can finish this week since each step after the base game will be playable and relatively complete. 
 
 #### Basic game: 
@@ -31,3 +33,22 @@ The next steps will include the addition of more challenging/smarter enemies. Ea
 * Alien ships: When the Singularity has pulled in enough enemy ships, it explodes and a bunch of alien ships arrive from the portal that move like Grunts, but faster.
 
 ![Enemy Types](https://github.com/SecondCommand/GEOWars/blob/master/Proposal_Content/Enemy%20Types.png)
+
+
+# Functional MVPs
+## Base MVPs
+-[ ]  Game has a menu, pause/play feature. 
+-[ ]  Player Ship Mechanics: Ship moves and sprite changes orientation depending on mouse/joystick position
+-[ ]  Bullets: Ship shoots bullets in the direction its facing. 
+-[ ]  BoxBox: Simplest enamy spawns repeatedly in random positions and doesn't move. When hit by a bullet, it explodes with a colorful particle effect
+
+### Content MVPs
+-[ ]  Pinwheel
+-[ ]  Arrow
+-[ ]  Grunt
+-[ ]  Weaver
+
+### Challenge MVPs
+-[ ]  Snake
+-[ ]  Singularity
+-[ ]  Alien
