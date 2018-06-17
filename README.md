@@ -37,18 +37,18 @@ The next steps will include the addition of more challenging/smarter enemies. Ea
 
 # Functional MVPs
 ## Base MVPs
--[ ]  Game has a menu, pause/play feature. 
--[ ]  Player Ship Mechanics: Ship moves and sprite changes orientation depending on mouse/joystick position
--[ ]  Bullets: Ship shoots bullets in the direction its facing. 
--[ ]  BoxBox: Simplest enamy spawns repeatedly in random positions and doesn't move. When hit by a bullet, it explodes with a colorful particle effect
+- [ ] Game has a menu, pause/play feature. 
+- [ ] Player Ship Mechanics: Ship moves and sprite changes orientation depending on mouse/joystick position
+- [ ] Bullets: Ship shoots bullets in the direction its facing. 
+- [ ] BoxBox: Simplest enamy spawns repeatedly in random positions and doesn't move. When hit by a bullet, it explodes with a colorful particle effect
 
 ### Content MVPs
--[ ]  Pinwheel
--[ ]  Arrow
--[ ]  Grunt
--[ ]  Weaver
+- [ ] Pinwheel
+- [ ] Arrow
+- [ ] Grunt
+- [ ] Weaver
 
 ### Challenge MVPs
--[ ]  Snake
--[ ]  Singularity
--[ ]  Alien
+- [ ] Snake
+- [ ] Singularity
+- [ ] Alien
