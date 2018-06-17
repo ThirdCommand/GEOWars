@@ -52,3 +52,10 @@ The next steps will include the addition of more challenging/smarter enemies. Ea
 - [ ] Snake
 - [ ] Singularity
 - [ ] Alien
+
+# Architecture and Technologies
+
+* Vanilla JavaScript for overall structure and game logic
+* HTML5 Canvas for DOM manipulation and rendering
+* Web Audio API for sound generation, processing and control
+* Gamepad API to allow for controller use
