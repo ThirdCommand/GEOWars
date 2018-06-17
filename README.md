@@ -30,6 +30,4 @@ The next steps will include the addition of more challenging/smarter enemies. Ea
 * Singularity: When activated by a bullet, it pulls in pieces nearby including the player's ship. 
 * Alien ships: When the Singularity has pulled in enough enemy ships, it explodes and a bunch of alien ships arrive from the portal that move like Grunts, but faster.
 
-![Enemy](https://imgur.com/a/1AmITEQ)
-
-[![home.png](https://s26.postimg.cc/kvyg7sh61/home.png)](https://postimg.cc/image/q7dcsi38l/)
+![Enemy Types](https://github.com/SecondCommand/GEOWars/blob/master/Proposal_Content/Enemy%20Types.JPG)
