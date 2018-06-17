@@ -28,4 +28,6 @@ The next steps will include the addition of more challenging/smarter enemies. Ea
 #### Challenge Goals; Tougher enemy types:    
 * Snake: moves like a snake, can only be killed when hit in the head
 * Singularity: When activated by a bullet, it pulls in pieces nearby including the player's ship. 
-* Alien ships: When the Singularity has pulled in enough enemy ships, it explodes and a bunch of alien ships arrive from the portal that move like Grunts, but faster
+* Alien ships: When the Singularity has pulled in enough enemy ships, it explodes and a bunch of alien ships arrive from the portal that move like Grunts, but faster.
+
+![Enemy Types](https://imgur.com/a/1AmITEQ)
