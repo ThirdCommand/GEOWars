@@ -336,7 +336,7 @@ Game.BG_COLOR = "#000000";
 Game.DIM_X = 1000;
 Game.DIM_Y = 600;
 // Game.FPS = 32;
-Game.NUM_ASTEROIDS = 20;
+Game.NUM_ASTEROIDS = 100;
 
 module.exports = Game;
 
@@ -562,9 +562,6 @@ class Particle {
 }
 
 
-//Drawing loop
-// calls draw on all of the particles
-
 module.exports = Particle;
 
 /***/ }),
@@ -657,7 +654,10 @@ class Ship extends MovingObject {
     this.fireAngle = 0; // might have to make it null
     setInterval(
       () => this.fireBullet(),
-      1000 * 60 / 340)
+      1000 * 60 / (340 * 1.5)  )
+    //  setInterval(
+    //    () => this.fireBullet(),
+    //    1000)
   }
 
 
@@ -716,6 +716,10 @@ class Ship extends MovingObject {
   }
 
   power(impulse) {
+    // this.vel[0] + 
+    //check if the new speed is faster than limit because of the contribution
+    // if it is, don't add that contribution
+    // 
     this.vel[0] += impulse[0];
     this.vel[1] += impulse[1];
   }

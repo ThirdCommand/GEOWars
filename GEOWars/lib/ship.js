@@ -23,7 +23,10 @@ class Ship extends MovingObject {
     this.fireAngle = 0; // might have to make it null
     setInterval(
       () => this.fireBullet(),
-      1000 * 60 / 340)
+      1000 * 60 / (340 * 1.5)  )
+    //  setInterval(
+    //    () => this.fireBullet(),
+    //    1000)
   }
 
 
@@ -82,6 +85,10 @@ class Ship extends MovingObject {
   }
 
   power(impulse) {
+    // this.vel[0] + 
+    //check if the new speed is faster than limit because of the contribution
+    // if it is, don't add that contribution
+    // 
     this.vel[0] += impulse[0];
     this.vel[1] += impulse[1];
   }

@@ -65,7 +65,4 @@ class Particle {
 }
 
 
-//Drawing loop
-// calls draw on all of the particles
-
 module.exports = Particle;
