@@ -1,4 +1,4 @@
-< !DOCTYPE HTML >
+<!-- < !DOCTYPE HTML > -->
   <html>
     <head>
       <style>
@@ -10,116 +10,187 @@
     </head>
     <body>
       <canvas id="canvas" width="500" height="500"></canvas>
-
       <script>
+
         //set the variables
         var a = document.getElementById('canvas'),
             c = a.getContext('2d'),
             w = a.width = window.innerWidth,
             h = a.height = window.innerHeight,
             area = w * h,
-            particleNum = 1000,
+            particleNum = 80,
+            velocities = [7,6,5,4],
             ANIMATION;
         
         var particles = [];
         
         
         //create the particles
-function Particle(i) {
-          this.id = i;
+      function Particle(i) {
+        this.id = i;
         this.hue =  rand(50, 0, 1);
         this.active = false;
       }
       
-Particle.prototype.build = function() {
-          this.x = w / 2;
+      Particle.prototype.build = function() {
+        this.x = w / 2; // x and y position
         this.y = h / 2;
-        this.r = rand(7, 2, 1);
-        this.vx = Math.random() * 10 - 5;
-        this.vy = Math.random() * 10 - 5;
-        this.gravity = .01;
+        this.rectLength = 20;
+        this.rectWidth = 2;
+        this.r = rand(15, 10, 0);
+        this.initialVelocity = velocities[Math.floor(Math.random() * velocities.length)]
+        this.movementAngle = Math.random() * Math.PI * 2
+        this.vx = this.initialVelocity * Math.cos(this.movementAngle)
+        this.vy = this.initialVelocity * Math.sin(this.movementAngle)
+        // this.vx = Math.random() * 10 - 5; // x initial velocity
+        // this.vy = Math.random() * 10 - 5; // y initial velocity
+        this.gravity = 0;
+        this.acceleration = -0.1;
+        // this.movementAngle = Math.atan2(this.vy,this.vx)
         this.opacity = Math.random() + .5;
         this.active = true;
-      
-        c.beginPath();
-        c.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
+        
+        // c.beginPath();
+        // c.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
         c.fillStyle = "hsla(" + this.hue + ",100%,50%,1)";
-        c.fill();
+        // c.rotate(this.movementAngle)
+        c.fillRect(this.x,this.y,this.rectLength,this.rectWidth);
       };
       
-Particle.prototype.draw = function() {
-          this.active = true;
+      // this function handles where the ball should be next
+      Particle.prototype.draw = function() {
+        this.active = true;
         this.x += this.vx;
         this.y += this.vy;
-        this.vy += this.gravity;
+        this.vy += this.gravity + this.acceleration * Math.sin(this.movementAngle);
+        this.vx += this.gravity + this.acceleration * Math.cos(this.movementAngle);
         this.hue -= 0.5;
-        this.r = Math.abs(this.r - .05);
-      
-        c.beginPath();
-            c.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
+
+        // this.r = Math.abs(this.r - .05);
+        // console.log(this.vy + this.vx);
+        
+        // c.beginPath();
+        // c.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
+        c.save()
+        // c.rotate(this.movementAngle);
         c.fillStyle = "hsla(" + this.hue + ",100%,50%,1)";
-        c.fill();
-      
-        // reset particle
-  if(this.r <= .05) {
+        c.fillRect(this.x, this.y, this.rectLength, this.rectWidth);
+        c.restore()
+        //reset particle
+        // if(this.r <= .05) {
+        //   this.active = false;
+        // }
+        if(Math.abs(this.vx + this.vy) < 0.05){
           this.active = false;
         }
       };
       
       
-      //functionality
-function drawScene() {
-          c.fillStyle = "black";
+      //Drawing loop
+      // calls draw on all of the particles
+      function drawScene() {
+        c.fillStyle = "black";
         c.fillRect(0,0,w,h);
-      
-  for(var i = 0; i < particles.length; i++) {
-    if(particles[i].active === true) {
-          particles[i].draw();
-        } else {
-          particles[i].build();
+        // console.log("GOT HERE");
+        
+        for(var i = 0; i < particles.length; i++) {
+          if(particles[i].active === true) {
+            particles[i].draw();
+          } 
+          // else {
+          // particles[i].build();
+          // }
         }
-      }
     
           ANIMATION = requestAnimationFrame(drawScene);
-    }
-    
-function initCanvas() {
-  var s = getComputedStyle(a);
-      
-  if(particles.length) {
-          particles = [];
-        cancelAnimationFrame(ANIMATION);
-        ANIMATION;
-        console.log(ANIMATION);
       }
-    
-      w = a.width = window.innerWidth;
-        h = a.height = window.innerHeight;
-    
-  for(var i = 0; i < particleNum; i++) {
-          particles.push(new Particle(i));
-        }
+      // function createScene()
       
+    
+      function initCanvas() {
+        var s = getComputedStyle(a);
+      
+        if(particles.length) {
+          particles = [];
+          cancelAnimationFrame(ANIMATION);
+          ANIMATION;
+          console.log(ANIMATION);
+        }
+    
+        w = a.width = window.innerWidth;
+        h = a.height = window.innerHeight;
+        // c.fillStyle = "black";
+        // c.fillRect(0, 0, w, h);
+        
+        createExplosion();
         drawScene();
         console.log(ANIMATION);
+      }
+
+      function createExplosion() {
+        console.log("explosion creation");
+        
+        for (var i = 0; i < particleNum; i++) {
+          particles.push(new Particle(i));
+        }
+
+        for (var i = 0; i < particles.length; i++) {
+          // if (particles[i].active === true) {
+          //   particles[i].draw();
+          // } else {
+            particles[i].build();
+          // }
+        }
       }
       
       
       //init
-(function() {
-          initCanvas();
+      (function() {
+        initCanvas();
         addEventListener('resize', initCanvas, false);
       })();
       
       
       //helper functions
-function rand(max, min, _int) {
-  var max = (max === 0 || max)?max:1,
-            min = min || 0,
-            gen = min + (max - min) * Math.random();
+      function rand(max, min, _int) {
+        var max = (max === 0 || max)?max:1,
+        min = min || 0,
+        gen = min + (max - min) * Math.random();
       
         return (_int) ? Math.round(gen) : gen;
       };
+
+      // function drawSpark() {
+      //     // Pill shape
+      //     canvas = document.getElementById("pill");
+      //     if (canvas.getContext) {
+      //       // starting angle depends on the orientation of the 
+      //       // build parameters
+      //       var ctx = canvas.getContext("2d");
+      //       var x1 = 75;
+      //       var y1 = 75;
+      //       var radius1 = 75;
+      //       var startAngle1 = Math.PI * 0.5;
+      //       var endAngle1 = Math.PI * 1.5;
+      //       var antiClockwise1 = false;
+
+      //       var x2 = 200;
+      //       var y2 = 75;
+      //       var radius2 = 75;
+      //       var startAngle2 = Math.PI * 1.5;
+      //       var endAngle2 = Math.PI * 0.5;
+      //       var antiClockwise2 = false;
+            
+      //       //Draw function
+      //       ctx.beginPath();
+      //       ctx.arc(x1, y1, radius1, startAngle1, endAngle1, antiClockwise1);
+      //       ctx.lineTo(200, 0);
+      //       ctx.arc(x2, y2, radius2, startAngle2, endAngle2, antiClockwise2);
+      //       ctx.closePath();
+
+      //       ctx.fill();
+      //     }
+      //   }
       
     </script>
     </body>
