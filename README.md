@@ -63,4 +63,4 @@ The next steps will include the addition of more challenging/smarter enemies. Ea
 
 
 # Weekend Progress:
-![explosions](http://www.giphy.com/gifs/4T78TLx8c7id2VTXmX)
+![explosions](https://media.giphy.com/media/pjBKucj5PGGW7PtBFm/giphy.gif)
