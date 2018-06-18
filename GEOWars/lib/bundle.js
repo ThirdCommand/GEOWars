@@ -134,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const ctx = canvasEl.getContext("2d");
   const game = new Game();
-  new GameView(game, ctx).start();
+  new GameView(game, ctx, canvasEl).start();
 });
 
 
@@ -348,7 +348,7 @@ module.exports = Game;
 /***/ (function(module, exports) {
 
 class GameView {
-  constructor(game, ctx) {
+  constructor(game, ctx, canvasEl) {
     this.ctx = ctx;
     this.game = game;
     this.ship = this.game.addShip();
@@ -476,11 +476,12 @@ module.exports = MovingObject;
 
 
 class Particle {
-  constructor(xpos, ypos, velocity, ctx, game, explosionId, particleID) {
-    this.game = game
-    this.active = true
-    this.hue = this.rand(50, 0, 1);
-    this.particleId
+  constructor(xpos, ypos, velocity, ctx, game, explosionId, particleID, colors) {
+    this.colors = colors;
+    this.game = game;
+    this.active = true;
+    this.hue = this.colors[Math.floor(this.colors.length * Math.random())];
+    this.particleId;
     this.explosionId;
     
 
@@ -489,17 +490,17 @@ class Particle {
 
     this.rectLength = 20;
     this.rectWidth = 2;
-    this.r = this.rand(15, 10, 0);
-    this.initialVelocity = velocity
-    this.movementAngle = Math.random() * Math.PI * 2
-    this.vx = this.initialVelocity * Math.cos(this.movementAngle)
-    this.vy = this.initialVelocity * Math.sin(this.movementAngle)
+    // this.r = this.rand(200, 10, 0);
+    this.initialVelocity = velocity;
+    this.movementAngle = Math.random() * Math.PI * 2;
+    this.vx = this.initialVelocity * Math.cos(this.movementAngle);
+    this.vy = this.initialVelocity * Math.sin(this.movementAngle);
     this.acceleration = -0.1;
 
     this.opacity = Math.random() + .5;
     this.active = true;
 
-    ctx.fillStyle = "hsla(" + this.hue + ",100%,50%,1)";
+    ctx.fillStyle = this.hue;
     ctx.fillRect(this.x, this.y, this.rectLength, this.rectWidth);
   }
 
@@ -521,13 +522,13 @@ class Particle {
     this.y += this.vy;
     this.vy += this.acceleration * Math.sin(this.movementAngle);
     this.vx += this.acceleration * Math.cos(this.movementAngle);
-    this.hue -= 0.5;
+    // this.hue -= 0.5;
     if ((Math.abs(this.vx) + Math.abs(this.vy)) < 0.05) {
       // debugger;
       this.remove();
     } else {
       // ctx.save();
-      ctx.fillStyle = "hsla(" + this.hue + ",100%,50%,1)";
+      ctx.fillStyle = this.hue;
       ctx.fillRect(this.x, this.y, this.rectLength, this.rectWidth);
       // ctx.restore();
     }
@@ -555,18 +556,20 @@ module.exports = Particle;
 
 const Particle = __webpack_require__(/*! ./particle */ "./lib/particles/particle.js")
 
-//create the particles
-// function Particle(i) {
-//   this.hue = rand(50, 0, 1);
-//   this.active = false;
-//   this.velocities = [7, 6, 5, 4];
-// }
+
 
 const velocities = [7,6,5,4];
 
 class ParticleExplosion{
   constructor(xpos, ypos, ctx, game, explosionId){
-
+    this.COLORS = [
+      ["#98f517", "#7eb92b", "#bdec7a", "#677c4a"],
+      ["#fff12c", "#f5ec6d", "#a5a057", "#b1a71c"],
+      ["#12e1fc", "#3cc6d8", "#71dfee", "#95dce6"],
+      ["#fc57e0", "#cc48b6", "#aa489a", "#fa89e7"],
+      ["#be56fa", "#9f60c4", "#571180", "#c796e4"]
+    ]
+    this.color = this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
     this.game = game;
     this.particleNum = 80;
     this.particles = [];
@@ -574,17 +577,10 @@ class ParticleExplosion{
 
     for (var i = 0; i < this.particleNum; i++) {
       const particleId = i;
+      
       const velocity = velocities[Math.floor(Math.random() * velocities.length)]
-      this.particles.push(new Particle(xpos, ypos, velocity, ctx, game, this.explosionId, particleId));
+      this.particles.push(new Particle(xpos, ypos, velocity, ctx, game, this.explosionId, particleId, this.color));
     }
-
-    // for (var i = 0; i < this.particles.length; i++) {
-    //   // if (particles[i].active === true) {
-    //   //   particles[i].draw();
-    //   // } else {
-    //   this.particles[i].build();
-    //   // }
-    // }
   }
 
   draw(ctx) {

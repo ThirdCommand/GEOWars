@@ -1,5 +1,5 @@
 class GameView {
-  constructor(game, ctx) {
+  constructor(game, ctx, canvasEl) {
     this.ctx = ctx;
     this.game = game;
     this.ship = this.game.addShip();
