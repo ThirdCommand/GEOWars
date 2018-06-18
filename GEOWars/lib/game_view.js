@@ -3,7 +3,14 @@ class GameView {
     this.ctx = ctx;
     this.game = game;
     this.ship = this.game.addShip();
+    this.canvasEl = canvasEl;
+    // this.canvasEl.onclick = function (e) {
+    //   // debugger
+    //   this.ship.fireBullet();
+    // };
   }
+
+  
 
   bindKeyHandlers() {
     const ship = this.ship;
@@ -13,6 +20,18 @@ class GameView {
       key(k, () => { ship.power(move); });
     });
 
+    window.addEventListener('mousemove', (e) => {
+      const x = {x: e.layerX};
+      const y = {y: e.layerY};
+      // console.log(x);
+      // console.log(y);
+      // debugger
+      const mousePos = [e.layerX, e.layerY];
+
+      ship.setFireAngle(mousePos);
+      
+    });
+    
     key("space", () => { ship.fireBullet(); });
   }
 

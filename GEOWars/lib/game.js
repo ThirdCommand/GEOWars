@@ -140,10 +140,13 @@ class Game {
       throw new Error("unknown type of object");
     }
   }
+  updateShipFireAngle(){
+    this.ships[0].setFireAngle()
+  }
 
   step(delta, ctx) {
     this.moveObjects(delta);
-
+    this.updateShipFireAngle();
     this.checkCollisions(ctx);
   }
 
@@ -158,6 +161,6 @@ Game.BG_COLOR = "#000000";
 Game.DIM_X = 1000;
 Game.DIM_Y = 600;
 // Game.FPS = 32;
-Game.NUM_ASTEROIDS = 1000;
+Game.NUM_ASTEROIDS = 20;
 
 module.exports = Game;

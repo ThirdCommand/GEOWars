@@ -19,24 +19,57 @@ class Ship extends MovingObject {
     options.vel = options.vel || [0, 0];
     options.color = options.color || randomColor();
     super(options);
+    this.mousePos = [0,0];
+    this.fireAngle = 0; // might have to make it null
+    setInterval(
+      () => this.fireBullet(),
+      1000 * 60 / 340)
   }
 
-  fireBullet() {
-    const norm = Util.norm(this.vel);
 
-    if (norm === 0) {
-      // Can't fire unless moving.
-      return;
+  setFireAngle(mousePos) {
+    if (mousePos === undefined){
+      mousePos = this.mousePos;
+    } else {
+      this.mousePos = mousePos
     }
+    let dy = mousePos[1] - this.pos[1];
+    let dx = mousePos[0] - this.pos[0];
+    this.fireAngle =  Math.atan2(dy, dx)
 
-    const relVel = Util.scale(
-      Util.dir(this.vel),
-      Bullet.SPEED
-    );
+  }
 
-    const bulletVel = [
-      relVel[0] + this.vel[0], relVel[1] + this.vel[1]
-    ];
+  // draw(ctx) {
+  //   ctx.fillStyle = this.color;
+
+  //   ctx.beginPath();
+  //   ctx.arc(
+  //     this.pos[0], this.pos[1], this.radius, 0, 2 * Math.PI, true
+  //   );
+  //   ctx.fill();
+  // }
+
+  fireBullet(e) {
+    // const norm = Util.norm(this.vel);
+
+    // if (norm === 0) {
+    //   // Can't fire unless moving.
+    //   return;
+    // }
+
+    // const relVel = Util.scale(
+    //   Util.dir(this.vel),
+    //   Bullet.SPEED
+    // );
+    let shipvx = this.vel[0];
+    let shipvy = this.vel[1];
+    let relBulletVelX = Bullet.SPEED * Math.cos(this.fireAngle);
+    let relBulletVelY = Bullet.SPEED * Math.sin(this.fireAngle);
+
+    const bulletVel = [shipvx + relBulletVelX, shipvy + relBulletVelY];
+    // const bulletVel = [
+    //   relVel[0] + this.vel[0], relVel[1] + this.vel[1]
+    // ];
 
     const bullet = new Bullet({
       pos: this.pos,
@@ -59,5 +92,5 @@ class Ship extends MovingObject {
   }
 }
 
-Ship.RADIUS = 2;
+Ship.RADIUS = 4;
 module.exports = Ship;
