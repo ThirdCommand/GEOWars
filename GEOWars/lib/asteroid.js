@@ -5,7 +5,7 @@ const Bullet = require("./bullet");
 
 const DEFAULTS = {
   COLOR: "#505050",
-  RADIUS: 2,
+  RADIUS: 10,
   SPEED: 1
 };
 

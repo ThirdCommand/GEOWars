@@ -85,7 +85,7 @@ const Bullet = __webpack_require__(/*! ./bullet */ "./lib/bullet.js");
 
 const DEFAULTS = {
   COLOR: "#505050",
-  RADIUS: 2,
+  RADIUS: 10,
   SPEED: 1
 };
 
@@ -174,27 +174,62 @@ module.exports = Bullet;
 /***/ (function(module, exports, __webpack_require__) {
 
 const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_object.js")
-
+const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
+const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 class BoxBox extends MovingObject {
   constructor(options) {
     super(options)
     this.pos = options.game.randomPosition();
   }
 
-  draw(ctx) {
-    ctx.beginPath();
-    ctx.rect(pos[0] - (7/8 * this.BOX_SIZE), pos[1] - (1/8 * this.BOX_SIZE), this.BOX_SIZE, this.BOX_SIZE);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = BoxBox.COLOR;
-    ctx.stroke;
-    
-    ctx.beginPath();
-    ctx.rect(pos[0] - (1/8 * this.BOX_SIZE), pos[1] - (7/8 * this.BOX_SIZE), this.BOX_SIZE, this.BOX_SIZE);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = BoxBox.COLOR;
-    ctx.stroke;
+  move(timeDelta) {
 
   }
+
+  draw(ctx) {
+    let pos = this.pos
+    let boxsize = 10;
+    // ctx.fillStyle = "#98f517";
+    // ctx.fillRect(pos[0] - (7 / 8 * boxsize), pos[1] - (1 / 8 * boxsize), boxsize, boxsize)
+
+    // ctx.fillStyle = "#98f517";
+    // ctx.fillRect(pos[0] - (1 / 8 * boxsize), pos[1] - (7 / 8 * boxsize), boxsize, boxsize);
+
+    // ctx.fillStyle = "#98f517";
+    // ctx.fillRect(pos[0] - (7 / 8 * boxsize), pos[1], 10, 10);
+    // ctx.fillRect(pos[0], pos[1], 10, 10);
+    
+
+    ctx.beginPath();
+    ctx.rect(pos[0] - (6/8 * boxsize), pos[1] - (2/8 * boxsize), boxsize, boxsize);
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = "#98f517";
+    ctx.stroke();
+    
+    ctx.beginPath();
+    ctx.rect(pos[0] - (2/8 * boxsize), pos[1] - (6/8 * boxsize), boxsize, boxsize);
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = "#98f517";
+    ctx.stroke();
+  }
+
+  collideWith(otherObject) {
+    if (otherObject instanceof Ship) {
+      otherObject.relocate();
+      return true;
+    } else if (otherObject instanceof Bullet) {
+      this.remove();
+      otherObject.remove();
+      return true;
+    }
+
+    return false;
+  }
+
+  // remove() {
+  //   debugger;
+  //   this.game.remove(this);
+  // }
 }
 
 BoxBox.BOX_SIZE = 10;
@@ -226,7 +261,7 @@ class Game {
     this.ships = [];
     this.particleExplosions = [];
     
-    this.addAsteroids();
+    this.addEnemies();
   }
 
   add(object) {
@@ -245,7 +280,7 @@ class Game {
     }
   }
 
-  addAsteroids() {
+  addEnemies() {
     for (let i = 0; i < Game.NUM_ASTEROIDS; i++) {
       this.add(new Asteroid({ game: this }));
     }
@@ -266,7 +301,7 @@ class Game {
   }
 
   allObjects() {
-    return [].concat(this.asteroids); //this.bullets);
+    return [].concat(this.asteroids, this.enemies); //this.bullets);
   }
 
   //explosions
@@ -353,9 +388,9 @@ class Game {
       this.particleObjects.splice(this.particleObjects.indexOf(object), 1);
     } else if (object instanceof Particle){
       object.active = false
-      // explosionId = object.explosionId;
-      // particleId = object.particleId;
-      // this.particleExplosions[explosionId].particles
+    } else if (object instanceof BoxBox) {
+      this.enemies.splice(this.enemies.indexOf(object), 1);
+      // debugger;
     } else {
       throw new Error("unknown type of object");
     }
@@ -476,7 +511,7 @@ class MovingObject {
   constructor(options) {
     this.pos = options.pos;
     this.vel = options.vel;
-    this.radius = options.radius;
+    this.radius = options.radius || 5;
     this.color = options.color;
     this.game = options.game;
     this.isWrappable = true;
@@ -488,7 +523,8 @@ class MovingObject {
 
   draw(ctx) {
     ctx.fillStyle = this.color;
-
+    // ctx.fillStyle = "#98f517";
+    // ctx.fillRect(this.pos[0], this.pos[1], 10, 10);
     ctx.beginPath();
     ctx.arc(
       this.pos[0], this.pos[1], this.radius, 0, 2 * Math.PI, true

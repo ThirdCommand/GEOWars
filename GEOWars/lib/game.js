@@ -13,7 +13,7 @@ class Game {
     this.ships = [];
     this.particleExplosions = [];
     
-    this.addAsteroids();
+    this.addEnemies();
   }
 
   add(object) {
@@ -32,7 +32,7 @@ class Game {
     }
   }
 
-  addAsteroids() {
+  addEnemies() {
     for (let i = 0; i < Game.NUM_ASTEROIDS; i++) {
       this.add(new Asteroid({ game: this }));
     }
@@ -53,7 +53,7 @@ class Game {
   }
 
   allObjects() {
-    return [].concat(this.asteroids); //this.bullets);
+    return [].concat(this.asteroids, this.enemies); //this.bullets);
   }
 
   //explosions
@@ -140,9 +140,9 @@ class Game {
       this.particleObjects.splice(this.particleObjects.indexOf(object), 1);
     } else if (object instanceof Particle){
       object.active = false
-      // explosionId = object.explosionId;
-      // particleId = object.particleId;
-      // this.particleExplosions[explosionId].particles
+    } else if (object instanceof BoxBox) {
+      this.enemies.splice(this.enemies.indexOf(object), 1);
+      // debugger;
     } else {
       throw new Error("unknown type of object");
     }

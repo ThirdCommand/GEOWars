@@ -4,7 +4,7 @@ class MovingObject {
   constructor(options) {
     this.pos = options.pos;
     this.vel = options.vel;
-    this.radius = options.radius;
+    this.radius = options.radius || 5;
     this.color = options.color;
     this.game = options.game;
     this.isWrappable = true;
@@ -16,7 +16,8 @@ class MovingObject {
 
   draw(ctx) {
     ctx.fillStyle = this.color;
-
+    // ctx.fillStyle = "#98f517";
+    // ctx.fillRect(this.pos[0], this.pos[1], 10, 10);
     ctx.beginPath();
     ctx.arc(
       this.pos[0], this.pos[1], this.radius, 0, 2 * Math.PI, true
