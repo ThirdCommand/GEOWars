@@ -4,9 +4,11 @@ const Ship = require("./ship");
 const Util = require("./util");
 const ParticleExplosion = require("./particles/particle_explosion");
 const Particle = require("./particles/particle");
+const BoxBox = require("./enemies/boxbox");
 class Game {
   constructor() {
     this.asteroids = [];
+    this.enemies = [];
     this.bullets = [];
     this.ships = [];
     this.particleExplosions = [];
@@ -17,6 +19,8 @@ class Game {
   add(object) {
     if (object instanceof Asteroid) {
       this.asteroids.push(object);
+    } else if (object instanceof BoxBox) {
+      this.enemies.push(object)
     } else if (object instanceof Bullet) {
       this.bullets.push(object);
     } else if (object instanceof Ship) {
@@ -31,6 +35,9 @@ class Game {
   addAsteroids() {
     for (let i = 0; i < Game.NUM_ASTEROIDS; i++) {
       this.add(new Asteroid({ game: this }));
+    }
+    for (let i = 0; i < Game.NUM_BOXES; i++) {
+        this.add(new BoxBox({ game: this}));
     }
   }
 
@@ -162,5 +169,5 @@ Game.DIM_X = 1000;
 Game.DIM_Y = 600;
 // Game.FPS = 32;
 Game.NUM_ASTEROIDS = 100;
-
+Game.NUM_BOXES = 100;
 module.exports = Game;

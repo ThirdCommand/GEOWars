@@ -166,6 +166,44 @@ module.exports = Bullet;
 
 /***/ }),
 
+/***/ "./lib/enemies/boxbox.js":
+/*!*******************************!*\
+  !*** ./lib/enemies/boxbox.js ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_object.js")
+
+class BoxBox extends MovingObject {
+  constructor(options) {
+    super(options)
+    this.pos = options.game.randomPosition();
+  }
+
+  draw(ctx) {
+    ctx.beginPath();
+    ctx.rect(pos[0] - (7/8 * this.BOX_SIZE), pos[1] - (1/8 * this.BOX_SIZE), this.BOX_SIZE, this.BOX_SIZE);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = BoxBox.COLOR;
+    ctx.stroke;
+    
+    ctx.beginPath();
+    ctx.rect(pos[0] - (1/8 * this.BOX_SIZE), pos[1] - (7/8 * this.BOX_SIZE), this.BOX_SIZE, this.BOX_SIZE);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = BoxBox.COLOR;
+    ctx.stroke;
+
+  }
+}
+
+BoxBox.BOX_SIZE = 10;
+BoxBox.COLOR = "#f00745"
+
+module.exports = BoxBox;
+
+/***/ }),
+
 /***/ "./lib/game.js":
 /*!*********************!*\
   !*** ./lib/game.js ***!
@@ -179,9 +217,11 @@ const Ship = __webpack_require__(/*! ./ship */ "./lib/ship.js");
 const Util = __webpack_require__(/*! ./util */ "./lib/util.js");
 const ParticleExplosion = __webpack_require__(/*! ./particles/particle_explosion */ "./lib/particles/particle_explosion.js");
 const Particle = __webpack_require__(/*! ./particles/particle */ "./lib/particles/particle.js");
+const BoxBox = __webpack_require__(/*! ./enemies/boxbox */ "./lib/enemies/boxbox.js");
 class Game {
   constructor() {
     this.asteroids = [];
+    this.enemies = [];
     this.bullets = [];
     this.ships = [];
     this.particleExplosions = [];
@@ -192,6 +232,8 @@ class Game {
   add(object) {
     if (object instanceof Asteroid) {
       this.asteroids.push(object);
+    } else if (object instanceof BoxBox) {
+      this.enemies.push(object)
     } else if (object instanceof Bullet) {
       this.bullets.push(object);
     } else if (object instanceof Ship) {
@@ -206,6 +248,9 @@ class Game {
   addAsteroids() {
     for (let i = 0; i < Game.NUM_ASTEROIDS; i++) {
       this.add(new Asteroid({ game: this }));
+    }
+    for (let i = 0; i < Game.NUM_BOXES; i++) {
+        this.add(new BoxBox({ game: this}));
     }
   }
 
@@ -337,7 +382,7 @@ Game.DIM_X = 1000;
 Game.DIM_Y = 600;
 // Game.FPS = 32;
 Game.NUM_ASTEROIDS = 100;
-
+Game.NUM_BOXES = 100;
 module.exports = Game;
 
 
