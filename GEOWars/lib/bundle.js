@@ -590,7 +590,7 @@ class Particle {
     this.x = xpos; // x and y position
     this.y = ypos;
 
-    this.rectLength = 20;
+    this.rectLength = 15;
     this.rectWidth = 2;
     // this.r = this.rand(200, 10, 0);
     this.speed = initialSpeed;
@@ -624,6 +624,7 @@ class Particle {
     // this.x += this.vx;
     // this.y += this.vy;
     this.radial += this.speed;
+    this.rectLength -= 0.25;
     this.speed += this.acceleration
     this.hue -= 0.02;
     if (this.speed < 0.05) {
@@ -677,7 +678,7 @@ class ParticleExplosion{
     ]
     this.color = this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
     this.game = game;
-    this.particleNum = 80;
+    this.particleNum = 100;
     this.particles = [];
     this.explosionId;
 
@@ -760,6 +761,36 @@ class Ship extends MovingObject {
   //   ctx.stroke();
   //   ctx.restore();
   // }
+  draw(ctx) {
+    let pos = this.pos 
+    let shipWidth = 10
+    let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
+    ctx.save();
+    ctx.beginPath();
+    // ctx.fillStyle = "#98f517";
+    ctx.translate(pos[0], pos[1]);
+    ctx.rotate(movementDirection + 3/4 * Math.PI + Math.PI);
+    // console.log(this.vel);
+    
+    ctx.translate(-shipWidth / 2, shipWidth / 2);
+
+    // ctx.rotate(atan2(this.vel[1],this.vel[2]));
+    // ctx.translate(-shipWidth/2, shipWidth/2); 
+    ctx.beginPath();
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 2.4;
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, -shipWidth);
+    ctx.lineTo(2 / 3 * shipWidth, -(1 + 1 / 6) * shipWidth); //1
+    ctx.lineTo(1 / 3 * shipWidth, -5 / 6 * shipWidth) // 2
+    ctx.lineTo(1 / 3 * shipWidth, -1 / 3 * shipWidth) // 2.5
+    ctx.lineTo(5 / 6 * shipWidth, -1 / 3 * shipWidth) // 3
+    ctx.lineTo((1 + 1 / 6) * shipWidth, -2 / 3 * shipWidth) // 4
+    ctx.lineTo(shipWidth, 0) // 5
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+  }
 
 
   setFireAngle(mousePos) {

@@ -42,6 +42,36 @@ class Ship extends MovingObject {
   //   ctx.stroke();
   //   ctx.restore();
   // }
+  draw(ctx) {
+    let pos = this.pos 
+    let shipWidth = 10
+    let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
+    ctx.save();
+    ctx.beginPath();
+    // ctx.fillStyle = "#98f517";
+    ctx.translate(pos[0], pos[1]);
+    ctx.rotate(movementDirection + 3/4 * Math.PI + Math.PI);
+    // console.log(this.vel);
+    
+    ctx.translate(-shipWidth / 2, shipWidth / 2);
+
+    // ctx.rotate(atan2(this.vel[1],this.vel[2]));
+    // ctx.translate(-shipWidth/2, shipWidth/2); 
+    ctx.beginPath();
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 2.4;
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, -shipWidth);
+    ctx.lineTo(2 / 3 * shipWidth, -(1 + 1 / 6) * shipWidth); //1
+    ctx.lineTo(1 / 3 * shipWidth, -5 / 6 * shipWidth) // 2
+    ctx.lineTo(1 / 3 * shipWidth, -1 / 3 * shipWidth) // 2.5
+    ctx.lineTo(5 / 6 * shipWidth, -1 / 3 * shipWidth) // 3
+    ctx.lineTo((1 + 1 / 6) * shipWidth, -2 / 3 * shipWidth) // 4
+    ctx.lineTo(shipWidth, 0) // 5
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+  }
 
 
   setFireAngle(mousePos) {

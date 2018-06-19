@@ -12,7 +12,7 @@ class Particle {
     this.x = xpos; // x and y position
     this.y = ypos;
 
-    this.rectLength = 20;
+    this.rectLength = 15;
     this.rectWidth = 2;
     // this.r = this.rand(200, 10, 0);
     this.speed = initialSpeed;
@@ -46,6 +46,7 @@ class Particle {
     // this.x += this.vx;
     // this.y += this.vy;
     this.radial += this.speed;
+    this.rectLength -= 0.25;
     this.speed += this.acceleration
     this.hue -= 0.02;
     if (this.speed < 0.05) {
