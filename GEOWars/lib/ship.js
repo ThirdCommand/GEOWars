@@ -29,6 +29,20 @@ class Ship extends MovingObject {
     //    1000)
   }
 
+  // draw(ctx) {
+  //   let shipWidth = 10;
+  //   ctx.save();
+  //   ctx.beginPath();
+  //   ctx.translate(this.pos[0] - shipWidth / 2, this.pos[1] + shipWidth / 2);
+  //   ctx.rotate(atan2(this.vel[1],this.vel[2]));
+  //   ctx.translate(-shipWidth/2, shipWidth/2);
+  //   ctx.lineTo(0,-shipWidth);
+  //   ctx.lineTo()
+  //   ctx.strokeStyle = "#ffffff";
+  //   ctx.stroke();
+  //   ctx.restore();
+  // }
+
 
   setFireAngle(mousePos) {
     if (mousePos === undefined){

@@ -16,7 +16,7 @@ class BoxBox extends MovingObject {
     let boxsize = 10;
     // ctx.fillStyle = "#98f517";
     // ctx.fillRect(pos[0] - (7 / 8 * boxsize), pos[1] - (1 / 8 * boxsize), boxsize, boxsize)
-
+    
     // ctx.fillStyle = "#98f517";
     // ctx.fillRect(pos[0] - (1 / 8 * boxsize), pos[1] - (7 / 8 * boxsize), boxsize, boxsize);
 
@@ -28,13 +28,13 @@ class BoxBox extends MovingObject {
     ctx.beginPath();
     ctx.rect(pos[0] - (6/8 * boxsize), pos[1] - (2/8 * boxsize), boxsize, boxsize);
     ctx.lineWidth = 1.5;
-    ctx.strokeStyle = "#98f517";
+    ctx.strokeStyle = "#F173BA";
     ctx.stroke();
     
     ctx.beginPath();
     ctx.rect(pos[0] - (2/8 * boxsize), pos[1] - (6/8 * boxsize), boxsize, boxsize);
     ctx.lineWidth = 1.5;
-    ctx.strokeStyle = "#98f517";
+    ctx.strokeStyle = "#F173BA";
     ctx.stroke();
   }
 

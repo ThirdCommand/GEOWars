@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+  <!-- <canvas id="myCanvas" width="500" height="500"></canvas> -->
+  <canvas id="myCanvas" width="500" height="500" style="border:1px solid #d3d3d3;">
+    Your browser does not support the HTML5 canvas tag.</canvas>
+
+  <script>
+    var c = document.getElementById("myCanvas");
+    var ctx = c.getContext("2d");
+    let pos = [50, 50]
+    let shipWidth = 5;
+    let radius = 10;
+    
+    // ctx.beginPath(); 
+    // ctx.fillStyle = "#98f517";
+    // ctx.arc( pos[0], pos[1], radius, 0, 2 * Math.PI, true ); 
+    // ctx.fill();
+
+    // ctx.save()
+    // ctx.beginPath(); 
+    // ctx.strokeStyle = "#98f517";
+    // ctx.lineWidth = 5;
+
+    // ctx.lineTo(150, 100); 
+    // ctx.stroke();
+    // ctx.restore();
+    
+
+    ctx.save(); 
+    ctx.beginPath(); 
+    
+    
+    // ctx.rotate(atan2(this.vel[1],this.vel[2]));
+    ctx.translate(pos[0] - shipWidth / 2, pos[1] + shipWidth / 2);
+    ctx.translate(-shipWidth/2, shipWidth/2); 
+    ctx.lineTo(0,-shipWidth); 
+    ctx.strokeStyle = "#98f517";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.restore();
+  </script>
+
+
+
+</body>
+
+</html>

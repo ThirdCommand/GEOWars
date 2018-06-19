@@ -191,7 +191,7 @@ class BoxBox extends MovingObject {
     let boxsize = 10;
     // ctx.fillStyle = "#98f517";
     // ctx.fillRect(pos[0] - (7 / 8 * boxsize), pos[1] - (1 / 8 * boxsize), boxsize, boxsize)
-
+    
     // ctx.fillStyle = "#98f517";
     // ctx.fillRect(pos[0] - (1 / 8 * boxsize), pos[1] - (7 / 8 * boxsize), boxsize, boxsize);
 
@@ -203,13 +203,13 @@ class BoxBox extends MovingObject {
     ctx.beginPath();
     ctx.rect(pos[0] - (6/8 * boxsize), pos[1] - (2/8 * boxsize), boxsize, boxsize);
     ctx.lineWidth = 1.5;
-    ctx.strokeStyle = "#98f517";
+    ctx.strokeStyle = "#F173BA";
     ctx.stroke();
     
     ctx.beginPath();
     ctx.rect(pos[0] - (2/8 * boxsize), pos[1] - (6/8 * boxsize), boxsize, boxsize);
     ctx.lineWidth = 1.5;
-    ctx.strokeStyle = "#98f517";
+    ctx.strokeStyle = "#F173BA";
     ctx.stroke();
   }
 
@@ -740,6 +740,20 @@ class Ship extends MovingObject {
     //    () => this.fireBullet(),
     //    1000)
   }
+
+  // draw(ctx) {
+  //   let shipWidth = 10;
+  //   ctx.save();
+  //   ctx.beginPath();
+  //   ctx.translate(this.pos[0] - shipWidth / 2, this.pos[1] + shipWidth / 2);
+  //   ctx.rotate(atan2(this.vel[1],this.vel[2]));
+  //   ctx.translate(-shipWidth/2, shipWidth/2);
+  //   ctx.lineTo(0,-shipWidth);
+  //   ctx.lineTo()
+  //   ctx.strokeStyle = "#ffffff";
+  //   ctx.stroke();
+  //   ctx.restore();
+  // }
 
 
   setFireAngle(mousePos) {
