@@ -166,6 +166,102 @@ module.exports = Bullet;
 
 /***/ }),
 
+/***/ "./lib/enemies/arrow.js":
+/*!******************************!*\
+  !*** ./lib/enemies/arrow.js ***!
+  \******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_object.js")
+const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
+const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
+const Util = __webpack_require__(/*! ../util */ "./lib/util.js");
+class Arrow extends MovingObject {
+  constructor(options) {
+    super(options)
+    this.pos = options.game.randomPosition();
+    this.angle = 0;
+
+    this.speed = 1;
+    this.vel = options.velocity || Util.randomVec(this.speed);
+
+  }
+
+  move(timeDelta) {
+    let rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    let velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+
+    let deltaX = this.vel[0] * velocityScale;
+    let deltaY = this.vel[1] * velocityScale;
+
+    this.pos = [this.pos[0] + deltaX, this.pos[1] + deltaY];
+    
+    if (this.game.isOutOfBounds(this.pos)) {
+      Util.redirect(this,[1000, 600]) // HARD CODED
+    }
+  }
+
+  
+
+  draw(ctx) {
+    let pos = this.pos;
+    let shipLength = 8 * 2.2;
+    let shipWidth = 6 * 2.2;
+    let l = shipLength;
+    let w = shipWidth;
+    let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.translate(pos[0], pos[1]);
+    ctx.rotate(movementDirection + 2 * Math.PI );
+
+    ctx.beginPath();
+    ctx.strokeStyle = "#f2ff00";
+    ctx.lineWidth = 2;
+    
+    ctx.moveTo(0, -l / 2); //1
+    ctx.lineTo(w/2, l/4); //2
+    ctx.lineTo(w/6, l/2); //3
+    ctx.lineTo(0, l/4); //4
+    ctx.lineTo(-w/6, l/2); //5
+    ctx.lineTo(-w/2, l/4); //6
+    // ctx.lineTo(0, -l/2 ); //1
+
+    // ctx.lineTo(); //1
+
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  collideWith(otherObject) {
+    if (otherObject instanceof Ship) {
+      otherObject.relocate();
+      return true;
+    } else if (otherObject instanceof Bullet) {
+      this.remove();
+      otherObject.remove();
+      return true;
+    }
+
+    return false;
+  }
+
+  // remove() {
+  //   debugger;
+  //   this.game.remove(this);
+  // }
+}
+
+
+
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+module.exports = Arrow;
+
+/***/ }),
+
 /***/ "./lib/enemies/boxbox.js":
 /*!*******************************!*\
   !*** ./lib/enemies/boxbox.js ***!
@@ -270,12 +366,9 @@ class Pinwheel extends MovingObject {
     
     this.pos = [this.pos[0] + deltaX, this.pos[1] + deltaY];
     this.angle = (this.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
+
     if (this.game.isOutOfBounds(this.pos)) {
-      if (this.isWrappable) {
-        this.pos = this.game.wrap(this.pos);
-      } else {
-        this.remove();
-      }
+      Util.bounce(this, [1000, 600]) // HARD CODED
     }
   }
 
@@ -353,7 +446,7 @@ const ParticleExplosion = __webpack_require__(/*! ./particles/particle_explosion
 const Particle = __webpack_require__(/*! ./particles/particle */ "./lib/particles/particle.js");
 const BoxBox = __webpack_require__(/*! ./enemies/boxbox */ "./lib/enemies/boxbox.js");
 const Pinwheel = __webpack_require__(/*! ./enemies/pinwheel */ "./lib/enemies/pinwheel.js");
-
+const Arrow = __webpack_require__(/*! ./enemies/arrow */ "./lib/enemies/arrow.js");
 class Game {
   constructor() {
     this.asteroids = [];
@@ -368,7 +461,7 @@ class Game {
   add(object) {
     if (object instanceof Asteroid) {
       this.asteroids.push(object);
-    } else if (object instanceof BoxBox || object instanceof Pinwheel) {
+    } else if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow) {
       this.enemies.push(object)
     } else if (object instanceof Bullet) {
       this.bullets.push(object);
@@ -390,6 +483,11 @@ class Game {
     }
     for (let i = 0; i < Game.NUM_PINWHEELS; i++) {
       this.add(new Pinwheel({game: this}));
+    }
+    for (let i = 0; i < Game.NUM_ARROWS; i++) {
+      this.add(new Arrow({
+        game: this
+      }));
     }
 
   }
@@ -495,10 +593,10 @@ class Game {
       object.active = false
     } else if (object instanceof BoxBox) {
       this.enemies.splice(this.enemies.indexOf(object), 1);
-
     } else if (object instanceof Pinwheel) {
-
       this.enemies.splice(this.enemies.indexOf(object),1);
+    } else if (object instanceof Arrow) {
+      this.enemies.splice(this.enemies.indexOf(object), 1);
     } else {
       throw new Error("unknown type of object");
     }
@@ -527,6 +625,7 @@ Game.DIM_Y = 600;
 Game.NUM_ASTEROIDS = 0;
 Game.NUM_BOXES = 50;
 Game.NUM_PINWHEELS = 50;
+Game.NUM_ARROWS = 10;
 module.exports = Game;
 
 
@@ -851,7 +950,8 @@ class Ship extends MovingObject {
     this.fireAngle = 0; // might have to make it null
     setInterval(
       () => this.fireBullet(),
-      1000 * 60 / (340 * 1.5)  )
+      1000 * 60 / (340 * 1.5)  
+    )
     //  setInterval(
     //    () => this.fireBullet(),
     //    1000)
@@ -867,7 +967,7 @@ class Ship extends MovingObject {
   //   ctx.lineTo(0,-shipWidth);
   //   ctx.lineTo()
   //   ctx.strokeStyle = "#ffffff";
-  //   ctx.stroke();
+  //   ctx.stroke();f
   //   ctx.restore();
   // }
   draw(ctx) {
@@ -1018,7 +1118,28 @@ const Util = {
     } else {
       return coord;
     }
+  },
+
+  bounce(shape, max){
+    if(shape.pos[0] <= 0 || shape.pos[0] >= max[0]){
+      shape.vel[0] = -shape.vel[0];
+    }
+    if( shape.pos[1] <= 0 || shape.pos[1] >= max[1]){
+      shape.vel[1] = -shape.vel[1];
+    }
+  },
+
+  redirect(arrow, max){
+    if (arrow.pos[0] <= 0 || arrow.pos[0] >= max[0]) {
+      arrow.vel[0] = -arrow.vel[0];
+      arrow.vel[1] = -arrow.vel[1];
+    }
+    if (arrow.pos[1] <= 0 || arrow.pos[1] >= max[1]) {
+      arrow.vel[1] = -arrow.vel[1];
+      arrow.vel[0] = -arrow.vel[0];
+    }
   }
+ 
 };
 
 module.exports = Util;

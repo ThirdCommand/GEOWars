@@ -22,12 +22,9 @@ class Pinwheel extends MovingObject {
     
     this.pos = [this.pos[0] + deltaX, this.pos[1] + deltaY];
     this.angle = (this.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
+
     if (this.game.isOutOfBounds(this.pos)) {
-      if (this.isWrappable) {
-        this.pos = this.game.wrap(this.pos);
-      } else {
-        this.remove();
-      }
+      Util.bounce(this, [1000, 600]) // HARD CODED
     }
   }
 

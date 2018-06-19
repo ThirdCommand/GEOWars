@@ -23,7 +23,8 @@ class Ship extends MovingObject {
     this.fireAngle = 0; // might have to make it null
     setInterval(
       () => this.fireBullet(),
-      1000 * 60 / (340 * 1.5)  )
+      1000 * 60 / (340 * 1.5)  
+    )
     //  setInterval(
     //    () => this.fireBullet(),
     //    1000)
@@ -39,7 +40,7 @@ class Ship extends MovingObject {
   //   ctx.lineTo(0,-shipWidth);
   //   ctx.lineTo()
   //   ctx.strokeStyle = "#ffffff";
-  //   ctx.stroke();
+  //   ctx.stroke();f
   //   ctx.restore();
   // }
   draw(ctx) {

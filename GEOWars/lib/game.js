@@ -6,7 +6,7 @@ const ParticleExplosion = require("./particles/particle_explosion");
 const Particle = require("./particles/particle");
 const BoxBox = require("./enemies/boxbox");
 const Pinwheel = require("./enemies/pinwheel");
-
+const Arrow = require("./enemies/arrow");
 class Game {
   constructor() {
     this.asteroids = [];
@@ -21,7 +21,7 @@ class Game {
   add(object) {
     if (object instanceof Asteroid) {
       this.asteroids.push(object);
-    } else if (object instanceof BoxBox || object instanceof Pinwheel) {
+    } else if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow) {
       this.enemies.push(object)
     } else if (object instanceof Bullet) {
       this.bullets.push(object);
@@ -43,6 +43,11 @@ class Game {
     }
     for (let i = 0; i < Game.NUM_PINWHEELS; i++) {
       this.add(new Pinwheel({game: this}));
+    }
+    for (let i = 0; i < Game.NUM_ARROWS; i++) {
+      this.add(new Arrow({
+        game: this
+      }));
     }
 
   }
@@ -148,10 +153,10 @@ class Game {
       object.active = false
     } else if (object instanceof BoxBox) {
       this.enemies.splice(this.enemies.indexOf(object), 1);
-
     } else if (object instanceof Pinwheel) {
-
       this.enemies.splice(this.enemies.indexOf(object),1);
+    } else if (object instanceof Arrow) {
+      this.enemies.splice(this.enemies.indexOf(object), 1);
     } else {
       throw new Error("unknown type of object");
     }
@@ -180,4 +185,5 @@ Game.DIM_Y = 600;
 Game.NUM_ASTEROIDS = 0;
 Game.NUM_BOXES = 50;
 Game.NUM_PINWHEELS = 50;
+Game.NUM_ARROWS = 10;
 module.exports = Game;
