@@ -239,6 +239,98 @@ module.exports = BoxBox;
 
 /***/ }),
 
+/***/ "./lib/enemies/pinwheel.js":
+/*!*********************************!*\
+  !*** ./lib/enemies/pinwheel.js ***!
+  \*********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_object.js")
+const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
+const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
+const Util = __webpack_require__(/*! ../util */ "./lib/util.js");
+class Pinwheel extends MovingObject {
+  constructor(options) {
+    super(options)
+    this.pos = options.game.randomPosition();
+    this.angle = 0;
+    this.rotation_speed = 0.05;
+    this.speed = 1;
+    this.vel = Util.randomVec(this.speed);
+
+  }
+
+  move(timeDelta) {
+    let rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    let velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    
+    let deltaX = this.vel[0] * velocityScale;
+    let deltaY = this.vel[1] * velocityScale;
+    
+    this.pos = [this.pos[0] + deltaX, this.pos[1] + deltaY];
+    this.angle = (this.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
+  }
+
+  draw(ctx) {
+    let pos = this.pos
+    let shipWidth = 12
+    let s = shipWidth/2
+    
+    ctx.save();
+    ctx.beginPath();
+    ctx.translate(pos[0], pos[1]);
+    ctx.rotate(this.angle);
+
+    ctx.beginPath();
+    ctx.strokeStyle = "#971adf";
+    ctx.lineWidth = 1.8;
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0,0); //1
+    ctx.lineTo(-s,-s); //2
+    ctx.lineTo(0,-s); //3
+    ctx.lineTo(0,0); //1
+    ctx.lineTo(s,-s); //4
+    ctx.lineTo(s,0); //5
+    ctx.lineTo(0,0); //1
+    ctx.lineTo(s,s); //6
+    ctx.lineTo(0,s); //7
+    ctx.lineTo(0,0); //1
+    ctx.lineTo(-s,s); //8
+    ctx.lineTo(-s,0); //9
+    // ctx.lineTo(); //1
+    
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  collideWith(otherObject) {
+    if (otherObject instanceof Ship) {
+      otherObject.relocate();
+      return true;
+    } else if (otherObject instanceof Bullet) {
+      this.remove();
+      otherObject.remove();
+      return true;
+    }
+
+    return false;
+  }
+
+  // remove() {
+  //   debugger;
+  //   this.game.remove(this);
+  // }
+}
+
+
+
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+module.exports = Pinwheel;
+
+/***/ }),
+
 /***/ "./lib/game.js":
 /*!*********************!*\
   !*** ./lib/game.js ***!
@@ -253,6 +345,8 @@ const Util = __webpack_require__(/*! ./util */ "./lib/util.js");
 const ParticleExplosion = __webpack_require__(/*! ./particles/particle_explosion */ "./lib/particles/particle_explosion.js");
 const Particle = __webpack_require__(/*! ./particles/particle */ "./lib/particles/particle.js");
 const BoxBox = __webpack_require__(/*! ./enemies/boxbox */ "./lib/enemies/boxbox.js");
+const Pinwheel = __webpack_require__(/*! ./enemies/pinwheel */ "./lib/enemies/pinwheel.js");
+
 class Game {
   constructor() {
     this.asteroids = [];
@@ -267,7 +361,7 @@ class Game {
   add(object) {
     if (object instanceof Asteroid) {
       this.asteroids.push(object);
-    } else if (object instanceof BoxBox) {
+    } else if (object instanceof BoxBox || object instanceof Pinwheel) {
       this.enemies.push(object)
     } else if (object instanceof Bullet) {
       this.bullets.push(object);
@@ -285,8 +379,12 @@ class Game {
       this.add(new Asteroid({ game: this }));
     }
     for (let i = 0; i < Game.NUM_BOXES; i++) {
-        this.add(new BoxBox({ game: this}));
+      this.add(new BoxBox({ game: this}));
     }
+    for (let i = 0; i < Game.NUM_PINWHEELS; i++) {
+      this.add(new Pinwheel({game: this}));
+    }
+
   }
 
   addShip() {
@@ -390,7 +488,10 @@ class Game {
       object.active = false
     } else if (object instanceof BoxBox) {
       this.enemies.splice(this.enemies.indexOf(object), 1);
-      // debugger;
+
+    } else if (object instanceof Pinwheel) {
+
+      this.enemies.splice(this.enemies.indexOf(object),1);
     } else {
       throw new Error("unknown type of object");
     }
@@ -416,8 +517,9 @@ Game.BG_COLOR = "#000000";
 Game.DIM_X = 1000;
 Game.DIM_Y = 600;
 // Game.FPS = 32;
-Game.NUM_ASTEROIDS = 100;
-Game.NUM_BOXES = 100;
+Game.NUM_ASTEROIDS = 0;
+Game.NUM_BOXES = 50;
+Game.NUM_PINWHEELS = 50;
 module.exports = Game;
 
 
