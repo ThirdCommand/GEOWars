@@ -579,31 +579,30 @@ module.exports = MovingObject;
 
 
 class Particle {
-  constructor(xpos, ypos, velocity, ctx, game, explosionId, particleID, colors) {
-    this.colors = colors;
+  constructor(xpos, ypos, initialSpeed, ctx, game, explosionId, particleID, colors) {
     this.game = game;
     this.active = true;
-    this.hue = this.colors[Math.floor(this.colors.length * Math.random())];
+    this.color = colors[Math.floor(colors.length * Math.random())];
     this.particleId;
     this.explosionId;
     
-
+    this.radial = 0;
     this.x = xpos; // x and y position
     this.y = ypos;
 
     this.rectLength = 20;
     this.rectWidth = 2;
     // this.r = this.rand(200, 10, 0);
-    this.initialVelocity = velocity;
+    this.speed = initialSpeed;
     this.movementAngle = Math.random() * Math.PI * 2;
-    this.vx = this.initialVelocity * Math.cos(this.movementAngle);
-    this.vy = this.initialVelocity * Math.sin(this.movementAngle);
+    // this.vx = this.initialSpeed * Math.cos(this.movementAngle);
+    // this.vy = this.initialSpeed * Math.sin(this.movementAngle);
     this.acceleration = -0.1;
 
     this.opacity = Math.random() + .5;
     this.active = true;
-
-    ctx.fillStyle = this.hue;
+    this.hue = 0.7;
+    ctx.fillStyle = `${this.color},${this.hue})`;
     ctx.fillRect(this.x, this.y, this.rectLength, this.rectWidth);
   }
 
@@ -620,20 +619,27 @@ class Particle {
   };
 
   draw(ctx) {
+
     this.active = true;
-    this.x += this.vx;
-    this.y += this.vy;
-    this.vy += this.acceleration * Math.sin(this.movementAngle);
-    this.vx += this.acceleration * Math.cos(this.movementAngle);
-    // this.hue -= 0.5;
-    if ((Math.abs(this.vx) + Math.abs(this.vy)) < 0.05) {
-      // debugger;
+    // this.x += this.vx;
+    // this.y += this.vy;
+    this.radial += this.speed;
+    this.speed += this.acceleration
+    this.hue -= 0.02;
+    if (this.speed < 0.05) {
       this.remove();
     } else {
-      // ctx.save();
-      ctx.fillStyle = this.hue;
-      ctx.fillRect(this.x, this.y, this.rectLength, this.rectWidth);
-      // ctx.restore();
+
+      ctx.save()
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.movementAngle);
+      ctx.beginPath();
+      ctx.strokeStyle = `${this.color},${this.hue})`;
+      ctx.lineWidth = this.rectWidth;
+      ctx.moveTo(this.radial, 0);
+      ctx.lineTo(this.radial + this.rectLength, 0);
+      ctx.stroke();
+      ctx.restore();
     }
   }
 
@@ -658,16 +664,16 @@ const Particle = __webpack_require__(/*! ./particle */ "./lib/particles/particle
 
 
 
-const velocities = [7,6,5,4];
+const speeds = [7,6,5,4];
 
 class ParticleExplosion{
   constructor(xpos, ypos, ctx, game, explosionId){
     this.COLORS = [
-      ["#98f517", "#7eb92b", "#bdec7a", "#677c4a"],
-      ["#fff12c", "#f5ec6d", "#a5a057", "#b1a71c"],
-      ["#12e1fc", "#3cc6d8", "#71dfee", "#95dce6"],
-      ["#fc57e0", "#cc48b6", "#aa489a", "#fa89e7"],
-      ["#be56fa", "#9f60c4", "#571180", "#c796e4"]
+      ["rgba(152,245,23", "rgba(126,185,43", "rgba(189,236,122", "rgba(103,124,74"],
+      ["rgba(255,241,44", "rgba(245,236,109", "rgba(165,160,87", "rgba(177,167,28"],
+      ["rgba(18,225,252", "rgba(60,198,216", "rgba(113,223,238", "rgba(149,220,230"],
+      ["rgba(252,87,224", "rgba(204,72,182", "rgba(170,72,154", "rgba(250,137,231"],
+      ["rgba(190,86,250", "rgba(159,96,196", "rgba(87,17,128", "rgba(199,150,228"]
     ]
     this.color = this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
     this.game = game;
@@ -678,8 +684,8 @@ class ParticleExplosion{
     for (var i = 0; i < this.particleNum; i++) {
       const particleId = i;
       
-      const velocity = velocities[Math.floor(Math.random() * velocities.length)]
-      this.particles.push(new Particle(xpos, ypos, velocity, ctx, game, this.explosionId, particleId, this.color));
+      const speed = speeds[Math.floor(Math.random() * speeds.length)]
+      this.particles.push(new Particle(xpos, ypos, speed, ctx, game, this.explosionId, particleId, this.color));
     }
   }
 

@@ -2,16 +2,16 @@ const Particle = require("./particle")
 
 
 
-const velocities = [7,6,5,4];
+const speeds = [7,6,5,4];
 
 class ParticleExplosion{
   constructor(xpos, ypos, ctx, game, explosionId){
     this.COLORS = [
-      ["#98f517", "#7eb92b", "#bdec7a", "#677c4a"],
-      ["#fff12c", "#f5ec6d", "#a5a057", "#b1a71c"],
-      ["#12e1fc", "#3cc6d8", "#71dfee", "#95dce6"],
-      ["#fc57e0", "#cc48b6", "#aa489a", "#fa89e7"],
-      ["#be56fa", "#9f60c4", "#571180", "#c796e4"]
+      ["rgba(152,245,23", "rgba(126,185,43", "rgba(189,236,122", "rgba(103,124,74"],
+      ["rgba(255,241,44", "rgba(245,236,109", "rgba(165,160,87", "rgba(177,167,28"],
+      ["rgba(18,225,252", "rgba(60,198,216", "rgba(113,223,238", "rgba(149,220,230"],
+      ["rgba(252,87,224", "rgba(204,72,182", "rgba(170,72,154", "rgba(250,137,231"],
+      ["rgba(190,86,250", "rgba(159,96,196", "rgba(87,17,128", "rgba(199,150,228"]
     ]
     this.color = this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
     this.game = game;
@@ -22,8 +22,8 @@ class ParticleExplosion{
     for (var i = 0; i < this.particleNum; i++) {
       const particleId = i;
       
-      const velocity = velocities[Math.floor(Math.random() * velocities.length)]
-      this.particles.push(new Particle(xpos, ypos, velocity, ctx, game, this.explosionId, particleId, this.color));
+      const speed = speeds[Math.floor(Math.random() * speeds.length)]
+      this.particles.push(new Particle(xpos, ypos, speed, ctx, game, this.explosionId, particleId, this.color));
     }
   }
 

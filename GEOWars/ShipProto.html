@@ -29,12 +29,13 @@
     
 
     ctx.save(); 
-    ctx.beginPath(); 
+    
     
     
     // ctx.rotate(atan2(this.vel[1],this.vel[2]));
-    ctx.translate(pos[0] - shipWidth / 2, pos[1] + shipWidth / 2);
-    ctx.translate(-shipWidth/2, shipWidth/2); 
+    ctx.translate(250, 250);
+    // ctx.translate(-shipWidth/2, shipWidth/2); 
+    ctx.beginPath();
     ctx.lineTo(0,-shipWidth); 
     ctx.strokeStyle = "#98f517";
     ctx.lineWidth = 1.5;
