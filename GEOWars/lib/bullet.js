@@ -5,6 +5,7 @@ class Bullet extends MovingObject {
     options.radius = Bullet.RADIUS;
     super(options);
     this.isWrappable = false;
+    this.color = "#FFFBCE"
   }
 }
 

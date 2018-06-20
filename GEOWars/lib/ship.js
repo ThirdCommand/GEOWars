@@ -60,7 +60,7 @@ class Ship extends MovingObject {
     // ctx.translate(-shipWidth/2, shipWidth/2); 
     ctx.beginPath();
     ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2.4;
+    ctx.lineWidth = 2.2;
     ctx.moveTo(0, 0);
     ctx.lineTo(0, -shipWidth);
     ctx.lineTo(2 / 3 * shipWidth, -(1 + 1 / 6) * shipWidth); //1

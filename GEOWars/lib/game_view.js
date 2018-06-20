@@ -10,8 +10,6 @@ class GameView {
     // };
   }
 
-  
-
   bindKeyHandlers() {
     const ship = this.ship;
 

@@ -5,7 +5,7 @@ const Util = require("../util");
 class Pinwheel extends MovingObject {
   constructor(options) {
     super(options)
-    this.pos = options.game.randomPosition();
+    this.pos = options.pos || options.game.randomPosition();
     this.angle = 0;
     this.rotation_speed = 0.05;
     this.speed = 1;

@@ -4,6 +4,11 @@ const Util = {
     const norm = Util.norm(vec);
     return Util.scale(vec, 1 / norm);
   },
+  vectorCartisian(angle,scale){
+    let vector = [];
+    vector = [scale * Math.cos(angle), scale * Math.sin(angle)]
+    return vector
+  },
   // Find distance between two points.
   dist(pos1, pos2) {
     return Math.sqrt(

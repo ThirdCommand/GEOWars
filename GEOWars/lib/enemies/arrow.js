@@ -5,11 +5,11 @@ const Util = require("../util");
 class Arrow extends MovingObject {
   constructor(options) {
     super(options)
-    this.pos = options.game.randomPosition();
-    this.angle = 0;
+    this.pos = options.pos || options.game.randomPosition();
+    this.angle = options.angle || Math.PI / 3;
 
     this.speed = 1;
-    this.vel = options.velocity || Util.randomVec(this.speed);
+    this.vel = Util.vectorCartisian(this.angle, this.speed);
 
   }
 

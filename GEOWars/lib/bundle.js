@@ -155,6 +155,7 @@ class Bullet extends MovingObject {
     options.radius = Bullet.RADIUS;
     super(options);
     this.isWrappable = false;
+    this.color = "#FFFBCE"
   }
 }
 
@@ -180,11 +181,11 @@ const Util = __webpack_require__(/*! ../util */ "./lib/util.js");
 class Arrow extends MovingObject {
   constructor(options) {
     super(options)
-    this.pos = options.game.randomPosition();
-    this.angle = 0;
+    this.pos = options.pos || options.game.randomPosition();
+    this.angle = options.angle || Math.PI / 3;
 
     this.speed = 1;
-    this.vel = options.velocity || Util.randomVec(this.speed);
+    this.vel = Util.vectorCartisian(this.angle, this.speed);
 
   }
 
@@ -275,7 +276,7 @@ const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 class BoxBox extends MovingObject {
   constructor(options) {
     super(options)
-    this.pos = options.game.randomPosition();
+    this.pos = options.pos || options.game.randomPosition();
   }
 
   move(timeDelta) {
@@ -300,12 +301,16 @@ class BoxBox extends MovingObject {
     ctx.rect(pos[0] - (6/8 * boxsize), pos[1] - (2/8 * boxsize), boxsize, boxsize);
     ctx.lineWidth = 1.5;
     ctx.strokeStyle = "#F173BA";
+    // ctx.shadowBlur = 1;
+    // ctx.shadowColor = "#F173BA"
     ctx.stroke();
     
     ctx.beginPath();
     ctx.rect(pos[0] - (2/8 * boxsize), pos[1] - (6/8 * boxsize), boxsize, boxsize);
     ctx.lineWidth = 1.5;
     ctx.strokeStyle = "#F173BA";
+    // ctx.shadowBlur = 20;
+    // ctx.shadowColor = "#F173BA"
     ctx.stroke();
   }
 
@@ -349,7 +354,7 @@ const Util = __webpack_require__(/*! ../util */ "./lib/util.js");
 class Pinwheel extends MovingObject {
   constructor(options) {
     super(options)
-    this.pos = options.game.randomPosition();
+    this.pos = options.pos || options.game.randomPosition();
     this.angle = 0;
     this.rotation_speed = 0.05;
     this.speed = 1;
@@ -492,6 +497,19 @@ class Game {
 
   }
 
+
+  spawnEnemies(spawnList) {
+
+  }
+
+  spawnSequence(delta) {
+    
+  }
+
+
+
+  
+
   addShip() {
     const ship = new Ship({
       pos: this.randomPosition(),
@@ -605,7 +623,12 @@ class Game {
     this.ships[0].setFireAngle()
   }
 
+ 
+
+  // spawning handled here. checks the delta time, 
+  // adds units when appropriate
   step(delta, ctx) {
+    this.spawnSequence(delta);
     this.moveObjects(delta);
     this.updateShipFireAngle();
     this.checkCollisions(ctx);
@@ -625,9 +648,21 @@ Game.DIM_Y = 600;
 Game.NUM_ASTEROIDS = 0;
 Game.NUM_BOXES = 50;
 Game.NUM_PINWHEELS = 50;
-Game.NUM_ARROWS = 10;
+Game.NUM_ARROWS = 20;
 module.exports = Game;
 
+Game.Spawn1 = {
+  BoxBox: 50,
+  
+  
+}
+  
+  
+
+
+Game.spawnListList = [
+  Game.Spawn1
+]
 
 /***/ }),
 
@@ -649,8 +684,6 @@ class GameView {
     //   this.ship.fireBullet();
     // };
   }
-
-  
 
   bindKeyHandlers() {
     const ship = this.ship;
@@ -987,7 +1020,7 @@ class Ship extends MovingObject {
     // ctx.translate(-shipWidth/2, shipWidth/2); 
     ctx.beginPath();
     ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2.4;
+    ctx.lineWidth = 2.2;
     ctx.moveTo(0, 0);
     ctx.lineTo(0, -shipWidth);
     ctx.lineTo(2 / 3 * shipWidth, -(1 + 1 / 6) * shipWidth); //1
@@ -1089,6 +1122,11 @@ const Util = {
   dir(vec) {
     const norm = Util.norm(vec);
     return Util.scale(vec, 1 / norm);
+  },
+  vectorCartisian(angle,scale){
+    let vector = [];
+    vector = [scale * Math.cos(angle), scale * Math.sin(angle)]
+    return vector
   },
   // Find distance between two points.
   dist(pos1, pos2) {

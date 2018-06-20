@@ -52,6 +52,19 @@ class Game {
 
   }
 
+
+  spawnEnemies(spawnList) {
+
+  }
+
+  spawnSequence(delta) {
+    
+  }
+
+
+
+  
+
   addShip() {
     const ship = new Ship({
       pos: this.randomPosition(),
@@ -165,7 +178,12 @@ class Game {
     this.ships[0].setFireAngle()
   }
 
+ 
+
+  // spawning handled here. checks the delta time, 
+  // adds units when appropriate
   step(delta, ctx) {
+    this.spawnSequence(delta);
     this.moveObjects(delta);
     this.updateShipFireAngle();
     this.checkCollisions(ctx);
@@ -185,5 +203,18 @@ Game.DIM_Y = 600;
 Game.NUM_ASTEROIDS = 0;
 Game.NUM_BOXES = 50;
 Game.NUM_PINWHEELS = 50;
-Game.NUM_ARROWS = 10;
+Game.NUM_ARROWS = 20;
 module.exports = Game;
+
+Game.Spawn1 = {
+  BoxBox: 50,
+  
+  
+}
+  
+  
+
+
+Game.spawnListList = [
+  Game.Spawn1
+]
