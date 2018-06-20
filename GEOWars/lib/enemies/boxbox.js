@@ -10,15 +10,15 @@ class BoxBox extends MovingObject {
 
   // ADDING MOVEMENT MECHANICS FOR GRUNT
   move(timeDelta) {
-    let speed = 1.5;
-    let shipPos = this.game.ships[0].pos;
-    let dy = shipPos[1] - this.pos[1];
-    let dx = shipPos[0] - this.pos[0];
-    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    let direction = Math.atan2(dy,dx);
+    // let speed = 1.5;
+    // let shipPos = this.game.ships[0].pos;
+    // let dy = shipPos[1] - this.pos[1];
+    // let dx = shipPos[0] - this.pos[0];
+    // const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    // let direction = Math.atan2(dy,dx);
     
-    this.pos[0] += speed * Math.cos(direction) * velocityScale;
-    this.pos[1] += speed * Math.sin(direction) * velocityScale;
+    // this.pos[0] += speed * Math.cos(direction) * velocityScale;
+    // this.pos[1] += speed * Math.sin(direction) * velocityScale;
 
   }
 

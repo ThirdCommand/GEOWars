@@ -283,15 +283,15 @@ class BoxBox extends MovingObject {
 
   // ADDING MOVEMENT MECHANICS FOR GRUNT
   move(timeDelta) {
-    let speed = 1.5;
-    let shipPos = this.game.ships[0].pos;
-    let dy = shipPos[1] - this.pos[1];
-    let dx = shipPos[0] - this.pos[0];
-    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    let direction = Math.atan2(dy,dx);
+    // let speed = 1.5;
+    // let shipPos = this.game.ships[0].pos;
+    // let dy = shipPos[1] - this.pos[1];
+    // let dx = shipPos[0] - this.pos[0];
+    // const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    // let direction = Math.atan2(dy,dx);
     
-    this.pos[0] += speed * Math.cos(direction) * velocityScale;
-    this.pos[1] += speed * Math.sin(direction) * velocityScale;
+    // this.pos[0] += speed * Math.cos(direction) * velocityScale;
+    // this.pos[1] += speed * Math.sin(direction) * velocityScale;
 
   }
 
@@ -350,6 +350,111 @@ BoxBox.BOX_SIZE = 10;
 BoxBox.COLOR = "#f00745"
 
 module.exports = BoxBox;
+
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+
+/***/ }),
+
+/***/ "./lib/enemies/grunt.js":
+/*!******************************!*\
+  !*** ./lib/enemies/grunt.js ***!
+  \******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_object.js")
+const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
+const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
+class Grunt extends MovingObject {
+  constructor(options) {
+    super(options)
+    this.pos = options.pos || options.game.randomPosition();
+    this.stretchScale_W = 1;
+    this.stretchScale_L = 1;
+    this.stretchDirection = -1;
+  }
+
+
+  // ADDING MOVEMENT MECHANICS FOR GRUNT
+  move(timeDelta) {
+    let speed = 1.5;
+    let shipPos = this.game.ships[0].pos;
+    let dy = shipPos[1] - this.pos[1];
+    let dx = shipPos[0] - this.pos[0];
+    
+    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    let direction = Math.atan2(dy, dx);
+
+    // I need to make a max speed and the pulling effect an acceleration instead
+    // this will make it possible to direct the ship well too
+    
+    // if (this.game.isOutOfBounds(this.pos)) {
+    //   Util.bounce(this, [1000, 600]) // HARD CODED
+    // }
+
+    this.pos[0] += speed * Math.cos(direction) * velocityScale;
+    this.pos[1] += speed * Math.sin(direction) * velocityScale;
+
+    let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    let cycleSpeed = 0.01;
+
+    if (this.stretchScale_W < 0.7 || this.stretchScale_W > 1) {
+      this.stretchDirection *= -1
+    } 
+
+    this.stretchScale_W = this.stretchScale_W +  -this.stretchDirection * cycleSpeed * cycleSpeedScale;
+    this.stretchScale_L = this.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
+    
+  }
+
+  draw(ctx, spawningScale) {
+    let pos = this.pos;
+    spawningScale = spawningScale || 1;
+    let shipLength = 10 * 2.2 * spawningScale * this.stretchScale_L;
+    let shipWidth = 10 * 2.2 * spawningScale * this.stretchScale_W;
+    let l = shipLength;
+    let w = shipWidth;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.translate(pos[0], pos[1]);
+
+    ctx.beginPath();
+    ctx.strokeStyle = "#4286f4";
+    ctx.lineWidth = 2;
+    ctx.moveTo(0, -l/2); //1
+    ctx.lineTo(w/2, 0); //2
+    ctx.lineTo(0, l/2); //3
+    ctx.lineTo(-w/2, -0); //4
+
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  collideWith(otherObject) {
+    if (otherObject instanceof Ship) {
+      otherObject.relocate();
+      return true;
+    } else if (otherObject instanceof Bullet) {
+      this.remove();
+      otherObject.remove();
+      return true;
+    }
+
+    return false;
+  }
+
+  // remove() {
+  //   debugger;
+  //   this.game.remove(this);
+  // }
+}
+
+Grunt.BOX_SIZE = 10;
+Grunt.COLOR = "#4286f4"
+
+module.exports = Grunt;
 
 const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
@@ -468,7 +573,9 @@ const Particle = __webpack_require__(/*! ./particles/particle */ "./lib/particle
 const BoxBox = __webpack_require__(/*! ./enemies/boxbox */ "./lib/enemies/boxbox.js");
 const Pinwheel = __webpack_require__(/*! ./enemies/pinwheel */ "./lib/enemies/pinwheel.js");
 const Arrow = __webpack_require__(/*! ./enemies/arrow */ "./lib/enemies/arrow.js");
+const Grunt = __webpack_require__(/*! ./enemies/grunt */ "./lib/enemies/grunt.js");
 const EnemySpawn = __webpack_require__(/*! ./particles/enemy_spawn */ "./lib/particles/enemy_spawn.js");
+
 class Game {
   constructor() {
     this.asteroids = [];
@@ -491,7 +598,8 @@ class Game {
     return {
       BoxBox: () => (new BoxBox({ game: this})),
       Pinwheel: () => (new Pinwheel({ game: this })),
-      Arrow: () => (new Arrow({game: this, angle: this.randomArrowDirection()}))
+      Arrow: () => (new Arrow({game: this, angle: this.randomArrowDirection()})),
+      Grunt: () => (new Grunt({game: this}))
     };
     
   }
@@ -499,7 +607,7 @@ class Game {
   add(object) {
     if (object instanceof Asteroid) {
       this.asteroids.push(object);
-    } else if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow) {
+    } else if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow || object instanceof Grunt) {
       this.enemies.push(object)
     } else if (object instanceof Bullet) {
       this.bullets.push(object);
@@ -527,6 +635,10 @@ class Game {
     for (let i = 0; i < Game.NUM_ARROWS; i++) {
       this.add(new Arrow({ game: this }));
     }
+    for (let i = 0; i < Game.NUM_GRUNTS; i++) {
+      this.add(new Grunt({ game: this }));
+    }
+
 
   }
 
@@ -669,6 +781,8 @@ class Game {
       this.enemies.splice(this.enemies.indexOf(object),1);
     } else if (object instanceof Arrow) {
       this.enemies.splice(this.enemies.indexOf(object), 1);
+    } else if (object instanceof Grunt) {
+      this.enemies.splice(this.enemies.indexOf(object), 1);
     } else if (object instanceof EnemySpawn) {
       this.spawningEnemies.splice(this.spawningEnemies.indexOf(object), 1)
     } else {
@@ -705,6 +819,7 @@ Game.NUM_ASTEROIDS = 0;
 Game.NUM_BOXES = 20;
 Game.NUM_PINWHEELS = 20;
 Game.NUM_ARROWS = 20;
+Game.NUM_GRUNTS = 20;
 module.exports = Game;
 
 Game.Spawn1 = {

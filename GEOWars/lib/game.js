@@ -7,7 +7,9 @@ const Particle = require("./particles/particle");
 const BoxBox = require("./enemies/boxbox");
 const Pinwheel = require("./enemies/pinwheel");
 const Arrow = require("./enemies/arrow");
+const Grunt = require("./enemies/grunt");
 const EnemySpawn = require("./particles/enemy_spawn");
+
 class Game {
   constructor() {
     this.asteroids = [];
@@ -30,7 +32,8 @@ class Game {
     return {
       BoxBox: () => (new BoxBox({ game: this})),
       Pinwheel: () => (new Pinwheel({ game: this })),
-      Arrow: () => (new Arrow({game: this, angle: this.randomArrowDirection()}))
+      Arrow: () => (new Arrow({game: this, angle: this.randomArrowDirection()})),
+      Grunt: () => (new Grunt({game: this}))
     };
     
   }
@@ -38,7 +41,7 @@ class Game {
   add(object) {
     if (object instanceof Asteroid) {
       this.asteroids.push(object);
-    } else if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow) {
+    } else if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow || object instanceof Grunt) {
       this.enemies.push(object)
     } else if (object instanceof Bullet) {
       this.bullets.push(object);
@@ -66,6 +69,10 @@ class Game {
     for (let i = 0; i < Game.NUM_ARROWS; i++) {
       this.add(new Arrow({ game: this }));
     }
+    for (let i = 0; i < Game.NUM_GRUNTS; i++) {
+      this.add(new Grunt({ game: this }));
+    }
+
 
   }
 
@@ -208,6 +215,8 @@ class Game {
       this.enemies.splice(this.enemies.indexOf(object),1);
     } else if (object instanceof Arrow) {
       this.enemies.splice(this.enemies.indexOf(object), 1);
+    } else if (object instanceof Grunt) {
+      this.enemies.splice(this.enemies.indexOf(object), 1);
     } else if (object instanceof EnemySpawn) {
       this.spawningEnemies.splice(this.spawningEnemies.indexOf(object), 1)
     } else {
@@ -244,6 +253,7 @@ Game.NUM_ASTEROIDS = 0;
 Game.NUM_BOXES = 20;
 Game.NUM_PINWHEELS = 20;
 Game.NUM_ARROWS = 20;
+Game.NUM_GRUNTS = 20;
 module.exports = Game;
 
 Game.Spawn1 = {
