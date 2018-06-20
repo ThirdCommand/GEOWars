@@ -29,10 +29,11 @@ class Arrow extends MovingObject {
 
   
 
-  draw(ctx) {
+  draw(ctx, spawningScale) {
     let pos = this.pos;
-    let shipLength = 8 * 2.2;
-    let shipWidth = 6 * 2.2;
+    spawningScale = spawningScale || 1;
+    let shipLength = 8 * 2.2 * spawningScale;
+    let shipWidth = 6 * 2.2 * spawningScale;
     let l = shipLength;
     let w = shipWidth;
     let movementDirection = Math.atan2(this.vel[0], -this.vel[1])

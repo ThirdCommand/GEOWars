@@ -40,15 +40,19 @@ class Particle {
     return (_int) ? Math.round(gen) : gen;
   };
 
+  move(timeDelta) {
+    this.radial += this.speed;
+    this.rectLength -= 0.25;
+    this.speed += this.acceleration
+    this.hue -= 0.02;
+  }
+
   draw(ctx) {
 
     this.active = true;
     // this.x += this.vx;
     // this.y += this.vy;
-    this.radial += this.speed;
-    this.rectLength -= 0.25;
-    this.speed += this.acceleration
-    this.hue -= 0.02;
+    
     if (this.speed < 0.05) {
       this.remove();
     } else {
@@ -67,7 +71,7 @@ class Particle {
   }
 
   remove() {
-    this.game.remove(this, );
+    this.game.remove(this);
   }
 }
 

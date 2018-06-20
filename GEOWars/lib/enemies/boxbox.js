@@ -11,9 +11,10 @@ class BoxBox extends MovingObject {
 
   }
 
-  draw(ctx) {
+  draw(ctx, spawningScale) {
+    spawningScale = spawningScale || 1;
     let pos = this.pos
-    let boxsize = 10;
+    let boxsize = 10 * spawningScale;
     // ctx.fillStyle = "#98f517";
     // ctx.fillRect(pos[0] - (7 / 8 * boxsize), pos[1] - (1 / 8 * boxsize), boxsize, boxsize)
     

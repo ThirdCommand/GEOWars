@@ -21,10 +21,11 @@ class Ship extends MovingObject {
     super(options);
     this.mousePos = [0,0];
     this.fireAngle = 0; // might have to make it null
-    setInterval(
-      () => this.fireBullet(),
-      1000 * 60 / (340 * 1.5)  
-    )
+    // ________________________FIRING OFF FOR DEBUG__________________***
+    // setInterval(
+    //   () => this.fireBullet(),
+    //   1000 * 60 / (340 * 1.5)  
+    // )
     //  setInterval(
     //    () => this.fireBullet(),
     //    1000)

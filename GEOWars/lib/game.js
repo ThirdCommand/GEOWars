@@ -7,6 +7,7 @@ const Particle = require("./particles/particle");
 const BoxBox = require("./enemies/boxbox");
 const Pinwheel = require("./enemies/pinwheel");
 const Arrow = require("./enemies/arrow");
+const EnemySpawn = require("./particles/enemy_spawn");
 class Game {
   constructor() {
     this.asteroids = [];
@@ -14,8 +15,10 @@ class Game {
     this.bullets = [];
     this.ships = [];
     this.particleExplosions = [];
-    
+    this.spawningEnemies = [];
     this.addEnemies();
+    this.gameTime = 0;
+    this.spawned = false; // REFACTOR PLEASE
   }
 
   add(object) {
@@ -28,7 +31,9 @@ class Game {
     } else if (object instanceof Ship) {
       this.ships.push(object);
     } else if (object instanceof ParticleExplosion) {
-      this.particleExplosions.push(object)
+      this.particleExplosions.push(object);
+    } else if (object instanceof EnemySpawn) {
+      this.spawningEnemies.push(object);
     } else {
       throw new Error("unknown type of object");
     }
@@ -53,12 +58,22 @@ class Game {
   }
 
 
+  spawnEnemy(enemy){
+    let pos = [100,100]
+    let spawn = new EnemySpawn(new Arrow({game: this, pos: pos}),this)
+    this.add(spawn)
+  }
   spawnEnemies(spawnList) {
 
   }
 
   spawnSequence(delta) {
+    this.gameTime += delta;
     
+    if(this.gameTime > 2500 && !this.spawned){
+      this.spawnEnemy()
+      this.spawned = true
+    }
   }
 
 
@@ -82,7 +97,7 @@ class Game {
 
   //explosions
   particleObjects() {
-    return [].concat(this.particleExplosions);
+    return [].concat(this.particleExplosions, this.spawningEnemies);
   }
 
   allObjects2() {
@@ -143,6 +158,9 @@ class Game {
     this.ships.forEach((object) => {
       object.move(delta);
     });
+    this.particleObjects().forEach((object) => {
+      object.move(delta)
+    });
   }
 
   randomPosition() {
@@ -170,6 +188,8 @@ class Game {
       this.enemies.splice(this.enemies.indexOf(object),1);
     } else if (object instanceof Arrow) {
       this.enemies.splice(this.enemies.indexOf(object), 1);
+    } else if (object instanceof EnemySpawn) {
+      this.spawningEnemies.splice(this.spawningEnemies.indexOf(object), 1)
     } else {
       throw new Error("unknown type of object");
     }
@@ -201,9 +221,9 @@ Game.DIM_X = 1000;
 Game.DIM_Y = 600;
 // Game.FPS = 32;
 Game.NUM_ASTEROIDS = 0;
-Game.NUM_BOXES = 50;
-Game.NUM_PINWHEELS = 50;
-Game.NUM_ARROWS = 20;
+Game.NUM_BOXES = 0;
+Game.NUM_PINWHEELS = 0;
+Game.NUM_ARROWS = 0;
 module.exports = Game;
 
 Game.Spawn1 = {

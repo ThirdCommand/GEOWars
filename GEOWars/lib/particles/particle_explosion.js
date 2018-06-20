@@ -27,9 +27,16 @@ class ParticleExplosion{
     }
   }
 
+  move(deltaTime) {
+    for (let i = 0; i < this.particles.length; i++) {
+      if (this.particles[i].active === true) {
+        this.particles[i].move(deltaTime);
+      }
+    }
+  }
   draw(ctx) {
     
-    for (var i = 0; i < this.particles.length; i++) {
+    for (let i = 0; i < this.particles.length; i++) {
       if (this.particles[i].active === true) {
         this.particles[i].draw(ctx);
       }

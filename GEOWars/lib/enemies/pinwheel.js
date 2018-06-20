@@ -28,9 +28,10 @@ class Pinwheel extends MovingObject {
     }
   }
 
-  draw(ctx) {
+  draw(ctx, spawningScale) {
+    spawningScale = spawningScale || 1
     let pos = this.pos
-    let shipWidth = 12
+    let shipWidth = 12 * spawningScale
     let s = shipWidth/2
     
     ctx.save();
