@@ -280,7 +280,18 @@ class BoxBox extends MovingObject {
     this.pos = options.pos || options.game.randomPosition();
   }
 
+
+  // ADDING MOVEMENT MECHANICS FOR GRUNT
   move(timeDelta) {
+    let speed = 1.5;
+    let shipPos = this.game.ships[0].pos;
+    let dy = shipPos[1] - this.pos[1];
+    let dx = shipPos[0] - this.pos[0];
+    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    let direction = Math.atan2(dy,dx);
+    
+    this.pos[0] += speed * Math.cos(direction) * velocityScale;
+    this.pos[1] += speed * Math.sin(direction) * velocityScale;
 
   }
 
@@ -339,6 +350,8 @@ BoxBox.BOX_SIZE = 10;
 BoxBox.COLOR = "#f00745"
 
 module.exports = BoxBox;
+
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 /***/ }),
 
@@ -474,7 +487,6 @@ class Game {
     let angles = [0, Math.PI / 2, Math.PI, Math.PI * 3/2]
     return angles[Math.floor(Math.random() * angles.length) % angles.length]
   }
-
   createEnemyCreatorList() {
     return {
       BoxBox: () => (new BoxBox({ game: this})),
@@ -692,7 +704,7 @@ Game.DIM_Y = 600;
 Game.NUM_ASTEROIDS = 0;
 Game.NUM_BOXES = 20;
 Game.NUM_PINWHEELS = 20;
-Game.NUM_ARROWS = 10;
+Game.NUM_ARROWS = 20;
 module.exports = Game;
 
 Game.Spawn1 = {

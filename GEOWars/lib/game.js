@@ -26,7 +26,6 @@ class Game {
     let angles = [0, Math.PI / 2, Math.PI, Math.PI * 3/2]
     return angles[Math.floor(Math.random() * angles.length) % angles.length]
   }
-
   createEnemyCreatorList() {
     return {
       BoxBox: () => (new BoxBox({ game: this})),
@@ -244,7 +243,7 @@ Game.DIM_Y = 600;
 Game.NUM_ASTEROIDS = 0;
 Game.NUM_BOXES = 20;
 Game.NUM_PINWHEELS = 20;
-Game.NUM_ARROWS = 10;
+Game.NUM_ARROWS = 20;
 module.exports = Game;
 
 Game.Spawn1 = {
