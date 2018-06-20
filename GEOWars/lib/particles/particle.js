@@ -23,7 +23,7 @@ class Particle {
 
     this.opacity = Math.random() + .5;
     this.active = true;
-    this.hue = 0.7;
+    this.hue = 0.9;
     ctx.fillStyle = `${this.color},${this.hue})`;
     ctx.fillRect(this.x, this.y, this.rectLength, this.rectWidth);
   }
@@ -44,7 +44,7 @@ class Particle {
     this.radial += this.speed;
     this.rectLength -= 0.25;
     this.speed += this.acceleration
-    this.hue -= 0.02;
+    this.hue -= 0.007;
   }
 
   draw(ctx) {

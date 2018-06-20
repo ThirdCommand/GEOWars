@@ -132,7 +132,6 @@ class Game {
   }
 
   checkCollisions(ctx) {
-    const asteroids = this.asteroids;
     const bullets = this.bullets;
     const allObjects = this.allObjects();
     const allObjects2 = this.allObjects2();
@@ -233,9 +232,9 @@ class Game {
   // adds units when appropriate
   step(delta, ctx) {
     this.spawnSequence(delta);
+    this.checkCollisions(ctx);
     this.moveObjects(delta);
     this.updateShipFireAngle();
-    this.checkCollisions(ctx);
   }
 
   wrap(pos) {

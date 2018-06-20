@@ -34,7 +34,7 @@ class Grunt extends MovingObject {
     let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     let cycleSpeed = 0.01;
 
-    if (this.stretchScale_W < 0.7 || this.stretchScale_W > 1.25) {
+    if (this.stretchScale_W < 0.7 || this.stretchScale_W > 1) {
       this.stretchDirection *= -1
     } 
 

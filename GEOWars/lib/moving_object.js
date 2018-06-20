@@ -24,7 +24,7 @@ class MovingObject {
     );
     ctx.fill();
   }
-
+  
   isCollidedWith(otherObject) {
     const centerDist = Util.dist(this.pos, otherObject.pos);
     return centerDist < (this.radius + otherObject.radius);

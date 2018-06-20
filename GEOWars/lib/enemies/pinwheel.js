@@ -10,7 +10,7 @@ class Pinwheel extends MovingObject {
     this.rotation_speed = 0.05;
     this.speed = 1;
     this.vel = Util.randomVec(this.speed);
-
+    
   }
 
   move(timeDelta) {

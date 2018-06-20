@@ -398,7 +398,7 @@ class Grunt extends MovingObject {
     let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     let cycleSpeed = 0.01;
 
-    if (this.stretchScale_W < 0.7 || this.stretchScale_W > 1.25) {
+    if (this.stretchScale_W < 0.7 || this.stretchScale_W > 1) {
       this.stretchDirection *= -1
     } 
 
@@ -479,7 +479,7 @@ class Pinwheel extends MovingObject {
     this.rotation_speed = 0.05;
     this.speed = 1;
     this.vel = Util.randomVec(this.speed);
-
+    
   }
 
   move(timeDelta) {
@@ -698,7 +698,6 @@ class Game {
   }
 
   checkCollisions(ctx) {
-    const asteroids = this.asteroids;
     const bullets = this.bullets;
     const allObjects = this.allObjects();
     const allObjects2 = this.allObjects2();
@@ -799,9 +798,9 @@ class Game {
   // adds units when appropriate
   step(delta, ctx) {
     this.spawnSequence(delta);
+    this.checkCollisions(ctx);
     this.moveObjects(delta);
     this.updateShipFireAngle();
-    this.checkCollisions(ctx);
   }
 
   wrap(pos) {
@@ -943,7 +942,7 @@ class MovingObject {
     );
     ctx.fill();
   }
-
+  
   isCollidedWith(otherObject) {
     const centerDist = Util.dist(this.pos, otherObject.pos);
     return centerDist < (this.radius + otherObject.radius);
@@ -1068,7 +1067,7 @@ class Particle {
 
     this.opacity = Math.random() + .5;
     this.active = true;
-    this.hue = 0.7;
+    this.hue = 0.9;
     ctx.fillStyle = `${this.color},${this.hue})`;
     ctx.fillRect(this.x, this.y, this.rectLength, this.rectWidth);
   }
@@ -1089,7 +1088,7 @@ class Particle {
     this.radial += this.speed;
     this.rectLength -= 0.25;
     this.speed += this.acceleration
-    this.hue -= 0.02;
+    this.hue -= 0.007;
   }
 
   draw(ctx) {
