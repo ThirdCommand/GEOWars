@@ -398,7 +398,7 @@ class Grunt extends MovingObject {
     let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     let cycleSpeed = 0.01;
 
-    if (this.stretchScale_W < 0.7 || this.stretchScale_W > 1) {
+    if (this.stretchScale_W < 0.7 || this.stretchScale_W > 1.25) {
       this.stretchDirection *= -1
     } 
 
@@ -421,7 +421,7 @@ class Grunt extends MovingObject {
 
     ctx.beginPath();
     ctx.strokeStyle = "#4286f4";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 4;
     ctx.moveTo(0, -l/2); //1
     ctx.lineTo(w/2, 0); //2
     ctx.lineTo(0, l/2); //3
