@@ -4,12 +4,11 @@ class EnemySpawn{
     this.game = game;
     this.initialSpawningScale = 1.5;
     this.spawningScale = 1.5;
-    this.lifeTime = 2000;
+    this.lifeTime = 1000;
     this.existTime = 0;
-
   }
   move(timeDelta) {
-
+    
     this.existTime += timeDelta;
 
     if (this.existTime >= this.lifeTime){

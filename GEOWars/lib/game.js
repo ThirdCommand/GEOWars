@@ -18,7 +18,22 @@ class Game {
     this.spawningEnemies = [];
     this.addEnemies();
     this.gameTime = 0;
+    this.intervalTime = 0;
     this.spawned = false; // REFACTOR PLEASE
+    this.enemyCreatorList = this.createEnemyCreatorList()
+  }
+  randomArrowDirection () {
+    let angles = [0, Math.PI / 2, Math.PI, Math.PI * 3/2]
+    return angles[Math.floor(Math.random() * angles.length) % angles.length]
+  }
+
+  createEnemyCreatorList() {
+    return {
+      BoxBox: () => (new BoxBox({ game: this})),
+      Pinwheel: () => (new Pinwheel({ game: this })),
+      Arrow: () => (new Arrow({game: this, angle: this.randomArrowDirection()}))
+    };
+    
   }
 
   add(object) {
@@ -50,30 +65,36 @@ class Game {
       this.add(new Pinwheel({game: this}));
     }
     for (let i = 0; i < Game.NUM_ARROWS; i++) {
-      this.add(new Arrow({
-        game: this
-      }));
+      this.add(new Arrow({ game: this }));
     }
 
   }
 
-
   spawnEnemy(enemy){
-    let pos = [100,100]
-    let spawn = new EnemySpawn(new Arrow({game: this, pos: pos}),this)
+    let pos = this.randomPosition();
+    let enemyCreators = Object.values(this.enemyCreatorList)
+    let spawn = new EnemySpawn(enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](), this);
+
     this.add(spawn)
   }
-  spawnEnemies(spawnList) {
 
+  spawnEnemies(spawnList) {
   }
 
   spawnSequence(delta) {
-    this.gameTime += delta;
-    
-    if(this.gameTime > 2500 && !this.spawned){
-      this.spawnEnemy()
-      this.spawned = true
+    this.intervalTime += delta;
+    // this.gameTime += delta;
+    if (this.intervalTime > 500) {
+      this.intervalTime = 0;
+      this.spawnEnemy();
     }
+    // if (this.gameTime % 2000 === 0){
+    //   this.spawned = false
+    // }
+    // if( !this.spawned){
+    //   this.spawnEnemy()
+    //   this.spawned = true
+    // }
   }
 
 
@@ -221,9 +242,9 @@ Game.DIM_X = 1000;
 Game.DIM_Y = 600;
 // Game.FPS = 32;
 Game.NUM_ASTEROIDS = 0;
-Game.NUM_BOXES = 0;
-Game.NUM_PINWHEELS = 0;
-Game.NUM_ARROWS = 0;
+Game.NUM_BOXES = 20;
+Game.NUM_PINWHEELS = 20;
+Game.NUM_ARROWS = 10;
 module.exports = Game;
 
 Game.Spawn1 = {

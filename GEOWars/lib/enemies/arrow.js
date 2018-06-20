@@ -8,7 +8,7 @@ class Arrow extends MovingObject {
     this.pos = options.pos || options.game.randomPosition();
     this.angle = options.angle || Math.PI / 3;
 
-    this.speed = 1;
+    this.speed = 3;
     this.vel = Util.vectorCartisian(this.angle, this.speed);
 
   }
