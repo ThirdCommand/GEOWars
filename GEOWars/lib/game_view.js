@@ -46,7 +46,7 @@ class GameView {
     this.game.step(timeDelta, this.ctx);
     this.game.draw(this.ctx);
     this.lastTime = time;
-
+    
     // every call to animate requests causes another call to animate
     requestAnimationFrame(this.animate.bind(this));
   }

@@ -7,17 +7,17 @@ class Weaver extends MovingObject {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
     this.angle = 0;
-    this.rotation_speed = 0.3;
-    this.speed = 1;
+    this.rotation_speed = 0.075;
+    this.speed = 2;
     this.vel = Util.randomVec(this.speed);
-    this.weaverCloseHitBox = 50;
+    this.weaverCloseHitBox = 40;
     this.directionInfluenced = false;
     this.influencers = [];
   }
 
   // ADDING MOVEMENT MECHANICS FOR Weaver
   move(timeDelta) {
-    let speed = 1.5;
+    let speed = 3;
     let shipPos = this.game.ships[0].pos;
     let dy = shipPos[1] - this.pos[1];
     let dx = shipPos[0] - this.pos[0];
@@ -49,12 +49,12 @@ class Weaver extends MovingObject {
   }
 
   draw(ctx, spawningScale) {
+
     let pos = this.pos;
     spawningScale = spawningScale || 1;
-    let shipLength = 10 * 2.2 * spawningScale * this.stretchScale_L;
-    let shipWidth = 10 * 2.2 * spawningScale * this.stretchScale_W;
-    let l = shipLength;
-    let w = shipWidth;
+    let shipLength = 10 * 2.2 * spawningScale
+    let shipWidth = 10 * 2.2 * spawningScale
+    let s = shipWidth / 2;
 
     ctx.save();
     ctx.beginPath();
@@ -62,12 +62,17 @@ class Weaver extends MovingObject {
     ctx.rotate(this.angle);
 
     ctx.beginPath();
-    ctx.strokeStyle = "#4286f4";
-    ctx.lineWidth = 4;
-    ctx.moveTo(0, -l / 2); //1
-    ctx.lineTo(w / 2, 0); //2
-    ctx.lineTo(0, l / 2); //3
-    ctx.lineTo(-w / 2, -0); //4
+    ctx.strokeStyle = "#3cff0b";
+    ctx.lineWidth = 2;
+    ctx.moveTo(0, -s); //1
+    ctx.lineTo(s, 0); //2
+    ctx.lineTo(0, s); //3
+    ctx.lineTo(-s, 0); //4
+    ctx.lineTo(0, -s); //1
+    ctx.lineTo(-s/2, -s/2); //5
+    ctx.lineTo(s/2, -s/2); //6
+    ctx.lineTo(s/2, s/2); //7
+    ctx.lineTo(-s/2, s/2); //8
 
     ctx.closePath();
     ctx.stroke();
@@ -83,14 +88,14 @@ class Weaver extends MovingObject {
       let newVector = [dx,dy]
       directionVector = Util.dir(newVector);
     })
-    let influencedDirection = atan2(directionVector[1], directionVector[0]);
+    let influencedDirection = Math.atan2(directionVector[1], directionVector[0]);
     return influencedDirection
   }
 
   acceptBulletDirection(source){
     this.directionInfluenced = true;
-    dy = this.pos[1] - source[1];
-    dx = this.pos[0] - source[0];
+    let dy = this.pos[1] - source[1];
+    let dx = this.pos[0] - source[0];
     let unitVector = Util.dir([dx,dy]);
     this.influencers.push(unitVector)
     // first 
@@ -101,7 +106,9 @@ class Weaver extends MovingObject {
 
     if (otherObject instanceof Bullet){
       if (centerDist < (this.radius + otherObject.radius)) {
+
         return true
+        
       } else if( centerDist < (this.weaverCloseHitBox + otherObject.radius)) {
         this.acceptBulletDirection(otherObject.pos) 
       } else {

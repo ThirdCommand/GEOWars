@@ -26,9 +26,9 @@ class Ship extends MovingObject {
       () => this.fireBullet(),
       1000 * 60 / (340 * 1.5)  
     )
-     setInterval(
-       () => this.fireBullet(),
-       1000)
+    //  setInterval(
+    //    () => this.fireBullet(),
+    //    1000)
   }
 
   // draw(ctx) {

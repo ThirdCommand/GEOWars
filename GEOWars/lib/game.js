@@ -8,6 +8,7 @@ const BoxBox = require("./enemies/boxbox");
 const Pinwheel = require("./enemies/pinwheel");
 const Arrow = require("./enemies/arrow");
 const Grunt = require("./enemies/grunt");
+const Weaver = require("./enemies/weaver")
 const EnemySpawn = require("./particles/enemy_spawn");
 
 class Game {
@@ -33,7 +34,8 @@ class Game {
       BoxBox: () => (new BoxBox({ game: this})),
       Pinwheel: () => (new Pinwheel({ game: this })),
       Arrow: () => (new Arrow({game: this, angle: this.randomArrowDirection()})),
-      Grunt: () => (new Grunt({game: this}))
+      Grunt: () => (new Grunt({game: this})),
+      Weaver: () => (new Weaver({game: this}))
     };
     
   }
@@ -41,7 +43,7 @@ class Game {
   add(object) {
     if (object instanceof Asteroid) {
       this.asteroids.push(object);
-    } else if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow || object instanceof Grunt) {
+    } else if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow || object instanceof Grunt || object instanceof Weaver) {
       this.enemies.push(object)
     } else if (object instanceof Bullet) {
       this.bullets.push(object);
@@ -72,6 +74,10 @@ class Game {
     for (let i = 0; i < Game.NUM_GRUNTS; i++) {
       this.add(new Grunt({ game: this }));
     }
+    for (let i = 0; i < Game.NUM_WEAVERS; i++) {
+      this.add(new Weaver({ game: this }));
+    }
+    
 
 
   }
@@ -216,7 +222,9 @@ class Game {
       this.enemies.splice(this.enemies.indexOf(object), 1);
     } else if (object instanceof Grunt) {
       this.enemies.splice(this.enemies.indexOf(object), 1);
-    } else if (object instanceof EnemySpawn) {
+    } else if (object instanceof Weaver) {
+      this.enemies.splice(this.enemies.indexOf(object), 1);
+    }else if (object instanceof EnemySpawn) {
       this.spawningEnemies.splice(this.spawningEnemies.indexOf(object), 1)
     } else {
       throw new Error("unknown type of object");
@@ -249,10 +257,11 @@ Game.DIM_X = 1000;
 Game.DIM_Y = 600;
 // Game.FPS = 32;
 Game.NUM_ASTEROIDS = 0;
-Game.NUM_BOXES = 20;
-Game.NUM_PINWHEELS = 20;
-Game.NUM_ARROWS = 20;
-Game.NUM_GRUNTS = 20;
+Game.NUM_BOXES = 0;
+Game.NUM_PINWHEELS = 0;
+Game.NUM_ARROWS = 0;
+Game.NUM_GRUNTS = 0;
+Game.NUM_WEAVERS = 20;
 module.exports = Game;
 
 Game.Spawn1 = {

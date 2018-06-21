@@ -160,7 +160,7 @@ class Bullet extends MovingObject {
 }
 
 Bullet.RADIUS = 2;
-Bullet.SPEED = 5;
+Bullet.SPEED = 7;
 
 module.exports = Bullet;
 
@@ -557,6 +557,162 @@ module.exports = Pinwheel;
 
 /***/ }),
 
+/***/ "./lib/enemies/weaver.js":
+/*!*******************************!*\
+  !*** ./lib/enemies/weaver.js ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_object.js")
+const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
+const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
+const Util = __webpack_require__(/*! ../util */ "./lib/util.js")
+class Weaver extends MovingObject {
+  constructor(options) {
+    super(options)
+    this.pos = options.pos || options.game.randomPosition();
+    this.angle = 0;
+    this.rotation_speed = 0.075;
+    this.speed = 2;
+    this.vel = Util.randomVec(this.speed);
+    this.weaverCloseHitBox = 40;
+    this.directionInfluenced = false;
+    this.influencers = [];
+  }
+
+  // ADDING MOVEMENT MECHANICS FOR Weaver
+  move(timeDelta) {
+    let speed = 3;
+    let shipPos = this.game.ships[0].pos;
+    let dy = shipPos[1] - this.pos[1];
+    let dx = shipPos[0] - this.pos[0];
+    
+    
+    let rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    let direction = 0;
+    if (!this.directionInfluenced){
+      direction = Math.atan2(dy, dx);
+    } else {
+      direction = this.influenceDirection();
+    }
+    // I need to make a max speed and the pulling effect an acceleration instead
+    // this will make it possible to direct the ship well too
+    
+    // if (this.game.isOutOfBounds(this.pos)) {
+      //   Util.bounce(this, [1000, 600]) // HARD CODED
+      // }
+      
+    this.angle = (this.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
+    this.pos[0] += speed * Math.cos(direction) * velocityScale;
+    this.pos[1] += speed * Math.sin(direction) * velocityScale;
+
+    
+    this.directionInfluenced = false;
+    this.influencers = [];
+
+  }
+
+  draw(ctx, spawningScale) {
+
+    let pos = this.pos;
+    spawningScale = spawningScale || 1;
+    let shipLength = 10 * 2.2 * spawningScale
+    let shipWidth = 10 * 2.2 * spawningScale
+    let s = shipWidth / 2;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.translate(pos[0], pos[1]);
+    ctx.rotate(this.angle);
+
+    ctx.beginPath();
+    ctx.strokeStyle = "#3cff0b";
+    ctx.lineWidth = 2;
+    ctx.moveTo(0, -s); //1
+    ctx.lineTo(s, 0); //2
+    ctx.lineTo(0, s); //3
+    ctx.lineTo(-s, 0); //4
+    ctx.lineTo(0, -s); //1
+    ctx.lineTo(-s/2, -s/2); //5
+    ctx.lineTo(s/2, -s/2); //6
+    ctx.lineTo(s/2, s/2); //7
+    ctx.lineTo(-s/2, s/2); //8
+
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  influenceDirection() {
+    let directionVector = [0,0]
+    
+    this.influencers.forEach((influencer) =>{
+      let dx = directionVector[0] + influencer[0];
+      let dy = directionVector[1] + influencer[1];
+      let newVector = [dx,dy]
+      directionVector = Util.dir(newVector);
+    })
+    let influencedDirection = Math.atan2(directionVector[1], directionVector[0]);
+    return influencedDirection
+  }
+
+  acceptBulletDirection(source){
+    this.directionInfluenced = true;
+    let dy = this.pos[1] - source[1];
+    let dx = this.pos[0] - source[0];
+    let unitVector = Util.dir([dx,dy]);
+    this.influencers.push(unitVector)
+    // first 
+  }
+
+  isCollidedWith(otherObject) {
+    const centerDist = Util.dist(this.pos, otherObject.pos);
+
+    if (otherObject instanceof Bullet){
+      if (centerDist < (this.radius + otherObject.radius)) {
+
+        return true
+        
+      } else if( centerDist < (this.weaverCloseHitBox + otherObject.radius)) {
+        this.acceptBulletDirection(otherObject.pos) 
+      } else {
+        return false;
+      }
+    }
+
+    return centerDist < (this.radius + otherObject.radius);
+  }
+
+  collideWith(otherObject) {
+    if (otherObject instanceof Ship) {
+      otherObject.relocate();
+      return true;
+    } else if (otherObject instanceof Bullet) {
+      this.remove();
+      otherObject.remove();
+      return true;
+    }
+
+    return false;
+  }
+
+  // remove() {
+  //   debugger;
+  //   this.game.remove(this);
+  // }
+}
+
+Weaver.BOX_SIZE = 10;
+Weaver.COLOR = "#3cff0b"
+
+module.exports = Weaver;
+
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+
+/***/ }),
+
 /***/ "./lib/game.js":
 /*!*********************!*\
   !*** ./lib/game.js ***!
@@ -574,6 +730,7 @@ const BoxBox = __webpack_require__(/*! ./enemies/boxbox */ "./lib/enemies/boxbox
 const Pinwheel = __webpack_require__(/*! ./enemies/pinwheel */ "./lib/enemies/pinwheel.js");
 const Arrow = __webpack_require__(/*! ./enemies/arrow */ "./lib/enemies/arrow.js");
 const Grunt = __webpack_require__(/*! ./enemies/grunt */ "./lib/enemies/grunt.js");
+const Weaver = __webpack_require__(/*! ./enemies/weaver */ "./lib/enemies/weaver.js")
 const EnemySpawn = __webpack_require__(/*! ./particles/enemy_spawn */ "./lib/particles/enemy_spawn.js");
 
 class Game {
@@ -599,7 +756,8 @@ class Game {
       BoxBox: () => (new BoxBox({ game: this})),
       Pinwheel: () => (new Pinwheel({ game: this })),
       Arrow: () => (new Arrow({game: this, angle: this.randomArrowDirection()})),
-      Grunt: () => (new Grunt({game: this}))
+      Grunt: () => (new Grunt({game: this})),
+      Weaver: () => (new Weaver({game: this}))
     };
     
   }
@@ -607,7 +765,7 @@ class Game {
   add(object) {
     if (object instanceof Asteroid) {
       this.asteroids.push(object);
-    } else if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow || object instanceof Grunt) {
+    } else if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow || object instanceof Grunt || object instanceof Weaver) {
       this.enemies.push(object)
     } else if (object instanceof Bullet) {
       this.bullets.push(object);
@@ -638,6 +796,10 @@ class Game {
     for (let i = 0; i < Game.NUM_GRUNTS; i++) {
       this.add(new Grunt({ game: this }));
     }
+    for (let i = 0; i < Game.NUM_WEAVERS; i++) {
+      this.add(new Weaver({ game: this }));
+    }
+    
 
 
   }
@@ -782,7 +944,9 @@ class Game {
       this.enemies.splice(this.enemies.indexOf(object), 1);
     } else if (object instanceof Grunt) {
       this.enemies.splice(this.enemies.indexOf(object), 1);
-    } else if (object instanceof EnemySpawn) {
+    } else if (object instanceof Weaver) {
+      this.enemies.splice(this.enemies.indexOf(object), 1);
+    }else if (object instanceof EnemySpawn) {
       this.spawningEnemies.splice(this.spawningEnemies.indexOf(object), 1)
     } else {
       throw new Error("unknown type of object");
@@ -815,10 +979,11 @@ Game.DIM_X = 1000;
 Game.DIM_Y = 600;
 // Game.FPS = 32;
 Game.NUM_ASTEROIDS = 0;
-Game.NUM_BOXES = 20;
-Game.NUM_PINWHEELS = 20;
-Game.NUM_ARROWS = 20;
-Game.NUM_GRUNTS = 20;
+Game.NUM_BOXES = 0;
+Game.NUM_PINWHEELS = 0;
+Game.NUM_ARROWS = 0;
+Game.NUM_GRUNTS = 0;
+Game.NUM_WEAVERS = 20;
 module.exports = Game;
 
 Game.Spawn1 = {
@@ -891,7 +1056,7 @@ class GameView {
     this.game.step(timeDelta, this.ctx);
     this.game.draw(this.ctx);
     this.lastTime = time;
-
+    
     // every call to animate requests causes another call to animate
     requestAnimationFrame(this.animate.bind(this));
   }
@@ -1222,9 +1387,9 @@ class Ship extends MovingObject {
       () => this.fireBullet(),
       1000 * 60 / (340 * 1.5)  
     )
-     setInterval(
-       () => this.fireBullet(),
-       1000)
+    //  setInterval(
+    //    () => this.fireBullet(),
+    //    1000)
   }
 
   // draw(ctx) {
