@@ -54,8 +54,8 @@ class Singularity extends MovingObject {
   // }
 
   influenceAcceleration(object) {
-    let dy = this.pos[1] - source[1];
-    let dx = this.pos[0] - source[0];
+    let dy = this.pos[1] - object[1];
+    let dx = this.pos[0] - object[0];
     let unitVector = Util.dir([dx, dy]);
     let r = Util.norm(dx,dy)
     if (r > (this.gravityWellSize * 7/8)){
@@ -83,10 +83,9 @@ class Singularity extends MovingObject {
       }
     }
     
-    if (centerDist < (this.radius + otherObject.radius)) {
-      return true
-    } else if (centerDist < (this.weaverCloseHitBox + otherObject.radius)) {
+    if (centerDist < (this.gravityWellSize + otherObject.radius)) {
       this.influenceAcceleration(otherObject)
+      return false;
     } else {
       return false;
     }
@@ -106,10 +105,10 @@ class Singularity extends MovingObject {
     return false;
   }
 
-  // remove() {
-  //   debugger;
-  //   this.game.remove(this);
-  // }
+  remove() {
+
+    this.game.remove(this);
+  }
 }
 
 Singularity.BOX_SIZE = 10;

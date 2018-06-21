@@ -9,6 +9,7 @@ const Pinwheel = require("./enemies/pinwheel");
 const Arrow = require("./enemies/arrow");
 const Grunt = require("./enemies/grunt");
 const Weaver = require("./enemies/weaver")
+const Singularity = require("./enemies/Singularity")
 const EnemySpawn = require("./particles/enemy_spawn");
 
 class Game {
@@ -19,6 +20,7 @@ class Game {
     this.ships = [];
     this.particleExplosions = [];
     this.spawningEnemies = [];
+    this.singularities = [];
     this.addEnemies();
     this.gameTime = 0;
     this.intervalTime = 0;
@@ -35,16 +37,20 @@ class Game {
       Pinwheel: () => (new Pinwheel({ game: this })),
       Arrow: () => (new Arrow({game: this, angle: this.randomArrowDirection()})),
       Grunt: () => (new Grunt({game: this})),
-      Weaver: () => (new Weaver({game: this}))
+      Weaver: () => (new Weaver({game: this})),
+      Singularity: () => (new Singularity({game: this}))
     };
     
   }
 
   add(object) {
+    this.singularities = this.singularities || [];
     if (object instanceof Asteroid) {
       this.asteroids.push(object);
     } else if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow || object instanceof Grunt || object instanceof Weaver) {
       this.enemies.push(object)
+    } else if (object instanceof Singularity){
+      this.singularities.push(object)
     } else if (object instanceof Bullet) {
       this.bullets.push(object);
     } else if (object instanceof Ship) {
@@ -77,9 +83,11 @@ class Game {
     for (let i = 0; i < Game.NUM_WEAVERS; i++) {
       this.add(new Weaver({ game: this }));
     }
+    for (let i = 0; i < Game.NUM_SINGULARITIES; i++) {
+      this.add(new Singularity({ game: this }));
+    }
     
-
-
+  
   }
 
   spawnEnemy(enemy){
@@ -109,10 +117,6 @@ class Game {
     // }
   }
 
-
-
-  
-
   addShip() {
     const ship = new Ship({
       pos: this.randomPosition(),
@@ -125,7 +129,7 @@ class Game {
   }
 
   allObjects() {
-    return [].concat(this.asteroids, this.enemies); //this.bullets);
+    return [].concat(this.asteroids, this.enemies, this.singularities); //this.bullets);
   }
 
   //explosions
@@ -134,7 +138,7 @@ class Game {
   }
 
   allObjects2() {
-    return [].concat(this.bullets)
+    return [].concat(this.bullets, this.singularities)
   }
 
   checkCollisions(ctx) {
@@ -149,10 +153,11 @@ class Game {
           const explosionId = this.particleExplosions.length 
           this.add(new ParticleExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
           const collision = obj1.collideWith(obj2);
-          if (collision) return;
+          // if (collision) return;
         }
       }
     }
+
   }
 
 
@@ -173,6 +178,7 @@ class Game {
     this.particleObjects().forEach((particle) => {
       particle.draw(ctx);
     });
+
   }
 
   isOutOfBounds(pos) {
@@ -224,9 +230,12 @@ class Game {
       this.enemies.splice(this.enemies.indexOf(object), 1);
     } else if (object instanceof Weaver) {
       this.enemies.splice(this.enemies.indexOf(object), 1);
-    }else if (object instanceof EnemySpawn) {
+    } else if (object instanceof Singularity) {
+      this.singularities.splice(this.singularities.indexOf(object), 1)
+    } else if (object instanceof EnemySpawn) {
       this.spawningEnemies.splice(this.spawningEnemies.indexOf(object), 1)
-    } else {
+    }
+    else {
       throw new Error("unknown type of object");
     }
   }
@@ -262,6 +271,7 @@ Game.NUM_PINWHEELS = 0;
 Game.NUM_ARROWS = 0;
 Game.NUM_GRUNTS = 0;
 Game.NUM_WEAVERS = 20;
+Game.NUM_SINGULARITIES = 2;
 module.exports = Game;
 
 Game.Spawn1 = {

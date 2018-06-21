@@ -132,10 +132,10 @@ class Ship extends MovingObject {
     this.vel[1] += impulse[1];
   }
 
-  // relocate() {
-  //   this.pos = this.game.randomPosition();
-  //   this.vel = [0, 0];
-  // }
+  relocate() {
+    // this.pos = this.game.randomPosition();
+    // this.vel = [0, 0];
+  }
 }
 
 Ship.RADIUS = 4;
