@@ -7,6 +7,7 @@ class Bullet extends MovingObject {
     this.isWrappable = false;
     this.color = "#FFFBCE";
     this.acc = [0,0];
+    this.vel = options.vel
     this.speed = 7;
   }
 

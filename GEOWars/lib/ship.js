@@ -19,21 +19,24 @@ class Ship extends MovingObject {
     options.vel = options.vel || [0, 0];
     options.color = options.color || randomColor();
     super(options);
+    // this.vel = [0,0];
+    // this.acc = [0,0];
     this.mousePos = [0,0];
     this.fireAngle = 0; // might have to make it null
-    // ________________________FIRING OFF FOR DEBUG__________________***
+    
     setInterval(
       () => this.fireBullet(),
       1000 * 60 / (340 * 1.5)  
     )
-    //  setInterval(
-    //    () => this.fireBullet(),
-    //    1000)
   }
 
   // move(timeDelta){
-    
-  //   debugger;
+  //   const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+  //   this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
+  //   this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
+  //   this.vel[0] += this.acc[0] * velocityScale;
+  //   this.vel[1] += this.acc[1] * velocityScale;
+
   //   if (this.game.isOutOfBounds(this.pos)) {
   //     if (this.isWrappable) {
   //       this.pos = this.game.wrap(this.pos);
@@ -86,16 +89,7 @@ class Ship extends MovingObject {
     this.fireAngle =  Math.atan2(dy, dx)
 
   }
-
-  // draw(ctx) {
-  //   ctx.fillStyle = this.color;
-
-  //   ctx.beginPath();
-  //   ctx.arc(
-  //     this.pos[0], this.pos[1], this.radius, 0, 2 * Math.PI, true
-  //   );
-  //   ctx.fill();
-  // }
+  
 
   fireBullet(e) {
     // const norm = Util.norm(this.vel);
@@ -146,3 +140,5 @@ class Ship extends MovingObject {
 
 Ship.RADIUS = 4;
 module.exports = Ship;
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+
