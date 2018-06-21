@@ -1224,6 +1224,7 @@ class GameView {
     this.bindKeyHandlers();
     this.lastTime = 0;
     // start the animation
+    
     requestAnimationFrame(this.animate.bind(this));
   }
 
@@ -1492,7 +1493,7 @@ class ParticleExplosion{
     ]
     this.color = this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
     this.game = game;
-    this.particleNum = 100;
+    this.particleNum = 80;
     this.particles = [];
     this.explosionId;
 

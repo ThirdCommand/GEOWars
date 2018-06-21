@@ -15,7 +15,7 @@ class ParticleExplosion{
     ]
     this.color = this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
     this.game = game;
-    this.particleNum = 100;
+    this.particleNum = 80;
     this.particles = [];
     this.explosionId;
 

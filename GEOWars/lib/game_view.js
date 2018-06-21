@@ -37,6 +37,7 @@ class GameView {
     this.bindKeyHandlers();
     this.lastTime = 0;
     // start the animation
+    
     requestAnimationFrame(this.animate.bind(this));
   }
 
