@@ -155,15 +155,37 @@ class Bullet extends MovingObject {
     options.radius = Bullet.RADIUS;
     super(options);
     this.isWrappable = false;
-    this.color = "#FFFBCE"
+    this.color = "#FFFBCE";
+    this.acc = [0,0];
+    this.speed = 7;
   }
+
+  // move(timeDelta) {
+  //   const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA
+    
+  //   this.pos[0] += (this.speed + this.vel[0]) * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
+  //   this.pos[1] += (this.speed + this.vel[1]) * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
+  //   this.vel[0] += this.acc[0] * velocityScale;
+  //   this.vel[1] += this.acc[1] * velocityScale;
+
+  //   if (this.game.isOutOfBounds(this.pos)) {
+  //     if (this.isWrappable) {
+  //       this.pos = this.game.wrap(this.pos);
+  //     } else {
+  //       // cause small explosion
+  //       this.remove();
+  //     }
+  //   }
+  // }
 }
+
 
 Bullet.RADIUS = 2;
 Bullet.SPEED = 7;
 
 module.exports = Bullet;
 
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 /***/ }),
 
@@ -186,17 +208,16 @@ class Arrow extends MovingObject {
 
     this.speed = 3;
     this.vel = Util.vectorCartisian(this.angle, this.speed);
-
+    this.acc = [0,0];
   }
 
   move(timeDelta) {
     let rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     let velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-
-    let deltaX = this.vel[0] * velocityScale;
-    let deltaY = this.vel[1] * velocityScale;
-
-    this.pos = [this.pos[0] + deltaX, this.pos[1] + deltaY];
+    this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2
+    this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2
+    this.vel[0] += this.acc[0] * velocityScale;
+    this.vel[1] += this.acc[1] * velocityScale;
     
     if (this.game.isOutOfBounds(this.pos)) {
       Util.redirect(this,[1000, 600]) // HARD CODED
@@ -278,20 +299,21 @@ class BoxBox extends MovingObject {
   constructor(options) {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
+    this.vel = [0,0]
+    this.acc = [0,0];
   }
 
 
   // ADDING MOVEMENT MECHANICS FOR GRUNT
   move(timeDelta) {
     // let speed = 1.5;
-    // let shipPos = this.game.ships[0].pos;
-    // let dy = shipPos[1] - this.pos[1];
-    // let dx = shipPos[0] - this.pos[0];
-    // const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    // let direction = Math.atan2(dy,dx);
+   
     
-    // this.pos[0] += speed * Math.cos(direction) * velocityScale;
-    // this.pos[1] += speed * Math.sin(direction) * velocityScale;
+    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
+    this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
+    this.vel[0] += this.acc[0] * velocityScale;
+    this.vel[1] += this.acc[1] * velocityScale;
 
   }
 
@@ -372,6 +394,8 @@ class Grunt extends MovingObject {
     this.stretchScale_W = 1;
     this.stretchScale_L = 1;
     this.stretchDirection = -1;
+    this.vel = [0,0];
+    this.acc = [0,0];
   }
 
 
@@ -391,10 +415,13 @@ class Grunt extends MovingObject {
     // if (this.game.isOutOfBounds(this.pos)) {
     //   Util.bounce(this, [1000, 600]) // HARD CODED
     // }
-
-    this.pos[0] += speed * Math.cos(direction) * velocityScale;
-    this.pos[1] += speed * Math.sin(direction) * velocityScale;
-
+    
+    this.pos[0] += (speed + this.vel[0]) * Math.cos(direction) * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
+    this.pos[1] += (speed + this.vel[1]) * Math.sin(direction) * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
+    this.vel[0] += this.acc[0] * velocityScale;
+    this.vel[1] += this.acc[1] * velocityScale;
+    
+    
     let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     let cycleSpeed = 0.01;
 
@@ -576,7 +603,7 @@ class Weaver extends MovingObject {
     this.rotation_speed = 0.075;
     this.speed = 2;
     this.vel = Util.randomVec(this.speed);
-    this.weaverCloseHitBox = 40;
+    this.weaverCloseHitBox = 30;
     this.directionInfluenced = false;
     this.influencers = [];
   }
@@ -587,7 +614,6 @@ class Weaver extends MovingObject {
     let shipPos = this.game.ships[0].pos;
     let dy = shipPos[1] - this.pos[1];
     let dx = shipPos[0] - this.pos[0];
-    
     
     let rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
@@ -639,8 +665,8 @@ class Weaver extends MovingObject {
     ctx.lineTo(s/2, -s/2); //6
     ctx.lineTo(s/2, s/2); //7
     ctx.lineTo(-s/2, s/2); //8
-
-    ctx.closePath();
+    ctx.lineTo(-s / 2, -s / 2); //5
+    // ctx.closePath();
     ctx.stroke();
     ctx.restore();
   }
@@ -1035,7 +1061,7 @@ class GameView {
       // console.log(y);
       // debugger
       const mousePos = [e.layerX, e.layerY];
-
+      
       ship.setFireAngle(mousePos);
       
     });
@@ -1056,7 +1082,7 @@ class GameView {
     this.game.step(timeDelta, this.ctx);
     this.game.draw(this.ctx);
     this.lastTime = time;
-    
+
     // every call to animate requests causes another call to animate
     requestAnimationFrame(this.animate.bind(this));
   }
@@ -1117,12 +1143,14 @@ class MovingObject {
     // timeDelta is number of milliseconds since last move
     // if the computer is busy the time delta will be larger
     // in this case the MovingObject should move farther in this frame
-    // velocity of object is how far it should move in 1/60th of a second
+    // velocity of object is how far it should move in 1/60th of a second or something
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA,
-        offsetX = this.vel[0] * velocityScale,
-        offsetY = this.vel[1] * velocityScale;
+      offsetX = this.vel[0] * velocityScale,
+      offsetY = this.vel[1] * velocityScale;
 
     this.pos = [this.pos[0] + offsetX, this.pos[1] + offsetY];
+
+    
 
     if (this.game.isOutOfBounds(this.pos)) {
       if (this.isWrappable) {
@@ -1392,19 +1420,18 @@ class Ship extends MovingObject {
     //    1000)
   }
 
-  // draw(ctx) {
-  //   let shipWidth = 10;
-  //   ctx.save();
-  //   ctx.beginPath();
-  //   ctx.translate(this.pos[0] - shipWidth / 2, this.pos[1] + shipWidth / 2);
-  //   ctx.rotate(atan2(this.vel[1],this.vel[2]));
-  //   ctx.translate(-shipWidth/2, shipWidth/2);
-  //   ctx.lineTo(0,-shipWidth);
-  //   ctx.lineTo()
-  //   ctx.strokeStyle = "#ffffff";
-  //   ctx.stroke();f
-  //   ctx.restore();
+  // move(timeDelta){
+    
+  //   debugger;
+  //   if (this.game.isOutOfBounds(this.pos)) {
+  //     if (this.isWrappable) {
+  //       this.pos = this.game.wrap(this.pos);
+  //     } else {
+  //       this.remove();
+  //     }
+  //   }
   // }
+
   draw(ctx) {
     let pos = this.pos 
     let shipWidth = 10
@@ -1500,10 +1527,10 @@ class Ship extends MovingObject {
     this.vel[1] += impulse[1];
   }
 
-  relocate() {
-    this.pos = this.game.randomPosition();
-    this.vel = [0, 0];
-  }
+  // relocate() {
+  //   this.pos = this.game.randomPosition();
+  //   this.vel = [0, 0];
+  // }
 }
 
 Ship.RADIUS = 4;

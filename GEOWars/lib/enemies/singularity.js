@@ -2,7 +2,7 @@ const MovingObject = require("../moving_object")
 const Bullet = require("../bullet")
 const Ship = require("../ship")
 const Util = require("../util")
-class Weaver extends MovingObject {
+class Singularity extends MovingObject {
   constructor(options) {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
@@ -10,7 +10,7 @@ class Weaver extends MovingObject {
     this.rotation_speed = 0.075;
     this.speed = 2;
     this.vel = Util.randomVec(this.speed);
-    this.weaverCloseHitBox = 30;
+    this.weaverCloseHitBox = 40;
     this.directionInfluenced = false;
     this.influencers = [];
   }
@@ -21,27 +21,28 @@ class Weaver extends MovingObject {
     let shipPos = this.game.ships[0].pos;
     let dy = shipPos[1] - this.pos[1];
     let dx = shipPos[0] - this.pos[0];
-    
+
+
     let rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     let direction = 0;
-    if (!this.directionInfluenced){
+    if (!this.directionInfluenced) {
       direction = Math.atan2(dy, dx);
     } else {
       direction = this.influenceDirection();
     }
     // I need to make a max speed and the pulling effect an acceleration instead
     // this will make it possible to direct the ship well too
-    
+
     // if (this.game.isOutOfBounds(this.pos)) {
-      //   Util.bounce(this, [1000, 600]) // HARD CODED
-      // }
-      
+    //   Util.bounce(this, [1000, 600]) // HARD CODED
+    // }
+
     this.angle = (this.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
     this.pos[0] += speed * Math.cos(direction) * velocityScale;
     this.pos[1] += speed * Math.sin(direction) * velocityScale;
 
-    
+
     this.directionInfluenced = false;
     this.influencers = [];
 
@@ -68,34 +69,34 @@ class Weaver extends MovingObject {
     ctx.lineTo(0, s); //3
     ctx.lineTo(-s, 0); //4
     ctx.lineTo(0, -s); //1
-    ctx.lineTo(-s/2, -s/2); //5
-    ctx.lineTo(s/2, -s/2); //6
-    ctx.lineTo(s/2, s/2); //7
-    ctx.lineTo(-s/2, s/2); //8
     ctx.lineTo(-s / 2, -s / 2); //5
-    // ctx.closePath();
+    ctx.lineTo(s / 2, -s / 2); //6
+    ctx.lineTo(s / 2, s / 2); //7
+    ctx.lineTo(-s / 2, s / 2); //8
+
+    ctx.closePath();
     ctx.stroke();
     ctx.restore();
   }
 
   influenceDirection() {
-    let directionVector = [0,0]
-    
-    this.influencers.forEach((influencer) =>{
+    let directionVector = [0, 0]
+
+    this.influencers.forEach((influencer) => {
       let dx = directionVector[0] + influencer[0];
       let dy = directionVector[1] + influencer[1];
-      let newVector = [dx,dy]
+      let newVector = [dx, dy]
       directionVector = Util.dir(newVector);
     })
     let influencedDirection = Math.atan2(directionVector[1], directionVector[0]);
     return influencedDirection
   }
 
-  acceptBulletDirection(source){
+  acceptBulletDirection(source) {
     this.directionInfluenced = true;
     let dy = this.pos[1] - source[1];
     let dx = this.pos[0] - source[0];
-    let unitVector = Util.dir([dx,dy]);
+    let unitVector = Util.dir([dx, dy]);
     this.influencers.push(unitVector)
     // first 
   }
@@ -103,13 +104,13 @@ class Weaver extends MovingObject {
   isCollidedWith(otherObject) {
     const centerDist = Util.dist(this.pos, otherObject.pos);
 
-    if (otherObject instanceof Bullet){
+    if (otherObject instanceof Bullet) {
       if (centerDist < (this.radius + otherObject.radius)) {
 
         return true
-        
-      } else if( centerDist < (this.weaverCloseHitBox + otherObject.radius)) {
-        this.acceptBulletDirection(otherObject.pos) 
+
+      } else if (centerDist < (this.weaverCloseHitBox + otherObject.radius)) {
+        this.acceptBulletDirection(otherObject.pos)
       } else {
         return false;
       }

@@ -31,19 +31,18 @@ class Ship extends MovingObject {
     //    1000)
   }
 
-  // draw(ctx) {
-  //   let shipWidth = 10;
-  //   ctx.save();
-  //   ctx.beginPath();
-  //   ctx.translate(this.pos[0] - shipWidth / 2, this.pos[1] + shipWidth / 2);
-  //   ctx.rotate(atan2(this.vel[1],this.vel[2]));
-  //   ctx.translate(-shipWidth/2, shipWidth/2);
-  //   ctx.lineTo(0,-shipWidth);
-  //   ctx.lineTo()
-  //   ctx.strokeStyle = "#ffffff";
-  //   ctx.stroke();f
-  //   ctx.restore();
+  // move(timeDelta){
+    
+  //   debugger;
+  //   if (this.game.isOutOfBounds(this.pos)) {
+  //     if (this.isWrappable) {
+  //       this.pos = this.game.wrap(this.pos);
+  //     } else {
+  //       this.remove();
+  //     }
+  //   }
   // }
+
   draw(ctx) {
     let pos = this.pos 
     let shipWidth = 10
@@ -139,10 +138,10 @@ class Ship extends MovingObject {
     this.vel[1] += impulse[1];
   }
 
-  relocate() {
-    this.pos = this.game.randomPosition();
-    this.vel = [0, 0];
-  }
+  // relocate() {
+  //   this.pos = this.game.randomPosition();
+  //   this.vel = [0, 0];
+  // }
 }
 
 Ship.RADIUS = 4;

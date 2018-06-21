@@ -8,6 +8,8 @@ class Grunt extends MovingObject {
     this.stretchScale_W = 1;
     this.stretchScale_L = 1;
     this.stretchDirection = -1;
+    this.vel = [0,0];
+    this.acc = [0,0];
   }
 
 
@@ -27,10 +29,13 @@ class Grunt extends MovingObject {
     // if (this.game.isOutOfBounds(this.pos)) {
     //   Util.bounce(this, [1000, 600]) // HARD CODED
     // }
-
-    this.pos[0] += speed * Math.cos(direction) * velocityScale;
-    this.pos[1] += speed * Math.sin(direction) * velocityScale;
-
+    
+    this.pos[0] += (speed + this.vel[0]) * Math.cos(direction) * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
+    this.pos[1] += (speed + this.vel[1]) * Math.sin(direction) * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
+    this.vel[0] += this.acc[0] * velocityScale;
+    this.vel[1] += this.acc[1] * velocityScale;
+    
+    
     let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     let cycleSpeed = 0.01;
 

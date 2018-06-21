@@ -10,17 +10,16 @@ class Arrow extends MovingObject {
 
     this.speed = 3;
     this.vel = Util.vectorCartisian(this.angle, this.speed);
-
+    this.acc = [0,0];
   }
 
   move(timeDelta) {
     let rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     let velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-
-    let deltaX = this.vel[0] * velocityScale;
-    let deltaY = this.vel[1] * velocityScale;
-
-    this.pos = [this.pos[0] + deltaX, this.pos[1] + deltaY];
+    this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2
+    this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2
+    this.vel[0] += this.acc[0] * velocityScale;
+    this.vel[1] += this.acc[1] * velocityScale;
     
     if (this.game.isOutOfBounds(this.pos)) {
       Util.redirect(this,[1000, 600]) // HARD CODED
