@@ -10,6 +10,7 @@ class Pinwheel extends MovingObject {
     this.rotation_speed = 0.05;
     this.speed = 1;
     this.vel = Util.randomVec(this.speed);
+    this.acc = [0,0];
     
   }
 
@@ -17,11 +18,13 @@ class Pinwheel extends MovingObject {
     let rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     let velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     
-    let deltaX = this.vel[0] * velocityScale;
-    let deltaY = this.vel[1] * velocityScale;
-    
-    this.pos = [this.pos[0] + deltaX, this.pos[1] + deltaY];
     this.angle = (this.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
+
+    this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2
+    this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2
+    this.vel[0] += this.acc[0] * velocityScale;
+    this.vel[1] += this.acc[1] * velocityScale;
+
 
     if (this.game.isOutOfBounds(this.pos)) {
       Util.bounce(this, [1000, 600]) // HARD CODED
