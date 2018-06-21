@@ -9,7 +9,7 @@ const Pinwheel = require("./enemies/pinwheel");
 const Arrow = require("./enemies/arrow");
 const Grunt = require("./enemies/grunt");
 const Weaver = require("./enemies/weaver")
-const Singularity = require("./enemies/Singularity")
+const Singularity = require("./enemies/singularity")
 const EnemySpawn = require("./particles/enemy_spawn");
 
 class Game {
@@ -37,14 +37,13 @@ class Game {
       Pinwheel: () => (new Pinwheel({ game: this })),
       Arrow: () => (new Arrow({game: this, angle: this.randomArrowDirection()})),
       Grunt: () => (new Grunt({game: this})),
-      Weaver: () => (new Weaver({game: this})),
-      Singularity: () => (new Singularity({game: this}))
+      Weaver: () => (new Weaver({game: this}))
+      // Singularity: () => (new Singularity({game: this}))
     };
     
   }
 
   add(object) {
-    this.singularities = this.singularities || [];
     if (object instanceof Asteroid) {
       this.asteroids.push(object);
     } else if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow || object instanceof Grunt || object instanceof Weaver) {
@@ -84,7 +83,7 @@ class Game {
       this.add(new Weaver({ game: this }));
     }
     for (let i = 0; i < Game.NUM_SINGULARITIES; i++) {
-      this.add(new Singularity({ game: this }));
+      this.add(new Singularity({ game: this, id: this.singularities.length }));
     }
     
   
@@ -149,6 +148,11 @@ class Game {
       for (let j = 0; j < allObjects2.length; j++) {
         const obj1 = allObjects[i];
         const obj2 = allObjects2[j];
+        if (obj1 instanceof Singularity && obj2 instanceof Singularity){
+          if (obj1.id === obj2.id){
+            continue;
+          }
+        }
         if (obj1.isCollidedWith(obj2)) {
           const explosionId = this.particleExplosions.length 
           this.add(new ParticleExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
@@ -270,7 +274,7 @@ Game.NUM_BOXES = 0;
 Game.NUM_PINWHEELS = 0;
 Game.NUM_ARROWS = 0;
 Game.NUM_GRUNTS = 0;
-Game.NUM_WEAVERS = 20;
+Game.NUM_WEAVERS = 2;
 Game.NUM_SINGULARITIES = 2;
 module.exports = Game;
 

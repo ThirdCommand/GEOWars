@@ -2,6 +2,7 @@ const MovingObject = require("../moving_object")
 const Bullet = require("../bullet")
 const Ship = require("../ship")
 const Util = require("../util")
+const Singularity = require("./singularity")
 class Weaver extends MovingObject {
   constructor(options) {
     super(options)
@@ -114,11 +115,11 @@ class Weaver extends MovingObject {
         
       } else if( centerDist < (this.weaverCloseHitBox + otherObject.radius)) {
         this.acceptBulletDirection(otherObject.pos) 
+        return false;
       } else {
         return false;
       }
     }
-
     return centerDist < (this.radius + otherObject.radius);
   }
 
@@ -126,7 +127,7 @@ class Weaver extends MovingObject {
     if (otherObject instanceof Ship) {
       otherObject.relocate();
       return true;
-    } else if (otherObject instanceof Bullet) {
+    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
       this.remove();
       otherObject.remove();
       return true;

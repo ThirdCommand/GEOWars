@@ -2,6 +2,7 @@ const MovingObject = require("../moving_object")
 const Bullet = require("../bullet")
 const Ship = require("../ship")
 const Util = require("../util");
+const Singularity = require("./singularity")
 class Arrow extends MovingObject {
   constructor(options) {
     super(options)
@@ -65,7 +66,7 @@ class Arrow extends MovingObject {
     if (otherObject instanceof Ship) {
       otherObject.relocate();
       return true;
-    } else if (otherObject instanceof Bullet) {
+    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
       this.remove();
       otherObject.remove();
       return true;

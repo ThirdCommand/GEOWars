@@ -1,6 +1,7 @@
 const MovingObject = require("../moving_object")
 const Bullet = require("../bullet")
 const Ship = require("../ship")
+const Singularity = require("./singularity")
 class Grunt extends MovingObject {
   constructor(options) {
     super(options)
@@ -77,7 +78,7 @@ class Grunt extends MovingObject {
     if (otherObject instanceof Ship) {
       otherObject.relocate();
       return true;
-    } else if (otherObject instanceof Bullet) {
+    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
       this.remove();
       otherObject.remove();
       return true;

@@ -190,135 +190,6 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 /***/ }),
 
-/***/ "./lib/enemies/Singularity.js":
-/*!************************************!*\
-  !*** ./lib/enemies/Singularity.js ***!
-  \************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_object.js")
-const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
-const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
-const Util = __webpack_require__(/*! ../util */ "./lib/util.js")
-class Singularity extends MovingObject {
-  constructor(options) {
-    super(options)
-    this.pos = options.pos || options.game.randomPosition();
-    this.angle = 0;
-    this.rotation_speed = 0.075;
-    this.vel = [0,0];
-    this.acc = [0,0];
-    this.radius = 15;
-    this.gravityWellSize = 100;
-    this.gravityConstant = 10;
-  }
-
-
-  move(timeDelta) {
-
-   const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-   this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
-   this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
-   this.vel[0] += this.acc[0] * velocityScale;
-   this.vel[1] += this.acc[1] * velocityScale;
-
-  this.influencers = [];
-
-  }
-
-  draw(ctx, spawningScale) {
-
-    ctx.strokeStyle = this.color;
-    ctx.fillStyle = "#ffffff";
-    ctx.beginPath();
-    ctx.lineWidth = 2;
-    ctx.arc(
-      this.pos[0], this.pos[1], this.radius * spawningScale, 0, 2 * Math.PI, true
-    );
-    ctx.stroke();
-  }
-
-  // influenceDirection() {
-  //   let directionVector = [0, 0]
-
-  //   this.influencers.forEach((influencer) => {
-  //     let dx = directionVector[0] + influencer[0];
-  //     let dy = directionVector[1] + influencer[1];
-  //     let newVector = [dx, dy]
-  //     directionVector = Util.dir(newVector);
-  //   })
-  //   let influencedDirection = Math.atan2(directionVector[1], directionVector[0]);
-  //   return influencedDirection
-  // }
-
-  influenceAcceleration(object) {
-    let dy = this.pos[1] - object[1];
-    let dx = this.pos[0] - object[0];
-    let unitVector = Util.dir([dx, dy]);
-    let r = Util.norm(dx,dy)
-    if (r > (this.gravityWellSize * 7/8)){
-      object.acc = [0,0];
-    } else {
-      let acc = [
-        unitVector[0] * this.gravityConstant / (r * r),
-        unitVector[1] * this.gravityConstant / (r * r)
-      ]
-  
-      object.acc = acc;
-    }
-  }
-
-  isCollidedWith(otherObject) {
-    const centerDist = Util.dist(this.pos, otherObject.pos);
-
-    if (otherObject instanceof Bullet) {
-      if (centerDist < (this.radius + otherObject.radius)) {
-
-        return true
-
-      } else {
-        return false
-      }
-    }
-    
-    if (centerDist < (this.gravityWellSize + otherObject.radius)) {
-      this.influenceAcceleration(otherObject)
-      return false;
-    } else {
-      return false;
-    }
-    
-  }
-
-  collideWith(otherObject) {
-    if (otherObject instanceof Ship) {
-      otherObject.relocate();
-      return true;
-    } else if (otherObject instanceof Bullet) {
-      this.remove();
-      otherObject.remove();
-      return true;
-    }
-
-    return false;
-  }
-
-  remove() {
-
-    this.game.remove(this);
-  }
-}
-
-Singularity.BOX_SIZE = 10;
-Singularity.COLOR = "#3cff0b"
-
-module.exports = Singularity;
-
-const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
-
-/***/ }),
-
 /***/ "./lib/enemies/arrow.js":
 /*!******************************!*\
   !*** ./lib/enemies/arrow.js ***!
@@ -330,6 +201,7 @@ const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_o
 const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 const Util = __webpack_require__(/*! ../util */ "./lib/util.js");
+const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
 class Arrow extends MovingObject {
   constructor(options) {
     super(options)
@@ -393,7 +265,7 @@ class Arrow extends MovingObject {
     if (otherObject instanceof Ship) {
       otherObject.relocate();
       return true;
-    } else if (otherObject instanceof Bullet) {
+    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
       this.remove();
       otherObject.remove();
       return true;
@@ -425,6 +297,7 @@ module.exports = Arrow;
 const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_object.js")
 const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
+const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
 class BoxBox extends MovingObject {
   constructor(options) {
     super(options)
@@ -483,7 +356,7 @@ class BoxBox extends MovingObject {
     if (otherObject instanceof Ship) {
       otherObject.relocate();
       return true;
-    } else if (otherObject instanceof Bullet) {
+    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
       this.remove();
       otherObject.remove();
       return true;
@@ -517,6 +390,7 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_object.js")
 const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
+const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
 class Grunt extends MovingObject {
   constructor(options) {
     super(options)
@@ -593,7 +467,7 @@ class Grunt extends MovingObject {
     if (otherObject instanceof Ship) {
       otherObject.relocate();
       return true;
-    } else if (otherObject instanceof Bullet) {
+    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
       this.remove();
       otherObject.remove();
       return true;
@@ -628,6 +502,7 @@ const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_o
 const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 const Util = __webpack_require__(/*! ../util */ "./lib/util.js");
+const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
 class Pinwheel extends MovingObject {
   constructor(options) {
     super(options)
@@ -695,7 +570,7 @@ class Pinwheel extends MovingObject {
     if (otherObject instanceof Ship) {
       otherObject.relocate();
       return true;
-    } else if (otherObject instanceof Bullet) {
+    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
       this.remove();
       otherObject.remove();
       return true;
@@ -717,6 +592,130 @@ module.exports = Pinwheel;
 
 /***/ }),
 
+/***/ "./lib/enemies/singularity.js":
+/*!************************************!*\
+  !*** ./lib/enemies/singularity.js ***!
+  \************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_object.js")
+const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
+const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
+const Util = __webpack_require__(/*! ../util */ "./lib/util.js")
+class Singularity extends MovingObject {
+  constructor(options) {
+    super(options)
+    this.pos = options.pos || options.game.randomPosition();
+    this.vel = [0,0];
+    this.acc = [0,0];
+    this.radius = 15;
+    this.gravityWellSize = 10000;
+    this.gravityConstant = 10000000000;
+    this.id = options.id
+
+  }
+
+
+  move(timeDelta) {
+
+    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
+    this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
+    this.vel[0] += this.acc[0] * velocityScale;
+    this.vel[1] += this.acc[1] * velocityScale;
+
+
+  }
+
+  draw(ctx, spawningScale) {
+    // spawningScale = spawningScale || 1;
+    spawningScale = 1;
+
+    ctx.strokeStyle = "#F173BA"
+
+    ctx.beginPath();
+    ctx.lineWidth = 2;
+    ctx.arc(
+      this.pos[0], this.pos[1], this.radius * spawningScale, 0, 2 * Math.PI, true
+    );
+    ctx.stroke();
+  }
+
+
+  influenceAcceleration(object) {
+    // debugger;
+    let dy = this.pos[1] - object.pos[1];
+    let dx = this.pos[0] - object.pos[0];
+    let unitVector = Util.dir([dx, dy]);
+    let r = Math.sqrt(dy * dy + dx * dx);
+    if (r > (this.gravityWellSize * 7/8)){
+      object.acc = [0,0];
+    } else {
+
+      let newAcc = [
+        unitVector[0] * this.gravityConstant / (r * r),
+        unitVector[1] * this.gravityConstant / (r * r)
+      ]
+      // debugger;
+      object.acc = newAcc;
+    }
+  }
+
+  isCollidedWith(otherObject) {
+
+    const centerDist = Util.dist(this.pos, otherObject.pos);
+    // console.log(centerDist);
+    
+    if (otherObject instanceof Bullet) {
+      if (centerDist < (this.radius + otherObject.radius)) {
+
+        return true
+
+      } else {
+        return false
+      }
+    }
+    // debugger
+    if (centerDist < (this.gravityWellSize + otherObject.radius)) {
+      
+      this.influenceAcceleration(otherObject)
+      return false;
+    } else {
+
+      return false;
+    }
+    
+  }
+
+  collideWith(otherObject) {
+    if (otherObject instanceof Ship) {
+      otherObject.relocate();
+      return true;
+    } else if (otherObject instanceof Bullet) {
+      this.remove();
+      otherObject.remove();
+      return true;
+    }
+
+    return false;
+  }
+
+  remove() {
+
+    this.game.remove(this);
+  }
+}
+
+Singularity.BOX_SIZE = 10;
+Singularity.COLOR = "#3cff0b"
+
+module.exports = Singularity;
+
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+
+/***/ }),
+
 /***/ "./lib/enemies/weaver.js":
 /*!*******************************!*\
   !*** ./lib/enemies/weaver.js ***!
@@ -728,6 +727,7 @@ const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_o
 const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 const Util = __webpack_require__(/*! ../util */ "./lib/util.js")
+const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
 class Weaver extends MovingObject {
   constructor(options) {
     super(options)
@@ -840,11 +840,11 @@ class Weaver extends MovingObject {
         
       } else if( centerDist < (this.weaverCloseHitBox + otherObject.radius)) {
         this.acceptBulletDirection(otherObject.pos) 
+        return false;
       } else {
         return false;
       }
     }
-
     return centerDist < (this.radius + otherObject.radius);
   }
 
@@ -852,7 +852,7 @@ class Weaver extends MovingObject {
     if (otherObject instanceof Ship) {
       otherObject.relocate();
       return true;
-    } else if (otherObject instanceof Bullet) {
+    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
       this.remove();
       otherObject.remove();
       return true;
@@ -894,7 +894,7 @@ const Pinwheel = __webpack_require__(/*! ./enemies/pinwheel */ "./lib/enemies/pi
 const Arrow = __webpack_require__(/*! ./enemies/arrow */ "./lib/enemies/arrow.js");
 const Grunt = __webpack_require__(/*! ./enemies/grunt */ "./lib/enemies/grunt.js");
 const Weaver = __webpack_require__(/*! ./enemies/weaver */ "./lib/enemies/weaver.js")
-const Singularity = __webpack_require__(/*! ./enemies/Singularity */ "./lib/enemies/Singularity.js")
+const Singularity = __webpack_require__(/*! ./enemies/singularity */ "./lib/enemies/singularity.js")
 const EnemySpawn = __webpack_require__(/*! ./particles/enemy_spawn */ "./lib/particles/enemy_spawn.js");
 
 class Game {
@@ -922,14 +922,13 @@ class Game {
       Pinwheel: () => (new Pinwheel({ game: this })),
       Arrow: () => (new Arrow({game: this, angle: this.randomArrowDirection()})),
       Grunt: () => (new Grunt({game: this})),
-      Weaver: () => (new Weaver({game: this})),
-      Singularity: () => (new Singularity({game: this}))
+      Weaver: () => (new Weaver({game: this}))
+      // Singularity: () => (new Singularity({game: this}))
     };
     
   }
 
   add(object) {
-    this.singularities = this.singularities || [];
     if (object instanceof Asteroid) {
       this.asteroids.push(object);
     } else if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow || object instanceof Grunt || object instanceof Weaver) {
@@ -969,7 +968,7 @@ class Game {
       this.add(new Weaver({ game: this }));
     }
     for (let i = 0; i < Game.NUM_SINGULARITIES; i++) {
-      this.add(new Singularity({ game: this }));
+      this.add(new Singularity({ game: this, id: this.singularities.length }));
     }
     
   
@@ -1034,6 +1033,11 @@ class Game {
       for (let j = 0; j < allObjects2.length; j++) {
         const obj1 = allObjects[i];
         const obj2 = allObjects2[j];
+        if (obj1 instanceof Singularity && obj2 instanceof Singularity){
+          if (obj1.id === obj2.id){
+            continue;
+          }
+        }
         if (obj1.isCollidedWith(obj2)) {
           const explosionId = this.particleExplosions.length 
           this.add(new ParticleExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
@@ -1155,7 +1159,7 @@ Game.NUM_BOXES = 0;
 Game.NUM_PINWHEELS = 0;
 Game.NUM_ARROWS = 0;
 Game.NUM_GRUNTS = 0;
-Game.NUM_WEAVERS = 20;
+Game.NUM_WEAVERS = 2;
 Game.NUM_SINGULARITIES = 2;
 module.exports = Game;
 
