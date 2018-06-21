@@ -8,97 +8,66 @@ class Singularity extends MovingObject {
     this.pos = options.pos || options.game.randomPosition();
     this.angle = 0;
     this.rotation_speed = 0.075;
-    this.speed = 2;
-    this.vel = Util.randomVec(this.speed);
-    this.weaverCloseHitBox = 40;
-    this.directionInfluenced = false;
-    this.influencers = [];
+    this.vel = [0,0];
+    this.acc = [0,0];
+    this.radius = 15;
+    this.gravityWellSize = 100;
+    this.gravityConstant = 10;
   }
 
-  // ADDING MOVEMENT MECHANICS FOR Weaver
+
   move(timeDelta) {
-    let speed = 3;
-    let shipPos = this.game.ships[0].pos;
-    let dy = shipPos[1] - this.pos[1];
-    let dx = shipPos[0] - this.pos[0];
 
+   const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+   this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
+   this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
+   this.vel[0] += this.acc[0] * velocityScale;
+   this.vel[1] += this.acc[1] * velocityScale;
 
-    let rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    let direction = 0;
-    if (!this.directionInfluenced) {
-      direction = Math.atan2(dy, dx);
-    } else {
-      direction = this.influenceDirection();
-    }
-    // I need to make a max speed and the pulling effect an acceleration instead
-    // this will make it possible to direct the ship well too
-
-    // if (this.game.isOutOfBounds(this.pos)) {
-    //   Util.bounce(this, [1000, 600]) // HARD CODED
-    // }
-
-    this.angle = (this.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
-    this.pos[0] += speed * Math.cos(direction) * velocityScale;
-    this.pos[1] += speed * Math.sin(direction) * velocityScale;
-
-
-    this.directionInfluenced = false;
-    this.influencers = [];
+  this.influencers = [];
 
   }
 
   draw(ctx, spawningScale) {
 
-    let pos = this.pos;
-    spawningScale = spawningScale || 1;
-    let shipLength = 10 * 2.2 * spawningScale
-    let shipWidth = 10 * 2.2 * spawningScale
-    let s = shipWidth / 2;
-
-    ctx.save();
+    ctx.strokeStyle = this.color;
+    ctx.fillStyle = "#ffffff";
     ctx.beginPath();
-    ctx.translate(pos[0], pos[1]);
-    ctx.rotate(this.angle);
-
-    ctx.beginPath();
-    ctx.strokeStyle = "#3cff0b";
     ctx.lineWidth = 2;
-    ctx.moveTo(0, -s); //1
-    ctx.lineTo(s, 0); //2
-    ctx.lineTo(0, s); //3
-    ctx.lineTo(-s, 0); //4
-    ctx.lineTo(0, -s); //1
-    ctx.lineTo(-s / 2, -s / 2); //5
-    ctx.lineTo(s / 2, -s / 2); //6
-    ctx.lineTo(s / 2, s / 2); //7
-    ctx.lineTo(-s / 2, s / 2); //8
-
-    ctx.closePath();
+    ctx.arc(
+      this.pos[0], this.pos[1], this.radius * spawningScale, 0, 2 * Math.PI, true
+    );
     ctx.stroke();
-    ctx.restore();
   }
 
-  influenceDirection() {
-    let directionVector = [0, 0]
+  // influenceDirection() {
+  //   let directionVector = [0, 0]
 
-    this.influencers.forEach((influencer) => {
-      let dx = directionVector[0] + influencer[0];
-      let dy = directionVector[1] + influencer[1];
-      let newVector = [dx, dy]
-      directionVector = Util.dir(newVector);
-    })
-    let influencedDirection = Math.atan2(directionVector[1], directionVector[0]);
-    return influencedDirection
-  }
+  //   this.influencers.forEach((influencer) => {
+  //     let dx = directionVector[0] + influencer[0];
+  //     let dy = directionVector[1] + influencer[1];
+  //     let newVector = [dx, dy]
+  //     directionVector = Util.dir(newVector);
+  //   })
+  //   let influencedDirection = Math.atan2(directionVector[1], directionVector[0]);
+  //   return influencedDirection
+  // }
 
-  acceptBulletDirection(source) {
-    this.directionInfluenced = true;
+  influenceAcceleration(object) {
     let dy = this.pos[1] - source[1];
     let dx = this.pos[0] - source[0];
     let unitVector = Util.dir([dx, dy]);
-    this.influencers.push(unitVector)
-    // first 
+    let r = Util.norm(dx,dy)
+    if (r > (this.gravityWellSize * 7/8)){
+      object.acc = [0,0];
+    } else {
+      let acc = [
+        unitVector[0] * this.gravityConstant / (r * r),
+        unitVector[1] * this.gravityConstant / (r * r)
+      ]
+  
+      object.acc = acc;
+    }
   }
 
   isCollidedWith(otherObject) {
@@ -109,14 +78,19 @@ class Singularity extends MovingObject {
 
         return true
 
-      } else if (centerDist < (this.weaverCloseHitBox + otherObject.radius)) {
-        this.acceptBulletDirection(otherObject.pos)
       } else {
-        return false;
+        return false
       }
     }
-
-    return centerDist < (this.radius + otherObject.radius);
+    
+    if (centerDist < (this.radius + otherObject.radius)) {
+      return true
+    } else if (centerDist < (this.weaverCloseHitBox + otherObject.radius)) {
+      this.influenceAcceleration(otherObject)
+    } else {
+      return false;
+    }
+    
   }
 
   collideWith(otherObject) {
@@ -138,9 +112,9 @@ class Singularity extends MovingObject {
   // }
 }
 
-Weaver.BOX_SIZE = 10;
-Weaver.COLOR = "#3cff0b"
+Singularity.BOX_SIZE = 10;
+Singularity.COLOR = "#3cff0b"
 
-module.exports = Weaver;
+module.exports = Singularity;
 
 const NORMAL_FRAME_TIME_DELTA = 1000 / 60;

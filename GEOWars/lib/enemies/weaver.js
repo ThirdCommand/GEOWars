@@ -11,16 +11,16 @@ class Weaver extends MovingObject {
     this.speed = 2;
     this.initialDirection = Math.random() * 2 * Math.PI
     this.initialVelocity = Util.vectorCartisian(this.initialDirection, 1)
-    this.vel = this.initialVelocity
+    this.vel = [0,0]
     this.acc = [0,0];
-    this.weaverCloseHitBox = 30;
+    this.weaverCloseHitBox = 35;
     this.directionInfluenced = false;
     this.influencers = [];
   }
 
-  // ADDING MOVEMENT MECHANICS FOR Weaver
+
   move(timeDelta) {
-    let speed = 3;
+    let speed = 2;
     let shipPos = this.game.ships[0].pos;
     let dy = shipPos[1] - this.pos[1];
     let dx = shipPos[0] - this.pos[0];
@@ -39,7 +39,7 @@ class Weaver extends MovingObject {
     // if (this.game.isOutOfBounds(this.pos)) {
       //   Util.bounce(this, [1000, 600]) // HARD CODED
       // }
-      
+    
     this.angle = (this.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
     this.pos[0] += (this.vel[0] + speed * Math.cos(direction)) * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
     this.pos[1] += (this.vel[1] + speed * Math.sin(direction)) * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
