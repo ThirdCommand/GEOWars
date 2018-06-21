@@ -35,11 +35,13 @@
       Particle.prototype.build = function() {
         this.x = w / 2; // x and y position
         this.y = h / 2;
+        this.radial = 0;
         this.rectLength = 20;
         this.rectWidth = 2;
         this.r = rand(15, 10, 0);
         this.initialVelocity = velocities[Math.floor(Math.random() * velocities.length)]
         this.movementAngle = Math.random() * Math.PI * 2
+        
         this.vx = this.initialVelocity * Math.cos(this.movementAngle)
         this.vy = this.initialVelocity * Math.sin(this.movementAngle)
         // this.vx = Math.random() * 10 - 5; // x initial velocity
@@ -54,16 +56,17 @@
         // c.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
         c.fillStyle = "hsla(" + this.hue + ",100%,50%,1)";
         // c.rotate(this.movementAngle)
-        c.fillRect(this.x,this.y,this.rectLength,this.rectWidth);
+        c.fillRect(this.radial,0,this.rectLength,this.rectWidth);
       };
       
       // this function handles where the ball should be next
       Particle.prototype.draw = function() {
         this.active = true;
-        this.x += this.vx;
-        this.y += this.vy;
-        this.vy += this.gravity + this.acceleration * Math.sin(this.movementAngle);
-        this.vx += this.gravity + this.acceleration * Math.cos(this.movementAngle);
+        this.radial += this.initialVelocity;
+        // this.y += this.vy;
+        // this.vy += this.gravity + this.acceleration * Math.sin(this.movementAngle);
+        // this.vx += this.gravity + this.acceleration * Math.cos(this.movementAngle);
+        this.initialVelocity += this.acceleration
         this.hue -= 0.5;
 
         // this.r = Math.abs(this.r - .05);
@@ -71,16 +74,31 @@
         
         // c.beginPath();
         // c.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
+        
         c.save()
-        // c.rotate(this.movementAngle);
-        c.fillStyle = "hsla(" + this.hue + ",100%,50%,1)";
-        c.fillRect(this.x, this.y, this.rectLength, this.rectWidth);
+        c.translate(this.x,this.y);
+        c.rotate(this.movementAngle);
+        c.beginPath();
+        c.strokeStyle = "#ffffff";
+        c.lineWidth = this.rectWidth;
+        // console.log(this.radial);
+        
+        c.moveTo(this.radial,0);
+        
+        c.lineTo(this.radial + this.rectLength,0);
+        c.stroke();
+
+        
+        
+        // c.fillStyle = "hsla(" + this.hue + ",100%,50%,1)";
+        
+        // c.fillRect(this.radial, 0, this.rectLength, this.rectWidth);
         c.restore()
         //reset particle
         // if(this.r <= .05) {
         //   this.active = false;
         // }
-        if(Math.abs(this.vx + this.vy) < 0.05){
+        if(Math.abs(this.initialVelocity) < 0.05){
           this.active = false;
         }
       };
