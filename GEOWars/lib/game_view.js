@@ -36,12 +36,11 @@ class GameView {
   start() {
     this.bindKeyHandlers();
     this.lastTime = 0;
-    // start the animation
-    // window.addEventListener('resize', this.resizeGame, false);
-    // window.addEventListener('orientationchange', this.resizeGame, false);
-    // this.resizeGame();
-    // window.addEventListener('')
-    requestAnimationFrame(this.animate.bind(this));
+    
+    window.addEventListener('click', (e) => {
+      
+      requestAnimationFrame(this.animate.bind(this));
+    });
   }
   
 

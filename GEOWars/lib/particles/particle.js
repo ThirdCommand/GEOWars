@@ -20,7 +20,7 @@ class Particle {
     // this.vx = this.initialSpeed * Math.cos(this.movementAngle);
     // this.vy = this.initialSpeed * Math.sin(this.movementAngle);
     this.acceleration = -0.1;
-
+    
     this.opacity = Math.random() + .5;
     this.active = true;
     this.hue = 0.9;

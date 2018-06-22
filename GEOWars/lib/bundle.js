@@ -1224,12 +1224,11 @@ class GameView {
   start() {
     this.bindKeyHandlers();
     this.lastTime = 0;
-    // start the animation
-    // window.addEventListener('resize', this.resizeGame, false);
-    // window.addEventListener('orientationchange', this.resizeGame, false);
-    // this.resizeGame();
-    // window.addEventListener('')
-    requestAnimationFrame(this.animate.bind(this));
+    
+    window.addEventListener('click', (e) => {
+      
+      requestAnimationFrame(this.animate.bind(this));
+    });
   }
   
 
@@ -1440,7 +1439,7 @@ class Particle {
     // this.vx = this.initialSpeed * Math.cos(this.movementAngle);
     // this.vy = this.initialSpeed * Math.sin(this.movementAngle);
     this.acceleration = -0.1;
-
+    
     this.opacity = Math.random() + .5;
     this.active = true;
     this.hue = 0.9;
