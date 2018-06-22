@@ -1,3 +1,4 @@
+
 const Util = {
   // Normalize the length of the vector to 1, maintaining direction.
   dir(vec) {
@@ -40,6 +41,7 @@ const Util = {
   },
 
   bounce(shape, max){
+
     if(shape.pos[0] <= 0 || shape.pos[0] >= max[0]){
       shape.vel[0] = -shape.vel[0];
     }
