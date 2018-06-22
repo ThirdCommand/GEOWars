@@ -8,7 +8,8 @@ class Arrow extends MovingObject {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
     this.angle = options.angle || Math.PI / 3;
-
+    this.spawnSound = new Audio("./sounds/Enemy_spawn_purple.wav")
+    this.spawnSound.volume = 0.2;
     this.speed = 3;
     this.vel = Util.vectorCartisian(this.angle, this.speed);
     this.acc = [0,0];
@@ -67,6 +68,7 @@ class Arrow extends MovingObject {
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
+      
       this.remove();
       otherObject.remove();
       return true;

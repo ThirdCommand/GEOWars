@@ -137,20 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
   new GameView(game, ctx, canvasEl).start();
 });
 
-function sound(src) {
-  this.sound = document.createElement("audio");
-  this.sound.src = src;
-  this.sound.setAttribute("preload", "auto");
-  this.sound.setAttribute("controls", "none");
-  this.sound.style.display = "none";
-  document.body.appendChild(this.sound);
-  this.play = function () {
-    this.sound.play();
-  }
-  this.stop = function () {
-    this.sound.pause();
-  }
-}
+
 
 /***/ }),
 
@@ -172,6 +159,7 @@ class Bullet extends MovingObject {
     this.acc = [0,0];
     this.vel = options.vel
     this.speed = 7;
+    
   }
 
   // move(timeDelta) {
@@ -220,7 +208,8 @@ class Arrow extends MovingObject {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
     this.angle = options.angle || Math.PI / 3;
-
+    this.spawnSound = new Audio("./sounds/Enemy_spawn_purple.wav")
+    this.spawnSound.volume = 0.2;
     this.speed = 3;
     this.vel = Util.vectorCartisian(this.angle, this.speed);
     this.acc = [0,0];
@@ -279,6 +268,7 @@ class Arrow extends MovingObject {
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
+      
       this.remove();
       otherObject.remove();
       return true;
@@ -317,6 +307,8 @@ class BoxBox extends MovingObject {
     this.pos = options.pos || options.game.randomPosition();
     this.vel = [0,0]
     this.acc = [0,0];
+    this.spawnSound = new Audio("./sounds/Enemy_spawn_blue.wav");
+    this.spawnSound.volume = 0.2;
   }
 
 
@@ -370,6 +362,7 @@ class BoxBox extends MovingObject {
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
+      
       this.remove();
       otherObject.remove();
       return true;
@@ -414,7 +407,8 @@ class Grunt extends MovingObject {
     this.vel = [0,0];
     this.acc = [0,0];
 
-    // this.spawnSound = new sound("../../sounds/Enemy_spawn_blue.wav");
+    this.spawnSound = new Audio("./sounds/Enemy_spawn_blue.wav");
+    this.spawnSound.volume = options.volume || 0.2;
   }
 
 
@@ -443,13 +437,21 @@ class Grunt extends MovingObject {
     
     let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     let cycleSpeed = 0.01;
+    
 
     if (this.stretchScale_W < 0.7 || this.stretchScale_W > 1) {
       this.stretchDirection *= -1
     } 
+    if (this.game.enemies.length > 40){
+      this.stretchDirection = 1;
+      this.stretchScale_W = 1;
+      this.stretchScale_L = 1;
+    } else {
+      
+      this.stretchScale_W = this.stretchScale_W +  -this.stretchDirection * cycleSpeed * cycleSpeedScale;
+      this.stretchScale_L = this.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
+    }
 
-    this.stretchScale_W = this.stretchScale_W +  -this.stretchDirection * cycleSpeed * cycleSpeedScale;
-    this.stretchScale_L = this.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
     
   }
 
@@ -484,6 +486,7 @@ class Grunt extends MovingObject {
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
       this.remove();
+      
       otherObject.remove();
       return true;
     }
@@ -527,6 +530,8 @@ class Pinwheel extends MovingObject {
     this.speed = 1;
     this.vel = Util.randomVec(this.speed);
     this.acc = [0,0];
+    this.spawnSound = new Audio("./sounds/Enemy_spawn_blue.wav");
+    this.spawnSound.volume = 0.2;
     
   }
 
@@ -587,6 +592,7 @@ class Pinwheel extends MovingObject {
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
       this.remove();
+      
       otherObject.remove();
       return true;
     }
@@ -757,6 +763,8 @@ class Weaver extends MovingObject {
     this.weaverCloseHitBox = 35;
     this.directionInfluenced = false;
     this.influencers = [];
+    this.spawnSound = new Audio("./sounds/Enemy_spawn_green.wav");
+    this.spawnSound.volume = options.volume || 0.2;
   }
 
 
@@ -868,7 +876,8 @@ class Weaver extends MovingObject {
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
-      this.remove();
+      this.remove()
+      
       otherObject.remove();
       return true;
     }
@@ -898,6 +907,9 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+// Asteroids #APP ACADEMY 
+
+
 const Asteroid = __webpack_require__(/*! ./asteroid */ "./lib/asteroid.js");
 const Bullet = __webpack_require__(/*! ./bullet */ "./lib/bullet.js");
 const Ship = __webpack_require__(/*! ./ship */ "./lib/ship.js");
@@ -912,21 +924,6 @@ const Weaver = __webpack_require__(/*! ./enemies/weaver */ "./lib/enemies/weaver
 const Singularity = __webpack_require__(/*! ./enemies/singularity */ "./lib/enemies/singularity.js")
 const EnemySpawn = __webpack_require__(/*! ./particles/enemy_spawn */ "./lib/particles/enemy_spawn.js");
 
-function sound(src) {
-  this.sound = document.createElement("audio");
-  this.sound.src = src;
-  this.sound.setAttribute("preload", "auto");
-  this.sound.setAttribute("controls", "none");
-  this.sound.style.display = "none";
-  document.body.appendChild(this.sound);
-  this.play = function () {
-    this.sound.play();
-  }
-  this.stop = function () {
-    this.sound.pause();
-  }
-}
-
 class Game {
   constructor() {
     this.asteroids = [];
@@ -938,10 +935,18 @@ class Game {
     this.singularities = [];
     this.addEnemies();
     this.gameTime = 0;
-    this.intervalTime = 0;
     this.spawned = false; // REFACTOR PLEASE
     this.enemyCreatorList = this.createEnemyCreatorList()
+    this.deathSound = new Audio("sounds/Enemy_explode.wav")
+    this.deathSound.volume = 0.5;
+    this.bulletWallhit = new Audio("sounds/bullet_hitwall.wav")
+    this.bulletWallhit.volume = 0.5;
+
+    this.intervalTiming = 1;
+    this.intervalTime = 0;
+    this.hugeSequenceTime = 0;
     this.sequenceCount = 0;
+    this.lives = 3;
   }
 
   
@@ -963,23 +968,26 @@ class Game {
   }
 
   add(object) {
-    if (object instanceof Asteroid) {
-      this.asteroids.push(object);
-    } else if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow || object instanceof Grunt || object instanceof Weaver) {
-      this.enemies.push(object)
-    } else if (object instanceof Singularity){
-      this.singularities.push(object)
-    } else if (object instanceof Bullet) {
-      this.bullets.push(object);
-    } else if (object instanceof Ship) {
-      this.ships.push(object);
-    } else if (object instanceof ParticleExplosion) {
-      this.particleExplosions.push(object);
-    } else if (object instanceof EnemySpawn) {
-      this.spawningEnemies.push(object);
-    } else {
-      throw new Error("unknown type of object");
+    if (this.enemies.length < 50 || object instanceof Bullet){
+      if (object instanceof Asteroid) {
+        this.asteroids.push(object);
+      } else if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow || object instanceof Grunt || object instanceof Weaver) {
+        this.enemies.push(object)
+      } else if (object instanceof Singularity) {
+        this.singularities.push(object)
+      } else if (object instanceof Bullet) {
+        this.bullets.push(object);
+      } else if (object instanceof Ship) {
+        this.ships.push(object);
+      } else if (object instanceof ParticleExplosion) {
+        this.particleExplosions.push(object);
+      } else if (object instanceof EnemySpawn) {
+        this.spawningEnemies.push(object);
+      } else {
+        throw new Error("unknown type of object");
+      }
     }
+    
   }
 
   addEnemies() {
@@ -1027,11 +1035,11 @@ class Game {
   spawnSequence(delta) {
     this.intervalTime += delta;
     // this.gameTime += delta;
-    if (this.intervalTime > 500 && this.sequenceCount < 10) {
+    if (this.intervalTime > (500 * this.intervalTiming) && this.sequenceCount < 10) {
       this.intervalTime = 0;
       this.randomSpawnEnemy();
       this.sequenceCount += 1
-    } else if (this.intervalTime > 2500 && this.sequenceCount === 10){
+    } else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 0) {
       this.intervalTime = 0
       this.sequenceCount +=1
       let enemies_to_spawn = []
@@ -1045,10 +1053,23 @@ class Game {
       }
       this.spawnEnemies(enemies_to_spawn);
 
-    } else if (this.intervalTime > 5000 && this.sequenceCount === 11) {
+    } else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 1) {
+      this.intervalTime = 0
+      this.sequenceCount += 1
+      let enemies_to_spawn = []
+      let randomPos = this.randomPosition();
+      for (let i = 0; i < 2; i++) {
+        for (let j = 0; j < 2; j++) {
+          enemies_to_spawn.push(
+            this.enemyCreatorList["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
+          )
+        }
+      }
+      this.spawnEnemies(enemies_to_spawn);
+    } else if (this.intervalTime > (5000 * this.intervalTiming) && this.sequenceCount === 11) {
       this.intervalTime = 0;
       this.sequenceCount += 1;
-    } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11)) {
+    } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 0) {
       this.intervalTime = 0;
       this.sequenceCount += 1 ;
 
@@ -1063,7 +1084,26 @@ class Game {
         enemies_to_spawn.push(this.enemyCreatorList["Grunt"]( corner))
       })
       this.spawnEnemies(enemies_to_spawn);
-    } 
+    } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 1) {
+      this.intervalTime = 0;
+      this.sequenceCount += 1;
+
+      let enemies_to_spawn = [];
+      let fourCorners = [
+        [40, 40],
+        [Game.DIM_X - 40, 40],
+        [40, Game.DIM_Y - 40],
+        [Game.DIM_X - 40, Game.DIM_Y - 40]
+      ]
+      fourCorners.forEach((corner) => {
+        enemies_to_spawn.push(this.enemyCreatorList["Weaver"](corner))
+      })
+      this.spawnEnemies(enemies_to_spawn);
+    } else if( this.sequenceCount === 26) {
+      this.sequenceCount = 0;
+      this.intervalTiming *= 0.9;
+      this.hugeSequenceTime += 1;
+    }
     // if (this.gameTime % 2000 === 0){
     //   this.spawned = false
     // }
@@ -1094,7 +1134,7 @@ class Game {
   }
 
   allObjects2() {
-    return [].concat(this.bullets, this.singularities)
+    return [].concat(this.bullets, this.singularities, this.ships)
   }
 
   checkCollisions(ctx) {
@@ -1112,6 +1152,9 @@ class Game {
         }
         if (obj1.isCollidedWith(obj2)) {
           const explosionId = this.particleExplosions.length 
+          let death = new Audio("./sounds/Enemy_explode.wav")
+          death.volume = 0.4;
+          death.play();
           this.add(new ParticleExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
           const collision = obj1.collideWith(obj2);
           // if (collision) return;
@@ -1119,6 +1162,18 @@ class Game {
       }
     }
 
+  }
+  die(){
+    this.intervalTiming = this.intervalTiming;
+    this.intervalTime = 0;
+    this.hugeSequenceTime = 0;
+    this.sequenceCount = 0;
+    this.lives -= 1;
+    this.enemies = [];
+    if (this.lives === 0){
+      this.intervalTiming = 1;
+      location.reload();
+    }
   }
 
 
@@ -1279,7 +1334,8 @@ class GameView {
     });
 
     key("m", () => {
-      createjs.Sound.stop()
+      let el = document.querySelectorAll("audio");
+
     })
 
 
@@ -1304,7 +1360,10 @@ class GameView {
     this.lastTime = 0;
     
     window.addEventListener('click', (e) => {
-      
+      let theme = new Audio("./sounds/Geometry_OST.mp3");
+      theme.id = "OST";
+      theme.play();
+
       requestAnimationFrame(this.animate.bind(this));
     });
   }
@@ -1348,20 +1407,20 @@ class GameView {
   }
 }
 
-function sound(src) {
-  this.sound = document.createElement("audio");
-  this.sound.src = src;
-  this.sound.setAttribute("preload", "auto");
-  this.sound.setAttribute("controls", "none");
-  this.sound.style.display = "none";
-  document.body.appendChild(this.sound);
-  this.play = function () {
-    this.sound.play();
-  }
-  this.stop = function () {
-    this.sound.pause();
-  }
-}
+// function sound(src) {
+//   this.sound = document.createElement("audio");
+//   this.sound.src = src;
+//   this.sound.setAttribute("preload", "auto");
+//   this.sound.setAttribute("controls", "none");
+//   this.sound.style.display = "none";
+//   document.body.appendChild(this.sound);
+//   this.play = function () {
+//     this.sound.play();
+//   }
+//   this.stop = function () {
+//     this.sound.pause();
+//   }
+// }
 
 GameView.MOVES = {
   w: [0, -1],
@@ -1431,6 +1490,8 @@ class MovingObject {
       if (this.isWrappable) {
         this.pos = this.game.wrap(this.pos);
       } else {
+        let wallhit = new Audio("sounds/bullet_hitwall.wav")
+        wallhit.play();
         this.remove();
       }
     }
@@ -1463,7 +1524,7 @@ class EnemySpawn{
     this.spawningScale = 1.5;
     this.lifeTime = 1000;
     this.existTime = 0;
-    // this.enemy.spawnSound.play();
+    this.enemy.spawnSound.play();
   }
   move(timeDelta) {
     
@@ -1690,7 +1751,14 @@ class Ship extends MovingObject {
     this.fireAngle = 0; // might have to make it null
     
     setInterval(
-      () => this.fireBullet(),
+      () => {
+        this.fireBullet()
+        let bulletSound = new Audio("sounds/Fire_normal.wav");
+        bulletSound.volume = 0.2;
+        bulletSound.play()
+        // this.sound = 0.2;
+        // this.sound.play();
+      },
       1000 * 60 / (340 * 1.5)  
     )
   }
@@ -1798,8 +1866,10 @@ class Ship extends MovingObject {
   }
 
   relocate() {
-    // this.pos = this.game.randomPosition();
-    // this.vel = [0, 0];
+    // location.reload();
+    this.game.die();
+    this.pos = this.game.randomPosition();
+    this.vel = [0, 0];
   }
 }
 

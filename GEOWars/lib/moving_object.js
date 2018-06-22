@@ -47,6 +47,8 @@ class MovingObject {
       if (this.isWrappable) {
         this.pos = this.game.wrap(this.pos);
       } else {
+        let wallhit = new Audio("sounds/bullet_hitwall.wav")
+        wallhit.play();
         this.remove();
       }
     }

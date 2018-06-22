@@ -25,7 +25,14 @@ class Ship extends MovingObject {
     this.fireAngle = 0; // might have to make it null
     
     setInterval(
-      () => this.fireBullet(),
+      () => {
+        this.fireBullet()
+        let bulletSound = new Audio("sounds/Fire_normal.wav");
+        bulletSound.volume = 0.2;
+        bulletSound.play()
+        // this.sound = 0.2;
+        // this.sound.play();
+      },
       1000 * 60 / (340 * 1.5)  
     )
   }
@@ -133,8 +140,10 @@ class Ship extends MovingObject {
   }
 
   relocate() {
-    // this.pos = this.game.randomPosition();
-    // this.vel = [0, 0];
+    // location.reload();
+    this.game.die();
+    this.pos = this.game.randomPosition();
+    this.vel = [0, 0];
   }
 }
 

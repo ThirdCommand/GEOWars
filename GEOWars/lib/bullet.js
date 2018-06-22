@@ -9,6 +9,7 @@ class Bullet extends MovingObject {
     this.acc = [0,0];
     this.vel = options.vel
     this.speed = 7;
+    
   }
 
   // move(timeDelta) {

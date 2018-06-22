@@ -1,3 +1,6 @@
+// Asteroids #APP ACADEMY 
+
+
 const Asteroid = require("./asteroid");
 const Bullet = require("./bullet");
 const Ship = require("./ship");
@@ -12,21 +15,6 @@ const Weaver = require("./enemies/weaver")
 const Singularity = require("./enemies/singularity")
 const EnemySpawn = require("./particles/enemy_spawn");
 
-function sound(src) {
-  this.sound = document.createElement("audio");
-  this.sound.src = src;
-  this.sound.setAttribute("preload", "auto");
-  this.sound.setAttribute("controls", "none");
-  this.sound.style.display = "none";
-  document.body.appendChild(this.sound);
-  this.play = function () {
-    this.sound.play();
-  }
-  this.stop = function () {
-    this.sound.pause();
-  }
-}
-
 class Game {
   constructor() {
     this.asteroids = [];
@@ -38,10 +26,18 @@ class Game {
     this.singularities = [];
     this.addEnemies();
     this.gameTime = 0;
-    this.intervalTime = 0;
     this.spawned = false; // REFACTOR PLEASE
     this.enemyCreatorList = this.createEnemyCreatorList()
+    this.deathSound = new Audio("sounds/Enemy_explode.wav")
+    this.deathSound.volume = 0.5;
+    this.bulletWallhit = new Audio("sounds/bullet_hitwall.wav")
+    this.bulletWallhit.volume = 0.5;
+
+    this.intervalTiming = 1;
+    this.intervalTime = 0;
+    this.hugeSequenceTime = 0;
     this.sequenceCount = 0;
+    this.lives = 3;
   }
 
   
@@ -63,23 +59,26 @@ class Game {
   }
 
   add(object) {
-    if (object instanceof Asteroid) {
-      this.asteroids.push(object);
-    } else if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow || object instanceof Grunt || object instanceof Weaver) {
-      this.enemies.push(object)
-    } else if (object instanceof Singularity){
-      this.singularities.push(object)
-    } else if (object instanceof Bullet) {
-      this.bullets.push(object);
-    } else if (object instanceof Ship) {
-      this.ships.push(object);
-    } else if (object instanceof ParticleExplosion) {
-      this.particleExplosions.push(object);
-    } else if (object instanceof EnemySpawn) {
-      this.spawningEnemies.push(object);
-    } else {
-      throw new Error("unknown type of object");
+    if (this.enemies.length < 50 || object instanceof Bullet){
+      if (object instanceof Asteroid) {
+        this.asteroids.push(object);
+      } else if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow || object instanceof Grunt || object instanceof Weaver) {
+        this.enemies.push(object)
+      } else if (object instanceof Singularity) {
+        this.singularities.push(object)
+      } else if (object instanceof Bullet) {
+        this.bullets.push(object);
+      } else if (object instanceof Ship) {
+        this.ships.push(object);
+      } else if (object instanceof ParticleExplosion) {
+        this.particleExplosions.push(object);
+      } else if (object instanceof EnemySpawn) {
+        this.spawningEnemies.push(object);
+      } else {
+        throw new Error("unknown type of object");
+      }
     }
+    
   }
 
   addEnemies() {
@@ -127,11 +126,11 @@ class Game {
   spawnSequence(delta) {
     this.intervalTime += delta;
     // this.gameTime += delta;
-    if (this.intervalTime > 500 && this.sequenceCount < 10) {
+    if (this.intervalTime > (500 * this.intervalTiming) && this.sequenceCount < 10) {
       this.intervalTime = 0;
       this.randomSpawnEnemy();
       this.sequenceCount += 1
-    } else if (this.intervalTime > 2500 && this.sequenceCount === 10){
+    } else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 0) {
       this.intervalTime = 0
       this.sequenceCount +=1
       let enemies_to_spawn = []
@@ -145,10 +144,23 @@ class Game {
       }
       this.spawnEnemies(enemies_to_spawn);
 
-    } else if (this.intervalTime > 5000 && this.sequenceCount === 11) {
+    } else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 1) {
+      this.intervalTime = 0
+      this.sequenceCount += 1
+      let enemies_to_spawn = []
+      let randomPos = this.randomPosition();
+      for (let i = 0; i < 2; i++) {
+        for (let j = 0; j < 2; j++) {
+          enemies_to_spawn.push(
+            this.enemyCreatorList["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
+          )
+        }
+      }
+      this.spawnEnemies(enemies_to_spawn);
+    } else if (this.intervalTime > (5000 * this.intervalTiming) && this.sequenceCount === 11) {
       this.intervalTime = 0;
       this.sequenceCount += 1;
-    } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11)) {
+    } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 0) {
       this.intervalTime = 0;
       this.sequenceCount += 1 ;
 
@@ -163,7 +175,26 @@ class Game {
         enemies_to_spawn.push(this.enemyCreatorList["Grunt"]( corner))
       })
       this.spawnEnemies(enemies_to_spawn);
-    } 
+    } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 1) {
+      this.intervalTime = 0;
+      this.sequenceCount += 1;
+
+      let enemies_to_spawn = [];
+      let fourCorners = [
+        [40, 40],
+        [Game.DIM_X - 40, 40],
+        [40, Game.DIM_Y - 40],
+        [Game.DIM_X - 40, Game.DIM_Y - 40]
+      ]
+      fourCorners.forEach((corner) => {
+        enemies_to_spawn.push(this.enemyCreatorList["Weaver"](corner))
+      })
+      this.spawnEnemies(enemies_to_spawn);
+    } else if( this.sequenceCount === 26) {
+      this.sequenceCount = 0;
+      this.intervalTiming *= 0.9;
+      this.hugeSequenceTime += 1;
+    }
     // if (this.gameTime % 2000 === 0){
     //   this.spawned = false
     // }
@@ -194,7 +225,7 @@ class Game {
   }
 
   allObjects2() {
-    return [].concat(this.bullets, this.singularities)
+    return [].concat(this.bullets, this.singularities, this.ships)
   }
 
   checkCollisions(ctx) {
@@ -212,6 +243,9 @@ class Game {
         }
         if (obj1.isCollidedWith(obj2)) {
           const explosionId = this.particleExplosions.length 
+          let death = new Audio("./sounds/Enemy_explode.wav")
+          death.volume = 0.4;
+          death.play();
           this.add(new ParticleExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
           const collision = obj1.collideWith(obj2);
           // if (collision) return;
@@ -219,6 +253,18 @@ class Game {
       }
     }
 
+  }
+  die(){
+    this.intervalTiming = this.intervalTiming;
+    this.intervalTime = 0;
+    this.hugeSequenceTime = 0;
+    this.sequenceCount = 0;
+    this.lives -= 1;
+    this.enemies = [];
+    if (this.lives === 0){
+      this.intervalTiming = 1;
+      location.reload();
+    }
   }
 
 

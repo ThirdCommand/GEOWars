@@ -17,6 +17,8 @@ class Weaver extends MovingObject {
     this.weaverCloseHitBox = 35;
     this.directionInfluenced = false;
     this.influencers = [];
+    this.spawnSound = new Audio("./sounds/Enemy_spawn_green.wav");
+    this.spawnSound.volume = options.volume || 0.2;
   }
 
 
@@ -128,7 +130,8 @@ class Weaver extends MovingObject {
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
-      this.remove();
+      this.remove()
+      
       otherObject.remove();
       return true;
     }

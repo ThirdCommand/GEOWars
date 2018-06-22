@@ -12,6 +12,8 @@ class Pinwheel extends MovingObject {
     this.speed = 1;
     this.vel = Util.randomVec(this.speed);
     this.acc = [0,0];
+    this.spawnSound = new Audio("./sounds/Enemy_spawn_blue.wav");
+    this.spawnSound.volume = 0.2;
     
   }
 
@@ -72,6 +74,7 @@ class Pinwheel extends MovingObject {
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
       this.remove();
+      
       otherObject.remove();
       return true;
     }

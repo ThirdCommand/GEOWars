@@ -19,7 +19,8 @@ class GameView {
     });
 
     key("m", () => {
-      createjs.Sound.stop()
+      let el = document.querySelectorAll("audio");
+
     })
 
 
@@ -44,7 +45,10 @@ class GameView {
     this.lastTime = 0;
     
     window.addEventListener('click', (e) => {
-      
+      let theme = new Audio("./sounds/Geometry_OST.mp3");
+      theme.id = "OST";
+      theme.play();
+
       requestAnimationFrame(this.animate.bind(this));
     });
   }
@@ -88,20 +92,20 @@ class GameView {
   }
 }
 
-function sound(src) {
-  this.sound = document.createElement("audio");
-  this.sound.src = src;
-  this.sound.setAttribute("preload", "auto");
-  this.sound.setAttribute("controls", "none");
-  this.sound.style.display = "none";
-  document.body.appendChild(this.sound);
-  this.play = function () {
-    this.sound.play();
-  }
-  this.stop = function () {
-    this.sound.pause();
-  }
-}
+// function sound(src) {
+//   this.sound = document.createElement("audio");
+//   this.sound.src = src;
+//   this.sound.setAttribute("preload", "auto");
+//   this.sound.setAttribute("controls", "none");
+//   this.sound.style.display = "none";
+//   document.body.appendChild(this.sound);
+//   this.play = function () {
+//     this.sound.play();
+//   }
+//   this.stop = function () {
+//     this.sound.pause();
+//   }
+// }
 
 GameView.MOVES = {
   w: [0, -1],

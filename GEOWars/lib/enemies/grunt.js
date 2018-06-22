@@ -12,7 +12,8 @@ class Grunt extends MovingObject {
     this.vel = [0,0];
     this.acc = [0,0];
 
-    // this.spawnSound = new sound("../../sounds/Enemy_spawn_blue.wav");
+    this.spawnSound = new Audio("./sounds/Enemy_spawn_blue.wav");
+    this.spawnSound.volume = options.volume || 0.2;
   }
 
 
@@ -41,13 +42,21 @@ class Grunt extends MovingObject {
     
     let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     let cycleSpeed = 0.01;
+    
 
     if (this.stretchScale_W < 0.7 || this.stretchScale_W > 1) {
       this.stretchDirection *= -1
     } 
+    if (this.game.enemies.length > 40){
+      this.stretchDirection = 1;
+      this.stretchScale_W = 1;
+      this.stretchScale_L = 1;
+    } else {
+      
+      this.stretchScale_W = this.stretchScale_W +  -this.stretchDirection * cycleSpeed * cycleSpeedScale;
+      this.stretchScale_L = this.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
+    }
 
-    this.stretchScale_W = this.stretchScale_W +  -this.stretchDirection * cycleSpeed * cycleSpeedScale;
-    this.stretchScale_L = this.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
     
   }
 
@@ -82,6 +91,7 @@ class Grunt extends MovingObject {
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
       this.remove();
+      
       otherObject.remove();
       return true;
     }
