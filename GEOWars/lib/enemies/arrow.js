@@ -13,6 +13,7 @@ class Arrow extends MovingObject {
     this.speed = 3;
     this.vel = Util.vectorCartisian(this.angle, this.speed);
     this.acc = [0,0];
+    this.something = 0;
   }
 
   move(timeDelta) {
