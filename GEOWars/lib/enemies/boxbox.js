@@ -8,7 +8,7 @@ class BoxBox extends MovingObject {
     this.pos = options.pos || options.game.randomPosition();
     this.vel = [0,0]
     this.acc = [0,0];
-    this.spawnSound = new Audio("./sounds/Enemy_spawn_blue.wav");
+    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_blue.wav");
     this.spawnSound.volume = 0.2;
   }
 

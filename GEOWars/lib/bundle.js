@@ -208,7 +208,7 @@ class Arrow extends MovingObject {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
     this.angle = options.angle || Math.PI / 3;
-    this.spawnSound = new Audio("./sounds/Enemy_spawn_purple.wav")
+    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_purple.wav")
     this.spawnSound.volume = 0.2;
     this.speed = 3;
     this.vel = Util.vectorCartisian(this.angle, this.speed);
@@ -308,7 +308,7 @@ class BoxBox extends MovingObject {
     this.pos = options.pos || options.game.randomPosition();
     this.vel = [0,0]
     this.acc = [0,0];
-    this.spawnSound = new Audio("./sounds/Enemy_spawn_blue.wav");
+    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_blue.wav");
     this.spawnSound.volume = 0.2;
   }
 
@@ -408,7 +408,7 @@ class Grunt extends MovingObject {
     this.vel = [0,0];
     this.acc = [0,0];
 
-    this.spawnSound = new Audio("./sounds/Enemy_spawn_blue.wav");
+    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_blue.wav");
     this.spawnSound.volume = options.volume || 0.2;
   }
 
@@ -531,7 +531,7 @@ class Pinwheel extends MovingObject {
     this.speed = 1;
     this.vel = Util.randomVec(this.speed);
     this.acc = [0,0];
-    this.spawnSound = new Audio("./sounds/Enemy_spawn_blue.wav");
+    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_blue.wav");
     this.spawnSound.volume = 0.2;
     
   }
@@ -764,7 +764,7 @@ class Weaver extends MovingObject {
     this.weaverCloseHitBox = 35;
     this.directionInfluenced = false;
     this.influencers = [];
-    this.spawnSound = new Audio("./sounds/Enemy_spawn_green.wav");
+    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_green.wav");
     this.spawnSound.volume = options.volume || 0.2;
   }
 
@@ -934,13 +934,13 @@ class Game {
     this.particleExplosions = [];
     this.spawningEnemies = [];
     this.singularities = [];
-    this.addEnemies();
+    // this.addEnemies();
     this.gameTime = 0;
     this.spawned = false; // REFACTOR PLEASE
     this.enemyCreatorList = this.createEnemyCreatorList()
-    this.deathSound = new Audio("sounds/Enemy_explode.wav")
+    this.deathSound = new Audio("GEOWars/sounds/Enemy_explode.wav")
     this.deathSound.volume = 0.5;
-    this.bulletWallhit = new Audio("sounds/bullet_hitwall.wav")
+    this.bulletWallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
     this.bulletWallhit.volume = 0.5;
 
     this.intervalTiming = 1;
@@ -1153,7 +1153,7 @@ class Game {
         }
         if (obj1.isCollidedWith(obj2)) {
           const explosionId = this.particleExplosions.length 
-          let death = new Audio("./sounds/Enemy_explode.wav")
+          let death = new Audio("GEOWars/sounds/Enemy_explode.wav")
           death.volume = 0.4;
           death.play();
           this.add(new ParticleExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
@@ -1288,8 +1288,8 @@ Game.NUM_BOXES = 0;
 Game.NUM_PINWHEELS = 0;
 Game.NUM_ARROWS = 0;
 Game.NUM_GRUNTS = 0;
-Game.NUM_WEAVERS = 2;
-Game.NUM_SINGULARITIES = 2;
+Game.NUM_WEAVERS = 0;
+Game.NUM_SINGULARITIES = 0;
 module.exports = Game;
 
 Game.Spawn1 = {
@@ -1335,7 +1335,7 @@ class GameView {
     });
 
     key("m", () => {
-      let el = document.querySelectorAll("audio");
+      let el = document.querySelectorAll("Audio");
 
     })
 
@@ -1361,9 +1361,10 @@ class GameView {
     this.lastTime = 0;
     
     window.addEventListener('click', (e) => {
-      let theme = new Audio("./sounds/Geometry_OST.mp3");
+      let theme = new Audio("GEOWars/sounds/Geometry_OST.mp3");
       theme.id = "OST";
       theme.play();
+      this.game.ships[0].start();
 
       requestAnimationFrame(this.animate.bind(this));
     });
@@ -1491,7 +1492,7 @@ class MovingObject {
       if (this.isWrappable) {
         this.pos = this.game.wrap(this.pos);
       } else {
-        let wallhit = new Audio("sounds/bullet_hitwall.wav")
+        let wallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
         wallhit.play();
         this.remove();
       }
@@ -1750,17 +1751,17 @@ class Ship extends MovingObject {
     // this.acc = [0,0];
     this.mousePos = [0,0];
     this.fireAngle = 0; // might have to make it null
-    
+  }
+
+  start(){
     setInterval(
       () => {
         this.fireBullet()
-        let bulletSound = new Audio("sounds/Fire_normal.wav");
+        let bulletSound = new Audio("GEOWars/sounds/Fire_normal.wav");
         bulletSound.volume = 0.2;
         bulletSound.play()
-        // this.sound = 0.2;
-        // this.sound.play();
       },
-      1000 * 60 / (340 * 1.5)  
+      1000 * 60 / (340 * 1.5)
     )
   }
 

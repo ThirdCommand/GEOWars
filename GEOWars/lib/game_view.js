@@ -19,7 +19,7 @@ class GameView {
     });
 
     key("m", () => {
-      let el = document.querySelectorAll("audio");
+      let el = document.querySelectorAll("Audio");
 
     })
 
@@ -45,9 +45,10 @@ class GameView {
     this.lastTime = 0;
     
     window.addEventListener('click', (e) => {
-      let theme = new Audio("./sounds/Geometry_OST.mp3");
+      let theme = new Audio("GEOWars/sounds/Geometry_OST.mp3");
       theme.id = "OST";
       theme.play();
+      this.game.ships[0].start();
 
       requestAnimationFrame(this.animate.bind(this));
     });

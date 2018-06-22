@@ -8,7 +8,7 @@ class Arrow extends MovingObject {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
     this.angle = options.angle || Math.PI / 3;
-    this.spawnSound = new Audio("./sounds/Enemy_spawn_purple.wav")
+    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_purple.wav")
     this.spawnSound.volume = 0.2;
     this.speed = 3;
     this.vel = Util.vectorCartisian(this.angle, this.speed);

@@ -23,17 +23,17 @@ class Ship extends MovingObject {
     // this.acc = [0,0];
     this.mousePos = [0,0];
     this.fireAngle = 0; // might have to make it null
-    
+  }
+
+  start(){
     setInterval(
       () => {
         this.fireBullet()
-        let bulletSound = new Audio("sounds/Fire_normal.wav");
+        let bulletSound = new Audio("GEOWars/sounds/Fire_normal.wav");
         bulletSound.volume = 0.2;
         bulletSound.play()
-        // this.sound = 0.2;
-        // this.sound.play();
       },
-      1000 * 60 / (340 * 1.5)  
+      1000 * 60 / (340 * 1.5)
     )
   }
 

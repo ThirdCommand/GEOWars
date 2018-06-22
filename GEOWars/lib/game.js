@@ -24,13 +24,13 @@ class Game {
     this.particleExplosions = [];
     this.spawningEnemies = [];
     this.singularities = [];
-    this.addEnemies();
+    // this.addEnemies();
     this.gameTime = 0;
     this.spawned = false; // REFACTOR PLEASE
     this.enemyCreatorList = this.createEnemyCreatorList()
-    this.deathSound = new Audio("sounds/Enemy_explode.wav")
+    this.deathSound = new Audio("GEOWars/sounds/Enemy_explode.wav")
     this.deathSound.volume = 0.5;
-    this.bulletWallhit = new Audio("sounds/bullet_hitwall.wav")
+    this.bulletWallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
     this.bulletWallhit.volume = 0.5;
 
     this.intervalTiming = 1;
@@ -243,7 +243,7 @@ class Game {
         }
         if (obj1.isCollidedWith(obj2)) {
           const explosionId = this.particleExplosions.length 
-          let death = new Audio("./sounds/Enemy_explode.wav")
+          let death = new Audio("GEOWars/sounds/Enemy_explode.wav")
           death.volume = 0.4;
           death.play();
           this.add(new ParticleExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
@@ -378,8 +378,8 @@ Game.NUM_BOXES = 0;
 Game.NUM_PINWHEELS = 0;
 Game.NUM_ARROWS = 0;
 Game.NUM_GRUNTS = 0;
-Game.NUM_WEAVERS = 2;
-Game.NUM_SINGULARITIES = 2;
+Game.NUM_WEAVERS = 0;
+Game.NUM_SINGULARITIES = 0;
 module.exports = Game;
 
 Game.Spawn1 = {

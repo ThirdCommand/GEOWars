@@ -12,7 +12,7 @@ class Pinwheel extends MovingObject {
     this.speed = 1;
     this.vel = Util.randomVec(this.speed);
     this.acc = [0,0];
-    this.spawnSound = new Audio("./sounds/Enemy_spawn_blue.wav");
+    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_blue.wav");
     this.spawnSound.volume = 0.2;
     
   }
