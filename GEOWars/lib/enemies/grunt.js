@@ -11,6 +11,8 @@ class Grunt extends MovingObject {
     this.stretchDirection = -1;
     this.vel = [0,0];
     this.acc = [0,0];
+
+    // this.spawnSound = new sound("../../sounds/Enemy_spawn_blue.wav");
   }
 
 

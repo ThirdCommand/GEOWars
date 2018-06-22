@@ -12,6 +12,21 @@ const Weaver = require("./enemies/weaver")
 const Singularity = require("./enemies/singularity")
 const EnemySpawn = require("./particles/enemy_spawn");
 
+function sound(src) {
+  this.sound = document.createElement("audio");
+  this.sound.src = src;
+  this.sound.setAttribute("preload", "auto");
+  this.sound.setAttribute("controls", "none");
+  this.sound.style.display = "none";
+  document.body.appendChild(this.sound);
+  this.play = function () {
+    this.sound.play();
+  }
+  this.stop = function () {
+    this.sound.pause();
+  }
+}
+
 class Game {
   constructor() {
     this.asteroids = [];
@@ -26,18 +41,22 @@ class Game {
     this.intervalTime = 0;
     this.spawned = false; // REFACTOR PLEASE
     this.enemyCreatorList = this.createEnemyCreatorList()
+    this.sequenceCount = 0;
   }
+
+  
+
   randomArrowDirection () {
     let angles = [0, Math.PI / 2, Math.PI, Math.PI * 3/2]
     return angles[Math.floor(Math.random() * angles.length) % angles.length]
   }
   createEnemyCreatorList() {
     return {
-      BoxBox: () => (new BoxBox({ game: this})),
-      Pinwheel: () => (new Pinwheel({ game: this })),
-      Arrow: () => (new Arrow({game: this, angle: this.randomArrowDirection()})),
-      Grunt: () => (new Grunt({game: this})),
-      Weaver: () => (new Weaver({game: this}))
+      BoxBox: (pos) => (new BoxBox({ game: this, pos: pos})),
+      Pinwheel: (pos) => (new Pinwheel({ game: this, pos: pos })),
+      Arrow: (pos, angle) => (new Arrow({game: this, pos: pos, angle: this.randomArrowDirection()})),
+      Grunt: (pos) => (new Grunt({game: this, pos: pos})),
+      Weaver: (pos) => (new Weaver({game: this, pos: pos}))
       // Singularity: () => (new Singularity({game: this}))
     };
     
@@ -89,24 +108,62 @@ class Game {
   
   }
 
-  spawnEnemy(enemy){
+  randomSpawnEnemy(enemy){
     let pos = this.randomPosition();
     let enemyCreators = Object.values(this.enemyCreatorList)
     let spawn = new EnemySpawn(enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](), this);
 
     this.add(spawn)
   }
+  
 
   spawnEnemies(spawnList) {
+    spawnList.forEach((enemy) => {
+      let spawn = new EnemySpawn(enemy, this)
+      this.add(spawn)
+    })
   }
 
   spawnSequence(delta) {
     this.intervalTime += delta;
     // this.gameTime += delta;
-    if (this.intervalTime > 500) {
+    if (this.intervalTime > 500 && this.sequenceCount < 10) {
       this.intervalTime = 0;
-      this.spawnEnemy();
-    }
+      this.randomSpawnEnemy();
+      this.sequenceCount += 1
+    } else if (this.intervalTime > 2500 && this.sequenceCount === 10){
+      this.intervalTime = 0
+      this.sequenceCount +=1
+      let enemies_to_spawn = []
+      let randomPos = this.randomPosition();
+      for (let i = 0; i < 2; i++) {
+        for (let j = 0; j < 2; j++) {
+          enemies_to_spawn.push(
+            this.enemyCreatorList["BoxBox"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
+          )
+        }
+      }
+      this.spawnEnemies(enemies_to_spawn);
+
+    } else if (this.intervalTime > 5000 && this.sequenceCount === 11) {
+      this.intervalTime = 0;
+      this.sequenceCount += 1;
+    } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11)) {
+      this.intervalTime = 0;
+      this.sequenceCount += 1 ;
+
+      let enemies_to_spawn = [];
+      let fourCorners = [
+        [40,              40],
+        [Game.DIM_X - 40, 40],
+        [40, Game.DIM_Y - 40],
+        [Game.DIM_X - 40, Game.DIM_Y - 40]
+      ]
+      fourCorners.forEach((corner) => {
+        enemies_to_spawn.push(this.enemyCreatorList["Grunt"]( corner))
+      })
+      this.spawnEnemies(enemies_to_spawn);
+    } 
     // if (this.gameTime % 2000 === 0){
     //   this.spawned = false
     // }

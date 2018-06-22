@@ -18,6 +18,12 @@ class GameView {
       key(k, () => { ship.power(move); });
     });
 
+    key("m", () => {
+      createjs.Sound.stop()
+    })
+
+
+
     window.addEventListener('mousemove', (e) => {
       const x = {x: e.layerX};
       const y = {y: e.layerY};
@@ -79,6 +85,21 @@ class GameView {
 
     // every call to animate requests causes another call to animate
     requestAnimationFrame(this.animate.bind(this));
+  }
+}
+
+function sound(src) {
+  this.sound = document.createElement("audio");
+  this.sound.src = src;
+  this.sound.setAttribute("preload", "auto");
+  this.sound.setAttribute("controls", "none");
+  this.sound.style.display = "none";
+  document.body.appendChild(this.sound);
+  this.play = function () {
+    this.sound.play();
+  }
+  this.stop = function () {
+    this.sound.pause();
   }
 }
 
