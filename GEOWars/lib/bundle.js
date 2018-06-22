@@ -1173,6 +1173,7 @@ class Game {
     this.enemies = [];
     if (this.lives === 0){
       this.intervalTiming = 1;
+      this.lives = 3;
       location.reload();
     }
   }
