@@ -6,7 +6,11 @@ class EnemySpawn{
     this.spawningScale = 1.5;
     this.lifeTime = 1000;
     this.existTime = 0;
-    this.enemy.spawnSound.play();
+
+    if (!this.game.muted){
+      this.enemy.spawnSound.play();
+    }
+
   }
   move(timeDelta) {
     

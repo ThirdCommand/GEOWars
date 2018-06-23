@@ -87,6 +87,7 @@ class Grunt extends MovingObject {
 
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
+      // debugger;
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {

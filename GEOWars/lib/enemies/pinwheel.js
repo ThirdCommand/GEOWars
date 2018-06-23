@@ -71,6 +71,7 @@ class Pinwheel extends MovingObject {
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
       otherObject.relocate();
+      // debugger
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
       this.remove();

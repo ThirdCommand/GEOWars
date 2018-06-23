@@ -35,11 +35,10 @@ class MovingObject {
     // if the computer is busy the time delta will be larger
     // in this case the MovingObject should move farther in this frame
     // velocity of object is how far it should move in 1/60th of a second or something
-     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA,
-       offsetX = this.vel[0] * velocityScale,
-       offsetY = this.vel[1] * velocityScale;
-
-     this.pos = [this.pos[0] + offsetX, this.pos[1] + offsetY];
+    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA,
+    offsetX = this.vel[0] * velocityScale,
+    offsetY = this.vel[1] * velocityScale;
+    this.pos = [this.pos[0] + offsetX, this.pos[1] + offsetY];
 
     
 
@@ -47,9 +46,11 @@ class MovingObject {
       if (this.isWrappable) {
         this.pos = this.game.wrap(this.pos);
       } else {
-        let wallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
-        wallhit.play();
-        this.remove();
+        if (! this.game.muted) {
+          let wallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
+          wallhit.play();
+          this.remove();
+        } 
       }
     }
   }

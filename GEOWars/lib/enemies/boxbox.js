@@ -7,7 +7,7 @@ class BoxBox extends MovingObject {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
     this.vel = [0,0]
-    this.acc = [1,0];
+    this.acc = [0,0];
     this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_blue.wav");
     this.spawnSound.volume = 0.2;
   }
@@ -60,6 +60,7 @@ class BoxBox extends MovingObject {
 
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
+      // debugger;
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {

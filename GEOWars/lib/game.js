@@ -21,6 +21,7 @@ class Game {
     this.particleExplosions = [];
     this.spawningEnemies = [];
     this.singularities = [];
+    this.muted = true;
     // this.addEnemies();
     this.gameTime = 0;
     this.spawned = false; // REFACTOR PLEASE
@@ -234,10 +235,14 @@ class Game {
           }
         }
         if (obj1.isCollidedWith(obj2)) {
-          const explosionId = this.particleExplosions.length 
-          let death = new Audio("GEOWars/sounds/Enemy_explode.wav")
-          death.volume = 0.4;
-          death.play();
+          const explosionId = this.particleExplosions.length
+
+          if (!this.muted) {
+            let death = new Audio("GEOWars/sounds/Enemy_explode.wav")
+            death.volume = 0.4;
+            death.play();
+          }
+
           this.add(new ParticleExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
           const collision = obj1.collideWith(obj2);
           // if (collision) return;
@@ -310,6 +315,7 @@ class Game {
   }
 
   remove(object) {
+    object.pos = [-1000,-1000];
     if (object instanceof Bullet) {
       this.bullets.splice(this.bullets.indexOf(object), 1);
     } else if (object instanceof Ship) {

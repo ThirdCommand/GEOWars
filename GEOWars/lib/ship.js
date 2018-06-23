@@ -29,9 +29,11 @@ class Ship extends MovingObject {
     setInterval(
       () => {
         this.fireBullet()
-        let bulletSound = new Audio("GEOWars/sounds/Fire_normal.wav");
-        bulletSound.volume = 0.2;
-        bulletSound.play()
+        if (! this.game.muted) {
+          let bulletSound = new Audio("GEOWars/sounds/Fire_normal.wav");
+          bulletSound.volume = 0.2;
+          bulletSound.play()
+        }
       },
       1000 * 60 / (340 * 1.5)
     )
@@ -140,14 +142,15 @@ class Ship extends MovingObject {
   }
 
   relocate() {
-    // location.reload();
+    // debugger
     // this.game.die();
     // this.pos = this.game.randomPosition();
     // this.vel = [0, 0];
+    // this.acc = [0, 0];
   }
 }
 
-Ship.RADIUS = 4;
+Ship.RADIUS = 1;
 module.exports = Ship;
 const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 

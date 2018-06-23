@@ -220,6 +220,7 @@ class Arrow extends MovingObject {
 
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
+      // debugger;
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
@@ -261,7 +262,7 @@ class BoxBox extends MovingObject {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
     this.vel = [0,0]
-    this.acc = [1,0];
+    this.acc = [0,0];
     this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_blue.wav");
     this.spawnSound.volume = 0.2;
   }
@@ -314,6 +315,7 @@ class BoxBox extends MovingObject {
 
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
+      // debugger;
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
@@ -437,6 +439,7 @@ class Grunt extends MovingObject {
 
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
+      // debugger;
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
@@ -544,6 +547,7 @@ class Pinwheel extends MovingObject {
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
       otherObject.relocate();
+      // debugger
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
       this.remove();
@@ -665,6 +669,7 @@ class Singularity extends MovingObject {
 
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
+      // debugger
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet) {
@@ -827,6 +832,7 @@ class Weaver extends MovingObject {
 
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
+      // debugger;
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
@@ -884,6 +890,7 @@ class Game {
     this.particleExplosions = [];
     this.spawningEnemies = [];
     this.singularities = [];
+    this.muted = true;
     // this.addEnemies();
     this.gameTime = 0;
     this.spawned = false; // REFACTOR PLEASE
@@ -1097,10 +1104,14 @@ class Game {
           }
         }
         if (obj1.isCollidedWith(obj2)) {
-          const explosionId = this.particleExplosions.length 
-          let death = new Audio("GEOWars/sounds/Enemy_explode.wav")
-          death.volume = 0.4;
-          death.play();
+          const explosionId = this.particleExplosions.length
+
+          if (!this.muted) {
+            let death = new Audio("GEOWars/sounds/Enemy_explode.wav")
+            death.volume = 0.4;
+            death.play();
+          }
+
           this.add(new ParticleExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
           const collision = obj1.collideWith(obj2);
           // if (collision) return;
@@ -1173,6 +1184,7 @@ class Game {
   }
 
   remove(object) {
+    object.pos = [-1000,-1000];
     if (object instanceof Bullet) {
       this.bullets.splice(this.bullets.indexOf(object), 1);
     } else if (object instanceof Ship) {
@@ -1263,10 +1275,7 @@ class GameView {
     this.game = game;
     this.ship = this.game.addShip();
     this.canvasEl = canvasEl;
-    // this.canvasEl.onclick = function (e) {
-    //   // debugger
-    //   this.ship.fireBullet();
-    // };
+
   }
 
   bindKeyHandlers() {
@@ -1278,8 +1287,12 @@ class GameView {
     });
 
     key("m", () => {
-      let el = document.querySelectorAll("Audio");
-
+      this.game.muted = !this.game.muted;
+      if (this.game.muted) {
+        this.theme.pause();
+      } else {
+        this.theme.play();
+      }
     })
 
 
@@ -1304,11 +1317,10 @@ class GameView {
     this.lastTime = 0;
     
     window.addEventListener('click', (e) => {
-      let theme = new Audio("GEOWars/sounds/Geometry_OST.mp3");
-      theme.id = "OST";
-      theme.play();
-      this.game.ships[0].start();
+      this.theme = new Audio("GEOWars/sounds/Geometry_OST.mp3");
+      this.theme.id = "OST";
 
+      this.game.ships[0].start();
       requestAnimationFrame(this.animate.bind(this));
     });
   }
@@ -1423,11 +1435,10 @@ class MovingObject {
     // if the computer is busy the time delta will be larger
     // in this case the MovingObject should move farther in this frame
     // velocity of object is how far it should move in 1/60th of a second or something
-     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA,
-       offsetX = this.vel[0] * velocityScale,
-       offsetY = this.vel[1] * velocityScale;
-
-     this.pos = [this.pos[0] + offsetX, this.pos[1] + offsetY];
+    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA,
+    offsetX = this.vel[0] * velocityScale,
+    offsetY = this.vel[1] * velocityScale;
+    this.pos = [this.pos[0] + offsetX, this.pos[1] + offsetY];
 
     
 
@@ -1435,9 +1446,11 @@ class MovingObject {
       if (this.isWrappable) {
         this.pos = this.game.wrap(this.pos);
       } else {
-        let wallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
-        wallhit.play();
-        this.remove();
+        if (! this.game.muted) {
+          let wallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
+          wallhit.play();
+          this.remove();
+        } 
       }
     }
   }
@@ -1469,7 +1482,11 @@ class EnemySpawn{
     this.spawningScale = 1.5;
     this.lifeTime = 1000;
     this.existTime = 0;
-    this.enemy.spawnSound.play();
+
+    if (!this.game.muted){
+      this.enemy.spawnSound.play();
+    }
+
   }
   move(timeDelta) {
     
@@ -1700,9 +1717,11 @@ class Ship extends MovingObject {
     setInterval(
       () => {
         this.fireBullet()
-        let bulletSound = new Audio("GEOWars/sounds/Fire_normal.wav");
-        bulletSound.volume = 0.2;
-        bulletSound.play()
+        if (! this.game.muted) {
+          let bulletSound = new Audio("GEOWars/sounds/Fire_normal.wav");
+          bulletSound.volume = 0.2;
+          bulletSound.play()
+        }
       },
       1000 * 60 / (340 * 1.5)
     )
@@ -1811,14 +1830,15 @@ class Ship extends MovingObject {
   }
 
   relocate() {
-    // location.reload();
+    // debugger
     // this.game.die();
     // this.pos = this.game.randomPosition();
     // this.vel = [0, 0];
+    // this.acc = [0, 0];
   }
 }
 
-Ship.RADIUS = 4;
+Ship.RADIUS = 1;
 module.exports = Ship;
 const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 

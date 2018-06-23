@@ -4,10 +4,7 @@ class GameView {
     this.game = game;
     this.ship = this.game.addShip();
     this.canvasEl = canvasEl;
-    // this.canvasEl.onclick = function (e) {
-    //   // debugger
-    //   this.ship.fireBullet();
-    // };
+
   }
 
   bindKeyHandlers() {
@@ -19,8 +16,12 @@ class GameView {
     });
 
     key("m", () => {
-      let el = document.querySelectorAll("Audio");
-
+      this.game.muted = !this.game.muted;
+      if (this.game.muted) {
+        this.theme.pause();
+      } else {
+        this.theme.play();
+      }
     })
 
 
@@ -45,11 +46,10 @@ class GameView {
     this.lastTime = 0;
     
     window.addEventListener('click', (e) => {
-      let theme = new Audio("GEOWars/sounds/Geometry_OST.mp3");
-      theme.id = "OST";
-      theme.play();
-      this.game.ships[0].start();
+      this.theme = new Audio("GEOWars/sounds/Geometry_OST.mp3");
+      this.theme.id = "OST";
 
+      this.game.ships[0].start();
       requestAnimationFrame(this.animate.bind(this));
     });
   }
