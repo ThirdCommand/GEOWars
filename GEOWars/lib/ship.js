@@ -141,9 +141,9 @@ class Ship extends MovingObject {
 
   relocate() {
     // location.reload();
-    this.game.die();
-    this.pos = this.game.randomPosition();
-    this.vel = [0, 0];
+    // this.game.die();
+    // this.pos = this.game.randomPosition();
+    // this.vel = [0, 0];
   }
 }
 

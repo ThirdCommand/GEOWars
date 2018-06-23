@@ -66,61 +66,15 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./lib/asteroids.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./lib/GEOWars.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./lib/asteroid.js":
-/*!*************************!*\
-  !*** ./lib/asteroid.js ***!
-  \*************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-const Util = __webpack_require__(/*! ./util */ "./lib/util.js");
-const MovingObject = __webpack_require__(/*! ./moving_object */ "./lib/moving_object.js");
-const Ship = __webpack_require__(/*! ./ship */ "./lib/ship.js");
-const Bullet = __webpack_require__(/*! ./bullet */ "./lib/bullet.js");
-
-const DEFAULTS = {
-  COLOR: "#505050",
-  RADIUS: 10,
-  SPEED: 1
-};
-
-class Asteroid extends MovingObject {
-  constructor(options = {}) {
-    options.color = DEFAULTS.COLOR;
-    options.pos = options.pos || options.game.randomPosition();
-    options.radius = DEFAULTS.RADIUS;
-    options.vel = options.vel || Util.randomVec(DEFAULTS.SPEED);
-    super(options);
-  }
-
-  collideWith(otherObject) {
-    if (otherObject instanceof Ship) {
-      otherObject.relocate();
-      return true;
-    } else if (otherObject instanceof Bullet) {
-      this.remove();
-      otherObject.remove();
-      return true;
-    }
-
-    return false;
-  }
-}
-
-module.exports = Asteroid;
-
-
-/***/ }),
-
-/***/ "./lib/asteroids.js":
-/*!**************************!*\
-  !*** ./lib/asteroids.js ***!
-  \**************************/
+/***/ "./lib/GEOWars.js":
+/*!************************!*\
+  !*** ./lib/GEOWars.js ***!
+  \************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -307,7 +261,7 @@ class BoxBox extends MovingObject {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
     this.vel = [0,0]
-    this.acc = [0,0];
+    this.acc = [1,0];
     this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_blue.wav");
     this.spawnSound.volume = 0.2;
   }
@@ -674,7 +628,6 @@ class Singularity extends MovingObject {
     if (r > (this.gravityWellSize * 7/8)){
       object.acc = [0,0];
     } else {
-
       let newAcc = [
         unitVector[0] * this.gravityConstant / (r * r),
         unitVector[1] * this.gravityConstant / (r * r)
@@ -908,10 +861,8 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-// Asteroids #APP ACADEMY 
 
 
-const Asteroid = __webpack_require__(/*! ./asteroid */ "./lib/asteroid.js");
 const Bullet = __webpack_require__(/*! ./bullet */ "./lib/bullet.js");
 const Ship = __webpack_require__(/*! ./ship */ "./lib/ship.js");
 const Util = __webpack_require__(/*! ./util */ "./lib/util.js");
@@ -927,7 +878,6 @@ const EnemySpawn = __webpack_require__(/*! ./particles/enemy_spawn */ "./lib/par
 
 class Game {
   constructor() {
-    this.asteroids = [];
     this.enemies = [];
     this.bullets = [];
     this.ships = [];
@@ -970,9 +920,7 @@ class Game {
 
   add(object) {
     if (this.enemies.length < 50 || object instanceof Bullet){
-      if (object instanceof Asteroid) {
-        this.asteroids.push(object);
-      } else if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow || object instanceof Grunt || object instanceof Weaver) {
+      if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow || object instanceof Grunt || object instanceof Weaver) {
         this.enemies.push(object)
       } else if (object instanceof Singularity) {
         this.singularities.push(object)
@@ -992,9 +940,6 @@ class Game {
   }
 
   addEnemies() {
-    for (let i = 0; i < Game.NUM_ASTEROIDS; i++) {
-      this.add(new Asteroid({ game: this }));
-    }
     for (let i = 0; i < Game.NUM_BOXES; i++) {
       this.add(new BoxBox({ game: this}));
     }
@@ -1126,7 +1071,7 @@ class Game {
   }
 
   allObjects() {
-    return [].concat(this.asteroids, this.enemies, this.singularities); //this.bullets);
+    return [].concat(this.enemies, this.singularities); //this.bullets);
   }
 
   //explosions
@@ -1230,8 +1175,6 @@ class Game {
   remove(object) {
     if (object instanceof Bullet) {
       this.bullets.splice(this.bullets.indexOf(object), 1);
-    } else if (object instanceof Asteroid) {
-      this.asteroids.splice(this.asteroids.indexOf(object), 1);
     } else if (object instanceof Ship) {
       this.ships.splice(this.ships.indexOf(object), 1);
     } else if (object instanceof ParticleExplosion) {
@@ -1284,7 +1227,6 @@ Game.BG_COLOR = "#000000";
 Game.DIM_X = 1000;
 Game.DIM_Y = 600;
 // Game.FPS = 32;
-Game.NUM_ASTEROIDS = 0;
 Game.NUM_BOXES = 0;
 Game.NUM_PINWHEELS = 0;
 Game.NUM_ARROWS = 0;
@@ -1870,9 +1812,9 @@ class Ship extends MovingObject {
 
   relocate() {
     // location.reload();
-    this.game.die();
-    this.pos = this.game.randomPosition();
-    this.vel = [0, 0];
+    // this.game.die();
+    // this.pos = this.game.randomPosition();
+    // this.vel = [0, 0];
   }
 }
 

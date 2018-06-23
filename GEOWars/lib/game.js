@@ -1,7 +1,5 @@
-// Asteroids #APP ACADEMY 
 
 
-const Asteroid = require("./asteroid");
 const Bullet = require("./bullet");
 const Ship = require("./ship");
 const Util = require("./util");
@@ -17,7 +15,6 @@ const EnemySpawn = require("./particles/enemy_spawn");
 
 class Game {
   constructor() {
-    this.asteroids = [];
     this.enemies = [];
     this.bullets = [];
     this.ships = [];
@@ -60,9 +57,7 @@ class Game {
 
   add(object) {
     if (this.enemies.length < 50 || object instanceof Bullet){
-      if (object instanceof Asteroid) {
-        this.asteroids.push(object);
-      } else if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow || object instanceof Grunt || object instanceof Weaver) {
+      if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow || object instanceof Grunt || object instanceof Weaver) {
         this.enemies.push(object)
       } else if (object instanceof Singularity) {
         this.singularities.push(object)
@@ -82,9 +77,6 @@ class Game {
   }
 
   addEnemies() {
-    for (let i = 0; i < Game.NUM_ASTEROIDS; i++) {
-      this.add(new Asteroid({ game: this }));
-    }
     for (let i = 0; i < Game.NUM_BOXES; i++) {
       this.add(new BoxBox({ game: this}));
     }
@@ -216,7 +208,7 @@ class Game {
   }
 
   allObjects() {
-    return [].concat(this.asteroids, this.enemies, this.singularities); //this.bullets);
+    return [].concat(this.enemies, this.singularities); //this.bullets);
   }
 
   //explosions
@@ -320,8 +312,6 @@ class Game {
   remove(object) {
     if (object instanceof Bullet) {
       this.bullets.splice(this.bullets.indexOf(object), 1);
-    } else if (object instanceof Asteroid) {
-      this.asteroids.splice(this.asteroids.indexOf(object), 1);
     } else if (object instanceof Ship) {
       this.ships.splice(this.ships.indexOf(object), 1);
     } else if (object instanceof ParticleExplosion) {
@@ -374,7 +364,6 @@ Game.BG_COLOR = "#000000";
 Game.DIM_X = 1000;
 Game.DIM_Y = 600;
 // Game.FPS = 32;
-Game.NUM_ASTEROIDS = 0;
 Game.NUM_BOXES = 0;
 Game.NUM_PINWHEELS = 0;
 Game.NUM_ARROWS = 0;

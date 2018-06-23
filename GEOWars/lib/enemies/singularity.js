@@ -51,7 +51,6 @@ class Singularity extends MovingObject {
     if (r > (this.gravityWellSize * 7/8)){
       object.acc = [0,0];
     } else {
-
       let newAcc = [
         unitVector[0] * this.gravityConstant / (r * r),
         unitVector[1] * this.gravityConstant / (r * r)
