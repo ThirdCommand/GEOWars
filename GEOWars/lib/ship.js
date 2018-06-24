@@ -137,8 +137,16 @@ class Ship extends MovingObject {
     //check if the new speed is faster than limit because of the contribution
     // if it is, don't add that contribution
     // 
-    this.vel[0] += impulse[0];
-    this.vel[1] += impulse[1];
+    if (Math.abs(this.vel[1] + impulse[1] * 0.5) > 4 ) {
+      
+    } else {
+      this.vel[1] += impulse[1] * 0.5
+    }
+    if (Math.abs(this.vel[0] + impulse[0] * 0.5) > 4) {
+
+    } else {
+      this.vel[0] += impulse[0] * 0.5;
+    } 
   }
 
   relocate() {
