@@ -917,7 +917,7 @@ class Game {
     return {
       BoxBox: (pos) => (new BoxBox({ game: this, pos: pos})),
       Pinwheel: (pos) => (new Pinwheel({ game: this, pos: pos })),
-      Arrow: (pos, angle) => (new Arrow({game: this, pos: pos, angle: this.randomArrowDirection()})),
+      Arrow: (pos, angle) => (new Arrow({game: this, pos: pos, angle: angle})),
       Grunt: (pos) => (new Grunt({game: this, pos: pos})),
       Weaver: (pos) => (new Weaver({game: this, pos: pos}))
       // Singularity: () => (new Singularity({game: this}))
@@ -1039,20 +1039,21 @@ class Game {
       this.spawnEnemies(enemies_to_spawn);
     } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 1) {
       this.intervalTime = 0;
-      this.sequenceCount += 1;
+      this.sequenceCount += 14;
 
       let enemies_to_spawn = [];
-      let fourCorners = [
-        [40, 40],
-        [Game.DIM_X - 40, 40],
-        [40, Game.DIM_Y - 40],
-        [Game.DIM_X - 40, Game.DIM_Y - 40]
-      ]
-      fourCorners.forEach((corner) => {
-        enemies_to_spawn.push(this.enemyCreatorList["Weaver"](corner))
+      let arrowWallPositions = []
+      let arrowDirection = Math.PI * 3 / 2
+      for (let i = 40; i < Game.DIM_X; i += 40) {
+        arrowWallPositions.push([i,50])
+      }
+  
+      arrowWallPositions.forEach((position) => {
+        enemies_to_spawn.push(this.enemyCreatorList["Arrow"](position, arrowDirection))
       })
+
       this.spawnEnemies(enemies_to_spawn);
-    } else if( this.sequenceCount === 26) {
+    } else if( this.sequenceCount >= 26) {
       this.sequenceCount = 0;
       if (!(this.intervalTiming < 0.5)){
         this.intervalTiming *= 0.9;
