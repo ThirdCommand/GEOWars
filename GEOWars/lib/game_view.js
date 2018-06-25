@@ -10,8 +10,8 @@ class GameView {
   bindKeyHandlers() {
     const ship = this.ship;
 
-    Object.keys(GameView.MOVES).forEach((k) => {
-      const move = GameView.MOVES[k];
+    Object.keys(GameView.MOREMOVES).forEach((k) => {
+      const move = GameView.MOREMOVES[k];
       key(k, () => { ship.power(move); });
     });
 
@@ -114,5 +114,17 @@ GameView.MOVES = {
   s: [0, 1],
   d: [1, 0],
 };
+
+GameView.MOREMOVES = {
+  c: [0.70710678118, 0.70710678118],
+  x: [0,1],
+  z: [-0.70710678118, 0.70710678118],
+  a: [-1,0],
+  s: [-1,0],
+  w: [-0.70710678118, -0.70710678118],
+  e: [0,-1],
+  r: [0.70710678118, -0.70710678118],
+  f: [1,0],
+}
 
 module.exports = GameView;

@@ -185,7 +185,9 @@ class Game {
       this.spawnEnemies(enemies_to_spawn);
     } else if( this.sequenceCount === 26) {
       this.sequenceCount = 0;
-      this.intervalTiming *= 0.9;
+      if (!(this.intervalTiming < 0.5)){
+        this.intervalTiming *= 0.9;
+      }
       this.hugeSequenceTime += 1;
     }
     // if (this.gameTime % 2000 === 0){

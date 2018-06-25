@@ -10,6 +10,7 @@ function randomColor() {
     color += hexDigits[Math.floor((Math.random() * 16))];
   }
 
+
   return color;
 }
 
@@ -19,6 +20,7 @@ class Ship extends MovingObject {
     options.vel = options.vel || [0, 0];
     options.color = options.color || randomColor();
     super(options);
+    this.speed = 2.5;
     // this.vel = [0,0];
     // this.acc = [0,0];
     this.mousePos = [0,0];
@@ -85,6 +87,30 @@ class Ship extends MovingObject {
     ctx.stroke();
     ctx.restore();
   }
+  move(timeDelta) {
+    // timeDelta is number of milliseconds since last move
+    // if the computer is busy the time delta will be larger
+    // in this case the MovingObject should move farther in this frame
+    // velocity of object is how far it should move in 1/60th of a second or something
+    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA,
+      offsetX = this.vel[0] * velocityScale * this.speed,
+      offsetY = this.vel[1] * velocityScale * this.speed;
+    this.pos = [this.pos[0] + offsetX, this.pos[1] + offsetY];
+
+
+
+    if (this.game.isOutOfBounds(this.pos)) {
+      if (this.isWrappable) {
+        this.pos = this.game.wrap(this.pos);
+      } else {
+        if (!this.game.muted) {
+          let wallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
+          wallhit.play();
+          this.remove();
+        }
+      }
+    }
+  }
 
 
   setFireAngle(mousePos) {
@@ -137,16 +163,17 @@ class Ship extends MovingObject {
     //check if the new speed is faster than limit because of the contribution
     // if it is, don't add that contribution
     // 
-    if (Math.abs(this.vel[1] + impulse[1] * 0.5) > 4 ) {
+    this.vel = impulse
+    // if (Math.abs(this.vel[1] + impulse[1] * 0.5) > 4 ) {
       
-    } else {
-      this.vel[1] += impulse[1] * 0.5
-    }
-    if (Math.abs(this.vel[0] + impulse[0] * 0.5) > 4) {
+    // } else {
+    //   this.vel[1] += impulse[1] * 0.5
+    // }
+    // if (Math.abs(this.vel[0] + impulse[0] * 0.5) > 4) {
 
-    } else {
-      this.vel[0] += impulse[0] * 0.5;
-    } 
+    // } else {
+    //   this.vel[0] += impulse[0] * 0.5;
+    // } 
   }
 
   relocate() {

@@ -1054,7 +1054,9 @@ class Game {
       this.spawnEnemies(enemies_to_spawn);
     } else if( this.sequenceCount === 26) {
       this.sequenceCount = 0;
-      this.intervalTiming *= 0.9;
+      if (!(this.intervalTiming < 0.5)){
+        this.intervalTiming *= 0.9;
+      }
       this.hugeSequenceTime += 1;
     }
     // if (this.gameTime % 2000 === 0){
@@ -1281,8 +1283,8 @@ class GameView {
   bindKeyHandlers() {
     const ship = this.ship;
 
-    Object.keys(GameView.MOVES).forEach((k) => {
-      const move = GameView.MOVES[k];
+    Object.keys(GameView.MOREMOVES).forEach((k) => {
+      const move = GameView.MOREMOVES[k];
       key(k, () => { ship.power(move); });
     });
 
@@ -1385,6 +1387,18 @@ GameView.MOVES = {
   s: [0, 1],
   d: [1, 0],
 };
+
+GameView.MOREMOVES = {
+  c: [0.70710678118, 0.70710678118],
+  x: [0,1],
+  z: [-0.70710678118, 0.70710678118],
+  a: [-1,0],
+  s: [-1,0],
+  w: [-0.70710678118, -0.70710678118],
+  e: [0,-1],
+  r: [0.70710678118, -0.70710678118],
+  f: [1,0],
+}
 
 module.exports = GameView;
 
@@ -1698,6 +1712,7 @@ function randomColor() {
     color += hexDigits[Math.floor((Math.random() * 16))];
   }
 
+
   return color;
 }
 
@@ -1707,6 +1722,7 @@ class Ship extends MovingObject {
     options.vel = options.vel || [0, 0];
     options.color = options.color || randomColor();
     super(options);
+    this.speed = 2.5;
     // this.vel = [0,0];
     // this.acc = [0,0];
     this.mousePos = [0,0];
@@ -1773,6 +1789,30 @@ class Ship extends MovingObject {
     ctx.stroke();
     ctx.restore();
   }
+  move(timeDelta) {
+    // timeDelta is number of milliseconds since last move
+    // if the computer is busy the time delta will be larger
+    // in this case the MovingObject should move farther in this frame
+    // velocity of object is how far it should move in 1/60th of a second or something
+    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA,
+      offsetX = this.vel[0] * velocityScale * this.speed,
+      offsetY = this.vel[1] * velocityScale * this.speed;
+    this.pos = [this.pos[0] + offsetX, this.pos[1] + offsetY];
+
+
+
+    if (this.game.isOutOfBounds(this.pos)) {
+      if (this.isWrappable) {
+        this.pos = this.game.wrap(this.pos);
+      } else {
+        if (!this.game.muted) {
+          let wallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
+          wallhit.play();
+          this.remove();
+        }
+      }
+    }
+  }
 
 
   setFireAngle(mousePos) {
@@ -1825,16 +1865,17 @@ class Ship extends MovingObject {
     //check if the new speed is faster than limit because of the contribution
     // if it is, don't add that contribution
     // 
-    if (Math.abs(this.vel[1] + impulse[1] * 0.5) > 4 ) {
+    this.vel = impulse
+    // if (Math.abs(this.vel[1] + impulse[1] * 0.5) > 4 ) {
       
-    } else {
-      this.vel[1] += impulse[1] * 0.5
-    }
-    if (Math.abs(this.vel[0] + impulse[0] * 0.5) > 4) {
+    // } else {
+    //   this.vel[1] += impulse[1] * 0.5
+    // }
+    // if (Math.abs(this.vel[0] + impulse[0] * 0.5) > 4) {
 
-    } else {
-      this.vel[0] += impulse[0] * 0.5;
-    } 
+    // } else {
+    //   this.vel[0] += impulse[0] * 0.5;
+    // } 
   }
 
   relocate() {
