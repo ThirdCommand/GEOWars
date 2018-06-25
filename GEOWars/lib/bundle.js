@@ -1398,6 +1398,7 @@ GameView.MOREMOVES = {
   e: [0,-1],
   r: [0.70710678118, -0.70710678118],
   f: [1,0],
+  d: [1,0]
 }
 
 module.exports = GameView;
