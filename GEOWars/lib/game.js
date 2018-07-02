@@ -4,13 +4,14 @@ const Bullet = require("./bullet");
 const Ship = require("./ship");
 const Util = require("./util");
 const ParticleExplosion = require("./particles/particle_explosion");
+const BulletWallExplosion = require("./particles/bullet_wall_explosion");
 const Particle = require("./particles/particle");
 const BoxBox = require("./enemies/boxbox");
 const Pinwheel = require("./enemies/pinwheel");
 const Arrow = require("./enemies/arrow");
 const Grunt = require("./enemies/grunt");
-const Weaver = require("./enemies/weaver")
-const Singularity = require("./enemies/singularity")
+const Weaver = require("./enemies/weaver");
+const Singularity = require("./enemies/singularity");
 const EnemySpawn = require("./particles/enemy_spawn");
 
 class Game {
@@ -36,9 +37,6 @@ class Game {
     this.hugeSequenceTime = 0;
     this.sequenceCount = 0;
     this.lives = 3;
-    setInterval(() => {
-          console.log(this.enemies);
-    },1000)
   }
 
   
@@ -69,7 +67,7 @@ class Game {
         this.bullets.push(object);
       } else if (object instanceof Ship) {
         this.ships.push(object);
-      } else if (object instanceof ParticleExplosion) {
+      } else if (object instanceof ParticleExplosion || object instanceof BulletWallExplosion) {
         this.particleExplosions.push(object);
       } else if (object instanceof EnemySpawn) {
         this.spawningEnemies.push(object);

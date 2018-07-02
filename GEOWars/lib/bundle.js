@@ -873,13 +873,14 @@ const Bullet = __webpack_require__(/*! ./bullet */ "./lib/bullet.js");
 const Ship = __webpack_require__(/*! ./ship */ "./lib/ship.js");
 const Util = __webpack_require__(/*! ./util */ "./lib/util.js");
 const ParticleExplosion = __webpack_require__(/*! ./particles/particle_explosion */ "./lib/particles/particle_explosion.js");
+const BulletWallExplosion = __webpack_require__(/*! ./particles/bullet_wall_explosion */ "./lib/particles/bullet_wall_explosion.js");
 const Particle = __webpack_require__(/*! ./particles/particle */ "./lib/particles/particle.js");
 const BoxBox = __webpack_require__(/*! ./enemies/boxbox */ "./lib/enemies/boxbox.js");
 const Pinwheel = __webpack_require__(/*! ./enemies/pinwheel */ "./lib/enemies/pinwheel.js");
 const Arrow = __webpack_require__(/*! ./enemies/arrow */ "./lib/enemies/arrow.js");
 const Grunt = __webpack_require__(/*! ./enemies/grunt */ "./lib/enemies/grunt.js");
-const Weaver = __webpack_require__(/*! ./enemies/weaver */ "./lib/enemies/weaver.js")
-const Singularity = __webpack_require__(/*! ./enemies/singularity */ "./lib/enemies/singularity.js")
+const Weaver = __webpack_require__(/*! ./enemies/weaver */ "./lib/enemies/weaver.js");
+const Singularity = __webpack_require__(/*! ./enemies/singularity */ "./lib/enemies/singularity.js");
 const EnemySpawn = __webpack_require__(/*! ./particles/enemy_spawn */ "./lib/particles/enemy_spawn.js");
 
 class Game {
@@ -905,9 +906,6 @@ class Game {
     this.hugeSequenceTime = 0;
     this.sequenceCount = 0;
     this.lives = 3;
-    setInterval(() => {
-          console.log(this.enemies);
-    },1000)
   }
 
   
@@ -938,7 +936,7 @@ class Game {
         this.bullets.push(object);
       } else if (object instanceof Ship) {
         this.ships.push(object);
-      } else if (object instanceof ParticleExplosion) {
+      } else if (object instanceof ParticleExplosion || object instanceof BulletWallExplosion) {
         this.particleExplosions.push(object);
       } else if (object instanceof EnemySpawn) {
         this.spawningEnemies.push(object);
@@ -1470,7 +1468,7 @@ class MovingObject {
         this.pos = this.game.wrap(this.pos);
       } else {
 
-        new BulletWallExplosion(this.pos[0], this.pos[1], this.game.ctx, this.game)
+        this.game.add(new BulletWallExplosion(this.pos[0], this.pos[1], this.game.ctx, this.game))
         if (! this.game.muted) {
           let wallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
           wallhit.play();
@@ -1541,6 +1539,7 @@ class BulletWallExplosion{
     }
   }
   draw(ctx) {
+
     for (let i = 0; i < this.particles.length; i++) {
       if (this.particles[i].active === true) {
         this.particles[i].draw(ctx);
