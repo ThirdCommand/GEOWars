@@ -1,5 +1,3 @@
-
-
 const Bullet = require("./bullet");
 const Ship = require("./ship");
 const Util = require("./util");
@@ -37,6 +35,7 @@ class Game {
     this.hugeSequenceTime = 0;
     this.sequenceCount = 0;
     this.lives = 3;
+    this.addEnemies();
   }
 
   
@@ -51,8 +50,8 @@ class Game {
       Pinwheel: (pos) => (new Pinwheel({ game: this, pos: pos })),
       Arrow: (pos, angle) => (new Arrow({game: this, pos: pos, angle: angle})),
       Grunt: (pos) => (new Grunt({game: this, pos: pos})),
-      Weaver: (pos) => (new Weaver({game: this, pos: pos}))
-      // Singularity: () => (new Singularity({game: this}))
+      Weaver: (pos) => (new Weaver({game: this, pos: pos})),
+      // Singularity: (pos) => (new Singularity({game: this, pos: pos}))
     };
     
   }
@@ -95,7 +94,7 @@ class Game {
       this.add(new Weaver({ game: this }));
     }
     for (let i = 0; i < Game.NUM_SINGULARITIES; i++) {
-      this.add(new Singularity({ game: this, id: this.singularities.length }));
+      this.add(new Singularity({ game: this, id: this.singularities.length, pos: [500,500] }));
     }
     
   
@@ -216,7 +215,7 @@ class Game {
   }
 
   allObjects() {
-    return [].concat(this.enemies, this.singularities); //this.bullets);
+    return [].concat(this.enemies); //this.singularities);
   }
 
   //explosions
@@ -236,10 +235,15 @@ class Game {
       for (let j = 0; j < allObjects2.length; j++) {
         const obj1 = allObjects[i];
         const obj2 = allObjects2[j];
-        if (obj1 instanceof Singularity && obj2 instanceof Singularity){
-          if (obj1.id === obj2.id){
-            continue;
-          }
+        // if (obj1 instanceof Singularity && obj2 instanceof Singularity){
+        //   if (obj1.id === obj2.id){
+        //     continue;
+        //   }
+        // }
+        if (obj2 instanceof Singularity) {
+          // debugger
+          obj2.isCollidedWith(obj1)
+          continue;
         }
         if (obj1.isCollidedWith(obj2)) {
           const explosionId = this.particleExplosions.length
@@ -289,6 +293,9 @@ class Game {
     });
     this.particleObjects().forEach((particle) => {
       particle.draw(ctx);
+    });
+    this.singularities.forEach((object) => {
+      object.draw(ctx);
     });
 
   }
@@ -383,7 +390,7 @@ Game.NUM_PINWHEELS = 0;
 Game.NUM_ARROWS = 0;
 Game.NUM_GRUNTS = 0;
 Game.NUM_WEAVERS = 0;
-Game.NUM_SINGULARITIES = 0;
+Game.NUM_SINGULARITIES = 1;
 module.exports = Game;
 
 Game.Spawn1 = {

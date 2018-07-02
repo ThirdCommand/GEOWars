@@ -583,6 +583,7 @@ const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_o
 const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 const Util = __webpack_require__(/*! ../util */ "./lib/util.js")
+
 class Singularity extends MovingObject {
   constructor(options) {
     super(options)
@@ -590,8 +591,8 @@ class Singularity extends MovingObject {
     this.vel = [0,0];
     this.acc = [0,0];
     this.radius = 15;
-    this.gravityWellSize = 10000;
-    this.gravityConstant = 10000000000;
+    this.gravityWellSize = 10000000000;
+    this.gravityConstant = 1000;
     this.id = options.id
 
   }
@@ -609,6 +610,7 @@ class Singularity extends MovingObject {
   }
 
   draw(ctx, spawningScale) {
+    // debugger
     // spawningScale = spawningScale || 1;
     spawningScale = 1;
 
@@ -629,7 +631,7 @@ class Singularity extends MovingObject {
     let dx = this.pos[0] - object.pos[0];
     let unitVector = Util.dir([dx, dy]);
     let r = Math.sqrt(dy * dy + dx * dx);
-    if (r > (this.gravityWellSize * 7/8)){
+    if (r > this.gravityWellSize * 7 / 8 || r < this.radius * 2){
       object.acc = [0,0];
     } else {
       let newAcc = [
@@ -655,9 +657,14 @@ class Singularity extends MovingObject {
         return false
       }
     }
+
+    if (otherObject instanceof Ship) {
+        return false
+    }
+
     // debugger
     if (centerDist < (this.gravityWellSize + otherObject.radius)) {
-      
+
       this.influenceAcceleration(otherObject)
       return false;
     } else {
@@ -867,8 +874,6 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-
-
 const Bullet = __webpack_require__(/*! ./bullet */ "./lib/bullet.js");
 const Ship = __webpack_require__(/*! ./ship */ "./lib/ship.js");
 const Util = __webpack_require__(/*! ./util */ "./lib/util.js");
@@ -906,6 +911,7 @@ class Game {
     this.hugeSequenceTime = 0;
     this.sequenceCount = 0;
     this.lives = 3;
+    this.addEnemies();
   }
 
   
@@ -920,8 +926,8 @@ class Game {
       Pinwheel: (pos) => (new Pinwheel({ game: this, pos: pos })),
       Arrow: (pos, angle) => (new Arrow({game: this, pos: pos, angle: angle})),
       Grunt: (pos) => (new Grunt({game: this, pos: pos})),
-      Weaver: (pos) => (new Weaver({game: this, pos: pos}))
-      // Singularity: () => (new Singularity({game: this}))
+      Weaver: (pos) => (new Weaver({game: this, pos: pos})),
+      // Singularity: (pos) => (new Singularity({game: this, pos: pos}))
     };
     
   }
@@ -964,7 +970,7 @@ class Game {
       this.add(new Weaver({ game: this }));
     }
     for (let i = 0; i < Game.NUM_SINGULARITIES; i++) {
-      this.add(new Singularity({ game: this, id: this.singularities.length }));
+      this.add(new Singularity({ game: this, id: this.singularities.length, pos: [500,500] }));
     }
     
   
@@ -1085,7 +1091,7 @@ class Game {
   }
 
   allObjects() {
-    return [].concat(this.enemies, this.singularities); //this.bullets);
+    return [].concat(this.enemies); //this.singularities);
   }
 
   //explosions
@@ -1105,10 +1111,15 @@ class Game {
       for (let j = 0; j < allObjects2.length; j++) {
         const obj1 = allObjects[i];
         const obj2 = allObjects2[j];
-        if (obj1 instanceof Singularity && obj2 instanceof Singularity){
-          if (obj1.id === obj2.id){
-            continue;
-          }
+        // if (obj1 instanceof Singularity && obj2 instanceof Singularity){
+        //   if (obj1.id === obj2.id){
+        //     continue;
+        //   }
+        // }
+        if (obj2 instanceof Singularity) {
+          // debugger
+          obj2.isCollidedWith(obj1)
+          continue;
         }
         if (obj1.isCollidedWith(obj2)) {
           const explosionId = this.particleExplosions.length
@@ -1158,6 +1169,9 @@ class Game {
     });
     this.particleObjects().forEach((particle) => {
       particle.draw(ctx);
+    });
+    this.singularities.forEach((object) => {
+      object.draw(ctx);
     });
 
   }
@@ -1252,7 +1266,7 @@ Game.NUM_PINWHEELS = 0;
 Game.NUM_ARROWS = 0;
 Game.NUM_GRUNTS = 0;
 Game.NUM_WEAVERS = 0;
-Game.NUM_SINGULARITIES = 0;
+Game.NUM_SINGULARITIES = 1;
 module.exports = Game;
 
 Game.Spawn1 = {
@@ -1539,7 +1553,6 @@ class BulletWallExplosion{
     }
   }
   draw(ctx) {
-
     for (let i = 0; i < this.particles.length; i++) {
       if (this.particles[i].active === true) {
         this.particles[i].draw(ctx);

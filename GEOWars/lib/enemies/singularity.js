@@ -2,6 +2,7 @@ const MovingObject = require("../moving_object")
 const Bullet = require("../bullet")
 const Ship = require("../ship")
 const Util = require("../util")
+
 class Singularity extends MovingObject {
   constructor(options) {
     super(options)
@@ -9,8 +10,8 @@ class Singularity extends MovingObject {
     this.vel = [0,0];
     this.acc = [0,0];
     this.radius = 15;
-    this.gravityWellSize = 10000;
-    this.gravityConstant = 10000000000;
+    this.gravityWellSize = 10000000000;
+    this.gravityConstant = 1000;
     this.id = options.id
 
   }
@@ -28,6 +29,7 @@ class Singularity extends MovingObject {
   }
 
   draw(ctx, spawningScale) {
+    // debugger
     // spawningScale = spawningScale || 1;
     spawningScale = 1;
 
@@ -48,7 +50,7 @@ class Singularity extends MovingObject {
     let dx = this.pos[0] - object.pos[0];
     let unitVector = Util.dir([dx, dy]);
     let r = Math.sqrt(dy * dy + dx * dx);
-    if (r > (this.gravityWellSize * 7/8)){
+    if (r > this.gravityWellSize * 7 / 8 || r < this.radius * 2){
       object.acc = [0,0];
     } else {
       let newAcc = [
@@ -74,9 +76,14 @@ class Singularity extends MovingObject {
         return false
       }
     }
+
+    if (otherObject instanceof Ship) {
+        return false
+    }
+
     // debugger
     if (centerDist < (this.gravityWellSize + otherObject.radius)) {
-      
+
       this.influenceAcceleration(otherObject)
       return false;
     } else {

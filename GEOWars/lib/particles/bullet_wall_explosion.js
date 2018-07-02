@@ -36,7 +36,6 @@ class BulletWallExplosion{
     }
   }
   draw(ctx) {
-
     for (let i = 0; i < this.particles.length; i++) {
       if (this.particles[i].active === true) {
         this.particles[i].draw(ctx);
