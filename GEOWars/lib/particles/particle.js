@@ -7,7 +7,7 @@ class Particle {
     this.color = colors[Math.floor(colors.length * Math.random())];
     this.particleId;
     this.explosionId;
-    
+
     this.radial = 0;
     this.x = xpos; // x and y position
     this.y = ypos;
@@ -24,7 +24,9 @@ class Particle {
     this.opacity = Math.random() + .5;
     this.active = true;
     this.hue = 0.9;
+
     ctx.fillStyle = `${this.color},${this.hue})`;
+
     ctx.fillRect(this.x, this.y, this.rectLength, this.rectWidth);
   }
 

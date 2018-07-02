@@ -1,5 +1,5 @@
 const Util = require("./util");
-
+const BulletWallExplosion = require("./particles/bullet_wall_explosion")
 class MovingObject {
   constructor(options) {
     this.pos = options.pos;
@@ -46,17 +46,23 @@ class MovingObject {
       if (this.isWrappable) {
         this.pos = this.game.wrap(this.pos);
       } else {
+
+        new BulletWallExplosion(this.pos[0], this.pos[1], this.game.ctx, this.game)
         if (! this.game.muted) {
           let wallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
           wallhit.play();
-          this.remove();
         } 
+        this.remove();
       }
     }
   }
 
   remove() {
+
+
     this.game.remove(this);
+
+
   }
 }
 

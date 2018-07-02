@@ -36,6 +36,9 @@ class Game {
     this.hugeSequenceTime = 0;
     this.sequenceCount = 0;
     this.lives = 3;
+    setInterval(() => {
+          console.log(this.enemies);
+    },1000)
   }
 
   
@@ -101,19 +104,22 @@ class Game {
   }
 
   randomSpawnEnemy(enemy){
-    let pos = this.randomPosition();
-    let enemyCreators = Object.values(this.enemyCreatorList)
-    let spawn = new EnemySpawn(enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](), this);
-
-    this.add(spawn)
+    if (this.enemies.length < 50) {
+      let pos = this.randomPosition();
+      let enemyCreators = Object.values(this.enemyCreatorList)
+      let spawn = new EnemySpawn(enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](), this);
+      this.add(spawn)
+    }
   }
   
 
   spawnEnemies(spawnList) {
-    spawnList.forEach((enemy) => {
-      let spawn = new EnemySpawn(enemy, this)
-      this.add(spawn)
-    })
+    if (this.enemies.length < 50 ) {
+      spawnList.forEach((enemy) => {
+        let spawn = new EnemySpawn(enemy, this)
+        this.add(spawn)
+      })
+    }
   }
 
   spawnSequence(delta) {
@@ -174,7 +180,7 @@ class Game {
 
       let enemies_to_spawn = [];
       let arrowWallPositions = []
-      let arrowDirection = Math.PI * 3 / 2
+      let arrowDirection = Math.PI * 3 / 2 + Math.PI
       for (let i = 40; i < Game.DIM_X; i += 40) {
         arrowWallPositions.push([i,50])
       }
@@ -355,6 +361,7 @@ class Game {
   // spawning handled here. checks the delta time, 
   // adds units when appropriate
   step(delta, ctx) {
+    this.ctx = ctx
     this.spawnSequence(delta);
     this.checkCollisions(ctx);
     this.moveObjects(delta);

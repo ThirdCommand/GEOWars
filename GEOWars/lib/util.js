@@ -52,12 +52,27 @@ const Util = {
 
   redirect(arrow, max){
     if (arrow.pos[0] <= 0 || arrow.pos[0] >= max[0]) {
+      if (arrow.pos[0] <= 0) {
+        arrow.pos[0] = 1
+      }
+      if (arrow.pos[0] >= max[0]) {
+        arrow.pos[0] = max[0] - 1
+      }
+
       arrow.vel[0] = -arrow.vel[0];
       arrow.vel[1] = -arrow.vel[1];
     }
     if (arrow.pos[1] <= 0 || arrow.pos[1] >= max[1]) {
-      arrow.vel[1] = -arrow.vel[1];
+      if (arrow.pos[1] <= 0) {
+        arrow.pos[1] = 1
+      }
+      if (arrow.pos[1] >= max[1]) {
+        arrow.pos[1] = max[1] - 1
+      }
+
+
       arrow.vel[0] = -arrow.vel[0];
+      arrow.vel[1] = -arrow.vel[1];
     }
   }
  

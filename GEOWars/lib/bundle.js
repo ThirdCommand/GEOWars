@@ -905,6 +905,9 @@ class Game {
     this.hugeSequenceTime = 0;
     this.sequenceCount = 0;
     this.lives = 3;
+    setInterval(() => {
+          console.log(this.enemies);
+    },1000)
   }
 
   
@@ -970,19 +973,22 @@ class Game {
   }
 
   randomSpawnEnemy(enemy){
-    let pos = this.randomPosition();
-    let enemyCreators = Object.values(this.enemyCreatorList)
-    let spawn = new EnemySpawn(enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](), this);
-
-    this.add(spawn)
+    if (this.enemies.length < 50) {
+      let pos = this.randomPosition();
+      let enemyCreators = Object.values(this.enemyCreatorList)
+      let spawn = new EnemySpawn(enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](), this);
+      this.add(spawn)
+    }
   }
   
 
   spawnEnemies(spawnList) {
-    spawnList.forEach((enemy) => {
-      let spawn = new EnemySpawn(enemy, this)
-      this.add(spawn)
-    })
+    if (this.enemies.length < 50 ) {
+      spawnList.forEach((enemy) => {
+        let spawn = new EnemySpawn(enemy, this)
+        this.add(spawn)
+      })
+    }
   }
 
   spawnSequence(delta) {
@@ -1043,7 +1049,7 @@ class Game {
 
       let enemies_to_spawn = [];
       let arrowWallPositions = []
-      let arrowDirection = Math.PI * 3 / 2
+      let arrowDirection = Math.PI * 3 / 2 + Math.PI
       for (let i = 40; i < Game.DIM_X; i += 40) {
         arrowWallPositions.push([i,50])
       }
@@ -1224,6 +1230,7 @@ class Game {
   // spawning handled here. checks the delta time, 
   // adds units when appropriate
   step(delta, ctx) {
+    this.ctx = ctx
     this.spawnSequence(delta);
     this.checkCollisions(ctx);
     this.moveObjects(delta);
@@ -1415,7 +1422,7 @@ module.exports = GameView;
 /***/ (function(module, exports, __webpack_require__) {
 
 const Util = __webpack_require__(/*! ./util */ "./lib/util.js");
-
+const BulletWallExplosion = __webpack_require__(/*! ./particles/bullet_wall_explosion */ "./lib/particles/bullet_wall_explosion.js")
 class MovingObject {
   constructor(options) {
     this.pos = options.pos;
@@ -1462,17 +1469,23 @@ class MovingObject {
       if (this.isWrappable) {
         this.pos = this.game.wrap(this.pos);
       } else {
+
+        new BulletWallExplosion(this.pos[0], this.pos[1], this.game.ctx, this.game)
         if (! this.game.muted) {
           let wallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
           wallhit.play();
-          this.remove();
         } 
+        this.remove();
       }
     }
   }
 
   remove() {
+
+
     this.game.remove(this);
+
+
   }
 }
 
@@ -1480,6 +1493,70 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 module.exports = MovingObject;
 
+
+/***/ }),
+
+/***/ "./lib/particles/bullet_wall_explosion.js":
+/*!************************************************!*\
+  !*** ./lib/particles/bullet_wall_explosion.js ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+ const Particle = __webpack_require__(/*! ./particle */ "./lib/particles/particle.js")
+
+
+const speeds = [1, 2, 3, 4];
+
+
+class BulletWallExplosion{
+  constructor(xpos, ypos, ctx, game, explosionId) {
+    this.COLORS = [
+      ["rgba(152,245,23", "rgba(126,185,43", "rgba(189,236,122", "rgba(103,124,74"],
+      ["rgba(255,241,44", "rgba(245,236,109", "rgba(165,160,87", "rgba(177,167,28"],
+      ["rgba(18,225,252", "rgba(60,198,216", "rgba(113,223,238", "rgba(149,220,230"],
+      ["rgba(252,87,224", "rgba(204,72,182", "rgba(170,72,154", "rgba(250,137,231"],
+      ["rgba(190,86,250", "rgba(159,96,196", "rgba(87,17,128", "rgba(199,150,228"]
+    ]
+    this.color = this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
+    this.game = game;
+    this.particleNum = 20;
+    this.particles = [];
+    this.explosionId;
+
+
+    for (var i = 0; i < this.particleNum; i++) {
+      const particleId = i;
+
+      const speed = speeds[Math.floor(Math.random() * speeds.length)]
+      this.particles.push(new Particle(xpos, ypos, speed, ctx, game, game.particleExplosions.length, particleId, this.color));
+    }
+  }
+
+  move(deltaTime) {
+    for (let i = 0; i < this.particles.length; i++) {
+      if (this.particles[i].active === true) {
+        this.particles[i].move(deltaTime);
+      }
+    }
+  }
+  draw(ctx) {
+    for (let i = 0; i < this.particles.length; i++) {
+      if (this.particles[i].active === true) {
+        this.particles[i].draw(ctx);
+
+      }
+    }
+
+    // ANIMATION = requestAnimationFrame(drawScene);
+  }
+
+}
+
+
+
+
+  module.exports = BulletWallExplosion;
 
 /***/ }),
 
@@ -1559,7 +1636,7 @@ class Particle {
     this.color = colors[Math.floor(colors.length * Math.random())];
     this.particleId;
     this.explosionId;
-    
+
     this.radial = 0;
     this.x = xpos; // x and y position
     this.y = ypos;
@@ -1576,7 +1653,9 @@ class Particle {
     this.opacity = Math.random() + .5;
     this.active = true;
     this.hue = 0.9;
+
     ctx.fillStyle = `${this.color},${this.hue})`;
+
     ctx.fillRect(this.x, this.y, this.rectLength, this.rectWidth);
   }
 
@@ -1958,12 +2037,27 @@ const Util = {
 
   redirect(arrow, max){
     if (arrow.pos[0] <= 0 || arrow.pos[0] >= max[0]) {
+      if (arrow.pos[0] <= 0) {
+        arrow.pos[0] = 1
+      }
+      if (arrow.pos[0] >= max[0]) {
+        arrow.pos[0] = max[0] - 1
+      }
+
       arrow.vel[0] = -arrow.vel[0];
       arrow.vel[1] = -arrow.vel[1];
     }
     if (arrow.pos[1] <= 0 || arrow.pos[1] >= max[1]) {
-      arrow.vel[1] = -arrow.vel[1];
+      if (arrow.pos[1] <= 0) {
+        arrow.pos[1] = 1
+      }
+      if (arrow.pos[1] >= max[1]) {
+        arrow.pos[1] = max[1] - 1
+      }
+
+
       arrow.vel[0] = -arrow.vel[0];
+      arrow.vel[1] = -arrow.vel[1];
     }
   }
  
