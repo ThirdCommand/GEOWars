@@ -879,6 +879,7 @@ const Ship = __webpack_require__(/*! ./ship */ "./lib/ship.js");
 const Util = __webpack_require__(/*! ./util */ "./lib/util.js");
 const ParticleExplosion = __webpack_require__(/*! ./particles/particle_explosion */ "./lib/particles/particle_explosion.js");
 const BulletWallExplosion = __webpack_require__(/*! ./particles/bullet_wall_explosion */ "./lib/particles/bullet_wall_explosion.js");
+const SingularityExplosion = __webpack_require__(/*! ./particles/singularity_explosion */ "./lib/particles/singularity_explosion.js");
 const Particle = __webpack_require__(/*! ./particles/particle */ "./lib/particles/particle.js");
 const BoxBox = __webpack_require__(/*! ./enemies/boxbox */ "./lib/enemies/boxbox.js");
 const Pinwheel = __webpack_require__(/*! ./enemies/pinwheel */ "./lib/enemies/pinwheel.js");
@@ -942,7 +943,7 @@ class Game {
         this.bullets.push(object);
       } else if (object instanceof Ship) {
         this.ships.push(object);
-      } else if (object instanceof ParticleExplosion || object instanceof BulletWallExplosion) {
+      } else if (object instanceof ParticleExplosion || object instanceof BulletWallExplosion || object instanceof SingularityExplosion) {
         this.particleExplosions.push(object);
       } else if (object instanceof EnemySpawn) {
         this.spawningEnemies.push(object);
@@ -1091,7 +1092,7 @@ class Game {
   }
 
   allObjects() {
-    return [].concat(this.enemies); //this.singularities);
+    return [].concat(this.enemies, this.singularities); //this.singularities);
   }
 
   //explosions
@@ -1129,9 +1130,13 @@ class Game {
             death.volume = 0.4;
             death.play();
           }
-
-          this.add(new ParticleExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
-          const collision = obj1.collideWith(obj2);
+          if (obj1 instanceof Singularity){
+            this.add(new SingularityExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
+            const collision = obj1.collideWith(obj2);
+          } else {
+            this.add(new ParticleExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
+            const collision = obj1.collideWith(obj2);
+          }
           // if (collision) return;
         }
       }
@@ -1210,7 +1215,7 @@ class Game {
       this.bullets.splice(this.bullets.indexOf(object), 1);
     } else if (object instanceof Ship) {
       this.ships.splice(this.ships.indexOf(object), 1);
-    } else if (object instanceof ParticleExplosion) {
+    } else if (object instanceof ParticleExplosion || object instanceof BulletWallExplosion || object instanceof SingularityExplosion) {
       this.particleObjects.splice(this.particleObjects.indexOf(object), 1);
     } else if (object instanceof Particle){
       object.active = false
@@ -1783,6 +1788,69 @@ class ParticleExplosion{
 
 
 module.exports = ParticleExplosion;
+
+/***/ }),
+
+/***/ "./lib/particles/singularity_explosion.js":
+/*!************************************************!*\
+  !*** ./lib/particles/singularity_explosion.js ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Particle = __webpack_require__(/*! ./particle */ "./lib/particles/particle.js")
+
+
+
+const speeds = [21,19,17,15,13,11,9,7, 6, 5, 4];
+
+class SingularityExplosion {
+  constructor(xpos, ypos, ctx, game, explosionId) {
+    this.COLORS = [
+      ["rgba(152,245,23", "rgba(126,185,43", "rgba(189,236,122", "rgba(103,124,74"],
+      ["rgba(255,241,44", "rgba(245,236,109", "rgba(165,160,87", "rgba(177,167,28"],
+      ["rgba(18,225,252", "rgba(60,198,216", "rgba(113,223,238", "rgba(149,220,230"],
+      ["rgba(252,87,224", "rgba(204,72,182", "rgba(170,72,154", "rgba(250,137,231"],
+      ["rgba(190,86,250", "rgba(159,96,196", "rgba(87,17,128", "rgba(199,150,228"]
+    ]
+    this.color = this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
+    this.game = game;
+    this.particleNum = 400;
+    this.particles = [];
+    this.explosionId;
+
+    for (var i = 0; i < this.particleNum; i++) {
+      const particleId = i;
+
+      const speed = speeds[Math.floor(Math.random() * speeds.length)]
+      this.particles.push(new Particle(xpos, ypos, speed, ctx, game, this.explosionId, particleId, this.color));
+    }
+  }
+
+  move(deltaTime) {
+    for (let i = 0; i < this.particles.length; i++) {
+      if (this.particles[i].active === true) {
+        this.particles[i].move(deltaTime);
+      }
+    }
+  }
+  draw(ctx) {
+
+    for (let i = 0; i < this.particles.length; i++) {
+      if (this.particles[i].active === true) {
+        this.particles[i].draw(ctx);
+      }
+    }
+
+    // ANIMATION = requestAnimationFrame(drawScene);
+  }
+
+}
+
+
+
+
+module.exports = SingularityExplosion;
 
 /***/ }),
 

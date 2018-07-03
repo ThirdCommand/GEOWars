@@ -3,6 +3,7 @@ const Ship = require("./ship");
 const Util = require("./util");
 const ParticleExplosion = require("./particles/particle_explosion");
 const BulletWallExplosion = require("./particles/bullet_wall_explosion");
+const SingularityExplosion = require("./particles/singularity_explosion");
 const Particle = require("./particles/particle");
 const BoxBox = require("./enemies/boxbox");
 const Pinwheel = require("./enemies/pinwheel");
@@ -66,7 +67,7 @@ class Game {
         this.bullets.push(object);
       } else if (object instanceof Ship) {
         this.ships.push(object);
-      } else if (object instanceof ParticleExplosion || object instanceof BulletWallExplosion) {
+      } else if (object instanceof ParticleExplosion || object instanceof BulletWallExplosion || object instanceof SingularityExplosion) {
         this.particleExplosions.push(object);
       } else if (object instanceof EnemySpawn) {
         this.spawningEnemies.push(object);
@@ -215,7 +216,7 @@ class Game {
   }
 
   allObjects() {
-    return [].concat(this.enemies); //this.singularities);
+    return [].concat(this.enemies, this.singularities); //this.singularities);
   }
 
   //explosions
@@ -253,9 +254,13 @@ class Game {
             death.volume = 0.4;
             death.play();
           }
-
-          this.add(new ParticleExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
-          const collision = obj1.collideWith(obj2);
+          if (obj1 instanceof Singularity){
+            this.add(new SingularityExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
+            const collision = obj1.collideWith(obj2);
+          } else {
+            this.add(new ParticleExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
+            const collision = obj1.collideWith(obj2);
+          }
           // if (collision) return;
         }
       }
@@ -334,7 +339,7 @@ class Game {
       this.bullets.splice(this.bullets.indexOf(object), 1);
     } else if (object instanceof Ship) {
       this.ships.splice(this.ships.indexOf(object), 1);
-    } else if (object instanceof ParticleExplosion) {
+    } else if (object instanceof ParticleExplosion || object instanceof BulletWallExplosion || object instanceof SingularityExplosion) {
       this.particleObjects.splice(this.particleObjects.indexOf(object), 1);
     } else if (object instanceof Particle){
       object.active = false
