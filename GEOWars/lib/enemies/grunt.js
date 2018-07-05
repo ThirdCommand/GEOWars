@@ -87,7 +87,6 @@ class Grunt extends MovingObject {
 
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
-      // debugger;
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
@@ -100,10 +99,6 @@ class Grunt extends MovingObject {
     return false;
   }
 
-  // remove() {
-  //   debugger;
-  //   this.game.remove(this);
-  // }
 }
 
 Grunt.BOX_SIZE = 10;

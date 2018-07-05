@@ -6,6 +6,7 @@ const Util = {
     return Util.scale(vec, 1 / norm);
   },
   vectorCartisian(angle,scale){
+
     let vector = [];
     vector = [scale * Math.cos(angle), scale * Math.sin(angle)]
     return vector

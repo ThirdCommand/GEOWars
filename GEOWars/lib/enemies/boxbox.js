@@ -12,8 +12,6 @@ class BoxBox extends MovingObject {
     this.spawnSound.volume = 0.2;
   }
 
-
-  // ADDING MOVEMENT MECHANICS FOR GRUNT
   move(timeDelta) {
     // let speed = 1.5;
    
@@ -39,7 +37,6 @@ class BoxBox extends MovingObject {
     // ctx.fillStyle = "#98f517";
     // ctx.fillRect(pos[0] - (7 / 8 * boxsize), pos[1], 10, 10);
     // ctx.fillRect(pos[0], pos[1], 10, 10);
-    
 
     ctx.beginPath();
     ctx.rect(pos[0] - (6/8 * boxsize), pos[1] - (2/8 * boxsize), boxsize, boxsize);
@@ -60,7 +57,6 @@ class BoxBox extends MovingObject {
 
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
-      // debugger;
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
@@ -73,10 +69,6 @@ class BoxBox extends MovingObject {
     return false;
   }
 
-  // remove() {
-  //   debugger;
-  //   this.game.remove(this);
-  // }
 }
 
 BoxBox.BOX_SIZE = 10;

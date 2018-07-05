@@ -29,9 +29,6 @@ class GameView {
     window.addEventListener('mousemove', (e) => {
       const x = {x: e.layerX};
       const y = {y: e.layerY};
-      // console.log(x);
-      // console.log(y);
-      // debugger
       const mousePos = [e.layerX, e.layerY];
       
       ship.setFireAngle(mousePos);

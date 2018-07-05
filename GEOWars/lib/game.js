@@ -242,7 +242,6 @@ class Game {
         //   }
         // }
         if (obj2 instanceof Singularity) {
-          // debugger
           obj2.isCollidedWith(obj1)
           continue;
         }

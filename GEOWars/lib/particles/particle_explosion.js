@@ -2,7 +2,7 @@ const Particle = require("./particle")
 
 
 
-const speeds = [7,6,5,4];
+const speeds = [7,6,5.5,5,4];
 
 class ParticleExplosion{
   constructor(xpos, ypos, ctx, game, explosionId){
@@ -18,11 +18,11 @@ class ParticleExplosion{
     this.particleNum = 80;
     this.particles = [];
     this.explosionId;
-
     for (var i = 0; i < this.particleNum; i++) {
       const particleId = i;
       
-      const speed = speeds[Math.floor(Math.random() * speeds.length)]
+      const speed = Math.random() * 3 + 4
+      // const speed = speeds[Math.floor(Math.random() * speeds.length)]
       this.particles.push(new Particle(xpos, ypos, speed, ctx, game, this.explosionId, particleId, this.color));
     }
   }
@@ -35,7 +35,6 @@ class ParticleExplosion{
     }
   }
   draw(ctx) {
-    
     for (let i = 0; i < this.particles.length; i++) {
       if (this.particles[i].active === true) {
         this.particles[i].draw(ctx);

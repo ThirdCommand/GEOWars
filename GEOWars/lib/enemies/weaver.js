@@ -127,7 +127,6 @@ class Weaver extends MovingObject {
 
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
-      // debugger;
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
@@ -139,11 +138,6 @@ class Weaver extends MovingObject {
 
     return false;
   }
-
-  // remove() {
-  //   debugger;
-  //   this.game.remove(this);
-  // }
 }
 
 Weaver.BOX_SIZE = 10;

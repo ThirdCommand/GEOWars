@@ -220,7 +220,7 @@ class Arrow extends MovingObject {
 
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
-      // debugger;
+
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
@@ -233,10 +233,6 @@ class Arrow extends MovingObject {
     return false;
   }
 
-  // remove() {
-  //   debugger;
-  //   this.game.remove(this);
-  // }
 }
 
 
@@ -267,8 +263,6 @@ class BoxBox extends MovingObject {
     this.spawnSound.volume = 0.2;
   }
 
-
-  // ADDING MOVEMENT MECHANICS FOR GRUNT
   move(timeDelta) {
     // let speed = 1.5;
    
@@ -294,7 +288,6 @@ class BoxBox extends MovingObject {
     // ctx.fillStyle = "#98f517";
     // ctx.fillRect(pos[0] - (7 / 8 * boxsize), pos[1], 10, 10);
     // ctx.fillRect(pos[0], pos[1], 10, 10);
-    
 
     ctx.beginPath();
     ctx.rect(pos[0] - (6/8 * boxsize), pos[1] - (2/8 * boxsize), boxsize, boxsize);
@@ -315,7 +308,6 @@ class BoxBox extends MovingObject {
 
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
-      // debugger;
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
@@ -328,10 +320,6 @@ class BoxBox extends MovingObject {
     return false;
   }
 
-  // remove() {
-  //   debugger;
-  //   this.game.remove(this);
-  // }
 }
 
 BoxBox.BOX_SIZE = 10;
@@ -439,7 +427,6 @@ class Grunt extends MovingObject {
 
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
-      // debugger;
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
@@ -452,10 +439,6 @@ class Grunt extends MovingObject {
     return false;
   }
 
-  // remove() {
-  //   debugger;
-  //   this.game.remove(this);
-  // }
 }
 
 Grunt.BOX_SIZE = 10;
@@ -547,7 +530,6 @@ class Pinwheel extends MovingObject {
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
       otherObject.relocate();
-      // debugger
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
       this.remove();
@@ -559,10 +541,6 @@ class Pinwheel extends MovingObject {
     return false;
   }
 
-  // remove() {
-  //   debugger;
-  //   this.game.remove(this);
-  // }
 }
 
 
@@ -610,8 +588,6 @@ class Singularity extends MovingObject {
   }
 
   draw(ctx, spawningScale) {
-    // debugger
-    // spawningScale = spawningScale || 1;
     spawningScale = 1;
 
     ctx.strokeStyle = "#F173BA"
@@ -626,7 +602,6 @@ class Singularity extends MovingObject {
 
 
   influenceAcceleration(object) {
-    // debugger;
     let dy = this.pos[1] - object.pos[1];
     let dx = this.pos[0] - object.pos[0];
     let unitVector = Util.dir([dx, dy]);
@@ -638,7 +613,6 @@ class Singularity extends MovingObject {
         unitVector[0] * this.gravityConstant / (r * r),
         unitVector[1] * this.gravityConstant / (r * r)
       ]
-      // debugger;
       object.acc = newAcc;
     }
   }
@@ -646,7 +620,6 @@ class Singularity extends MovingObject {
   isCollidedWith(otherObject) {
 
     const centerDist = Util.dist(this.pos, otherObject.pos);
-    // console.log(centerDist);
     
     if (otherObject instanceof Bullet) {
       if (centerDist < (this.radius + otherObject.radius)) {
@@ -662,7 +635,6 @@ class Singularity extends MovingObject {
         return false
     }
 
-    // debugger
     if (centerDist < (this.gravityWellSize + otherObject.radius)) {
 
       this.influenceAcceleration(otherObject)
@@ -676,7 +648,6 @@ class Singularity extends MovingObject {
 
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
-      // debugger
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet) {
@@ -839,7 +810,6 @@ class Weaver extends MovingObject {
 
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
-      // debugger;
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
@@ -851,11 +821,6 @@ class Weaver extends MovingObject {
 
     return false;
   }
-
-  // remove() {
-  //   debugger;
-  //   this.game.remove(this);
-  // }
 }
 
 Weaver.BOX_SIZE = 10;
@@ -1118,7 +1083,6 @@ class Game {
         //   }
         // }
         if (obj2 instanceof Singularity) {
-          // debugger
           obj2.isCollidedWith(obj1)
           continue;
         }
@@ -1327,9 +1291,6 @@ class GameView {
     window.addEventListener('mousemove', (e) => {
       const x = {x: e.layerX};
       const y = {y: e.layerY};
-      // console.log(x);
-      // console.log(y);
-      // debugger
       const mousePos = [e.layerX, e.layerY];
       
       ship.setFireAngle(mousePos);
@@ -1642,21 +1603,33 @@ module.exports = EnemySpawn;
   !*** ./lib/particles/particle.js ***!
   \***********************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
 
+
+
+// direction of the particle is the direction of the velocity vector
+// the direction of the 
+// the particle dies when the hue reaches 0 
+
+// random movement angle created
+// initial speed (scale)
+// vel = Util.vectorCartisian(angle, scale)
+//
+// 
+
+const Util = __webpack_require__(/*! ../util */ "./lib/util.js");
 
 class Particle {
   constructor(xpos, ypos, initialSpeed, ctx, game, explosionId, particleID, colors) {
     this.game = game;
     this.active = true;
+    
     this.color = colors[Math.floor(colors.length * Math.random())];
     this.particleId;
     this.explosionId;
 
-    this.radial = 0;
-    this.x = xpos; // x and y position
-    this.y = ypos;
+    this.pos = [xpos,ypos]; // x and y position
 
     this.rectLength = 15;
     this.rectWidth = 2;
@@ -1665,15 +1638,17 @@ class Particle {
     this.movementAngle = Math.random() * Math.PI * 2;
     // this.vx = this.initialSpeed * Math.cos(this.movementAngle);
     // this.vy = this.initialSpeed * Math.sin(this.movementAngle);
-    this.acceleration = -0.1;
-    
-    this.opacity = Math.random() + .5;
+    this.vel = Util.vectorCartisian(this.movementAngle, this.speed)
+    this.explosionDeceleration = -0.1; // in the direction the particle is moving
+    this.acc = [0,0]
+
+    this.opacity = Math.random() * 0.5 + 0.5;
     this.active = true;
-    this.hue = 0.9;
+    this.hue = Math.random() * 0.3 + 0.6;
 
     ctx.fillStyle = `${this.color},${this.hue})`;
 
-    ctx.fillRect(this.x, this.y, this.rectLength, this.rectWidth);
+    ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
   }
 
 
@@ -1689,10 +1664,22 @@ class Particle {
   };
 
   move(timeDelta) {
-    this.radial += this.speed;
+    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    this.updateAcceleration()
+    this.pos[0] += this.vel[0] * velocityScale + (this.acc[0] - this.explosionDeceleration * Math.cos(this.movementAngle)) * (velocityScale * velocityScale) / 2;
+    this.pos[1] += this.vel[1] * velocityScale + (this.acc[1] - this.explosionDeceleration * Math.sin(this.movementAngle)) * (velocityScale * velocityScale) / 2;
+    this.vel[0] += this.acc[0] * velocityScale;
+    this.vel[1] += this.acc[1] * velocityScale;
+    this.movementAngle = Math.atan2(this.vel[1], this.vel[0])
     this.rectLength -= 0.25;
-    this.speed += this.acceleration
-    this.hue -= 0.007;
+    this.hue -= 0.01;
+  }
+
+  updateAcceleration() {
+    for (let i = 0; i < this.game.singularities.length; i++) {
+      const singularity = this.game.singularities[i];
+      singularity.influenceAcceleration(this)
+    }
   }
 
   draw(ctx) {
@@ -1701,20 +1688,47 @@ class Particle {
     // this.x += this.vx;
     // this.y += this.vy;
     
-    if (this.speed < 0.05) {
+    if (this.hue < 0.1 || this.rectLength < 0.25) {
       this.remove();
     } else {
+      let pos = this.pos;
+      
+      let l = 15;
+      let w = 5;
+      let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
 
-      ctx.save()
-      ctx.translate(this.x, this.y);
-      ctx.rotate(this.movementAngle);
+      ctx.save();
+      ctx.beginPath();
+      ctx.translate(pos[0], pos[1]);
+      ctx.rotate(movementDirection + 2 * Math.PI);
+
       ctx.beginPath();
       ctx.strokeStyle = `${this.color},${this.hue})`;
       ctx.lineWidth = this.rectWidth;
-      ctx.moveTo(this.radial, 0);
-      ctx.lineTo(this.radial + this.rectLength, 0);
+
+      ctx.moveTo(0, 0); //1
+      ctx.lineTo(0,this.rectLength); //2
+      // ctx.lineTo(w / 6, l / 2); //3
+      // ctx.lineTo(0, l / 4); //4
+      // ctx.lineTo(-w / 6, l / 2); //5
+      // ctx.lineTo(-w / 2, l / 4); //6
+
+      ctx.closePath();
       ctx.stroke();
       ctx.restore();
+
+
+
+
+      // ctx.save()
+      // ctx.translate(this.pos[0], this.pos[1]);
+      // ctx.rotate(movementDirection);
+      // ctx.beginPath();
+      // ctx.strokeStyle = `${this.color},${this.hue})`;
+      // ctx.lineWidth = this.rectWidth;
+      // ctx.lineTo(this.rectLength, 0);
+      // ctx.stroke();
+      // ctx.restore();
     }
   }
 
@@ -1723,7 +1737,7 @@ class Particle {
   }
 }
 
-
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 module.exports = Particle;
 
 /***/ }),
@@ -1739,7 +1753,7 @@ const Particle = __webpack_require__(/*! ./particle */ "./lib/particles/particle
 
 
 
-const speeds = [7,6,5,4];
+const speeds = [7,6,5.5,5,4];
 
 class ParticleExplosion{
   constructor(xpos, ypos, ctx, game, explosionId){
@@ -1755,11 +1769,11 @@ class ParticleExplosion{
     this.particleNum = 80;
     this.particles = [];
     this.explosionId;
-
     for (var i = 0; i < this.particleNum; i++) {
       const particleId = i;
       
-      const speed = speeds[Math.floor(Math.random() * speeds.length)]
+      const speed = Math.random() * 3 + 4
+      // const speed = speeds[Math.floor(Math.random() * speeds.length)]
       this.particles.push(new Particle(xpos, ypos, speed, ctx, game, this.explosionId, particleId, this.color));
     }
   }
@@ -1772,7 +1786,6 @@ class ParticleExplosion{
     }
   }
   draw(ctx) {
-    
     for (let i = 0; i < this.particles.length; i++) {
       if (this.particles[i].active === true) {
         this.particles[i].draw(ctx);
@@ -2040,7 +2053,6 @@ class Ship extends MovingObject {
   }
 
   relocate() {
-    // debugger
     // this.game.die();
     // this.pos = this.game.randomPosition();
     // this.vel = [0, 0];
@@ -2071,6 +2083,7 @@ const Util = {
     return Util.scale(vec, 1 / norm);
   },
   vectorCartisian(angle,scale){
+
     let vector = [];
     vector = [scale * Math.cos(angle), scale * Math.sin(angle)]
     return vector

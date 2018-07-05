@@ -66,7 +66,7 @@ class Arrow extends MovingObject {
 
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
-      // debugger;
+
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
@@ -79,10 +79,6 @@ class Arrow extends MovingObject {
     return false;
   }
 
-  // remove() {
-  //   debugger;
-  //   this.game.remove(this);
-  // }
 }
 
 

@@ -29,8 +29,6 @@ class Singularity extends MovingObject {
   }
 
   draw(ctx, spawningScale) {
-    // debugger
-    // spawningScale = spawningScale || 1;
     spawningScale = 1;
 
     ctx.strokeStyle = "#F173BA"
@@ -45,7 +43,6 @@ class Singularity extends MovingObject {
 
 
   influenceAcceleration(object) {
-    // debugger;
     let dy = this.pos[1] - object.pos[1];
     let dx = this.pos[0] - object.pos[0];
     let unitVector = Util.dir([dx, dy]);
@@ -57,7 +54,6 @@ class Singularity extends MovingObject {
         unitVector[0] * this.gravityConstant / (r * r),
         unitVector[1] * this.gravityConstant / (r * r)
       ]
-      // debugger;
       object.acc = newAcc;
     }
   }
@@ -65,7 +61,6 @@ class Singularity extends MovingObject {
   isCollidedWith(otherObject) {
 
     const centerDist = Util.dist(this.pos, otherObject.pos);
-    // console.log(centerDist);
     
     if (otherObject instanceof Bullet) {
       if (centerDist < (this.radius + otherObject.radius)) {
@@ -81,7 +76,6 @@ class Singularity extends MovingObject {
         return false
     }
 
-    // debugger
     if (centerDist < (this.gravityWellSize + otherObject.radius)) {
 
       this.influenceAcceleration(otherObject)
@@ -95,7 +89,6 @@ class Singularity extends MovingObject {
 
   collideWith(otherObject) {
     if (otherObject instanceof Ship) {
-      // debugger
       otherObject.relocate();
       return true;
     } else if (otherObject instanceof Bullet) {
