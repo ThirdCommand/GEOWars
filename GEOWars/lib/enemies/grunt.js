@@ -2,6 +2,7 @@ const MovingObject = require("../moving_object")
 const Bullet = require("../bullet")
 const Ship = require("../ship")
 const Singularity = require("./singularity")
+const Sound = require("../sound")
 class Grunt extends MovingObject {
   constructor(options) {
     super(options)
@@ -12,8 +13,7 @@ class Grunt extends MovingObject {
     this.vel = [0,0];
     this.acc = [0,0];
 
-    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_blue.wav");
-    this.spawnSound.volume = options.volume || 0.2;
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.2);
   }
 
 

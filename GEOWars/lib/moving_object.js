@@ -48,9 +48,9 @@ class MovingObject {
       } else {
 
         this.game.add(new BulletWallExplosion(this.pos[0], this.pos[1], this.game.ctx, this.game))
-        if (! this.game.muted) {
-          let wallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
-          wallhit.play();
+        if (!this.game.muted) {
+          let wallhit = new Sound("GEOWars/sounds/bullet_hitwall.wav", 1)
+          this.game.soundsToPlay[wallhit.url] = wallhit
         } 
         this.remove();
       }

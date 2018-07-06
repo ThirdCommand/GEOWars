@@ -2,7 +2,7 @@ const MovingObject = require("../moving_object")
 const Bullet = require("../bullet")
 const Ship = require("../ship")
 const Util = require("../util")
-
+const Sound = require("../sound")
 class Singularity extends MovingObject {
   constructor(options) {
     super(options)
@@ -13,9 +13,7 @@ class Singularity extends MovingObject {
     this.gravityWellSize = 10000000000;
     this.gravityConstant = 1000;
     this.id = options.id
-    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_red.wav");
-    this.spawnSound.volume = 1;
-
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
   }
 
 

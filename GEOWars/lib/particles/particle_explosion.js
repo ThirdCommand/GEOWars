@@ -26,7 +26,7 @@ class ParticleExplosion{
       this.particles.push(new Particle(xpos, ypos, speed, ctx, game, this.explosionId, particleId, this.color));
     }
   }
-
+  
   move(deltaTime) {
     for (let i = 0; i < this.particles.length; i++) {
       if (this.particles[i].active === true) {
@@ -34,6 +34,7 @@ class ParticleExplosion{
       }
     }
   }
+
   draw(ctx) {
     for (let i = 0; i < this.particles.length; i++) {
       if (this.particles[i].active === true) {

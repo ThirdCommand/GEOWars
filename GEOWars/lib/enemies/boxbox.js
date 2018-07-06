@@ -2,25 +2,25 @@ const MovingObject = require("../moving_object")
 const Bullet = require("../bullet")
 const Ship = require("../ship")
 const Singularity = require("./singularity")
+const Sound = require("../sound")
 class BoxBox extends MovingObject {
   constructor(options) {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
     this.vel = [0,0]
     this.acc = [0,0];
-    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_blue.wav");
-    this.spawnSound.volume = 0.2;
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.2);
   }
 
   move(timeDelta) {
     // let speed = 1.5;
    
     
-    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
-    this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
-    this.vel[0] += this.acc[0] * velocityScale;
-    this.vel[1] += this.acc[1] * velocityScale;
+    const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    this.pos[0] += this.vel[0] * timeScale + this.acc[0] * (timeScale * timeScale) / 2;
+    this.pos[1] += this.vel[1] * timeScale + this.acc[1] * (timeScale * timeScale) / 2;
+    this.vel[0] += this.acc[0] * timeScale;
+    this.vel[1] += this.acc[1] * timeScale;
 
   }
 

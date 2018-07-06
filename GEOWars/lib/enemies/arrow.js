@@ -3,13 +3,13 @@ const Bullet = require("../bullet")
 const Ship = require("../ship")
 const Util = require("../util");
 const Singularity = require("./singularity")
+const Sound = require("../sound")
 class Arrow extends MovingObject {
   constructor(options) {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
     this.angle = options.angle || Math.PI / 3;
-    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_purple.wav")
-    this.spawnSound.volume = 0.2;
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_purple.wav", 0.2);
     this.speed = 3;
     this.vel = Util.vectorCartisian(this.angle, this.speed);
     this.acc = [0,0];

@@ -3,6 +3,7 @@ const Bullet = require("../bullet")
 const Ship = require("../ship")
 const Util = require("../util");
 const Singularity = require("./singularity")
+const Sound = require("../sound")
 class Pinwheel extends MovingObject {
   constructor(options) {
     super(options)
@@ -12,9 +13,7 @@ class Pinwheel extends MovingObject {
     this.speed = 1;
     this.vel = Util.randomVec(this.speed);
     this.acc = [0,0];
-    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_blue.wav");
-    this.spawnSound.volume = 0.2;
-    
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.2);
   }
 
   move(timeDelta) {

@@ -122,7 +122,7 @@ class Bullet extends MovingObject {
   //     this.game.add(new BulletWallExplosion(this.pos[0], this.pos[1], this.game.ctx, this.game))
   //     if (!this.game.muted) {
   //       let wallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
-  //       wallhit.play();
+  //       
   //     }
   //     this.remove();
   //   }
@@ -212,13 +212,13 @@ const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 const Util = __webpack_require__(/*! ../util */ "./lib/util.js");
 const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
+const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
 class Arrow extends MovingObject {
   constructor(options) {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
     this.angle = options.angle || Math.PI / 3;
-    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_purple.wav")
-    this.spawnSound.volume = 0.2;
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_purple.wav", 0.2);
     this.speed = 3;
     this.vel = Util.vectorCartisian(this.angle, this.speed);
     this.acc = [0,0];
@@ -308,25 +308,25 @@ const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_o
 const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
+const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
 class BoxBox extends MovingObject {
   constructor(options) {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
     this.vel = [0,0]
     this.acc = [0,0];
-    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_blue.wav");
-    this.spawnSound.volume = 0.2;
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.2);
   }
 
   move(timeDelta) {
     // let speed = 1.5;
    
     
-    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
-    this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
-    this.vel[0] += this.acc[0] * velocityScale;
-    this.vel[1] += this.acc[1] * velocityScale;
+    const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    this.pos[0] += this.vel[0] * timeScale + this.acc[0] * (timeScale * timeScale) / 2;
+    this.pos[1] += this.vel[1] * timeScale + this.acc[1] * (timeScale * timeScale) / 2;
+    this.vel[0] += this.acc[0] * timeScale;
+    this.vel[1] += this.acc[1] * timeScale;
 
   }
 
@@ -397,6 +397,7 @@ const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_o
 const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
+const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
 class Grunt extends MovingObject {
   constructor(options) {
     super(options)
@@ -407,8 +408,7 @@ class Grunt extends MovingObject {
     this.vel = [0,0];
     this.acc = [0,0];
 
-    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_blue.wav");
-    this.spawnSound.volume = options.volume || 0.2;
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.2);
   }
 
 
@@ -517,6 +517,7 @@ const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 const Util = __webpack_require__(/*! ../util */ "./lib/util.js");
 const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
+const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
 class Pinwheel extends MovingObject {
   constructor(options) {
     super(options)
@@ -526,9 +527,7 @@ class Pinwheel extends MovingObject {
     this.speed = 1;
     this.vel = Util.randomVec(this.speed);
     this.acc = [0,0];
-    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_blue.wav");
-    this.spawnSound.volume = 0.2;
-    
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.2);
   }
 
   move(timeDelta) {
@@ -616,7 +615,7 @@ const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_o
 const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 const Util = __webpack_require__(/*! ../util */ "./lib/util.js")
-
+const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
 class Singularity extends MovingObject {
   constructor(options) {
     super(options)
@@ -627,9 +626,7 @@ class Singularity extends MovingObject {
     this.gravityWellSize = 10000000000;
     this.gravityConstant = 1000;
     this.id = options.id
-    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_red.wav");
-    this.spawnSound.volume = 1;
-
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
   }
 
 
@@ -745,6 +742,7 @@ const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 const Util = __webpack_require__(/*! ../util */ "./lib/util.js")
 const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
+const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
 class Weaver extends MovingObject {
   constructor(options) {
     super(options)
@@ -759,8 +757,7 @@ class Weaver extends MovingObject {
     this.weaverCloseHitBox = 35;
     this.directionInfluenced = false;
     this.influencers = [];
-    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_green.wav");
-    this.spawnSound.volume = options.volume || 0.2;
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_green.wav", 0.2);
   }
 
 
@@ -937,6 +934,7 @@ class Game {
     this.sequenceCount = 0;
     this.lives = 3;
     this.addEnemies();
+    this.soundsToPlay = {}
   }
 
   
@@ -1149,9 +1147,8 @@ class Game {
           const explosionId = this.particleExplosions.length
 
           if (!this.muted) {
-            let death = new Audio("GEOWars/sounds/Enemy_explode.wav")
-            death.volume = 0.4;
-            death.play();
+            let death = new Sound("GEOWars/sounds/Enemy_explode.wav", 0.4)
+            this.soundsToPlay[death.url] = death
           }
           if (obj1 instanceof Singularity){
             this.add(new SingularityExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
@@ -1203,6 +1200,14 @@ class Game {
     });
 
   }
+
+  playSounds() {
+    Object.values(this.soundsToPlay).forEach((sound) => {
+      sound.play();
+    })
+    this.soundsToPlay = {};
+  }
+
 
   isOutOfBounds(pos) {
     return (pos[0] < 0) || (pos[1] < 0) ||
@@ -1275,6 +1280,7 @@ class Game {
     this.checkCollisions(ctx);
     this.moveObjects(delta);
     this.updateShipFireAngle();
+    this.playSounds();
   }
 
   wrap(pos) {
@@ -1411,21 +1417,6 @@ class GameView {
   }
 }
 
-// function sound(src) {
-//   this.sound = document.createElement("audio");
-//   this.sound.src = src;
-//   this.sound.setAttribute("preload", "auto");
-//   this.sound.setAttribute("controls", "none");
-//   this.sound.style.display = "none";
-//   document.body.appendChild(this.sound);
-//   this.play = function () {
-//     this.sound.play();
-//   }
-//   this.stop = function () {
-//     this.sound.pause();
-//   }
-// }
-
 GameView.MOVES = {
   w: [0, -1],
   a: [-1, 0],
@@ -1508,9 +1499,9 @@ class MovingObject {
       } else {
 
         this.game.add(new BulletWallExplosion(this.pos[0], this.pos[1], this.game.ctx, this.game))
-        if (! this.game.muted) {
-          let wallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
-          wallhit.play();
+        if (!this.game.muted) {
+          let wallhit = new Sound("GEOWars/sounds/bullet_hitwall.wav", 1)
+          this.game.soundsToPlay[wallhit.url] = wallhit
         } 
         this.remove();
       }
@@ -1614,7 +1605,7 @@ class EnemySpawn{
     this.existTime = 0;
 
     if (!this.game.muted){
-      this.enemy.spawnSound.play();
+      this.game.soundsToPlay[this.enemy.spawnSound.url] = this.enemy.spawnSound;
     }
 
   }
@@ -1698,7 +1689,7 @@ class Particle {
     // this.vx = this.initialSpeed * Math.cos(this.movementAngle);
     // this.vy = this.initialSpeed * Math.sin(this.movementAngle);
     this.vel = Util.vectorCartisian(this.movementAngle, this.speed)
-    this.explosionDeceleration = 0.01; // in the direction the particle is moving
+    this.explosionDeceleration = 0; // in the direction the particle is moving
     this.acc = [0,0]
 
     this.opacity = Math.random() * 0.5 + 0.5;
@@ -1836,7 +1827,7 @@ class ParticleExplosion{
       this.particles.push(new Particle(xpos, ypos, speed, ctx, game, this.explosionId, particleId, this.color));
     }
   }
-
+  
   move(deltaTime) {
     for (let i = 0; i < this.particles.length; i++) {
       if (this.particles[i].active === true) {
@@ -1844,6 +1835,7 @@ class ParticleExplosion{
       }
     }
   }
+
   draw(ctx) {
     for (let i = 0; i < this.particles.length; i++) {
       if (this.particles[i].active === true) {
@@ -1976,37 +1968,17 @@ class Ship extends MovingObject {
     )
   }
 
-  // move(timeDelta){
-  //   const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-  //   this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
-  //   this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
-  //   this.vel[0] += this.acc[0] * velocityScale;
-  //   this.vel[1] += this.acc[1] * velocityScale;
-
-  //   if (this.game.isOutOfBounds(this.pos)) {
-  //     if (this.isWrappable) {
-  //       this.pos = this.game.wrap(this.pos);
-  //     } else {
-  //       this.remove();
-  //     }
-  //   }
-  // }
-
   draw(ctx) {
     let pos = this.pos 
     let shipWidth = 10
     let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
     ctx.save();
     ctx.beginPath();
-    // ctx.fillStyle = "#98f517";
     ctx.translate(pos[0], pos[1]);
     ctx.rotate(movementDirection + 3/4 * Math.PI + Math.PI);
-    // console.log(this.vel);
     
     ctx.translate(-shipWidth / 2, shipWidth / 2);
 
-    // ctx.rotate(atan2(this.vel[1],this.vel[2]));
-    // ctx.translate(-shipWidth/2, shipWidth/2); 
     ctx.beginPath();
     ctx.strokeStyle = "#ffffff";
     ctx.lineWidth = 2.2;
@@ -2028,8 +2000,8 @@ class Ship extends MovingObject {
     // in this case the MovingObject should move farther in this frame
     // velocity of object is how far it should move in 1/60th of a second or something
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA,
-      offsetX = this.vel[0] * velocityScale * this.speed,
-      offsetY = this.vel[1] * velocityScale * this.speed;
+    offsetX = this.vel[0] * velocityScale * this.speed,
+    offsetY = this.vel[1] * velocityScale * this.speed;
     this.pos = [this.pos[0] + offsetX, this.pos[1] + offsetY];
 
 
@@ -2037,15 +2009,25 @@ class Ship extends MovingObject {
     if (this.game.isOutOfBounds(this.pos)) {
       if (this.isWrappable) {
         this.pos = this.game.wrap(this.pos);
-      } else {
-        if (!this.game.muted) {
-          let wallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
-          wallhit.play();
-          this.remove();
-        }
-      }
+      } 
     }
   }
+
+  // move(timeDelta){
+  //   const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+  //   this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
+  //   this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
+  //   this.vel[0] += this.acc[0] * velocityScale;
+  //   this.vel[1] += this.acc[1] * velocityScale;
+
+  //   if (this.game.isOutOfBounds(this.pos)) {
+  //     if (this.isWrappable) {
+  //       this.pos = this.game.wrap(this.pos);
+  //     } else {
+  //       this.remove();
+  //     }
+  //   }
+  // }
 
 
   setFireAngle(mousePos) {
@@ -2062,26 +2044,13 @@ class Ship extends MovingObject {
   
 
   fireBullet(e) {
-    // const norm = Util.norm(this.vel);
-
-    // if (norm === 0) {
-    //   // Can't fire unless moving.
-    //   return;
-    // }
-
-    // const relVel = Util.scale(
-    //   Util.dir(this.vel),
-    //   Bullet.SPEED
-    // );
+    
     let shipvx = this.vel[0];
     let shipvy = this.vel[1];
     let relBulletVelX = Bullet.SPEED * Math.cos(this.fireAngle);
     let relBulletVelY = Bullet.SPEED * Math.sin(this.fireAngle);
 
     const bulletVel = [shipvx + relBulletVelX, shipvy + relBulletVelY];
-    // const bulletVel = [
-    //   relVel[0] + this.vel[0], relVel[1] + this.vel[1]
-    // ];
 
     const bullet = new Bullet({
       pos: this.pos,
@@ -2094,21 +2063,7 @@ class Ship extends MovingObject {
   }
 
   power(impulse) {
-    // this.vel[0] + 
-    //check if the new speed is faster than limit because of the contribution
-    // if it is, don't add that contribution
-    // 
     this.vel = impulse
-    // if (Math.abs(this.vel[1] + impulse[1] * 0.5) > 4 ) {
-      
-    // } else {
-    //   this.vel[1] += impulse[1] * 0.5
-    // }
-    // if (Math.abs(this.vel[0] + impulse[0] * 0.5) > 4) {
-
-    // } else {
-    //   this.vel[0] += impulse[0] * 0.5;
-    // } 
   }
 
   relocate() {
@@ -2124,6 +2079,29 @@ module.exports = Ship;
 const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 
+
+/***/ }),
+
+/***/ "./lib/sound.js":
+/*!**********************!*\
+  !*** ./lib/sound.js ***!
+  \**********************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+class Sound {
+  constructor(url, volume = 1){
+    this.url = url;
+    this.volume = volume;
+  }
+  play() {
+    this.sound = new Audio(url);
+    this.sound.volume = volume;
+    this.sound.play();
+  }
+}
+
+module.exports = Sound;
 
 /***/ }),
 

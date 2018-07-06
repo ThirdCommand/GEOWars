@@ -37,6 +37,7 @@ class Game {
     this.sequenceCount = 0;
     this.lives = 3;
     this.addEnemies();
+    this.soundsToPlay = {}
   }
 
   
@@ -249,9 +250,8 @@ class Game {
           const explosionId = this.particleExplosions.length
 
           if (!this.muted) {
-            let death = new Audio("GEOWars/sounds/Enemy_explode.wav")
-            death.volume = 0.4;
-            death.play();
+            let death = new Sound("GEOWars/sounds/Enemy_explode.wav", 0.4)
+            this.soundsToPlay[death.url] = death
           }
           if (obj1 instanceof Singularity){
             this.add(new SingularityExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
@@ -303,6 +303,14 @@ class Game {
     });
 
   }
+
+  playSounds() {
+    Object.values(this.soundsToPlay).forEach((sound) => {
+      sound.play();
+    })
+    this.soundsToPlay = {};
+  }
+
 
   isOutOfBounds(pos) {
     return (pos[0] < 0) || (pos[1] < 0) ||
@@ -375,6 +383,7 @@ class Game {
     this.checkCollisions(ctx);
     this.moveObjects(delta);
     this.updateShipFireAngle();
+    this.playSounds();
   }
 
   wrap(pos) {

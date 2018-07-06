@@ -41,37 +41,17 @@ class Ship extends MovingObject {
     )
   }
 
-  // move(timeDelta){
-  //   const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-  //   this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
-  //   this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
-  //   this.vel[0] += this.acc[0] * velocityScale;
-  //   this.vel[1] += this.acc[1] * velocityScale;
-
-  //   if (this.game.isOutOfBounds(this.pos)) {
-  //     if (this.isWrappable) {
-  //       this.pos = this.game.wrap(this.pos);
-  //     } else {
-  //       this.remove();
-  //     }
-  //   }
-  // }
-
   draw(ctx) {
     let pos = this.pos 
     let shipWidth = 10
     let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
     ctx.save();
     ctx.beginPath();
-    // ctx.fillStyle = "#98f517";
     ctx.translate(pos[0], pos[1]);
     ctx.rotate(movementDirection + 3/4 * Math.PI + Math.PI);
-    // console.log(this.vel);
     
     ctx.translate(-shipWidth / 2, shipWidth / 2);
 
-    // ctx.rotate(atan2(this.vel[1],this.vel[2]));
-    // ctx.translate(-shipWidth/2, shipWidth/2); 
     ctx.beginPath();
     ctx.strokeStyle = "#ffffff";
     ctx.lineWidth = 2.2;
@@ -93,8 +73,8 @@ class Ship extends MovingObject {
     // in this case the MovingObject should move farther in this frame
     // velocity of object is how far it should move in 1/60th of a second or something
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA,
-      offsetX = this.vel[0] * velocityScale * this.speed,
-      offsetY = this.vel[1] * velocityScale * this.speed;
+    offsetX = this.vel[0] * velocityScale * this.speed,
+    offsetY = this.vel[1] * velocityScale * this.speed;
     this.pos = [this.pos[0] + offsetX, this.pos[1] + offsetY];
 
 
@@ -102,15 +82,25 @@ class Ship extends MovingObject {
     if (this.game.isOutOfBounds(this.pos)) {
       if (this.isWrappable) {
         this.pos = this.game.wrap(this.pos);
-      } else {
-        if (!this.game.muted) {
-          let wallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
-          wallhit.play();
-          this.remove();
-        }
-      }
+      } 
     }
   }
+
+  // move(timeDelta){
+  //   const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+  //   this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
+  //   this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
+  //   this.vel[0] += this.acc[0] * velocityScale;
+  //   this.vel[1] += this.acc[1] * velocityScale;
+
+  //   if (this.game.isOutOfBounds(this.pos)) {
+  //     if (this.isWrappable) {
+  //       this.pos = this.game.wrap(this.pos);
+  //     } else {
+  //       this.remove();
+  //     }
+  //   }
+  // }
 
 
   setFireAngle(mousePos) {
@@ -127,26 +117,13 @@ class Ship extends MovingObject {
   
 
   fireBullet(e) {
-    // const norm = Util.norm(this.vel);
-
-    // if (norm === 0) {
-    //   // Can't fire unless moving.
-    //   return;
-    // }
-
-    // const relVel = Util.scale(
-    //   Util.dir(this.vel),
-    //   Bullet.SPEED
-    // );
+    
     let shipvx = this.vel[0];
     let shipvy = this.vel[1];
     let relBulletVelX = Bullet.SPEED * Math.cos(this.fireAngle);
     let relBulletVelY = Bullet.SPEED * Math.sin(this.fireAngle);
 
     const bulletVel = [shipvx + relBulletVelX, shipvy + relBulletVelY];
-    // const bulletVel = [
-    //   relVel[0] + this.vel[0], relVel[1] + this.vel[1]
-    // ];
 
     const bullet = new Bullet({
       pos: this.pos,
@@ -159,21 +136,7 @@ class Ship extends MovingObject {
   }
 
   power(impulse) {
-    // this.vel[0] + 
-    //check if the new speed is faster than limit because of the contribution
-    // if it is, don't add that contribution
-    // 
     this.vel = impulse
-    // if (Math.abs(this.vel[1] + impulse[1] * 0.5) > 4 ) {
-      
-    // } else {
-    //   this.vel[1] += impulse[1] * 0.5
-    // }
-    // if (Math.abs(this.vel[0] + impulse[0] * 0.5) > 4) {
-
-    // } else {
-    //   this.vel[0] += impulse[0] * 0.5;
-    // } 
   }
 
   relocate() {

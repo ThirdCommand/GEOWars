@@ -8,7 +8,7 @@ class EnemySpawn{
     this.existTime = 0;
 
     if (!this.game.muted){
-      this.enemy.spawnSound.play();
+      this.game.soundsToPlay[this.enemy.spawnSound.url] = this.enemy.spawnSound;
     }
 
   }

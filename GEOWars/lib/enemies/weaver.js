@@ -3,6 +3,7 @@ const Bullet = require("../bullet")
 const Ship = require("../ship")
 const Util = require("../util")
 const Singularity = require("./singularity")
+const Sound = require("../sound")
 class Weaver extends MovingObject {
   constructor(options) {
     super(options)
@@ -17,8 +18,7 @@ class Weaver extends MovingObject {
     this.weaverCloseHitBox = 35;
     this.directionInfluenced = false;
     this.influencers = [];
-    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_green.wav");
-    this.spawnSound.volume = options.volume || 0.2;
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_green.wav", 0.2);
   }
 
 
