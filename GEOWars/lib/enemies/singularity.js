@@ -13,6 +13,8 @@ class Singularity extends MovingObject {
     this.gravityWellSize = 10000000000;
     this.gravityConstant = 1000;
     this.id = options.id
+    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_red.wav");
+    this.spawnSound.volume = 1;
 
   }
 
@@ -29,8 +31,10 @@ class Singularity extends MovingObject {
   }
 
   draw(ctx, spawningScale) {
-    spawningScale = 1;
-
+    if (!spawningScale) {
+      spawningScale = 1 
+    }
+      
     ctx.strokeStyle = "#F173BA"
 
     ctx.beginPath();

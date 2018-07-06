@@ -32,7 +32,7 @@ class Particle {
     // this.vx = this.initialSpeed * Math.cos(this.movementAngle);
     // this.vy = this.initialSpeed * Math.sin(this.movementAngle);
     this.vel = Util.vectorCartisian(this.movementAngle, this.speed)
-    this.explosionDeceleration = -0.1; // in the direction the particle is moving
+    this.explosionDeceleration = 0.01; // in the direction the particle is moving
     this.acc = [0,0]
 
     this.opacity = Math.random() * 0.5 + 0.5;

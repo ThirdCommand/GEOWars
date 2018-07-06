@@ -627,6 +627,8 @@ class Singularity extends MovingObject {
     this.gravityWellSize = 10000000000;
     this.gravityConstant = 1000;
     this.id = options.id
+    this.spawnSound = new Audio("GEOWars/sounds/Enemy_spawn_red.wav");
+    this.spawnSound.volume = 1;
 
   }
 
@@ -643,8 +645,10 @@ class Singularity extends MovingObject {
   }
 
   draw(ctx, spawningScale) {
-    spawningScale = 1;
-
+    if (!spawningScale) {
+      spawningScale = 1 
+    }
+      
     ctx.strokeStyle = "#F173BA"
 
     ctx.beginPath();
@@ -948,7 +952,7 @@ class Game {
       Arrow: (pos, angle) => (new Arrow({game: this, pos: pos, angle: angle})),
       Grunt: (pos) => (new Grunt({game: this, pos: pos})),
       Weaver: (pos) => (new Weaver({game: this, pos: pos})),
-      // Singularity: (pos) => (new Singularity({game: this, pos: pos}))
+      Singularity: (pos) => (new Singularity({game: this, pos: pos}))
     };
     
   }
@@ -1694,7 +1698,7 @@ class Particle {
     // this.vx = this.initialSpeed * Math.cos(this.movementAngle);
     // this.vy = this.initialSpeed * Math.sin(this.movementAngle);
     this.vel = Util.vectorCartisian(this.movementAngle, this.speed)
-    this.explosionDeceleration = -0.1; // in the direction the particle is moving
+    this.explosionDeceleration = 0.01; // in the direction the particle is moving
     this.acc = [0,0]
 
     this.opacity = Math.random() * 0.5 + 0.5;
@@ -1889,8 +1893,8 @@ class SingularityExplosion {
 
     for (var i = 0; i < this.particleNum; i++) {
       const particleId = i;
-
-      const speed = speeds[Math.floor(Math.random() * speeds.length)]
+      const speed = Math.random() * (21 - 4) + 4
+      // const speed = speeds[Math.floor(Math.random() * speeds.length)]
       this.particles.push(new Particle(xpos, ypos, speed, ctx, game, this.explosionId, particleId, this.color));
     }
   }

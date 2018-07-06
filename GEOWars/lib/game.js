@@ -52,7 +52,7 @@ class Game {
       Arrow: (pos, angle) => (new Arrow({game: this, pos: pos, angle: angle})),
       Grunt: (pos) => (new Grunt({game: this, pos: pos})),
       Weaver: (pos) => (new Weaver({game: this, pos: pos})),
-      // Singularity: (pos) => (new Singularity({game: this, pos: pos}))
+      Singularity: (pos) => (new Singularity({game: this, pos: pos}))
     };
     
   }

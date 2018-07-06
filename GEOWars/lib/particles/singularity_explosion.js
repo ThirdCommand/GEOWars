@@ -21,8 +21,8 @@ class SingularityExplosion {
 
     for (var i = 0; i < this.particleNum; i++) {
       const particleId = i;
-
-      const speed = speeds[Math.floor(Math.random() * speeds.length)]
+      const speed = Math.random() * (21 - 4) + 4
+      // const speed = speeds[Math.floor(Math.random() * speeds.length)]
       this.particles.push(new Particle(xpos, ypos, speed, ctx, game, this.explosionId, particleId, this.color));
     }
   }
