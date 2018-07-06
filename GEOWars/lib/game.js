@@ -12,6 +12,7 @@ const Grunt = require("./enemies/grunt");
 const Weaver = require("./enemies/weaver");
 const Singularity = require("./enemies/singularity");
 const EnemySpawn = require("./particles/enemy_spawn");
+const Sound = require("./sound")
 
 class Game {
   constructor() {

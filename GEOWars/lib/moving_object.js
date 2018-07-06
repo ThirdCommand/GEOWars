@@ -1,4 +1,5 @@
 const Util = require("./util");
+const Sound = require("./sound")
 const BulletWallExplosion = require("./particles/bullet_wall_explosion")
 class MovingObject {
   constructor(options) {

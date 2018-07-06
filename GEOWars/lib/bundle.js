@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
 /***/ (function(module, exports, __webpack_require__) {
 
 const MovingObject = __webpack_require__(/*! ./moving_object */ "./lib/moving_object.js");
-
+const Sound = __webpack_require__(/*! ./sound */ "./lib/sound.js")
 class Bullet extends MovingObject {
   constructor(options) {
     super(options);
@@ -213,12 +213,13 @@ const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 const Util = __webpack_require__(/*! ../util */ "./lib/util.js");
 const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
 const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
+
 class Arrow extends MovingObject {
   constructor(options) {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
     this.angle = options.angle || Math.PI / 3;
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_purple.wav", 0.2);
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_purple.wav", 0.5);
     this.speed = 3;
     this.vel = Util.vectorCartisian(this.angle, this.speed);
     this.acc = [0,0];
@@ -315,7 +316,7 @@ class BoxBox extends MovingObject {
     this.pos = options.pos || options.game.randomPosition();
     this.vel = [0,0]
     this.acc = [0,0];
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.2);
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
   }
 
   move(timeDelta) {
@@ -408,7 +409,7 @@ class Grunt extends MovingObject {
     this.vel = [0,0];
     this.acc = [0,0];
 
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.2);
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
   }
 
 
@@ -527,7 +528,7 @@ class Pinwheel extends MovingObject {
     this.speed = 1;
     this.vel = Util.randomVec(this.speed);
     this.acc = [0,0];
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.2);
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
   }
 
   move(timeDelta) {
@@ -757,7 +758,7 @@ class Weaver extends MovingObject {
     this.weaverCloseHitBox = 35;
     this.directionInfluenced = false;
     this.influencers = [];
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_green.wav", 0.2);
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_green.wav", 0.5);
   }
 
 
@@ -909,6 +910,7 @@ const Grunt = __webpack_require__(/*! ./enemies/grunt */ "./lib/enemies/grunt.js
 const Weaver = __webpack_require__(/*! ./enemies/weaver */ "./lib/enemies/weaver.js");
 const Singularity = __webpack_require__(/*! ./enemies/singularity */ "./lib/enemies/singularity.js");
 const EnemySpawn = __webpack_require__(/*! ./particles/enemy_spawn */ "./lib/particles/enemy_spawn.js");
+const Sound = __webpack_require__(/*! ./sound */ "./lib/sound.js")
 
 class Game {
   constructor() {
@@ -1450,6 +1452,7 @@ module.exports = GameView;
 /***/ (function(module, exports, __webpack_require__) {
 
 const Util = __webpack_require__(/*! ./util */ "./lib/util.js");
+const Sound = __webpack_require__(/*! ./sound */ "./lib/sound.js")
 const BulletWallExplosion = __webpack_require__(/*! ./particles/bullet_wall_explosion */ "./lib/particles/bullet_wall_explosion.js")
 class MovingObject {
   constructor(options) {
@@ -2095,8 +2098,8 @@ class Sound {
     this.volume = volume;
   }
   play() {
-    this.sound = new Audio(url);
-    this.sound.volume = volume;
+    this.sound = new Audio(this.url);
+    this.sound.volume = this.volume;
     this.sound.play();
   }
 }

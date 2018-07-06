@@ -18,7 +18,7 @@ class Weaver extends MovingObject {
     this.weaverCloseHitBox = 35;
     this.directionInfluenced = false;
     this.influencers = [];
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_green.wav", 0.2);
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_green.wav", 0.5);
   }
 
 

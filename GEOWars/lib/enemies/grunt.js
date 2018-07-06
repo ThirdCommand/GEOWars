@@ -13,7 +13,7 @@ class Grunt extends MovingObject {
     this.vel = [0,0];
     this.acc = [0,0];
 
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.2);
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
   }
 
 

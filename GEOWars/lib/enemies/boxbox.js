@@ -9,7 +9,7 @@ class BoxBox extends MovingObject {
     this.pos = options.pos || options.game.randomPosition();
     this.vel = [0,0]
     this.acc = [0,0];
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.2);
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
   }
 
   move(timeDelta) {

@@ -4,8 +4,8 @@ class Sound {
     this.volume = volume;
   }
   play() {
-    this.sound = new Audio(url);
-    this.sound.volume = volume;
+    this.sound = new Audio(this.url);
+    this.sound.volume = this.volume;
     this.sound.play();
   }
 }
