@@ -120,19 +120,40 @@ class Ship extends MovingObject {
     
     let shipvx = this.vel[0];
     let shipvy = this.vel[1];
-    let relBulletVelX = Bullet.SPEED * Math.cos(this.fireAngle);
-    let relBulletVelY = Bullet.SPEED * Math.sin(this.fireAngle);
 
-    const bulletVel = [shipvx + relBulletVelX, shipvy + relBulletVelY];
+    let relBulletVelX1 = Bullet.SPEED * Math.cos(this.fireAngle);
+    let relBulletVelY1 = Bullet.SPEED * Math.sin(this.fireAngle);
+    let relBulletVelX2 = (Bullet.SPEED - 0.5) * Math.cos(this.fireAngle + Math.PI / 32);
+    let relBulletVelY2 = (Bullet.SPEED - 0.5) * Math.sin(this.fireAngle + Math.PI / 32);
+    let relBulletVelX3 = (Bullet.SPEED - 0.5) * Math.cos(this.fireAngle - Math.PI / 32);
+    let relBulletVelY3 = (Bullet.SPEED - 0.5) * Math.sin(this.fireAngle - Math.PI / 32);
 
-    const bullet = new Bullet({
+    const bulletVel1 = [shipvx + relBulletVelX1, shipvy + relBulletVelY1];
+    const bulletVel2 = [shipvx + relBulletVelX2, shipvy + relBulletVelY2];
+    const bulletVel3 = [shipvx + relBulletVelX3, shipvy + relBulletVelY3];
+
+    const bullet1 = new Bullet({
       pos: this.pos,
-      vel: bulletVel,
+      vel: bulletVel1,
+      color: this.color,
+      game: this.game
+    });
+    const bullet2 = new Bullet({
+      pos: this.pos,
+      vel: bulletVel2,
+      color: this.color,
+      game: this.game
+    });
+    const bullet3 = new Bullet({
+      pos: this.pos,
+      vel: bulletVel3,
       color: this.color,
       game: this.game
     });
 
-    this.game.add(bullet);
+    this.game.add(bullet1);
+    this.game.add(bullet2);
+    this.game.add(bullet3);
   }
 
   power(impulse) {
