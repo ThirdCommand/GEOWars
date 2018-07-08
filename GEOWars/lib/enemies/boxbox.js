@@ -42,11 +42,11 @@ class BoxBox extends MovingObject {
     // ctx.fillStyle = "#98f517";
     // ctx.fillRect(pos[0] - (7 / 8 * boxsize), pos[1], 10, 10);
     // ctx.fillRect(pos[0], pos[1], 10, 10);
-
+    ctx.save()
     ctx.beginPath();
     ctx.rect(pos[0] - (6/8 * boxsize), pos[1] - (2/8 * boxsize), boxsize, boxsize);
     ctx.lineWidth = 1.5;
-    ctx.strokeStyle = "#F173BA";
+    // ctx.strokeStyle = "#F173BA";
     // ctx.shadowBlur = 1;
     // ctx.shadowColor = "#F173BA"
     ctx.stroke();
@@ -55,9 +55,9 @@ class BoxBox extends MovingObject {
     ctx.rect(pos[0] - (2/8 * boxsize), pos[1] - (6/8 * boxsize), boxsize, boxsize);
     ctx.lineWidth = 1.5;
     ctx.strokeStyle = "#F173BA";
-    // ctx.shadowBlur = 20;
-    // ctx.shadowColor = "#F173BA"
+    
     ctx.stroke();
+    ctx.restore();
   }
 
   collideWith(otherObject) {

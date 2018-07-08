@@ -73,21 +73,45 @@ class Grunt extends MovingObject {
     let l = shipLength;
     let w = shipWidth;
 
+    let r = 13;
+    let g = 213;
+    let b = 255;
     ctx.save();
-    ctx.beginPath();
     ctx.translate(pos[0], pos[1]);
 
-    ctx.beginPath();
-    ctx.strokeStyle = "#4286f4";
-    ctx.lineWidth = 4;
-    ctx.moveTo(0, -l/2); //1
-    ctx.lineTo(w/2, 0); //2
-    ctx.lineTo(0, l/2); //3
-    ctx.lineTo(-w/2, -0); //4
+    // ctx.strokeStyle = "#4286f4";
+    // ctx.lineWidth = 4;
 
+
+    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+    ctx.shadowBlur = 10 / 5 * 2.2;
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+    ctx.lineWidth = 7.5 / 5 * 2.2;
+    this.drawDiamond(ctx, l, w);
+    ctx.lineWidth = 6 / 5 * 2.2;
+    this.drawDiamond(ctx, l, w);
+    ctx.lineWidth = 4.5 / 5 * 2.2;
+    this.drawDiamond(ctx, l, w);
+    ctx.lineWidth = 3 / 5 * 2.2;
+    this.drawDiamond(ctx, l, w);
+    ctx.strokeStyle = 'rgb(255, 255, 255)';
+    ctx.lineWidth = 1.5 / 5 * 2.2;
+    this.drawDiamond(ctx, l, w);
+
+
+
+    
+    ctx.restore();
+  }
+
+  drawDiamond(ctx, l, w){
+    ctx.beginPath();
+    ctx.moveTo(0, -l / 2); //1
+    ctx.lineTo(w / 2, 0); //2
+    ctx.lineTo(0, l / 2); //3
+    ctx.lineTo(-w / 2, -0); //4
     ctx.closePath();
     ctx.stroke();
-    ctx.restore();
   }
 
   collideWith(otherObject) {

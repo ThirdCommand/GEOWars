@@ -12,6 +12,8 @@
   <!-- <script type="application/javascript" src="vendor/keymaster.js"></script>
   <script type="application/javascript" src="lib/bundle.js"></script> -->
   <script>
+
+    
     let BG_COLOR = "#000000";
     let DIM_X = 1000; 
     let DIM_Y = 600;
@@ -40,26 +42,56 @@
     //   ctx.closePath();
     //   ctx.stroke(); 
     // } 
-    var neonRect = function(x,y,w,h,r,g,b){
-      ctx.shadowColor = "rgb("+r+","+g+","+b+")";
-      ctx.shadowBlur = 10; 
-      ctx.strokeStyle= "rgba("+r+","+g+","+b+",0.2)"; 
-      ctx.lineWidth=7.5;
-      ctx.rect(x,y,w,h); 
-      ctx.stroke(); 
-      ctx.rect(x,y,w,h); 
-      ctx.stroke(); 
+    // var neonRect = function(x,y,w,h,r,g,b){
+      
+      // ctx.shadowColor = "rgb("+r+","+g+","+b+")";
+      // ctx.shadowBlur = 10; 
+      // ctx.strokeStyle= "rgba("+r+","+g+","+b+",0.2)"; 
+      // ctx.lineWidth=7.5;
+      // ctx.rect(x,y,w,h); 
+      // ctx.stroke(); 
+      // ctx.rect(x,y,w,h); 
+      // ctx.stroke(); 
+      
+    
       // drawRectangle(x,y,w,h,1.5); ctx.strokeStyle= "rgba("+r+","+g+","+b+",0.2)"; ctx.lineWidth=6;
       // drawRectangle(x,y,w,h,1.5); ctx.strokeStyle= "rgba("+r+","+g+","+b+",0.2)"; ctx.lineWidth=4.5;
       // drawRectangle(x,y,w,h,1.5); ctx.rect(x,y,w,h); ctx.stroke(); ctx.strokeStyle= "rgba("+r+","+g+","+b+",0.2)"; ctx.lineWidth=3;
       // drawRectangle(x,y,w,h,1.5); ctx.rect(x,y,w,h); ctx.stroke(); ctx.strokeStyle= '#fff'; ctx.lineWidth=1.5; ctx.rect(x,y,w,h);
-      // ctx.stroke(); 
+    var drawRectangle = function(x, y, w, h, border){
+       ctx.rect(x,y,w,h); 
+       ctx.stroke(); 
+    }
+
+    var neonRect = function(x,y,w,h,r,g,b){
+      ctx.save()
+      ctx.shadowColor = "rgb("+r+","+g+","+b+")";
+      ctx.shadowBlur = 10;
+      ctx.strokeStyle= "rgba("+r+","+g+","+b+",0.2)";
+      ctx.lineWidth=7.5;
+      drawRectangle(x,y,w,h,1.5);
+      ctx.lineWidth=6;
+      drawRectangle(x,y,w,h,1.5);
+      ctx.lineWidth=4.5;
+      drawRectangle(x,y,w,h,1.5);
+      ctx.lineWidth=3;
+      drawRectangle(x,y,w,h,1.5);
+      ctx.strokeStyle= 'rgb(255, 255, 255)';
+      ctx.lineWidth=1.5;
+      drawRectangle(x,y,w,h,1.5);
+
+      ctx.stroke(); 
+      ctx.restore();
     }; 
+
+
+
     function draw(x, y){ 
       ctx.clearRect(0, 0, DIM_X, DIM_Y); 
       ctx.fillStyle = BG_COLOR; 
       ctx.fillRect(0, 0, DIM_X, DIM_Y);
-      neonRect(25+x,25+y,50,50,243,243,21);
+      neonRect(25+x,25+y,50,50,13,213,252);
+
       
       // neonRect(25+x,225-y,50,50,255,153,51);
     } 
