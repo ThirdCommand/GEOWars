@@ -60,7 +60,7 @@ class Game {
   }
 
   add(object) {
-    if (this.enemies.length < 50 || object instanceof Bullet){
+    if (this.enemies.length < 50 || object instanceof Bullet || !(object instanceof EnemySpawn)){
       if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow || object instanceof Grunt || object instanceof Weaver) {
         this.enemies.push(object)
       } else if (object instanceof Singularity) {
@@ -245,7 +245,7 @@ class Game {
         // }
         if (obj2 instanceof Singularity) {
           obj2.isCollidedWith(obj1)
-          continue;
+          continue
         }
         if (obj1.isCollidedWith(obj2)) {
           const explosionId = this.particleExplosions.length
@@ -265,8 +265,8 @@ class Game {
         }
       }
     }
-
   }
+
   die(){
     this.intervalTiming = this.intervalTiming;
     this.intervalTime = 0;
@@ -283,6 +283,12 @@ class Game {
 
 
   draw(ctx) {
+
+    // var ctx = document.createElement("canvas").getContext("2d");
+    // ctx.canvas.width = this.DIM_X;
+    // ctx.canvas.height = this.DIM_Y;
+
+    ctx.save()
     ctx.clearRect(0, 0, Game.DIM_X, Game.DIM_Y);
     ctx.fillStyle = Game.BG_COLOR;
     ctx.fillRect(0, 0, Game.DIM_X, Game.DIM_Y);
@@ -302,8 +308,8 @@ class Game {
     this.singularities.forEach((object) => {
       object.draw(ctx);
     });
-
   }
+  
 
   playSounds() {
     Object.values(this.soundsToPlay).forEach((sound) => {
@@ -342,7 +348,7 @@ class Game {
   }
 
   remove(object) {
-    object.pos = [-1000,-1000];
+    // object.pos = [-1000,-1000];
     if (object instanceof Bullet) {
       this.bullets.splice(this.bullets.indexOf(object), 1);
     } else if (object instanceof Ship) {
@@ -370,6 +376,8 @@ class Game {
       throw new Error("unknown type of object");
     }
   }
+  
+
   updateShipFireAngle(){
     this.ships[0].setFireAngle()
   }

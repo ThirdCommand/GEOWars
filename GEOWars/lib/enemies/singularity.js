@@ -16,19 +16,21 @@ class Singularity extends MovingObject {
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
   }
 
-
   move(timeDelta) {
-
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
     this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
     this.vel[0] += this.acc[0] * velocityScale;
     this.vel[1] += this.acc[1] * velocityScale;
 
+    if (this.game.isOutOfBounds(this.pos)) {
+      Util.bounce(this, [1000, 600]) // HARD CODED
+    }
 
   }
 
   draw(ctx, spawningScale) {
+    this.acc = [0, 0];
     if (!spawningScale) {
       spawningScale = 1 
     }

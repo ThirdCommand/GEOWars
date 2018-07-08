@@ -3,6 +3,7 @@ const Bullet = require("../bullet")
 const Ship = require("../ship")
 const Singularity = require("./singularity")
 const Sound = require("../sound")
+const Util = require("../util")
 class Grunt extends MovingObject {
   constructor(options) {
     super(options)
@@ -57,10 +58,14 @@ class Grunt extends MovingObject {
       this.stretchScale_L = this.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
     }
 
-    
+    if (this.game.isOutOfBounds(this.pos)) {
+      Util.bounce(this, [1000, 600]) // HARD CODED
+    }
+     
   }
 
   draw(ctx, spawningScale) {
+    this.acc = [0,0];
     let pos = this.pos;
     spawningScale = spawningScale || 1;
     let shipLength = 10 * 2.2 * spawningScale * this.stretchScale_L;

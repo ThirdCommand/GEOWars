@@ -33,6 +33,7 @@ class Arrow extends MovingObject {
   
 
   draw(ctx, spawningScale) {
+    this.acc = [0, 0];
     let pos = this.pos;
     spawningScale = spawningScale || 1;
     let shipLength = 8 * 2.2 * spawningScale;

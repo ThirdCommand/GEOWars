@@ -104,6 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 const MovingObject = __webpack_require__(/*! ./moving_object */ "./lib/moving_object.js");
 const Sound = __webpack_require__(/*! ./sound */ "./lib/sound.js")
+
 class Bullet extends MovingObject {
   constructor(options) {
     super(options);
@@ -242,6 +243,7 @@ class Arrow extends MovingObject {
   
 
   draw(ctx, spawningScale) {
+    this.acc = [0, 0];
     let pos = this.pos;
     spawningScale = spawningScale || 1;
     let shipLength = 8 * 2.2 * spawningScale;
@@ -310,6 +312,7 @@ const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
 const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
+const Util = __webpack_require__(/*! ../util */ "./lib/util.js")
 class BoxBox extends MovingObject {
   constructor(options) {
     super(options)
@@ -329,9 +332,13 @@ class BoxBox extends MovingObject {
     this.vel[0] += this.acc[0] * timeScale;
     this.vel[1] += this.acc[1] * timeScale;
 
+    if (this.game.isOutOfBounds(this.pos)) {
+      Util.bounce(this, [1000, 600]) // HARD CODED
+    }
   }
 
   draw(ctx, spawningScale) {
+    this.acc = [0, 0];
     spawningScale = spawningScale || 1;
     let pos = this.pos
     let boxsize = 10 * spawningScale;
@@ -399,6 +406,7 @@ const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
 const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
+const Util = __webpack_require__(/*! ../util */ "./lib/util.js")
 class Grunt extends MovingObject {
   constructor(options) {
     super(options)
@@ -453,10 +461,14 @@ class Grunt extends MovingObject {
       this.stretchScale_L = this.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
     }
 
-    
+    if (this.game.isOutOfBounds(this.pos)) {
+      Util.bounce(this, [1000, 600]) // HARD CODED
+    }
+     
   }
 
   draw(ctx, spawningScale) {
+    this.acc = [0,0];
     let pos = this.pos;
     spawningScale = spawningScale || 1;
     let shipLength = 10 * 2.2 * spawningScale * this.stretchScale_L;
@@ -549,6 +561,7 @@ class Pinwheel extends MovingObject {
   }
 
   draw(ctx, spawningScale) {
+    this.acc = [0, 0];
     spawningScale = spawningScale || 1
     let pos = this.pos
     let shipWidth = 12 * spawningScale
@@ -630,19 +643,21 @@ class Singularity extends MovingObject {
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
   }
 
-
   move(timeDelta) {
-
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
     this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
     this.vel[0] += this.acc[0] * velocityScale;
     this.vel[1] += this.acc[1] * velocityScale;
 
+    if (this.game.isOutOfBounds(this.pos)) {
+      Util.bounce(this, [1000, 600]) // HARD CODED
+    }
 
   }
 
   draw(ctx, spawningScale) {
+    this.acc = [0, 0];
     if (!spawningScale) {
       spawningScale = 1 
     }
@@ -763,6 +778,7 @@ class Weaver extends MovingObject {
 
 
   move(timeDelta) {
+    this.acc = [0, 0];
     let speed = 2;
     let shipPos = this.game.ships[0].pos;
     let dy = shipPos[1] - this.pos[1];
@@ -792,6 +808,9 @@ class Weaver extends MovingObject {
     this.directionInfluenced = false;
     this.influencers = [];
 
+    if (this.game.isOutOfBounds(this.pos)) {
+      Util.bounce(this, [1000, 600]) // HARD CODED
+    }
   }
 
   draw(ctx, spawningScale) {
@@ -958,7 +977,7 @@ class Game {
   }
 
   add(object) {
-    if (this.enemies.length < 50 || object instanceof Bullet){
+    if (this.enemies.length < 50 || object instanceof Bullet || !(object instanceof EnemySpawn)){
       if (object instanceof BoxBox || object instanceof Pinwheel || object instanceof Arrow || object instanceof Grunt || object instanceof Weaver) {
         this.enemies.push(object)
       } else if (object instanceof Singularity) {
@@ -1143,7 +1162,7 @@ class Game {
         // }
         if (obj2 instanceof Singularity) {
           obj2.isCollidedWith(obj1)
-          continue;
+          continue
         }
         if (obj1.isCollidedWith(obj2)) {
           const explosionId = this.particleExplosions.length
@@ -1163,8 +1182,8 @@ class Game {
         }
       }
     }
-
   }
+
   die(){
     this.intervalTiming = this.intervalTiming;
     this.intervalTime = 0;
@@ -1181,6 +1200,12 @@ class Game {
 
 
   draw(ctx) {
+
+    // var ctx = document.createElement("canvas").getContext("2d");
+    // ctx.canvas.width = this.DIM_X;
+    // ctx.canvas.height = this.DIM_Y;
+
+    ctx.save()
     ctx.clearRect(0, 0, Game.DIM_X, Game.DIM_Y);
     ctx.fillStyle = Game.BG_COLOR;
     ctx.fillRect(0, 0, Game.DIM_X, Game.DIM_Y);
@@ -1200,8 +1225,8 @@ class Game {
     this.singularities.forEach((object) => {
       object.draw(ctx);
     });
-
   }
+  
 
   playSounds() {
     Object.values(this.soundsToPlay).forEach((sound) => {
@@ -1240,7 +1265,7 @@ class Game {
   }
 
   remove(object) {
-    object.pos = [-1000,-1000];
+    // object.pos = [-1000,-1000];
     if (object instanceof Bullet) {
       this.bullets.splice(this.bullets.indexOf(object), 1);
     } else if (object instanceof Ship) {
@@ -1268,6 +1293,8 @@ class Game {
       throw new Error("unknown type of object");
     }
   }
+  
+
   updateShipFireAngle(){
     this.ships[0].setFireAngle()
   }
@@ -1327,18 +1354,17 @@ Game.spawnListList = [
 /*! no static exports found */
 /***/ (function(module, exports) {
 
+
 class GameView {
   constructor(game, ctx, canvasEl) {
     this.ctx = ctx;
     this.game = game;
     this.ship = this.game.addShip();
     this.canvasEl = canvasEl;
-
   }
 
   bindKeyHandlers() {
     const ship = this.ship;
-
     Object.keys(GameView.MOREMOVES).forEach((k) => {
       const move = GameView.MOREMOVES[k];
       key(k, () => { ship.power(move); });
@@ -1352,8 +1378,6 @@ class GameView {
         this.theme.play();
       }
     })
-
-
 
     window.addEventListener('mousemove', (e) => {
       const x = {x: e.layerX};
@@ -1370,7 +1394,6 @@ class GameView {
   start() {
     this.bindKeyHandlers();
     this.lastTime = 0;
-    
     window.addEventListener('click', (e) => {
       this.theme = new Audio("GEOWars/sounds/Geometry_OST.mp3");
       this.theme.id = "OST";
@@ -1380,40 +1403,11 @@ class GameView {
     });
   }
   
-
-  // resizeGame() {
-  //   var gameArea = document.getElementById('gameArea');
-  //   var widthToHeight = 4 / 3;
-  //   var newWidth = window.innerWidth;
-  //   var newHeight = window.innerHeight;
-  //   var newWidthToHeight = newWidth / newHeight;
-
-  //   if (newWidthToHeight > widthToHeight) {
-  //     newWidth = newHeight * widthToHeight;
-  //     gameArea.style.height = newHeight + 'px';
-  //     gameArea.style.width = newWidth + 'px';
-  //   } else {
-  //     newHeight = newWidth / widthToHeight;
-  //     gameArea.style.width = newWidth + 'px';
-  //     gameArea.style.height = newHeight + 'px';
-  //   }
-
-  //   gameArea.style.marginTop = (-newHeight / 2) + 'px';
-  //   gameArea.style.marginLeft = (-newWidth / 2) + 'px';
-
-  //   var gameCanvas = document.getElementById('gameCanvas');
-  //   gameCanvas.width = newWidth;
-  //   gameCanvas.height = newHeight;
-  //   // this.game.gameWidth = newWidth;
-  //   // this.game.gameHeight = newHeight;
-  // }
-
   animate(time) {
     const timeDelta = time - this.lastTime;
     this.game.step(timeDelta, this.ctx);
     this.game.draw(this.ctx);
     this.lastTime = time;
-
     // every call to animate requests causes another call to animate
     requestAnimationFrame(this.animate.bind(this));
   }

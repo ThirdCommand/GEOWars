@@ -23,6 +23,7 @@ class Weaver extends MovingObject {
 
 
   move(timeDelta) {
+    this.acc = [0, 0];
     let speed = 2;
     let shipPos = this.game.ships[0].pos;
     let dy = shipPos[1] - this.pos[1];
@@ -52,6 +53,9 @@ class Weaver extends MovingObject {
     this.directionInfluenced = false;
     this.influencers = [];
 
+    if (this.game.isOutOfBounds(this.pos)) {
+      Util.bounce(this, [1000, 600]) // HARD CODED
+    }
   }
 
   draw(ctx, spawningScale) {

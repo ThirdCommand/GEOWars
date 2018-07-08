@@ -1,5 +1,6 @@
 const MovingObject = require("./moving_object");
 const Sound = require("./sound")
+
 class Bullet extends MovingObject {
   constructor(options) {
     super(options);

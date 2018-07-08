@@ -3,6 +3,7 @@ const Bullet = require("../bullet")
 const Ship = require("../ship")
 const Singularity = require("./singularity")
 const Sound = require("../sound")
+const Util = require("../util")
 class BoxBox extends MovingObject {
   constructor(options) {
     super(options)
@@ -22,9 +23,13 @@ class BoxBox extends MovingObject {
     this.vel[0] += this.acc[0] * timeScale;
     this.vel[1] += this.acc[1] * timeScale;
 
+    if (this.game.isOutOfBounds(this.pos)) {
+      Util.bounce(this, [1000, 600]) // HARD CODED
+    }
   }
 
   draw(ctx, spawningScale) {
+    this.acc = [0, 0];
     spawningScale = spawningScale || 1;
     let pos = this.pos
     let boxsize = 10 * spawningScale;
