@@ -49,12 +49,36 @@ class Ship extends MovingObject {
     ctx.beginPath();
     ctx.translate(pos[0], pos[1]);
     ctx.rotate(movementDirection + 3/4 * Math.PI + Math.PI);
-    
     ctx.translate(-shipWidth / 2, shipWidth / 2);
-
-    ctx.beginPath();
+   
     ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2.2;
+    let r = 255;
+    let g = 255;
+    let b = 255;
+
+    let blurFactor = 0.5
+    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+    ctx.shadowBlur = 10 * blurFactor * blurFactor
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
+    ctx.lineWidth = 7.5 * blurFactor * blurFactor
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
+    this.drawShip(ctx, shipWidth)
+    ctx.lineWidth = 6 * blurFactor
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
+    this.drawShip(ctx, shipWidth)
+    ctx.lineWidth = 4.5;
+    this.drawShip(ctx, shipWidth)
+    ctx.lineWidth = 3;
+    this.drawShip(ctx, shipWidth)
+    ctx.strokeStyle = 'rgb(255, 255, 255)';
+    ctx.lineWidth = 1.5;
+    this.drawShip(ctx, shipWidth)
+    
+    ctx.restore();
+  }
+
+  drawShip(ctx, shipWidth) {
+    ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.lineTo(0, -shipWidth);
     ctx.lineTo(2 / 3 * shipWidth, -(1 + 1 / 6) * shipWidth); //1
@@ -65,7 +89,6 @@ class Ship extends MovingObject {
     ctx.lineTo(shipWidth, 0) // 5
     ctx.closePath();
     ctx.stroke();
-    ctx.restore();
   }
   move(timeDelta) {
     // timeDelta is number of milliseconds since last move

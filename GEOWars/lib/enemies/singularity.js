@@ -14,6 +14,28 @@ class Singularity extends MovingObject {
     this.gravityConstant = 1000;
     this.id = options.id
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
+    this.throbbingScale = 1
+    this.increasing = true
+  }
+
+  throb(timeDelta) {
+    this.existTime += timeDelta;
+
+    let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    let cycleSpeed = 0.025;
+    // increase scale until 1.2, decrease until 0.8
+
+    if (this.increasing) {
+      this.throbbingScale += cycleSpeed * cycleSpeedScale
+      if (this.throbbingScale > 1.2){
+        this.increasing = !this.increasing
+      }
+    } else {
+      this.throbbingScale -= cycleSpeed * cycleSpeedScale
+      if (this.throbbingScale < 0.8) {
+        this.increasing = !this.increasing
+      }
+    }
   }
 
   move(timeDelta) {
@@ -27,24 +49,54 @@ class Singularity extends MovingObject {
       Util.bounce(this, [1000, 600]) // HARD CODED
     }
 
+    this.throb(timeDelta)
   }
 
   draw(ctx, spawningScale) {
     this.acc = [0, 0];
     if (!spawningScale) {
-      spawningScale = 1 
+      spawningScale = this.throbbingScale
+
     }
-      
+    
     ctx.strokeStyle = "#F173BA"
 
-    ctx.beginPath();
-    ctx.lineWidth = 2;
-    ctx.arc(
-      this.pos[0], this.pos[1], this.radius * spawningScale, 0, 2 * Math.PI, true
-    );
-    ctx.stroke();
+
+    let r = 95;
+    let g = 45;
+    let b = 73;
+
+    ctx.save();
+    // ctx.translate(pos[0], pos[1]);
+
+    // ctx.strokeStyle = "#4286f4";
+    // ctx.lineWidth = 4;
+    let blurFactor = 0.5
+
+    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+    ctx.shadowBlur = 10
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+    ctx.lineWidth = 7.5;
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.lineWidth = 6
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.lineWidth = 4.5
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.lineWidth = 3
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.strokeStyle = 'rgb(255, 255, 255)';
+    ctx.lineWidth = 1.5
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.restore();
+    // ctx.lineWidth = 2;
+    // drawSingularity(ctx, this.radius * spawningScale);
   }
 
+  drawSingularity(ctx, radius) {
+    ctx.beginPath();
+    ctx.arc(this.pos[0], this.pos[1], radius, 0, 2 * Math.PI, true);
+    ctx.stroke();
+  }
 
   influenceAcceleration(object) {
     let dy = this.pos[1] - object.pos[1];

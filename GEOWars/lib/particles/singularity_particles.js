@@ -97,28 +97,10 @@ class Particle {
       ctx.lineWidth = this.rectWidth;
 
       ctx.moveTo(0, 0); //1
-      ctx.lineTo(0, this.rectLength); //2
-      // ctx.lineTo(w / 6, l / 2); //3
-      // ctx.lineTo(0, l / 4); //4
-      // ctx.lineTo(-w / 6, l / 2); //5
-      // ctx.lineTo(-w / 2, l / 4); //6
-
+      ctx.lineTo(0, this.rectLength);
       ctx.closePath();
       ctx.stroke();
       ctx.restore();
-
-
-
-
-      // ctx.save()
-      // ctx.translate(this.pos[0], this.pos[1]);
-      // ctx.rotate(movementDirection);
-      // ctx.beginPath();
-      // ctx.strokeStyle = `${this.color},${this.hue})`;
-      // ctx.lineWidth = this.rectWidth;
-      // ctx.lineTo(this.rectLength, 0);
-      // ctx.stroke();
-      // ctx.restore();
     }
   }
 

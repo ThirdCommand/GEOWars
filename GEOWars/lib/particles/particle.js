@@ -39,9 +39,20 @@ class Particle {
     this.active = true;
     this.hue = Math.random() * 0.3 + 0.6;
 
+    ctx.save();
     ctx.fillStyle = `${this.color},${this.hue})`;
-
     ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
+    
+    // ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
+    
+    // ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
+    
+    // ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
+
+    // ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
+
+
+    ctx.restore();
   }
 
 

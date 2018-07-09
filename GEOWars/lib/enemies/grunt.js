@@ -73,29 +73,33 @@ class Grunt extends MovingObject {
     let l = shipLength;
     let w = shipWidth;
 
-    let r = 13;
-    let g = 213;
-    let b = 255;
+    // let r = 13;
+    // let g = 213;
+    // let b = 255;
+    let r = 0;
+    let g = 57;
+    let b = 230;
+
     ctx.save();
     ctx.translate(pos[0], pos[1]);
 
     // ctx.strokeStyle = "#4286f4";
     // ctx.lineWidth = 4;
-
-
+    let blurFactor = 0.5
+    
     ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
-    ctx.shadowBlur = 10 / 5 * 2.2;
+    ctx.shadowBlur = 10
     ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
-    ctx.lineWidth = 7.5 / 5 * 2.2;
+    ctx.lineWidth = 7.5 * blurFactor;
     this.drawDiamond(ctx, l, w);
-    ctx.lineWidth = 6 / 5 * 2.2;
+    ctx.lineWidth = 6// * blurFactor;
     this.drawDiamond(ctx, l, w);
-    ctx.lineWidth = 4.5 / 5 * 2.2;
+    ctx.lineWidth = 4.5// * blurFactor;
     this.drawDiamond(ctx, l, w);
-    ctx.lineWidth = 3 / 5 * 2.2;
+    ctx.lineWidth = 3// * blurFactor;
     this.drawDiamond(ctx, l, w);
     ctx.strokeStyle = 'rgb(255, 255, 255)';
-    ctx.lineWidth = 1.5 / 5 * 2.2;
+    ctx.lineWidth = 1.5// * blurFactor;
     this.drawDiamond(ctx, l, w);
 
 

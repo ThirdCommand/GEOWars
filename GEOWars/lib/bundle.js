@@ -252,28 +252,58 @@ class Arrow extends MovingObject {
     let w = shipWidth;
     let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
 
+    // let r = 255;
+    // let g = 255;
+    // let b = 13;
+    let r = 255;
+    let g = 255;
+    let b = 50;
+
+
+
+
     ctx.save();
     ctx.beginPath();
     ctx.translate(pos[0], pos[1]);
     ctx.rotate(movementDirection + 2 * Math.PI );
 
-    ctx.beginPath();
-    ctx.strokeStyle = "#f2ff00";
-    ctx.lineWidth = 2;
     
+    // ctx.strokeStyle = "#f2ff00"; // look up rgb and put here
+    ctx.lineWidth = 2;
+
+    let blurFactor = 0.5
+    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+    ctx.shadowBlur = 10 * blurFactor ;
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+    ctx.lineWidth = 7.5 * blurFactor;
+    this.drawArrow(ctx, l, w);
+    ctx.lineWidth = 6 * blurFactor;
+    this.drawArrow(ctx, l, w);
+    ctx.lineWidth = 4.5;
+    this.drawArrow(ctx, l, w);
+    ctx.lineWidth = 3;
+    this.drawArrow(ctx, l, w);
+    ctx.strokeStyle = 'rgb(255, 255, 255)';
+    ctx.lineWidth = 1.5;
+    this.drawArrow(ctx, l, w);
+    
+    // drawArraw(ctx)
+   
+
+    
+    ctx.restore();
+  }
+
+  drawArrow(ctx, l, w) {
+    ctx.beginPath();
     ctx.moveTo(0, -l / 2); //1
-    ctx.lineTo(w/2, l/4); //2
-    ctx.lineTo(w/6, l/2); //3
-    ctx.lineTo(0, l/4); //4
-    ctx.lineTo(-w/6, l/2); //5
-    ctx.lineTo(-w/2, l/4); //6
-    // ctx.lineTo(0, -l/2 ); //1
-
-    // ctx.lineTo(); //1
-
+    ctx.lineTo(w / 2, l / 4); //2
+    ctx.lineTo(w / 6, l / 2); //3
+    ctx.lineTo(0, l / 4); //4
+    ctx.lineTo(-w / 6, l / 2); //5
+    ctx.lineTo(-w / 2, l / 4); //6
     ctx.closePath();
     ctx.stroke();
-    ctx.restore();
   }
 
   collideWith(otherObject) {
@@ -342,31 +372,50 @@ class BoxBox extends MovingObject {
     spawningScale = spawningScale || 1;
     let pos = this.pos
     let boxsize = 10 * spawningScale;
-    // ctx.fillStyle = "#98f517";
-    // ctx.fillRect(pos[0] - (7 / 8 * boxsize), pos[1] - (1 / 8 * boxsize), boxsize, boxsize)
-    
-    // ctx.fillStyle = "#98f517";
-    // ctx.fillRect(pos[0] - (1 / 8 * boxsize), pos[1] - (7 / 8 * boxsize), boxsize, boxsize);
 
-    // ctx.fillStyle = "#98f517";
-    // ctx.fillRect(pos[0] - (7 / 8 * boxsize), pos[1], 10, 10);
-    // ctx.fillRect(pos[0], pos[1], 10, 10);
-    ctx.save()
-    ctx.beginPath();
-    ctx.rect(pos[0] - (6/8 * boxsize), pos[1] - (2/8 * boxsize), boxsize, boxsize);
-    ctx.lineWidth = 1.5;
+    
     // ctx.strokeStyle = "#F173BA";
-    // ctx.shadowBlur = 1;
-    // ctx.shadowColor = "#F173BA"
-    ctx.stroke();
+
+    let r = 230;
+    let g = 30;
+    let b = 30;
     
-    ctx.beginPath();
-    ctx.rect(pos[0] - (2/8 * boxsize), pos[1] - (6/8 * boxsize), boxsize, boxsize);
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = "#F173BA";
-    
-    ctx.stroke();
+    let blurFactor = 0.5
+    ctx.save();
+    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+    ctx.shadowBlur = 10
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
     ctx.restore();
+    ctx.lineWidth = 2;
+
+    // drawRect()
+
+    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
+    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
+    // ctx.stroke();
+    // ctx.lineWidth = 6 // * blurFactor;
+    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
+    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
+    // ctx.stroke();
+    // ctx.lineWidth = 4.5 // * blurFactor;
+    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
+    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
+    // ctx.stroke();
+    // ctx.lineWidth = 3 // * blurFactor;
+    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
+    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
+    // ctx.stroke();
+    // ctx.strokeStyle = 'rgb(255, 255, 255)';
+    // ctx.lineWidth = 1.5 // * blurFactor;
+    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
+    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
+    // ctx.stroke();
+
+    ctx.restore();
+  }
+
+  drawRect() {
+
   }
 
   collideWith(otherObject) {
@@ -476,29 +525,33 @@ class Grunt extends MovingObject {
     let l = shipLength;
     let w = shipWidth;
 
-    let r = 13;
-    let g = 213;
-    let b = 255;
+    // let r = 13;
+    // let g = 213;
+    // let b = 255;
+    let r = 0;
+    let g = 57;
+    let b = 230;
+
     ctx.save();
     ctx.translate(pos[0], pos[1]);
 
     // ctx.strokeStyle = "#4286f4";
     // ctx.lineWidth = 4;
-
-
+    let blurFactor = 0.5
+    
     ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
-    ctx.shadowBlur = 10 / 5 * 2.2;
+    ctx.shadowBlur = 10
     ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
-    ctx.lineWidth = 7.5 / 5 * 2.2;
+    ctx.lineWidth = 7.5 * blurFactor;
     this.drawDiamond(ctx, l, w);
-    ctx.lineWidth = 6 / 5 * 2.2;
+    ctx.lineWidth = 6// * blurFactor;
     this.drawDiamond(ctx, l, w);
-    ctx.lineWidth = 4.5 / 5 * 2.2;
+    ctx.lineWidth = 4.5// * blurFactor;
     this.drawDiamond(ctx, l, w);
-    ctx.lineWidth = 3 / 5 * 2.2;
+    ctx.lineWidth = 3// * blurFactor;
     this.drawDiamond(ctx, l, w);
     ctx.strokeStyle = 'rgb(255, 255, 255)';
-    ctx.lineWidth = 1.5 / 5 * 2.2;
+    ctx.lineWidth = 1.5// * blurFactor;
     this.drawDiamond(ctx, l, w);
 
 
@@ -591,32 +644,57 @@ class Pinwheel extends MovingObject {
     let shipWidth = 12 * spawningScale
     let s = shipWidth/2
     
+    let r = 59;
+    let g = 10;
+    let b = 87;
+
     ctx.save();
-    ctx.beginPath();
     ctx.translate(pos[0], pos[1]);
     ctx.rotate(this.angle);
 
-    ctx.beginPath();
-    ctx.strokeStyle = "#971adf";
-    ctx.lineWidth = 1.8;
-    ctx.moveTo(0, 0);
-    ctx.lineTo(0,0); //1
-    ctx.lineTo(-s,-s); //2
-    ctx.lineTo(0,-s); //3
-    ctx.lineTo(0,0); //1
-    ctx.lineTo(s,-s); //4
-    ctx.lineTo(s,0); //5
-    ctx.lineTo(0,0); //1
-    ctx.lineTo(s,s); //6
-    ctx.lineTo(0,s); //7
-    ctx.lineTo(0,0); //1
-    ctx.lineTo(-s,s); //8
-    ctx.lineTo(-s,0); //9
-    // ctx.lineTo(); //1
+    let blurFactor = 0.5
+    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+    ctx.shadowBlur = 10 * blurFactor * blurFactor
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+    ctx.lineWidth = 7.5 * blurFactor * blurFactor
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+    this.drawPinwheel(ctx, s)
+    ctx.lineWidth = 6 * blurFactor
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.6)";
+    this.drawPinwheel(ctx, s)
+    ctx.lineWidth = 4.5;
+    this.drawPinwheel(ctx, s)
+    ctx.lineWidth = 3;
+    this.drawPinwheel(ctx, s)
+    ctx.strokeStyle = 'rgb(200, 100, 255)';
+    ctx.lineWidth = 1.5;
+    this.drawPinwheel(ctx, s)
+
+    // ctx.strokeStyle = "#971adf";
+    // ctx.lineWidth = 1.8;
     
+    ctx.restore();
+  }
+
+  drawPinwheel(ctx, s){
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, 0); //1
+    ctx.lineTo(-s, -s); //2
+    ctx.lineTo(0, -s); //3
+    ctx.lineTo(0, 0); //1
+    ctx.lineTo(s, -s); //4
+    ctx.lineTo(s, 0); //5
+    ctx.lineTo(0, 0); //1
+    ctx.lineTo(s, s); //6
+    ctx.lineTo(0, s); //7
+    ctx.lineTo(0, 0); //1
+    ctx.lineTo(-s, s); //8
+    ctx.lineTo(-s, 0); //9
+    // ctx.lineTo(); //1
+
     ctx.closePath();
     ctx.stroke();
-    ctx.restore();
   }
 
   collideWith(otherObject) {
@@ -665,6 +743,28 @@ class Singularity extends MovingObject {
     this.gravityConstant = 1000;
     this.id = options.id
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
+    this.throbbingScale = 1
+    this.increasing = true
+  }
+
+  throb(timeDelta) {
+    this.existTime += timeDelta;
+
+    let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    let cycleSpeed = 0.025;
+    // increase scale until 1.2, decrease until 0.8
+
+    if (this.increasing) {
+      this.throbbingScale += cycleSpeed * cycleSpeedScale
+      if (this.throbbingScale > 1.2){
+        this.increasing = !this.increasing
+      }
+    } else {
+      this.throbbingScale -= cycleSpeed * cycleSpeedScale
+      if (this.throbbingScale < 0.8) {
+        this.increasing = !this.increasing
+      }
+    }
   }
 
   move(timeDelta) {
@@ -678,24 +778,54 @@ class Singularity extends MovingObject {
       Util.bounce(this, [1000, 600]) // HARD CODED
     }
 
+    this.throb(timeDelta)
   }
 
   draw(ctx, spawningScale) {
     this.acc = [0, 0];
     if (!spawningScale) {
-      spawningScale = 1 
+      spawningScale = this.throbbingScale
+
     }
-      
+    
     ctx.strokeStyle = "#F173BA"
 
-    ctx.beginPath();
-    ctx.lineWidth = 2;
-    ctx.arc(
-      this.pos[0], this.pos[1], this.radius * spawningScale, 0, 2 * Math.PI, true
-    );
-    ctx.stroke();
+
+    let r = 95;
+    let g = 45;
+    let b = 73;
+
+    ctx.save();
+    // ctx.translate(pos[0], pos[1]);
+
+    // ctx.strokeStyle = "#4286f4";
+    // ctx.lineWidth = 4;
+    let blurFactor = 0.5
+
+    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+    ctx.shadowBlur = 10
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+    ctx.lineWidth = 7.5;
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.lineWidth = 6
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.lineWidth = 4.5
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.lineWidth = 3
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.strokeStyle = 'rgb(255, 255, 255)';
+    ctx.lineWidth = 1.5
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.restore();
+    // ctx.lineWidth = 2;
+    // drawSingularity(ctx, this.radius * spawningScale);
   }
 
+  drawSingularity(ctx, radius) {
+    ctx.beginPath();
+    ctx.arc(this.pos[0], this.pos[1], radius, 0, 2 * Math.PI, true);
+    ctx.stroke();
+  }
 
   influenceAcceleration(object) {
     let dy = this.pos[1] - object.pos[1];
@@ -845,27 +975,54 @@ class Weaver extends MovingObject {
     let shipWidth = 10 * 2.2 * spawningScale
     let s = shipWidth / 2;
 
+
+    let r = 24;
+    let g = 255;
+    let b = 4;
+
     ctx.save();
-    ctx.beginPath();
-    ctx.translate(pos[0], pos[1]);
+    ctx.translate(this.pos[0], this.pos[1]);
     ctx.rotate(this.angle);
 
+    let blurFactor = 0.5
+    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+    ctx.shadowBlur = 10 * blurFactor 
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+    ctx.lineWidth = 7.5 
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+    this.drawWeaver(ctx, s)
+    ctx.lineWidth = 6 
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.6)";
+    this.drawWeaver(ctx, s)
+    ctx.lineWidth = 4.5;
+    this.drawWeaver(ctx, s)
+    ctx.lineWidth = 3;
+    this.drawWeaver(ctx, s)
+    ctx.strokeStyle = 'rgb(255, 255, 255)';
+    ctx.lineWidth = 1.5;
+    this.drawWeaver(ctx, s)
+
+
+    ctx.restore();
+  }
+
+  drawWeaver(ctx, s){
+
     ctx.beginPath();
-    ctx.strokeStyle = "#3cff0b";
+    // ctx.strokeStyle = "#3cff0b";
     ctx.lineWidth = 2;
     ctx.moveTo(0, -s); //1
     ctx.lineTo(s, 0); //2
     ctx.lineTo(0, s); //3
     ctx.lineTo(-s, 0); //4
     ctx.lineTo(0, -s); //1
-    ctx.lineTo(-s/2, -s/2); //5
-    ctx.lineTo(s/2, -s/2); //6
-    ctx.lineTo(s/2, s/2); //7
-    ctx.lineTo(-s/2, s/2); //8
+    ctx.lineTo(-s / 2, -s / 2); //5
+    ctx.lineTo(s / 2, -s / 2); //6
+    ctx.lineTo(s / 2, s / 2); //7
+    ctx.lineTo(-s / 2, s / 2); //8
     ctx.lineTo(-s / 2, -s / 2); //5
     // ctx.closePath();
     ctx.stroke();
-    ctx.restore();
   }
 
   influenceDirection() {
@@ -1351,7 +1508,7 @@ Game.DIM_Y = 600;
 Game.NUM_BOXES = 0;
 Game.NUM_PINWHEELS = 0;
 Game.NUM_ARROWS = 0;
-Game.NUM_GRUNTS = 10;
+Game.NUM_GRUNTS = 0;
 Game.NUM_WEAVERS = 0;
 Game.NUM_SINGULARITIES = 1;
 module.exports = Game;
@@ -1717,9 +1874,20 @@ class Particle {
     this.active = true;
     this.hue = Math.random() * 0.3 + 0.6;
 
+    ctx.save();
     ctx.fillStyle = `${this.color},${this.hue})`;
-
     ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
+    
+    // ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
+    
+    // ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
+    
+    // ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
+
+    // ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
+
+
+    ctx.restore();
   }
 
 
@@ -1998,12 +2166,36 @@ class Ship extends MovingObject {
     ctx.beginPath();
     ctx.translate(pos[0], pos[1]);
     ctx.rotate(movementDirection + 3/4 * Math.PI + Math.PI);
-    
     ctx.translate(-shipWidth / 2, shipWidth / 2);
-
-    ctx.beginPath();
+   
     ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2.2;
+    let r = 255;
+    let g = 255;
+    let b = 255;
+
+    let blurFactor = 0.5
+    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+    ctx.shadowBlur = 10 * blurFactor * blurFactor
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
+    ctx.lineWidth = 7.5 * blurFactor * blurFactor
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
+    this.drawShip(ctx, shipWidth)
+    ctx.lineWidth = 6 * blurFactor
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
+    this.drawShip(ctx, shipWidth)
+    ctx.lineWidth = 4.5;
+    this.drawShip(ctx, shipWidth)
+    ctx.lineWidth = 3;
+    this.drawShip(ctx, shipWidth)
+    ctx.strokeStyle = 'rgb(255, 255, 255)';
+    ctx.lineWidth = 1.5;
+    this.drawShip(ctx, shipWidth)
+    
+    ctx.restore();
+  }
+
+  drawShip(ctx, shipWidth) {
+    ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.lineTo(0, -shipWidth);
     ctx.lineTo(2 / 3 * shipWidth, -(1 + 1 / 6) * shipWidth); //1
@@ -2014,7 +2206,6 @@ class Ship extends MovingObject {
     ctx.lineTo(shipWidth, 0) // 5
     ctx.closePath();
     ctx.stroke();
-    ctx.restore();
   }
   move(timeDelta) {
     // timeDelta is number of milliseconds since last move

@@ -87,14 +87,54 @@
 
 
     function draw(x, y){ 
-      ctx.clearRect(0, 0, DIM_X, DIM_Y); 
-      ctx.fillStyle = BG_COLOR; 
-      ctx.fillRect(0, 0, DIM_X, DIM_Y);
-      neonRect(25+x,25+y,50,50,13,213,252);
+      
+      // ctx.clearRect(0, 0, DIM_X, DIM_Y); 
+      // ctx.fillStyle = BG_COLOR; 
+      // ctx.fillRect(0, 0, DIM_X, DIM_Y);
+      // // ctx.save();
+      // neonRect(25+x,25+y,50,50,13,213,252);
+      // ctx.restore();
 
+      let l = 22;
+      let w = 22;
+
+      let r = 13;
+      let g = 213;
+      let b = 255;
+      ctx.save()
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 0.5;
+      ctx.translate(100 + x, 100 + y);
+      ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+      ctx.shadowBlur = 10;
+      ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+      ctx.lineWidth = 7.5;
+      this.drawDiamond(ctx, l, w);
+      ctx.lineWidth = 6;
+      this.drawDiamond(ctx, l, w);
+      ctx.lineWidth = 4.5;
+      this.drawDiamond(ctx, l, w);
+      ctx.lineWidth = 3;
+      this.drawDiamond(ctx, l, w);
+      ctx.strokeStyle = 'rgb(255, 255, 255)';
+      ctx.lineWidth = 1.5;
+      this.drawDiamond(ctx, l, w);
+      ctx.stroke();
+      ctx.restore();
+
+      
       
       // neonRect(25+x,225-y,50,50,255,153,51);
     } 
+    function drawDiamond(ctx, l, w){
+      ctx.beginPath();
+      ctx.moveTo(0, -l / 2); //1
+      ctx.lineTo(w / 2, 0); //2
+      ctx.lineTo(0, l / 2); //3
+      ctx.lineTo(-w / 2, -0); //4
+      ctx.closePath();
+      ctx.stroke();
+    }
     var x =0; 
     var y = 0; 
     function loop(){ 
