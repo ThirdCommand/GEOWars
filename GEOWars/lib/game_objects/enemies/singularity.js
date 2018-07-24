@@ -1,8 +1,8 @@
-const GameObject = require("../game_object")
+const GameObject = require("../../game_object")
 const Bullet = require("../bullet")
 const Ship = require("../ship")
-const Util = require("../util")
-const Sound = require("../sound")
+const Util = require("../../util")
+const Sound = require("../../sound")
 class Singularity extends GameObject {
   constructor(options) {
     super(options)

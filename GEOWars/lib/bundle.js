@@ -95,994 +95,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /***/ }),
 
-/***/ "./lib/bullet.js":
-/*!***********************!*\
-  !*** ./lib/bullet.js ***!
-  \***********************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-const GameObject = __webpack_require__(/*! ./game_object */ "./lib/game_object.js");
-const Sound = __webpack_require__(/*! ./sound */ "./lib/sound.js")
-
-class Bullet extends GameObject {
-  constructor(options) {
-    super(options);
-    this.bounce = false;
-    this.color = "#FFFBCE";
-    this.acc = [0,0];
-    this.vel = options.vel
-    this.speed = 8.5;
-    this.length = 12;
-    options.radius = this.length / 4;
-    
-  }
-
-  // move(timeDelta) {
-  //   if (this.game.isOutOfBounds(this.pos)) {
-  //     this.game.add(new BulletWallExplosion(this.pos[0], this.pos[1], this.game.ctx, this.game))
-  //     if (!this.game.muted) {
-  //       let wallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
-  //       
-  //     }
-  //     this.remove();
-  //   }
-
-  draw(ctx) {
-    let l = this.length
-    let pos = this.pos;
-    let w = this.length/2;
-    let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.translate(pos[0], pos[1]);
-    ctx.rotate(movementDirection + 2 * Math.PI);
-
-    ctx.beginPath();
-    ctx.strokeStyle = "#FBFBC2";
-    ctx.lineWidth = 1;
-
-    ctx.moveTo(-l / 4, l / 2); //1
-    ctx.lineTo(0, -l / 2); //2
-    ctx.lineTo(l / 4, l / 2); //3
-
-    ctx.closePath();
-    ctx.stroke();
-    ctx.restore();
-
-  }
-    
-
-  //   const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-  //   this.updateAcceleration()
-
-  //   this.pos[0] += this.vel[0] * velocityScale + (this.acc[0]) * (velocityScale * velocityScale) / 2;
-  //   this.pos[1] += this.vel[1] * velocityScale + (this.acc[1]) * (velocityScale * velocityScale) / 2;
-  //   this.vel[0] += this.acc[0] * velocityScale;
-  //   this.vel[1] += this.acc[1] * velocityScale;
-  //   // this.movementAngle = Math.atan2(this.vel[1], this.vel[0])
-  // }
-
-  // updateAcceleration() {
-  //   for (let i = 0; i < this.game.singularities.length; i++) {
-  //     const singularity = this.game.singularities[i];
-  //     singularity.influenceAcceleration(this)
-  //   }
-  // }
-
-  // move(timeDelta) {
-  //   const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA
-    
-  //   this.pos[0] += (this.speed + this.vel[0]) * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
-  //   this.pos[1] += (this.speed + this.vel[1]) * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
-  //   this.vel[0] += this.acc[0] * velocityScale;
-  //   this.vel[1] += this.acc[1] * velocityScale;
-
-  //   if (this.game.isOutOfBounds(this.pos)) {
-  //     if (this.isWrappable) {
-  //       this.pos = this.game.wrap(this.pos);
-  //     } else {
-  //       // cause small explosion
-  //       this.remove();
-  //     }
-  //   }
-  // }
-  // }
-}
-
-
-Bullet.RADIUS = 3;
-Bullet.SPEED = 7;
-
-module.exports = Bullet;
-
-const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
-
-/***/ }),
-
-/***/ "./lib/enemies/arrow.js":
-/*!******************************!*\
-  !*** ./lib/enemies/arrow.js ***!
-  \******************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-const GameObject = __webpack_require__(/*! ../game_object */ "./lib/game_object.js")
-const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
-const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
-const Util = __webpack_require__(/*! ../util */ "./lib/util.js");
-const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
-const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
-
-class Arrow extends GameObject {
-  constructor(options) {
-    super(options)
-    this.pos = options.pos || options.game.randomPosition();
-    this.angle = options.angle || Math.PI / 3;
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_purple.wav", 0.5);
-    this.speed = 3;
-    this.vel = Util.vectorCartisian(this.angle, this.speed);
-    this.acc = [0,0];
-  }
-
-  move(timeDelta) {
-    let rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    let velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2
-    this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2
-    this.vel[0] += this.acc[0] * velocityScale;
-    this.vel[1] += this.acc[1] * velocityScale;
-    
-    if (this.game.isOutOfBounds(this.pos)) {
-      Util.redirect(this,[1000, 600]) // HARD CODED
-    }
-    this.acc = [0, 0];
-  }
-
-  
-
-  draw(ctx, spawningScale) {
-    
-    let pos = this.pos;
-    spawningScale = spawningScale || 1;
-    let shipLength = 8 * 2.2 * spawningScale;
-    let shipWidth = 6 * 2.2 * spawningScale;
-    let l = shipLength;
-    let w = shipWidth;
-    let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
-
-    // let r = 255;
-    // let g = 255;
-    // let b = 13;
-    let r = 255;
-    let g = 255;
-    let b = 50;
-
-
-
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.translate(pos[0], pos[1]);
-    ctx.rotate(movementDirection + 2 * Math.PI );
-
-    
-    // ctx.strokeStyle = "#f2ff00"; // look up rgb and put here
-    ctx.lineWidth = 2;
-
-    let blurFactor = 0.5
-    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
-    ctx.shadowBlur = 10 * blurFactor ;
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
-    ctx.lineWidth = 7.5 * blurFactor;
-    this.drawArrow(ctx, l, w);
-    ctx.lineWidth = 6 * blurFactor;
-    this.drawArrow(ctx, l, w);
-    ctx.lineWidth = 4.5;
-    this.drawArrow(ctx, l, w);
-    ctx.lineWidth = 3;
-    this.drawArrow(ctx, l, w);
-    ctx.strokeStyle = 'rgb(255, 255, 255)';
-    ctx.lineWidth = 1.5;
-    this.drawArrow(ctx, l, w);
-    
-    // drawArraw(ctx)
-   
-
-    
-    ctx.restore();
-  }
-
-  drawArrow(ctx, l, w) {
-    ctx.beginPath();
-    ctx.moveTo(0, -l / 2); //1
-    ctx.lineTo(w / 2, l / 4); //2
-    ctx.lineTo(w / 6, l / 2); //3
-    ctx.lineTo(0, l / 4); //4
-    ctx.lineTo(-w / 6, l / 2); //5
-    ctx.lineTo(-w / 2, l / 4); //6
-    ctx.closePath();
-    ctx.stroke();
-  }
-
-  collideWith(otherObject) {
-    if (otherObject instanceof Ship) {
-
-      otherObject.relocate();
-      return true;
-    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
-      
-      this.remove();
-      otherObject.remove();
-      return true;
-    }
-
-    return false;
-  }
-
-}
-
-
-
-const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
-module.exports = Arrow;
-
-/***/ }),
-
-/***/ "./lib/enemies/boxbox.js":
-/*!*******************************!*\
-  !*** ./lib/enemies/boxbox.js ***!
-  \*******************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-const GameObject = __webpack_require__(/*! ../game_object */ "./lib/game_object.js")
-const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
-const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
-const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
-const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
-const Util = __webpack_require__(/*! ../util */ "./lib/util.js")
-class BoxBox extends GameObject {
-  constructor(options) {
-    super(options)
-    this.pos = options.pos || options.game.randomPosition();
-    this.vel = [0,0]
-    this.acc = [0,0];
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
-  }
-
-  move(timeDelta) {
-    // let speed = 1.5;
-   
-    
-    const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    this.pos[0] += this.vel[0] * timeScale + this.acc[0] * (timeScale * timeScale) / 2;
-    this.pos[1] += this.vel[1] * timeScale + this.acc[1] * (timeScale * timeScale) / 2;
-    this.vel[0] += this.acc[0] * timeScale;
-    this.vel[1] += this.acc[1] * timeScale;
-
-    if (this.game.isOutOfBounds(this.pos)) {
-      Util.bounce(this, [1000, 600]) // HARD CODED
-    }
-  }
-
-  draw(ctx, spawningScale) {
-    this.acc = [0, 0];
-    spawningScale = spawningScale || 1;
-    let pos = this.pos
-    let boxsize = 10 * spawningScale;
-
-    
-    // ctx.strokeStyle = "#F173BA";
-
-    let r = 230;
-    let g = 30;
-    let b = 30;
-    
-    let blurFactor = 0.5
-    ctx.save();
-    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
-    ctx.shadowBlur = 10
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
-    ctx.restore();
-    ctx.lineWidth = 2;
-
-    // drawRect()
-
-    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
-    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
-    // ctx.stroke();
-    // ctx.lineWidth = 6 // * blurFactor;
-    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
-    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
-    // ctx.stroke();
-    // ctx.lineWidth = 4.5 // * blurFactor;
-    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
-    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
-    // ctx.stroke();
-    // ctx.lineWidth = 3 // * blurFactor;
-    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
-    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
-    // ctx.stroke();
-    // ctx.strokeStyle = 'rgb(255, 255, 255)';
-    // ctx.lineWidth = 1.5 // * blurFactor;
-    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
-    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
-    // ctx.stroke();
-
-    ctx.restore();
-  }
-
-  drawRect(ctx, boxsize) {
-
-  }
-
-  collideWith(otherObject) {
-    if (otherObject instanceof Ship) {
-      otherObject.relocate();
-      return true;
-    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
-      
-      this.remove();
-      otherObject.remove();
-      return true;
-    }
-
-    return false;
-  }
-
-}
-
-BoxBox.BOX_SIZE = 10;
-BoxBox.COLOR = "#f00745"
-
-module.exports = BoxBox;
-
-const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
-
-/***/ }),
-
-/***/ "./lib/enemies/grunt.js":
-/*!******************************!*\
-  !*** ./lib/enemies/grunt.js ***!
-  \******************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-const GameObject = __webpack_require__(/*! ../game_object */ "./lib/game_object.js")
-const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
-const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
-const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
-const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
-const Util = __webpack_require__(/*! ../util */ "./lib/util.js")
-class Grunt extends GameObject {
-  constructor(options) {
-    super(options)
-    this.pos = options.pos || options.game.randomPosition();
-    this.stretchScale_W = 1;
-    this.stretchScale_L = 1;
-    this.stretchDirection = -1;
-    this.vel = [0,0];
-    this.acc = [0,0];
-
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
-  }
-
-
-  // ADDING MOVEMENT MECHANICS FOR GRUNT
-  move(timeDelta) {
-    let speed = 1.5;
-    let shipPos = this.game.ships[0].pos;
-    let dy = shipPos[1] - this.pos[1];
-    let dx = shipPos[0] - this.pos[0];
-    
-    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    let direction = Math.atan2(dy, dx);
-
-    // I need to make a max speed and the pulling effect an acceleration instead
-    // this will make it possible to direct the ship well too
-    
-    // if (this.game.isOutOfBounds(this.pos)) {
-    //   Util.bounce(this, [1000, 600]) // HARD CODED
-    // }
-    
-    this.pos[0] += (this.vel[0] + speed * Math.cos(direction)) * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
-    this.pos[1] += (this.vel[1] + speed * Math.sin(direction)) * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
-    this.vel[0] += this.acc[0] * velocityScale;
-    this.vel[1] += this.acc[1] * velocityScale;
-    
-    
-    let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    let cycleSpeed = 0.01;
-    
-
-    if (this.stretchScale_W < 0.7 || this.stretchScale_W > 1) {
-      this.stretchDirection *= -1
-    } 
-      
-    this.stretchScale_W = this.stretchScale_W +  -this.stretchDirection * cycleSpeed * cycleSpeedScale;
-    this.stretchScale_L = this.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
-
-    if (this.game.isOutOfBounds(this.pos)) {
-      Util.bounce(this, [1000, 600]) // HARD CODED
-    }
-     
-  }
-
-  draw(ctx, spawningScale) {
-    this.acc = [0,0];
-    let pos = this.pos;
-    spawningScale = spawningScale || 1;
-    let shipLength = 10 * 2.2 * spawningScale * this.stretchScale_L;
-    let shipWidth = 10 * 2.2 * spawningScale * this.stretchScale_W;
-    let l = shipLength;
-    let w = shipWidth;
-
-    // let r = 13;
-    // let g = 213;
-    // let b = 255;
-    let r = 0;
-    let g = 57;
-    let b = 230;
-
-    ctx.save();
-    ctx.translate(pos[0], pos[1]);
-
-    // ctx.strokeStyle = "#4286f4";
-    // ctx.lineWidth = 4;
-    let blurFactor = 0.5
-    
-    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
-    ctx.shadowBlur = 10
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
-    ctx.lineWidth = 7.5 * blurFactor;
-    this.drawDiamond(ctx, l, w);
-    ctx.lineWidth = 6// * blurFactor;
-    this.drawDiamond(ctx, l, w);
-    ctx.lineWidth = 4.5// * blurFactor;
-    this.drawDiamond(ctx, l, w);
-    ctx.lineWidth = 3// * blurFactor;
-    this.drawDiamond(ctx, l, w);
-    ctx.strokeStyle = 'rgb(255, 255, 255)';
-    ctx.lineWidth = 1.5// * blurFactor;
-    this.drawDiamond(ctx, l, w);
-
-
-
-    
-    ctx.restore();
-  }
-
-  drawDiamond(ctx, l, w){
-    ctx.beginPath();
-    ctx.moveTo(0, -l / 2); //1
-    ctx.lineTo(w / 2, 0); //2
-    ctx.lineTo(0, l / 2); //3
-    ctx.lineTo(-w / 2, -0); //4
-    ctx.closePath();
-    ctx.stroke();
-  }
-
-  collideWith(otherObject) {
-    if (otherObject instanceof Ship) {
-      otherObject.relocate();
-      return true;
-    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
-      this.remove();
-      
-      otherObject.remove();
-      return true;
-    }
-
-    return false;
-  }
-
-}
-
-Grunt.BOX_SIZE = 10;
-Grunt.COLOR = "#4286f4"
-
-module.exports = Grunt;
-
-const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
-
-/***/ }),
-
-/***/ "./lib/enemies/pinwheel.js":
-/*!*********************************!*\
-  !*** ./lib/enemies/pinwheel.js ***!
-  \*********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-const GameObject = __webpack_require__(/*! ../game_object */ "./lib/game_object.js")
-const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
-const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
-const Util = __webpack_require__(/*! ../util */ "./lib/util.js");
-const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
-const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
-class Pinwheel extends GameObject {
-  constructor(options) {
-    super(options)
-    this.pos = options.pos || options.game.randomPosition();
-    this.angle = 0;
-    this.rotation_speed = 0.05;
-    this.speed = 1;
-    this.vel = Util.randomVec(this.speed);
-    this.acc = [0,0];
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
-  }
-
-  move(timeDelta) {
-    let rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    let velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    
-    this.angle = (this.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
-
-    this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2
-    this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2
-    this.vel[0] += this.acc[0] * velocityScale;
-    this.vel[1] += this.acc[1] * velocityScale;
-
-
-    if (this.game.isOutOfBounds(this.pos)) {
-      Util.bounce(this, [1000, 600]) // HARD CODED
-    }
-  }
-
-  draw(ctx, spawningScale) {
-    this.acc = [0, 0];
-    spawningScale = spawningScale || 1
-    let pos = this.pos
-    let shipWidth = 12 * spawningScale
-    let s = shipWidth/2
-    
-    let r = 59;
-    let g = 10;
-    let b = 87;
-
-    ctx.save();
-    ctx.translate(pos[0], pos[1]);
-    ctx.rotate(this.angle);
-
-    let blurFactor = 0.5
-    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
-    ctx.shadowBlur = 10 * blurFactor * blurFactor
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
-    ctx.lineWidth = 7.5 * blurFactor * blurFactor
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
-    this.drawPinwheel(ctx, s)
-    ctx.lineWidth = 6 * blurFactor
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.6)";
-    this.drawPinwheel(ctx, s)
-    ctx.lineWidth = 4.5;
-    this.drawPinwheel(ctx, s)
-    ctx.lineWidth = 3;
-    this.drawPinwheel(ctx, s)
-    ctx.strokeStyle = 'rgb(200, 100, 255)';
-    ctx.lineWidth = 1.5;
-    this.drawPinwheel(ctx, s)
-
-    // ctx.strokeStyle = "#971adf";
-    // ctx.lineWidth = 1.8;
-    
-    ctx.restore();
-  }
-
-  drawPinwheel(ctx, s){
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(0, 0); //1
-    ctx.lineTo(-s, -s); //2
-    ctx.lineTo(0, -s); //3
-    ctx.lineTo(0, 0); //1
-    ctx.lineTo(s, -s); //4
-    ctx.lineTo(s, 0); //5
-    ctx.lineTo(0, 0); //1
-    ctx.lineTo(s, s); //6
-    ctx.lineTo(0, s); //7
-    ctx.lineTo(0, 0); //1
-    ctx.lineTo(-s, s); //8
-    ctx.lineTo(-s, 0); //9
-    // ctx.lineTo(); //1
-
-    ctx.closePath();
-    ctx.stroke();
-  }
-
-  collideWith(otherObject) {
-    if (otherObject instanceof Ship) {
-      otherObject.relocate();
-      return true;
-    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
-      this.remove();
-      
-      otherObject.remove();
-      return true;
-    }
-
-    return false;
-  }
-
-}
-
-
-
-const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
-module.exports = Pinwheel;
-
-/***/ }),
-
-/***/ "./lib/enemies/singularity.js":
-/*!************************************!*\
-  !*** ./lib/enemies/singularity.js ***!
-  \************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-const GameObject = __webpack_require__(/*! ../game_object */ "./lib/game_object.js")
-const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
-const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
-const Util = __webpack_require__(/*! ../util */ "./lib/util.js")
-const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
-class Singularity extends GameObject {
-  constructor(options) {
-    super(options)
-    this.pos = options.pos || options.game.randomPosition();
-    this.vel = [0,0];
-    this.acc = [0,0];
-    this.radius = 15;
-    this.gravityWellSize = 10000000000;
-    this.gravityConstant = 1000;
-    this.id = options.id
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
-    this.throbbingScale = 1
-    this.increasing = true
-  }
-
-  throb(timeDelta) {
-    this.existTime += timeDelta;
-
-    let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    let cycleSpeed = 0.025;
-    // increase scale until 1.2, decrease until 0.8
-
-    if (this.increasing) {
-      this.throbbingScale += cycleSpeed * cycleSpeedScale
-      if (this.throbbingScale > 1.2){
-        this.increasing = !this.increasing
-      }
-    } else {
-      this.throbbingScale -= cycleSpeed * cycleSpeedScale
-      if (this.throbbingScale < 0.8) {
-        this.increasing = !this.increasing
-      }
-    }
-  }
-
-  move(timeDelta) {
-    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
-    this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
-    this.vel[0] += this.acc[0] * velocityScale;
-    this.vel[1] += this.acc[1] * velocityScale;
-
-    if (this.game.isOutOfBounds(this.pos)) {
-      Util.bounce(this, [1000, 600]) // HARD CODED
-    }
-
-    this.throb(timeDelta)
-  }
-
-  draw(ctx, spawningScale) {
-    this.acc = [0, 0];
-    if (!spawningScale) {
-      spawningScale = this.throbbingScale
-
-    }
-    
-    ctx.strokeStyle = "#F173BA"
-
-
-    let r = 95;
-    let g = 45;
-    let b = 73;
-
-    ctx.save();
-    // ctx.translate(pos[0], pos[1]);
-
-    // ctx.strokeStyle = "#4286f4";
-    // ctx.lineWidth = 4;
-    let blurFactor = 0.5
-
-    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
-    ctx.shadowBlur = 10
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
-    ctx.lineWidth = 7.5;
-    this.drawSingularity(ctx, this.radius * spawningScale);
-    ctx.lineWidth = 6
-    this.drawSingularity(ctx, this.radius * spawningScale);
-    ctx.lineWidth = 4.5
-    this.drawSingularity(ctx, this.radius * spawningScale);
-    ctx.lineWidth = 3
-    this.drawSingularity(ctx, this.radius * spawningScale);
-    ctx.strokeStyle = 'rgb(255, 255, 255)';
-    ctx.lineWidth = 1.5
-    this.drawSingularity(ctx, this.radius * spawningScale);
-    ctx.restore();
-    // ctx.lineWidth = 2;
-    // drawSingularity(ctx, this.radius * spawningScale);
-  }
-
-  drawSingularity(ctx, radius) {
-    ctx.beginPath();
-    ctx.arc(this.pos[0], this.pos[1], radius, 0, 2 * Math.PI, true);
-    ctx.stroke();
-  }
-
-  influenceAcceleration(object) {
-    let dy = this.pos[1] - object.pos[1];
-    let dx = this.pos[0] - object.pos[0];
-    let unitVector = Util.dir([dx, dy]);
-    let r = Math.sqrt(dy * dy + dx * dx);
-    if (r > this.gravityWellSize * 7 / 8 || r < this.radius * 2){
-      object.acc = [0,0];
-    } else {
-      let newAcc = [
-        unitVector[0] * this.gravityConstant / (r * r),
-        unitVector[1] * this.gravityConstant / (r * r)
-      ]
-      object.acc = newAcc;
-    }
-  }
-
-  isCollidedWith(otherObject) {
-
-    const centerDist = Util.dist(this.pos, otherObject.pos);
-    
-    if (otherObject instanceof Bullet) {
-      if (centerDist < (this.radius + otherObject.radius)) {
-
-        return true
-
-      } else {
-        return false
-      }
-    }
-
-    if (otherObject instanceof Ship) {
-        return false
-    }
-
-    if (centerDist < (this.gravityWellSize + otherObject.radius)) {
-
-      this.influenceAcceleration(otherObject)
-      return false;
-    } else {
-
-      return false;
-    }
-    
-  }
-
-  collideWith(otherObject) {
-    if (otherObject instanceof Ship) {
-      otherObject.relocate();
-      return true;
-    } else if (otherObject instanceof Bullet) {
-      this.remove();
-      otherObject.remove();
-      return true;
-    }
-
-    return false;
-  }
-
-  remove() {
-
-    this.game.remove(this);
-  }
-}
-
-Singularity.BOX_SIZE = 10;
-Singularity.COLOR = "#3cff0b"
-
-module.exports = Singularity;
-
-const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
-
-/***/ }),
-
-/***/ "./lib/enemies/weaver.js":
-/*!*******************************!*\
-  !*** ./lib/enemies/weaver.js ***!
-  \*******************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-const GameObject = __webpack_require__(/*! ../game_object */ "./lib/game_object.js")
-const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
-const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
-const Util = __webpack_require__(/*! ../util */ "./lib/util.js")
-const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
-const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
-class Weaver extends GameObject {
-  constructor(options) {
-    super(options)
-    this.pos = options.pos || options.game.randomPosition();
-    this.angle = 0;
-    this.rotation_speed = 0.075;
-    this.speed = 2;
-    this.initialDirection = Math.random() * 2 * Math.PI
-    this.initialVelocity = Util.vectorCartisian(this.initialDirection, 1)
-    this.vel = [0,0]
-    this.acc = [0,0];
-    this.weaverCloseHitBox = 35;
-    this.directionInfluenced = false;
-    this.influencers = [];
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_green.wav", 0.5);
-  }
-
-
-  move(timeDelta) {
-    this.acc = [0, 0];
-    let speed = 2;
-    let shipPos = this.game.ships[0].pos;
-    let dy = shipPos[1] - this.pos[1];
-    let dx = shipPos[0] - this.pos[0];
-    
-    let rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    let direction = 0;
-    if (!this.directionInfluenced){
-      direction = Math.atan2(dy, dx);
-    } else {
-      direction = this.influenceDirection();
-    }
-    // I need to make a max speed and the pulling effect an acceleration instead
-    // this will make it possible to direct the ship well too
-    
-    // if (this.game.isOutOfBounds(this.pos)) {
-      //   Util.bounce(this, [1000, 600]) // HARD CODED
-      // }
-    
-    this.angle = (this.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
-    this.pos[0] += (this.vel[0] + speed * Math.cos(direction)) * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
-    this.pos[1] += (this.vel[1] + speed * Math.sin(direction)) * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
-    this.vel[0] += this.acc[0] * velocityScale;
-    this.vel[1] += this.acc[1] * velocityScale;
-
-    this.directionInfluenced = false;
-    this.influencers = [];
-
-    if (this.game.isOutOfBounds(this.pos)) {
-      Util.bounce(this, [1000, 600]) // HARD CODED
-    }
-  }
-
-  draw(ctx, spawningScale) {
-
-    let pos = this.pos;
-    spawningScale = spawningScale || 1;
-    let shipLength = 10 * 2.2 * spawningScale
-    let shipWidth = 10 * 2.2 * spawningScale
-    let s = shipWidth / 2;
-
-
-    let r = 24;
-    let g = 255;
-    let b = 4;
-
-    ctx.save();
-    ctx.translate(this.pos[0], this.pos[1]);
-    ctx.rotate(this.angle);
-
-    let blurFactor = 0.5
-    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
-    ctx.shadowBlur = 10 * blurFactor 
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
-    ctx.lineWidth = 7.5 
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
-    this.drawWeaver(ctx, s)
-    ctx.lineWidth = 6 
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.6)";
-    this.drawWeaver(ctx, s)
-    ctx.lineWidth = 4.5;
-    this.drawWeaver(ctx, s)
-    ctx.lineWidth = 3;
-    this.drawWeaver(ctx, s)
-    ctx.strokeStyle = 'rgb(255, 255, 255)';
-    ctx.lineWidth = 1.5;
-    this.drawWeaver(ctx, s)
-
-
-    ctx.restore();
-  }
-
-  drawWeaver(ctx, s){
-
-    ctx.beginPath();
-    // ctx.strokeStyle = "#3cff0b";
-    ctx.lineWidth = 2;
-    ctx.moveTo(0, -s); //1
-    ctx.lineTo(s, 0); //2
-    ctx.lineTo(0, s); //3
-    ctx.lineTo(-s, 0); //4
-    ctx.lineTo(0, -s); //1
-    ctx.lineTo(-s / 2, -s / 2); //5
-    ctx.lineTo(s / 2, -s / 2); //6
-    ctx.lineTo(s / 2, s / 2); //7
-    ctx.lineTo(-s / 2, s / 2); //8
-    ctx.lineTo(-s / 2, -s / 2); //5
-    // ctx.closePath();
-    ctx.stroke();
-  }
-
-  influenceDirection() {
-    let directionVector = [0,0]
-    
-    this.influencers.forEach((influencer) =>{
-      let dx = directionVector[0] + influencer[0];
-      let dy = directionVector[1] + influencer[1];
-      let newVector = [dx,dy]
-      directionVector = Util.dir(newVector);
-    })
-    let influencedDirection = Math.atan2(directionVector[1], directionVector[0]);
-    return influencedDirection
-  }
-
-  acceptBulletDirection(source){
-    this.directionInfluenced = true;
-    let dy = this.pos[1] - source[1];
-    let dx = this.pos[0] - source[0];
-    let unitVector = Util.dir([dx,dy]);
-    this.influencers.push(unitVector)
-    // first 
-  }
-
-  isCollidedWith(otherObject) {
-    const centerDist = Util.dist(this.pos, otherObject.pos);
-
-    if (otherObject instanceof Bullet){
-      if (centerDist < (this.radius + otherObject.radius)) {
-
-        return true
-        
-      } else if( centerDist < (this.weaverCloseHitBox + otherObject.radius)) {
-        this.acceptBulletDirection(otherObject.pos) 
-        return false;
-      } else {
-        return false;
-      }
-    }
-    return centerDist < (this.radius + otherObject.radius);
-  }
-
-  collideWith(otherObject) {
-    if (otherObject instanceof Ship) {
-      otherObject.relocate();
-      return true;
-    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
-      this.remove()
-      
-      otherObject.remove();
-      return true;
-    }
-
-    return false;
-  }
-}
-
-Weaver.BOX_SIZE = 10;
-Weaver.COLOR = "#3cff0b"
-
-module.exports = Weaver;
-
-const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
-
-/***/ }),
-
 /***/ "./lib/game.js":
 /*!*********************!*\
   !*** ./lib/game.js ***!
@@ -1090,20 +102,20 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-const Bullet = __webpack_require__(/*! ./bullet */ "./lib/bullet.js");
-const Ship = __webpack_require__(/*! ./ship */ "./lib/ship.js");
+const Bullet = __webpack_require__(/*! ./game_objects/bullet */ "./lib/game_objects/bullet.js");
+const Ship = __webpack_require__(/*! ./game_objects/ship */ "./lib/game_objects/ship.js");
 const Util = __webpack_require__(/*! ./util */ "./lib/util.js");
+const Particle = __webpack_require__(/*! ./particles/particle */ "./lib/particles/particle.js");
+const EnemySpawn = __webpack_require__(/*! ./particles/enemy_spawn */ "./lib/particles/enemy_spawn.js");
 const ParticleExplosion = __webpack_require__(/*! ./particles/particle_explosion */ "./lib/particles/particle_explosion.js");
 const BulletWallExplosion = __webpack_require__(/*! ./particles/bullet_wall_explosion */ "./lib/particles/bullet_wall_explosion.js");
 const SingularityExplosion = __webpack_require__(/*! ./particles/singularity_explosion */ "./lib/particles/singularity_explosion.js");
-const Particle = __webpack_require__(/*! ./particles/particle */ "./lib/particles/particle.js");
-const BoxBox = __webpack_require__(/*! ./enemies/boxbox */ "./lib/enemies/boxbox.js");
-const Pinwheel = __webpack_require__(/*! ./enemies/pinwheel */ "./lib/enemies/pinwheel.js");
-const Arrow = __webpack_require__(/*! ./enemies/arrow */ "./lib/enemies/arrow.js");
-const Grunt = __webpack_require__(/*! ./enemies/grunt */ "./lib/enemies/grunt.js");
-const Weaver = __webpack_require__(/*! ./enemies/weaver */ "./lib/enemies/weaver.js");
-const Singularity = __webpack_require__(/*! ./enemies/singularity */ "./lib/enemies/singularity.js");
-const EnemySpawn = __webpack_require__(/*! ./particles/enemy_spawn */ "./lib/particles/enemy_spawn.js");
+const BoxBox = __webpack_require__(/*! ./game_objects/enemies/boxbox */ "./lib/game_objects/enemies/boxbox.js");
+const Pinwheel = __webpack_require__(/*! ./game_objects/enemies/pinwheel */ "./lib/game_objects/enemies/pinwheel.js");
+const Arrow = __webpack_require__(/*! ./game_objects/enemies/arrow */ "./lib/game_objects/enemies/arrow.js");
+const Grunt = __webpack_require__(/*! ./game_objects/enemies/grunt */ "./lib/game_objects/enemies/grunt.js");
+const Weaver = __webpack_require__(/*! ./game_objects/enemies/weaver */ "./lib/game_objects/enemies/weaver.js");
+const Singularity = __webpack_require__(/*! ./game_objects/enemies/singularity */ "./lib/game_objects/enemies/singularity.js");
 const Sound = __webpack_require__(/*! ./sound */ "./lib/sound.js")
 
 class Game {
@@ -1598,6 +610,1165 @@ module.exports = GameObject;
 
 /***/ }),
 
+/***/ "./lib/game_objects/bullet.js":
+/*!************************************!*\
+  !*** ./lib/game_objects/bullet.js ***!
+  \************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const GameObject = __webpack_require__(/*! ../game_object */ "./lib/game_object.js");
+const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
+
+class Bullet extends GameObject {
+  constructor(options) {
+    super(options);
+    this.bounce = false;
+    this.color = "#FFFBCE";
+    this.acc = [0,0];
+    this.vel = options.vel
+    this.speed = 8.5;
+    this.length = 12;
+    options.radius = this.length / 4;
+  }
+
+  // move(timeDelta) {
+  //   if (this.game.isOutOfBounds(this.pos)) {
+  //     this.game.add(new BulletWallExplosion(this.pos[0], this.pos[1], this.game.ctx, this.game))
+  //     if (!this.game.muted) {
+  //       let wallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
+  //       
+  //     }
+  //     this.remove();
+  //   }
+
+  draw(ctx) {
+    let l = this.length
+    let pos = this.pos;
+    let w = this.length/2;
+    let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.translate(pos[0], pos[1]);
+    ctx.rotate(movementDirection + 2 * Math.PI);
+
+    ctx.beginPath();
+    ctx.strokeStyle = "#FBFBC2";
+    ctx.lineWidth = 1;
+
+    ctx.moveTo(-l / 4, l / 2); //1
+    ctx.lineTo(0, -l / 2); //2
+    ctx.lineTo(l / 4, l / 2); //3
+
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+
+  }
+    
+}
+
+
+Bullet.RADIUS = 3;
+Bullet.SPEED = 7;
+
+module.exports = Bullet;
+
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+
+/***/ }),
+
+/***/ "./lib/game_objects/enemies/arrow.js":
+/*!*******************************************!*\
+  !*** ./lib/game_objects/enemies/arrow.js ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const GameObject = __webpack_require__(/*! ../../game_object */ "./lib/game_object.js")
+const Bullet = __webpack_require__(/*! ../bullet */ "./lib/game_objects/bullet.js")
+const Ship = __webpack_require__(/*! ../ship */ "./lib/game_objects/ship.js")
+const Util = __webpack_require__(/*! ../../util */ "./lib/util.js");
+const Singularity = __webpack_require__(/*! ./singularity */ "./lib/game_objects/enemies/singularity.js")
+const Sound = __webpack_require__(/*! ../../sound */ "./lib/sound.js")
+
+class Arrow extends GameObject {
+  constructor(options) {
+    super(options)
+    this.pos = options.pos || options.game.randomPosition();
+    this.angle = options.angle || Math.PI / 3;
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_purple.wav", 0.5);
+    this.speed = 3;
+    this.vel = Util.vectorCartisian(this.angle, this.speed);
+    this.acc = [0,0];
+  }
+
+  move(timeDelta) {
+    let rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    let velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2
+    this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2
+    this.vel[0] += this.acc[0] * velocityScale;
+    this.vel[1] += this.acc[1] * velocityScale;
+    
+    if (this.game.isOutOfBounds(this.pos)) {
+      Util.redirect(this,[1000, 600]) // HARD CODED
+    }
+    this.acc = [0, 0];
+  }
+
+  
+
+  draw(ctx, spawningScale) {
+    
+    let pos = this.pos;
+    spawningScale = spawningScale || 1;
+    let shipLength = 8 * 2.2 * spawningScale;
+    let shipWidth = 6 * 2.2 * spawningScale;
+    let l = shipLength;
+    let w = shipWidth;
+    let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
+
+    // let r = 255;
+    // let g = 255;
+    // let b = 13;
+    let r = 255;
+    let g = 255;
+    let b = 50;
+
+
+
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.translate(pos[0], pos[1]);
+    ctx.rotate(movementDirection + 2 * Math.PI );
+
+    
+    // ctx.strokeStyle = "#f2ff00"; // look up rgb and put here
+    ctx.lineWidth = 2;
+
+    let blurFactor = 0.5
+    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+    ctx.shadowBlur = 10 * blurFactor ;
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+    ctx.lineWidth = 7.5 * blurFactor;
+    this.drawArrow(ctx, l, w);
+    ctx.lineWidth = 6 * blurFactor;
+    this.drawArrow(ctx, l, w);
+    ctx.lineWidth = 4.5;
+    this.drawArrow(ctx, l, w);
+    ctx.lineWidth = 3;
+    this.drawArrow(ctx, l, w);
+    ctx.strokeStyle = 'rgb(255, 255, 255)';
+    ctx.lineWidth = 1.5;
+    this.drawArrow(ctx, l, w);
+    
+    // drawArraw(ctx)
+   
+
+    
+    ctx.restore();
+  }
+
+  drawArrow(ctx, l, w) {
+    ctx.beginPath();
+    ctx.moveTo(0, -l / 2); //1
+    ctx.lineTo(w / 2, l / 4); //2
+    ctx.lineTo(w / 6, l / 2); //3
+    ctx.lineTo(0, l / 4); //4
+    ctx.lineTo(-w / 6, l / 2); //5
+    ctx.lineTo(-w / 2, l / 4); //6
+    ctx.closePath();
+    ctx.stroke();
+  }
+
+  collideWith(otherObject) {
+    if (otherObject instanceof Ship) {
+
+      otherObject.relocate();
+      return true;
+    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
+      
+      this.remove();
+      otherObject.remove();
+      return true;
+    }
+
+    return false;
+  }
+
+}
+
+
+
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+module.exports = Arrow;
+
+/***/ }),
+
+/***/ "./lib/game_objects/enemies/boxbox.js":
+/*!********************************************!*\
+  !*** ./lib/game_objects/enemies/boxbox.js ***!
+  \********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const GameObject = __webpack_require__(/*! ../../game_object */ "./lib/game_object.js")
+const Bullet = __webpack_require__(/*! ../bullet */ "./lib/game_objects/bullet.js")
+const Ship = __webpack_require__(/*! ../ship */ "./lib/game_objects/ship.js")
+const Singularity = __webpack_require__(/*! ./singularity */ "./lib/game_objects/enemies/singularity.js")
+const Sound = __webpack_require__(/*! ../../sound */ "./lib/sound.js")
+const Util = __webpack_require__(/*! ../../util */ "./lib/util.js")
+class BoxBox extends GameObject {
+  constructor(options) {
+    super(options)
+    this.pos = options.pos || options.game.randomPosition();
+    this.vel = [0,0]
+    this.acc = [0,0];
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
+  }
+
+  move(timeDelta) {
+    // let speed = 1.5;
+   
+    
+    const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    this.pos[0] += this.vel[0] * timeScale + this.acc[0] * (timeScale * timeScale) / 2;
+    this.pos[1] += this.vel[1] * timeScale + this.acc[1] * (timeScale * timeScale) / 2;
+    this.vel[0] += this.acc[0] * timeScale;
+    this.vel[1] += this.acc[1] * timeScale;
+
+    if (this.game.isOutOfBounds(this.pos)) {
+      Util.bounce(this, [1000, 600]) // HARD CODED
+    }
+  }
+
+  draw(ctx, spawningScale) {
+    this.acc = [0, 0];
+    spawningScale = spawningScale || 1;
+    let pos = this.pos
+    let boxsize = 10 * spawningScale;
+
+    
+    // ctx.strokeStyle = "#F173BA";
+
+    let r = 230;
+    let g = 30;
+    let b = 30;
+    
+    let blurFactor = 0.5
+    ctx.save();
+    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+    ctx.shadowBlur = 10
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+    ctx.restore();
+    ctx.lineWidth = 2;
+
+    // drawRect()
+
+    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
+    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
+    // ctx.stroke();
+    // ctx.lineWidth = 6 // * blurFactor;
+    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
+    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
+    // ctx.stroke();
+    // ctx.lineWidth = 4.5 // * blurFactor;
+    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
+    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
+    // ctx.stroke();
+    // ctx.lineWidth = 3 // * blurFactor;
+    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
+    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
+    // ctx.stroke();
+    // ctx.strokeStyle = 'rgb(255, 255, 255)';
+    // ctx.lineWidth = 1.5 // * blurFactor;
+    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
+    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
+    // ctx.stroke();
+
+    ctx.restore();
+  }
+
+  drawRect(ctx, boxsize) {
+
+  }
+
+  collideWith(otherObject) {
+    if (otherObject instanceof Ship) {
+      otherObject.relocate();
+      return true;
+    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
+      
+      this.remove();
+      otherObject.remove();
+      return true;
+    }
+
+    return false;
+  }
+
+}
+
+BoxBox.BOX_SIZE = 10;
+BoxBox.COLOR = "#f00745"
+
+module.exports = BoxBox;
+
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+
+/***/ }),
+
+/***/ "./lib/game_objects/enemies/grunt.js":
+/*!*******************************************!*\
+  !*** ./lib/game_objects/enemies/grunt.js ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const GameObject = __webpack_require__(/*! ../../game_object */ "./lib/game_object.js")
+const Bullet = __webpack_require__(/*! ../bullet */ "./lib/game_objects/bullet.js")
+const Ship = __webpack_require__(/*! ../ship */ "./lib/game_objects/ship.js")
+const Singularity = __webpack_require__(/*! ./singularity */ "./lib/game_objects/enemies/singularity.js")
+const Sound = __webpack_require__(/*! ../../sound */ "./lib/sound.js")
+const Util = __webpack_require__(/*! ../../util */ "./lib/util.js")
+class Grunt extends GameObject {
+  constructor(options) {
+    super(options)
+    this.pos = options.pos || options.game.randomPosition();
+    this.stretchScale_W = 1;
+    this.stretchScale_L = 1;
+    this.stretchDirection = -1;
+    this.vel = [0,0];
+    this.acc = [0,0];
+
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
+  }
+
+
+  // ADDING MOVEMENT MECHANICS FOR GRUNT
+  move(timeDelta) {
+    let speed = 1.5;
+    let shipPos = this.game.ships[0].pos;
+    let dy = shipPos[1] - this.pos[1];
+    let dx = shipPos[0] - this.pos[0];
+    
+    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    let direction = Math.atan2(dy, dx);
+
+    // I need to make a max speed and the pulling effect an acceleration instead
+    // this will make it possible to direct the ship well too
+    
+    // if (this.game.isOutOfBounds(this.pos)) {
+    //   Util.bounce(this, [1000, 600]) // HARD CODED
+    // }
+    
+    this.pos[0] += (this.vel[0] + speed * Math.cos(direction)) * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
+    this.pos[1] += (this.vel[1] + speed * Math.sin(direction)) * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
+    this.vel[0] += this.acc[0] * velocityScale;
+    this.vel[1] += this.acc[1] * velocityScale;
+    
+    
+    let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    let cycleSpeed = 0.01;
+    
+
+    if (this.stretchScale_W < 0.7 || this.stretchScale_W > 1) {
+      this.stretchDirection *= -1
+    } 
+      
+    this.stretchScale_W = this.stretchScale_W +  -this.stretchDirection * cycleSpeed * cycleSpeedScale;
+    this.stretchScale_L = this.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
+
+    if (this.game.isOutOfBounds(this.pos)) {
+      Util.bounce(this, [1000, 600]) // HARD CODED
+    }
+     
+  }
+
+  draw(ctx, spawningScale) {
+    this.acc = [0,0];
+    let pos = this.pos;
+    spawningScale = spawningScale || 1;
+    let shipLength = 10 * 2.2 * spawningScale * this.stretchScale_L;
+    let shipWidth = 10 * 2.2 * spawningScale * this.stretchScale_W;
+    let l = shipLength;
+    let w = shipWidth;
+
+    // let r = 13;
+    // let g = 213;
+    // let b = 255;
+    let r = 0;
+    let g = 57;
+    let b = 230;
+
+    ctx.save();
+    ctx.translate(pos[0], pos[1]);
+
+    // ctx.strokeStyle = "#4286f4";
+    // ctx.lineWidth = 4;
+    let blurFactor = 0.5
+    
+    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+    ctx.shadowBlur = 10
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+    ctx.lineWidth = 7.5 * blurFactor;
+    this.drawDiamond(ctx, l, w);
+    ctx.lineWidth = 6// * blurFactor;
+    this.drawDiamond(ctx, l, w);
+    ctx.lineWidth = 4.5// * blurFactor;
+    this.drawDiamond(ctx, l, w);
+    ctx.lineWidth = 3// * blurFactor;
+    this.drawDiamond(ctx, l, w);
+    ctx.strokeStyle = 'rgb(255, 255, 255)';
+    ctx.lineWidth = 1.5// * blurFactor;
+    this.drawDiamond(ctx, l, w);
+
+
+
+    
+    ctx.restore();
+  }
+
+  drawDiamond(ctx, l, w){
+    ctx.beginPath();
+    ctx.moveTo(0, -l / 2); //1
+    ctx.lineTo(w / 2, 0); //2
+    ctx.lineTo(0, l / 2); //3
+    ctx.lineTo(-w / 2, -0); //4
+    ctx.closePath();
+    ctx.stroke();
+  }
+
+  collideWith(otherObject) {
+    if (otherObject instanceof Ship) {
+      otherObject.relocate();
+      return true;
+    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
+      this.remove();
+      
+      otherObject.remove();
+      return true;
+    }
+
+    return false;
+  }
+
+}
+
+Grunt.BOX_SIZE = 10;
+Grunt.COLOR = "#4286f4"
+
+module.exports = Grunt;
+
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+
+/***/ }),
+
+/***/ "./lib/game_objects/enemies/pinwheel.js":
+/*!**********************************************!*\
+  !*** ./lib/game_objects/enemies/pinwheel.js ***!
+  \**********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const GameObject = __webpack_require__(/*! ../../game_object */ "./lib/game_object.js")
+const Bullet = __webpack_require__(/*! ../bullet */ "./lib/game_objects/bullet.js")
+const Ship = __webpack_require__(/*! ../ship */ "./lib/game_objects/ship.js")
+const Util = __webpack_require__(/*! ../../util */ "./lib/util.js");
+const Singularity = __webpack_require__(/*! ./singularity */ "./lib/game_objects/enemies/singularity.js")
+const Sound = __webpack_require__(/*! ../../sound */ "./lib/sound.js")
+class Pinwheel extends GameObject {
+  constructor(options) {
+    super(options)
+    this.pos = options.pos || options.game.randomPosition();
+    this.angle = 0;
+    this.rotation_speed = 0.05;
+    this.speed = 1;
+    this.vel = Util.randomVec(this.speed);
+    this.acc = [0,0];
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
+  }
+
+  move(timeDelta) {
+    let rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    let velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    
+    this.angle = (this.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
+
+    this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2
+    this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2
+    this.vel[0] += this.acc[0] * velocityScale;
+    this.vel[1] += this.acc[1] * velocityScale;
+
+
+    if (this.game.isOutOfBounds(this.pos)) {
+      Util.bounce(this, [1000, 600]) // HARD CODED
+    }
+  }
+
+  draw(ctx, spawningScale) {
+    this.acc = [0, 0];
+    spawningScale = spawningScale || 1
+    let pos = this.pos
+    let shipWidth = 12 * spawningScale
+    let s = shipWidth/2
+    
+    let r = 59;
+    let g = 10;
+    let b = 87;
+
+    ctx.save();
+    ctx.translate(pos[0], pos[1]);
+    ctx.rotate(this.angle);
+
+    let blurFactor = 0.5
+    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+    ctx.shadowBlur = 10 * blurFactor * blurFactor
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+    ctx.lineWidth = 7.5 * blurFactor * blurFactor
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+    this.drawPinwheel(ctx, s)
+    ctx.lineWidth = 6 * blurFactor
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.6)";
+    this.drawPinwheel(ctx, s)
+    ctx.lineWidth = 4.5;
+    this.drawPinwheel(ctx, s)
+    ctx.lineWidth = 3;
+    this.drawPinwheel(ctx, s)
+    ctx.strokeStyle = 'rgb(200, 100, 255)';
+    ctx.lineWidth = 1.5;
+    this.drawPinwheel(ctx, s)
+
+    // ctx.strokeStyle = "#971adf";
+    // ctx.lineWidth = 1.8;
+    
+    ctx.restore();
+  }
+
+  drawPinwheel(ctx, s){
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, 0); //1
+    ctx.lineTo(-s, -s); //2
+    ctx.lineTo(0, -s); //3
+    ctx.lineTo(0, 0); //1
+    ctx.lineTo(s, -s); //4
+    ctx.lineTo(s, 0); //5
+    ctx.lineTo(0, 0); //1
+    ctx.lineTo(s, s); //6
+    ctx.lineTo(0, s); //7
+    ctx.lineTo(0, 0); //1
+    ctx.lineTo(-s, s); //8
+    ctx.lineTo(-s, 0); //9
+    // ctx.lineTo(); //1
+
+    ctx.closePath();
+    ctx.stroke();
+  }
+
+  collideWith(otherObject) {
+    if (otherObject instanceof Ship) {
+      otherObject.relocate();
+      return true;
+    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
+      this.remove();
+      
+      otherObject.remove();
+      return true;
+    }
+
+    return false;
+  }
+
+}
+
+
+
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+module.exports = Pinwheel;
+
+/***/ }),
+
+/***/ "./lib/game_objects/enemies/singularity.js":
+/*!*************************************************!*\
+  !*** ./lib/game_objects/enemies/singularity.js ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const GameObject = __webpack_require__(/*! ../../game_object */ "./lib/game_object.js")
+const Bullet = __webpack_require__(/*! ../bullet */ "./lib/game_objects/bullet.js")
+const Ship = __webpack_require__(/*! ../ship */ "./lib/game_objects/ship.js")
+const Util = __webpack_require__(/*! ../../util */ "./lib/util.js")
+const Sound = __webpack_require__(/*! ../../sound */ "./lib/sound.js")
+class Singularity extends GameObject {
+  constructor(options) {
+    super(options)
+    this.pos = options.pos || options.game.randomPosition();
+    this.vel = [0,0];
+    this.acc = [0,0];
+    this.radius = 15;
+    this.gravityWellSize = 10000000000;
+    this.gravityConstant = 1000;
+    this.id = options.id
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
+    this.throbbingScale = 1
+    this.increasing = true
+  }
+
+  throb(timeDelta) {
+    this.existTime += timeDelta;
+
+    let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    let cycleSpeed = 0.025;
+    // increase scale until 1.2, decrease until 0.8
+
+    if (this.increasing) {
+      this.throbbingScale += cycleSpeed * cycleSpeedScale
+      if (this.throbbingScale > 1.2){
+        this.increasing = !this.increasing
+      }
+    } else {
+      this.throbbingScale -= cycleSpeed * cycleSpeedScale
+      if (this.throbbingScale < 0.8) {
+        this.increasing = !this.increasing
+      }
+    }
+  }
+
+  move(timeDelta) {
+    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
+    this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
+    this.vel[0] += this.acc[0] * velocityScale;
+    this.vel[1] += this.acc[1] * velocityScale;
+
+    if (this.game.isOutOfBounds(this.pos)) {
+      Util.bounce(this, [1000, 600]) // HARD CODED
+    }
+
+    this.throb(timeDelta)
+  }
+
+  draw(ctx, spawningScale) {
+    this.acc = [0, 0];
+    if (!spawningScale) {
+      spawningScale = this.throbbingScale
+
+    }
+    
+    ctx.strokeStyle = "#F173BA"
+
+
+    let r = 95;
+    let g = 45;
+    let b = 73;
+
+    ctx.save();
+    // ctx.translate(pos[0], pos[1]);
+
+    // ctx.strokeStyle = "#4286f4";
+    // ctx.lineWidth = 4;
+    let blurFactor = 0.5
+
+    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+    ctx.shadowBlur = 10
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+    ctx.lineWidth = 7.5;
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.lineWidth = 6
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.lineWidth = 4.5
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.lineWidth = 3
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.strokeStyle = 'rgb(255, 255, 255)';
+    ctx.lineWidth = 1.5
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.restore();
+    // ctx.lineWidth = 2;
+    // drawSingularity(ctx, this.radius * spawningScale);
+  }
+
+  drawSingularity(ctx, radius) {
+    ctx.beginPath();
+    ctx.arc(this.pos[0], this.pos[1], radius, 0, 2 * Math.PI, true);
+    ctx.stroke();
+  }
+
+  influenceAcceleration(object) {
+    let dy = this.pos[1] - object.pos[1];
+    let dx = this.pos[0] - object.pos[0];
+    let unitVector = Util.dir([dx, dy]);
+    let r = Math.sqrt(dy * dy + dx * dx);
+    if (r > this.gravityWellSize * 7 / 8 || r < this.radius * 2){
+      object.acc = [0,0];
+    } else {
+      let newAcc = [
+        unitVector[0] * this.gravityConstant / (r * r),
+        unitVector[1] * this.gravityConstant / (r * r)
+      ]
+      object.acc = newAcc;
+    }
+  }
+
+  isCollidedWith(otherObject) {
+
+    const centerDist = Util.dist(this.pos, otherObject.pos);
+    
+    if (otherObject instanceof Bullet) {
+      if (centerDist < (this.radius + otherObject.radius)) {
+
+        return true
+
+      } else {
+        return false
+      }
+    }
+
+    if (otherObject instanceof Ship) {
+        return false
+    }
+
+    if (centerDist < (this.gravityWellSize + otherObject.radius)) {
+
+      this.influenceAcceleration(otherObject)
+      return false;
+    } else {
+
+      return false;
+    }
+    
+  }
+
+  collideWith(otherObject) {
+    if (otherObject instanceof Ship) {
+      otherObject.relocate();
+      return true;
+    } else if (otherObject instanceof Bullet) {
+      this.remove();
+      otherObject.remove();
+      return true;
+    }
+
+    return false;
+  }
+
+  remove() {
+
+    this.game.remove(this);
+  }
+}
+
+Singularity.BOX_SIZE = 10;
+Singularity.COLOR = "#3cff0b"
+
+module.exports = Singularity;
+
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+
+/***/ }),
+
+/***/ "./lib/game_objects/enemies/weaver.js":
+/*!********************************************!*\
+  !*** ./lib/game_objects/enemies/weaver.js ***!
+  \********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const GameObject = __webpack_require__(/*! ../../game_object */ "./lib/game_object.js")
+const Bullet = __webpack_require__(/*! ../bullet */ "./lib/game_objects/bullet.js")
+const Ship = __webpack_require__(/*! ../ship */ "./lib/game_objects/ship.js")
+const Util = __webpack_require__(/*! ../../util */ "./lib/util.js")
+const Singularity = __webpack_require__(/*! ./singularity */ "./lib/game_objects/enemies/singularity.js")
+const Sound = __webpack_require__(/*! ../../sound */ "./lib/sound.js")
+class Weaver extends GameObject {
+  constructor(options) {
+    super(options)
+    this.pos = options.pos || options.game.randomPosition();
+    this.angle = 0;
+    this.rotation_speed = 0.075;
+    this.speed = 2;
+    this.initialDirection = Math.random() * 2 * Math.PI
+    this.initialVelocity = Util.vectorCartisian(this.initialDirection, 1)
+    this.vel = [0,0]
+    this.acc = [0,0];
+    this.weaverCloseHitBox = 35;
+    this.directionInfluenced = false;
+    this.influencers = [];
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_green.wav", 0.5);
+  }
+
+
+  move(timeDelta) {
+    this.acc = [0, 0];
+    let speed = 2;
+    let shipPos = this.game.ships[0].pos;
+    let dy = shipPos[1] - this.pos[1];
+    let dx = shipPos[0] - this.pos[0];
+    
+    let rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    let direction = 0;
+    if (!this.directionInfluenced){
+      direction = Math.atan2(dy, dx);
+    } else {
+      direction = this.influenceDirection();
+    }
+    // I need to make a max speed and the pulling effect an acceleration instead
+    // this will make it possible to direct the ship well too
+    
+    // if (this.game.isOutOfBounds(this.pos)) {
+      //   Util.bounce(this, [1000, 600]) // HARD CODED
+      // }
+    
+    this.angle = (this.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
+    this.pos[0] += (this.vel[0] + speed * Math.cos(direction)) * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
+    this.pos[1] += (this.vel[1] + speed * Math.sin(direction)) * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
+    this.vel[0] += this.acc[0] * velocityScale;
+    this.vel[1] += this.acc[1] * velocityScale;
+
+    this.directionInfluenced = false;
+    this.influencers = [];
+
+    if (this.game.isOutOfBounds(this.pos)) {
+      Util.bounce(this, [1000, 600]) // HARD CODED
+    }
+  }
+
+  draw(ctx, spawningScale) {
+
+    let pos = this.pos;
+    spawningScale = spawningScale || 1;
+    let shipLength = 10 * 2.2 * spawningScale
+    let shipWidth = 10 * 2.2 * spawningScale
+    let s = shipWidth / 2;
+
+
+    let r = 24;
+    let g = 255;
+    let b = 4;
+
+    ctx.save();
+    ctx.translate(this.pos[0], this.pos[1]);
+    ctx.rotate(this.angle);
+
+    let blurFactor = 0.5
+    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+    ctx.shadowBlur = 10 * blurFactor 
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+    ctx.lineWidth = 7.5 
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+    this.drawWeaver(ctx, s)
+    ctx.lineWidth = 6 
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.6)";
+    this.drawWeaver(ctx, s)
+    ctx.lineWidth = 4.5;
+    this.drawWeaver(ctx, s)
+    ctx.lineWidth = 3;
+    this.drawWeaver(ctx, s)
+    ctx.strokeStyle = 'rgb(255, 255, 255)';
+    ctx.lineWidth = 1.5;
+    this.drawWeaver(ctx, s)
+
+
+    ctx.restore();
+  }
+
+  drawWeaver(ctx, s){
+
+    ctx.beginPath();
+    // ctx.strokeStyle = "#3cff0b";
+    ctx.lineWidth = 2;
+    ctx.moveTo(0, -s); //1
+    ctx.lineTo(s, 0); //2
+    ctx.lineTo(0, s); //3
+    ctx.lineTo(-s, 0); //4
+    ctx.lineTo(0, -s); //1
+    ctx.lineTo(-s / 2, -s / 2); //5
+    ctx.lineTo(s / 2, -s / 2); //6
+    ctx.lineTo(s / 2, s / 2); //7
+    ctx.lineTo(-s / 2, s / 2); //8
+    ctx.lineTo(-s / 2, -s / 2); //5
+    // ctx.closePath();
+    ctx.stroke();
+  }
+
+  influenceDirection() {
+    let directionVector = [0,0]
+    
+    this.influencers.forEach((influencer) =>{
+      let dx = directionVector[0] + influencer[0];
+      let dy = directionVector[1] + influencer[1];
+      let newVector = [dx,dy]
+      directionVector = Util.dir(newVector);
+    })
+    let influencedDirection = Math.atan2(directionVector[1], directionVector[0]);
+    return influencedDirection
+  }
+
+  acceptBulletDirection(source){
+    this.directionInfluenced = true;
+    let dy = this.pos[1] - source[1];
+    let dx = this.pos[0] - source[0];
+    let unitVector = Util.dir([dx,dy]);
+    this.influencers.push(unitVector)
+    // first 
+  }
+
+  isCollidedWith(otherObject) {
+    const centerDist = Util.dist(this.pos, otherObject.pos);
+
+    if (otherObject instanceof Bullet){
+      if (centerDist < (this.radius + otherObject.radius)) {
+
+        return true
+        
+      } else if( centerDist < (this.weaverCloseHitBox + otherObject.radius)) {
+        this.acceptBulletDirection(otherObject.pos) 
+        return false;
+      } else {
+        return false;
+      }
+    }
+    return centerDist < (this.radius + otherObject.radius);
+  }
+
+  collideWith(otherObject) {
+    if (otherObject instanceof Ship) {
+      otherObject.relocate();
+      return true;
+    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
+      this.remove()
+      
+      otherObject.remove();
+      return true;
+    }
+
+    return false;
+  }
+}
+
+Weaver.BOX_SIZE = 10;
+Weaver.COLOR = "#3cff0b"
+
+module.exports = Weaver;
+
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+
+/***/ }),
+
+/***/ "./lib/game_objects/ship.js":
+/*!**********************************!*\
+  !*** ./lib/game_objects/ship.js ***!
+  \**********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const GameObject = __webpack_require__(/*! ../game_object */ "./lib/game_object.js");
+const Bullet = __webpack_require__(/*! ./bullet */ "./lib/game_objects/bullet.js");
+const Util = __webpack_require__(/*! ../util */ "./lib/util.js");
+
+function randomColor() {
+  const hexDigits = "0123456789ABCDEF";
+
+  let color = "#";
+  for (let i = 0; i < 3; i++) {
+    color += hexDigits[Math.floor((Math.random() * 16))];
+  }
+
+
+  return color;
+}
+
+class Ship extends GameObject {
+  constructor(options) {
+    options.radius = Ship.RADIUS;
+    options.vel = options.vel || [0, 0];
+    options.color = options.color || randomColor();
+    super(options);
+    this.speed = 2.5;
+    // this.vel = [0,0];
+    // this.acc = [0,0];
+    this.mousePos = [0,0];
+    this.fireAngle = 0; // might have to make it null
+  }
+
+  start(){
+    setInterval(
+      () => {
+        this.fireBullet()
+        if (! this.game.muted) {
+          let bulletSound = new Audio("GEOWars/sounds/Fire_normal.wav");
+          bulletSound.volume = 0.2;
+          bulletSound.play()
+        }
+      },
+      1000 * 60 / (340 * 1.5)
+    )
+  }
+
+  draw(ctx) {
+    let pos = this.pos 
+    let shipWidth = 10
+    let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
+    ctx.save();
+    ctx.beginPath();
+    ctx.translate(pos[0], pos[1]);
+    ctx.rotate(movementDirection + 3/4 * Math.PI + Math.PI);
+    ctx.translate(-shipWidth / 2, shipWidth / 2);
+   
+    ctx.strokeStyle = "#ffffff";
+    let r = 255;
+    let g = 255;
+    let b = 255;
+
+    let blurFactor = 0.5
+    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+    ctx.shadowBlur = 10 * blurFactor * blurFactor
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
+    ctx.lineWidth = 7.5 * blurFactor * blurFactor
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
+    this.drawShip(ctx, shipWidth)
+    ctx.lineWidth = 6 * blurFactor
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
+    this.drawShip(ctx, shipWidth)
+    ctx.lineWidth = 4.5;
+    this.drawShip(ctx, shipWidth)
+    ctx.lineWidth = 3;
+    this.drawShip(ctx, shipWidth)
+    ctx.strokeStyle = 'rgb(255, 255, 255)';
+    ctx.lineWidth = 1.5;
+    this.drawShip(ctx, shipWidth)
+    
+    ctx.restore();
+  }
+
+  drawShip(ctx, shipWidth) {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, -shipWidth);
+    ctx.lineTo(2 / 3 * shipWidth, -(1 + 1 / 6) * shipWidth); //1
+    ctx.lineTo(1 / 3 * shipWidth, -5 / 6 * shipWidth) // 2
+    ctx.lineTo(1 / 3 * shipWidth, -1 / 3 * shipWidth) // 2.5
+    ctx.lineTo(5 / 6 * shipWidth, -1 / 3 * shipWidth) // 3
+    ctx.lineTo((1 + 1 / 6) * shipWidth, -2 / 3 * shipWidth) // 4
+    ctx.lineTo(shipWidth, 0) // 5
+    ctx.closePath();
+    ctx.stroke();
+  }
+  move(timeDelta) {
+    // timeDelta is number of milliseconds since last move
+    // if the computer is busy the time delta will be larger
+    // in this case the MovingObject should move farther in this frame
+    // velocity of object is how far it should move in 1/60th of a second or something
+    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA,
+    offsetX = this.vel[0] * velocityScale * this.speed,
+    offsetY = this.vel[1] * velocityScale * this.speed;
+    this.pos = [this.pos[0] + offsetX, this.pos[1] + offsetY];
+
+
+
+    if (this.game.isOutOfBounds(this.pos)) {
+      if (this.isWrappable) {
+        this.pos = this.game.wrap(this.pos);
+      } 
+    }
+  }
+
+  // move(timeDelta){
+  //   const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+  //   this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
+  //   this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
+  //   this.vel[0] += this.acc[0] * velocityScale;
+  //   this.vel[1] += this.acc[1] * velocityScale;
+
+  //   if (this.game.isOutOfBounds(this.pos)) {
+  //     if (this.isWrappable) {
+  //       this.pos = this.game.wrap(this.pos);
+  //     } else {
+  //       this.remove();
+  //     }
+  //   }
+  // }
+
+
+  setFireAngle(mousePos) {
+    if (mousePos === undefined){
+      mousePos = this.mousePos;
+    } else {
+      this.mousePos = mousePos
+    }
+    let dy = mousePos[1] - this.pos[1];
+    let dx = mousePos[0] - this.pos[0];
+    this.fireAngle =  Math.atan2(dy, dx)
+
+  }
+  
+
+  fireBullet(e) {
+    
+    let shipvx = this.vel[0];
+    let shipvy = this.vel[1];
+
+    let relBulletVelX1 = Bullet.SPEED * Math.cos(this.fireAngle);
+    let relBulletVelY1 = Bullet.SPEED * Math.sin(this.fireAngle);
+    let relBulletVelX2 = (Bullet.SPEED - 0.5) * Math.cos(this.fireAngle + Math.PI / 32);
+    let relBulletVelY2 = (Bullet.SPEED - 0.5) * Math.sin(this.fireAngle + Math.PI / 32);
+    let relBulletVelX3 = (Bullet.SPEED - 0.5) * Math.cos(this.fireAngle - Math.PI / 32);
+    let relBulletVelY3 = (Bullet.SPEED - 0.5) * Math.sin(this.fireAngle - Math.PI / 32);
+
+    const bulletVel1 = [shipvx + relBulletVelX1, shipvy + relBulletVelY1];
+    const bulletVel2 = [shipvx + relBulletVelX2, shipvy + relBulletVelY2];
+    const bulletVel3 = [shipvx + relBulletVelX3, shipvy + relBulletVelY3];
+
+    const bullet1 = new Bullet({
+      pos: this.pos,
+      vel: bulletVel1,
+      color: this.color,
+      game: this.game
+    });
+    const bullet2 = new Bullet({
+      pos: this.pos,
+      vel: bulletVel2,
+      color: this.color,
+      game: this.game
+    });
+    const bullet3 = new Bullet({
+      pos: this.pos,
+      vel: bulletVel3,
+      color: this.color,
+      game: this.game
+    });
+
+    this.game.add(bullet1);
+    this.game.add(bullet2);
+    this.game.add(bullet3);
+  }
+
+  power(impulse) {
+    this.vel = impulse
+  }
+
+  relocate() {
+    // this.game.die();
+    // this.pos = this.game.randomPosition();
+    // this.vel = [0, 0];
+    // this.acc = [0, 0];
+  }
+}
+
+Ship.RADIUS = 1;
+module.exports = Ship;
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+
+
+
+/***/ }),
+
 /***/ "./lib/game_view.js":
 /*!**************************!*\
   !*** ./lib/game_view.js ***!
@@ -2054,214 +2225,6 @@ class SingularityExplosion {
 
 
 module.exports = SingularityExplosion;
-
-/***/ }),
-
-/***/ "./lib/ship.js":
-/*!*********************!*\
-  !*** ./lib/ship.js ***!
-  \*********************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-const GameObject = __webpack_require__(/*! ./game_object */ "./lib/game_object.js");
-const Bullet = __webpack_require__(/*! ./bullet */ "./lib/bullet.js");
-const Util = __webpack_require__(/*! ./util */ "./lib/util.js");
-
-function randomColor() {
-  const hexDigits = "0123456789ABCDEF";
-
-  let color = "#";
-  for (let i = 0; i < 3; i++) {
-    color += hexDigits[Math.floor((Math.random() * 16))];
-  }
-
-
-  return color;
-}
-
-class Ship extends GameObject {
-  constructor(options) {
-    options.radius = Ship.RADIUS;
-    options.vel = options.vel || [0, 0];
-    options.color = options.color || randomColor();
-    super(options);
-    this.speed = 2.5;
-    // this.vel = [0,0];
-    // this.acc = [0,0];
-    this.mousePos = [0,0];
-    this.fireAngle = 0; // might have to make it null
-  }
-
-  start(){
-    setInterval(
-      () => {
-        this.fireBullet()
-        if (! this.game.muted) {
-          let bulletSound = new Audio("GEOWars/sounds/Fire_normal.wav");
-          bulletSound.volume = 0.2;
-          bulletSound.play()
-        }
-      },
-      1000 * 60 / (340 * 1.5)
-    )
-  }
-
-  draw(ctx) {
-    let pos = this.pos 
-    let shipWidth = 10
-    let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
-    ctx.save();
-    ctx.beginPath();
-    ctx.translate(pos[0], pos[1]);
-    ctx.rotate(movementDirection + 3/4 * Math.PI + Math.PI);
-    ctx.translate(-shipWidth / 2, shipWidth / 2);
-   
-    ctx.strokeStyle = "#ffffff";
-    let r = 255;
-    let g = 255;
-    let b = 255;
-
-    let blurFactor = 0.5
-    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
-    ctx.shadowBlur = 10 * blurFactor * blurFactor
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
-    ctx.lineWidth = 7.5 * blurFactor * blurFactor
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
-    this.drawShip(ctx, shipWidth)
-    ctx.lineWidth = 6 * blurFactor
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
-    this.drawShip(ctx, shipWidth)
-    ctx.lineWidth = 4.5;
-    this.drawShip(ctx, shipWidth)
-    ctx.lineWidth = 3;
-    this.drawShip(ctx, shipWidth)
-    ctx.strokeStyle = 'rgb(255, 255, 255)';
-    ctx.lineWidth = 1.5;
-    this.drawShip(ctx, shipWidth)
-    
-    ctx.restore();
-  }
-
-  drawShip(ctx, shipWidth) {
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(0, -shipWidth);
-    ctx.lineTo(2 / 3 * shipWidth, -(1 + 1 / 6) * shipWidth); //1
-    ctx.lineTo(1 / 3 * shipWidth, -5 / 6 * shipWidth) // 2
-    ctx.lineTo(1 / 3 * shipWidth, -1 / 3 * shipWidth) // 2.5
-    ctx.lineTo(5 / 6 * shipWidth, -1 / 3 * shipWidth) // 3
-    ctx.lineTo((1 + 1 / 6) * shipWidth, -2 / 3 * shipWidth) // 4
-    ctx.lineTo(shipWidth, 0) // 5
-    ctx.closePath();
-    ctx.stroke();
-  }
-  move(timeDelta) {
-    // timeDelta is number of milliseconds since last move
-    // if the computer is busy the time delta will be larger
-    // in this case the MovingObject should move farther in this frame
-    // velocity of object is how far it should move in 1/60th of a second or something
-    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA,
-    offsetX = this.vel[0] * velocityScale * this.speed,
-    offsetY = this.vel[1] * velocityScale * this.speed;
-    this.pos = [this.pos[0] + offsetX, this.pos[1] + offsetY];
-
-
-
-    if (this.game.isOutOfBounds(this.pos)) {
-      if (this.isWrappable) {
-        this.pos = this.game.wrap(this.pos);
-      } 
-    }
-  }
-
-  // move(timeDelta){
-  //   const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-  //   this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
-  //   this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
-  //   this.vel[0] += this.acc[0] * velocityScale;
-  //   this.vel[1] += this.acc[1] * velocityScale;
-
-  //   if (this.game.isOutOfBounds(this.pos)) {
-  //     if (this.isWrappable) {
-  //       this.pos = this.game.wrap(this.pos);
-  //     } else {
-  //       this.remove();
-  //     }
-  //   }
-  // }
-
-
-  setFireAngle(mousePos) {
-    if (mousePos === undefined){
-      mousePos = this.mousePos;
-    } else {
-      this.mousePos = mousePos
-    }
-    let dy = mousePos[1] - this.pos[1];
-    let dx = mousePos[0] - this.pos[0];
-    this.fireAngle =  Math.atan2(dy, dx)
-
-  }
-  
-
-  fireBullet(e) {
-    
-    let shipvx = this.vel[0];
-    let shipvy = this.vel[1];
-
-    let relBulletVelX1 = Bullet.SPEED * Math.cos(this.fireAngle);
-    let relBulletVelY1 = Bullet.SPEED * Math.sin(this.fireAngle);
-    let relBulletVelX2 = (Bullet.SPEED - 0.5) * Math.cos(this.fireAngle + Math.PI / 32);
-    let relBulletVelY2 = (Bullet.SPEED - 0.5) * Math.sin(this.fireAngle + Math.PI / 32);
-    let relBulletVelX3 = (Bullet.SPEED - 0.5) * Math.cos(this.fireAngle - Math.PI / 32);
-    let relBulletVelY3 = (Bullet.SPEED - 0.5) * Math.sin(this.fireAngle - Math.PI / 32);
-
-    const bulletVel1 = [shipvx + relBulletVelX1, shipvy + relBulletVelY1];
-    const bulletVel2 = [shipvx + relBulletVelX2, shipvy + relBulletVelY2];
-    const bulletVel3 = [shipvx + relBulletVelX3, shipvy + relBulletVelY3];
-
-    const bullet1 = new Bullet({
-      pos: this.pos,
-      vel: bulletVel1,
-      color: this.color,
-      game: this.game
-    });
-    const bullet2 = new Bullet({
-      pos: this.pos,
-      vel: bulletVel2,
-      color: this.color,
-      game: this.game
-    });
-    const bullet3 = new Bullet({
-      pos: this.pos,
-      vel: bulletVel3,
-      color: this.color,
-      game: this.game
-    });
-
-    this.game.add(bullet1);
-    this.game.add(bullet2);
-    this.game.add(bullet3);
-  }
-
-  power(impulse) {
-    this.vel = impulse
-  }
-
-  relocate() {
-    // this.game.die();
-    // this.pos = this.game.randomPosition();
-    // this.vel = [0, 0];
-    // this.acc = [0, 0];
-  }
-}
-
-Ship.RADIUS = 1;
-module.exports = Ship;
-const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
-
-
 
 /***/ }),
 

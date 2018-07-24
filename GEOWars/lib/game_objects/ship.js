@@ -1,6 +1,6 @@
-const GameObject = require("./game_object");
+const GameObject = require("../game_object");
 const Bullet = require("./bullet");
-const Util = require("./util");
+const Util = require("../util");
 
 function randomColor() {
   const hexDigits = "0123456789ABCDEF";

@@ -1,17 +1,17 @@
-const Bullet = require("./bullet");
-const Ship = require("./ship");
+const Bullet = require("./game_objects/bullet");
+const Ship = require("./game_objects/ship");
 const Util = require("./util");
+const Particle = require("./particles/particle");
+const EnemySpawn = require("./particles/enemy_spawn");
 const ParticleExplosion = require("./particles/particle_explosion");
 const BulletWallExplosion = require("./particles/bullet_wall_explosion");
 const SingularityExplosion = require("./particles/singularity_explosion");
-const Particle = require("./particles/particle");
-const BoxBox = require("./enemies/boxbox");
-const Pinwheel = require("./enemies/pinwheel");
-const Arrow = require("./enemies/arrow");
-const Grunt = require("./enemies/grunt");
-const Weaver = require("./enemies/weaver");
-const Singularity = require("./enemies/singularity");
-const EnemySpawn = require("./particles/enemy_spawn");
+const BoxBox = require("./game_objects/enemies/boxbox");
+const Pinwheel = require("./game_objects/enemies/pinwheel");
+const Arrow = require("./game_objects/enemies/arrow");
+const Grunt = require("./game_objects/enemies/grunt");
+const Weaver = require("./game_objects/enemies/weaver");
+const Singularity = require("./game_objects/enemies/singularity");
 const Sound = require("./sound")
 
 class Game {
