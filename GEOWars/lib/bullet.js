@@ -1,10 +1,10 @@
-const MovingObject = require("./moving_object");
+const GameObject = require("./game_object");
 const Sound = require("./sound")
 
-class Bullet extends MovingObject {
+class Bullet extends GameObject {
   constructor(options) {
     super(options);
-    this.isWrappable = false;
+    this.bounce = false;
     this.color = "#FFFBCE";
     this.acc = [0,0];
     this.vel = options.vel

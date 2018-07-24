@@ -1,10 +1,10 @@
-const MovingObject = require("../moving_object")
+const GameObject = require("../game_object")
 const Bullet = require("../bullet")
 const Ship = require("../ship")
 const Singularity = require("./singularity")
 const Sound = require("../sound")
 const Util = require("../util")
-class BoxBox extends MovingObject {
+class BoxBox extends GameObject {
   constructor(options) {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
@@ -75,7 +75,7 @@ class BoxBox extends MovingObject {
     ctx.restore();
   }
 
-  drawRect() {
+  drawRect(ctx, boxsize) {
 
   }
 

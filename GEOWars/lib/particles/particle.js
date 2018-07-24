@@ -1,6 +1,3 @@
-
-
-
 // direction of the particle is the direction of the velocity vector
 // the direction of the 
 // the particle dies when the hue reaches 0 
@@ -17,12 +14,11 @@ class Particle {
   constructor(xpos, ypos, initialSpeed, ctx, game, explosionId, particleID, colors) {
     this.game = game;
     this.active = true;
-    
     this.color = colors[Math.floor(colors.length * Math.random())];
     this.particleId;
     this.explosionId;
 
-    this.pos = [xpos,ypos]; // x and y position
+    this.pos = [xpos, ypos]; // x and y position
 
     this.rectLength = 15;
     this.rectWidth = 2;
@@ -38,25 +34,7 @@ class Particle {
     this.opacity = Math.random() * 0.5 + 0.5;
     this.active = true;
     this.hue = Math.random() * 0.3 + 0.6;
-
-    ctx.save();
-    ctx.fillStyle = `${this.color},${this.hue})`;
-    ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
-    
-    // ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
-    
-    // ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
-    
-    // ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
-
-    // ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
-
-
-    ctx.restore();
   }
-
-
-
 
   // private method
   rand(max, min, _int) {
@@ -92,12 +70,12 @@ class Particle {
     this.active = true;
     // this.x += this.vx;
     // this.y += this.vy;
-    
+
     if (this.hue < 0.1 || this.rectLength < 0.25 || ((Math.abs(this.vel[0]) + Math.abs(this.vel[1])) < 0.25)) {
       this.remove();
     } else {
       let pos = this.pos;
-      
+
       let l = 15;
       let w = 5;
       let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
@@ -112,28 +90,12 @@ class Particle {
       ctx.lineWidth = this.rectWidth;
 
       ctx.moveTo(0, 0); //1
-      ctx.lineTo(0,this.rectLength); //2
-      // ctx.lineTo(w / 6, l / 2); //3
-      // ctx.lineTo(0, l / 4); //4
-      // ctx.lineTo(-w / 6, l / 2); //5
-      // ctx.lineTo(-w / 2, l / 4); //6
+      ctx.lineTo(0, this.rectLength); //2
 
       ctx.closePath();
       ctx.stroke();
       ctx.restore();
 
-
-
-
-      // ctx.save()
-      // ctx.translate(this.pos[0], this.pos[1]);
-      // ctx.rotate(movementDirection);
-      // ctx.beginPath();
-      // ctx.strokeStyle = `${this.color},${this.hue})`;
-      // ctx.lineWidth = this.rectWidth;
-      // ctx.lineTo(this.rectLength, 0);
-      // ctx.stroke();
-      // ctx.restore();
     }
   }
 

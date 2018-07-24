@@ -102,13 +102,13 @@ document.addEventListener("DOMContentLoaded", () => {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-const MovingObject = __webpack_require__(/*! ./moving_object */ "./lib/moving_object.js");
+const GameObject = __webpack_require__(/*! ./game_object */ "./lib/game_object.js");
 const Sound = __webpack_require__(/*! ./sound */ "./lib/sound.js")
 
-class Bullet extends MovingObject {
+class Bullet extends GameObject {
   constructor(options) {
     super(options);
-    this.isWrappable = false;
+    this.bounce = false;
     this.color = "#FFFBCE";
     this.acc = [0,0];
     this.vel = options.vel
@@ -208,14 +208,14 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_object.js")
+const GameObject = __webpack_require__(/*! ../game_object */ "./lib/game_object.js")
 const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 const Util = __webpack_require__(/*! ../util */ "./lib/util.js");
 const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
 const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
 
-class Arrow extends MovingObject {
+class Arrow extends GameObject {
   constructor(options) {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
@@ -224,7 +224,6 @@ class Arrow extends MovingObject {
     this.speed = 3;
     this.vel = Util.vectorCartisian(this.angle, this.speed);
     this.acc = [0,0];
-    this.something = 0;
   }
 
   move(timeDelta) {
@@ -238,12 +237,13 @@ class Arrow extends MovingObject {
     if (this.game.isOutOfBounds(this.pos)) {
       Util.redirect(this,[1000, 600]) // HARD CODED
     }
+    this.acc = [0, 0];
   }
 
   
 
   draw(ctx, spawningScale) {
-    this.acc = [0, 0];
+    
     let pos = this.pos;
     spawningScale = spawningScale || 1;
     let shipLength = 8 * 2.2 * spawningScale;
@@ -337,13 +337,13 @@ module.exports = Arrow;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_object.js")
+const GameObject = __webpack_require__(/*! ../game_object */ "./lib/game_object.js")
 const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
 const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
 const Util = __webpack_require__(/*! ../util */ "./lib/util.js")
-class BoxBox extends MovingObject {
+class BoxBox extends GameObject {
   constructor(options) {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
@@ -414,7 +414,7 @@ class BoxBox extends MovingObject {
     ctx.restore();
   }
 
-  drawRect() {
+  drawRect(ctx, boxsize) {
 
   }
 
@@ -450,13 +450,13 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_object.js")
+const GameObject = __webpack_require__(/*! ../game_object */ "./lib/game_object.js")
 const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
 const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
 const Util = __webpack_require__(/*! ../util */ "./lib/util.js")
-class Grunt extends MovingObject {
+class Grunt extends GameObject {
   constructor(options) {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
@@ -500,15 +500,9 @@ class Grunt extends MovingObject {
     if (this.stretchScale_W < 0.7 || this.stretchScale_W > 1) {
       this.stretchDirection *= -1
     } 
-    if (this.game.enemies.length > 40){
-      this.stretchDirection = 1;
-      this.stretchScale_W = 1;
-      this.stretchScale_L = 1;
-    } else {
       
-      this.stretchScale_W = this.stretchScale_W +  -this.stretchDirection * cycleSpeed * cycleSpeedScale;
-      this.stretchScale_L = this.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
-    }
+    this.stretchScale_W = this.stretchScale_W +  -this.stretchDirection * cycleSpeed * cycleSpeedScale;
+    this.stretchScale_L = this.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
 
     if (this.game.isOutOfBounds(this.pos)) {
       Util.bounce(this, [1000, 600]) // HARD CODED
@@ -602,13 +596,13 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_object.js")
+const GameObject = __webpack_require__(/*! ../game_object */ "./lib/game_object.js")
 const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 const Util = __webpack_require__(/*! ../util */ "./lib/util.js");
 const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
 const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
-class Pinwheel extends MovingObject {
+class Pinwheel extends GameObject {
   constructor(options) {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
@@ -727,12 +721,12 @@ module.exports = Pinwheel;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_object.js")
+const GameObject = __webpack_require__(/*! ../game_object */ "./lib/game_object.js")
 const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 const Util = __webpack_require__(/*! ../util */ "./lib/util.js")
 const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
-class Singularity extends MovingObject {
+class Singularity extends GameObject {
   constructor(options) {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
@@ -907,13 +901,13 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-const MovingObject = __webpack_require__(/*! ../moving_object */ "./lib/moving_object.js")
+const GameObject = __webpack_require__(/*! ../game_object */ "./lib/game_object.js")
 const Bullet = __webpack_require__(/*! ../bullet */ "./lib/bullet.js")
 const Ship = __webpack_require__(/*! ../ship */ "./lib/ship.js")
 const Util = __webpack_require__(/*! ../util */ "./lib/util.js")
 const Singularity = __webpack_require__(/*! ./singularity */ "./lib/enemies/singularity.js")
 const Sound = __webpack_require__(/*! ../sound */ "./lib/sound.js")
-class Weaver extends MovingObject {
+class Weaver extends GameObject {
   constructor(options) {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
@@ -1197,8 +1191,6 @@ class Game {
     for (let i = 0; i < Game.NUM_SINGULARITIES; i++) {
       this.add(new Singularity({ game: this, id: this.singularities.length, pos: [500,500] }));
     }
-    
-  
   }
 
   randomSpawnEnemy(enemy){
@@ -1515,16 +1507,94 @@ module.exports = Game;
 
 Game.Spawn1 = {
   BoxBox: 50,
-  
-  
 }
   
-  
-
-
 Game.spawnListList = [
   Game.Spawn1
 ]
+
+/***/ }),
+
+/***/ "./lib/game_object.js":
+/*!****************************!*\
+  !*** ./lib/game_object.js ***!
+  \****************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Util = __webpack_require__(/*! ./util */ "./lib/util.js");
+const Sound = __webpack_require__(/*! ./sound */ "./lib/sound.js")
+const BulletWallExplosion = __webpack_require__(/*! ./particles/bullet_wall_explosion */ "./lib/particles/bullet_wall_explosion.js")
+class GameObject {
+  constructor(options) {
+    this.pos = options.pos;
+    this.vel = options.vel;
+    this.radius = options.radius || 5;
+    this.color = options.color;
+    this.game = options.game;
+    this.bounce = true;
+  }
+  
+  collideWith(otherObject) {
+    // default do nothing
+  }
+
+  draw(ctx) {
+    ctx.fillStyle = this.color;
+    // ctx.fillStyle = "#98f517";
+    // ctx.fillRect(this.pos[0], this.pos[1], 10, 10);
+    ctx.beginPath();
+    ctx.arc(
+      this.pos[0], this.pos[1], this.radius, 0, 2 * Math.PI, true
+    );
+    ctx.fill();
+  }
+  
+  isCollidedWith(otherObject) {
+    const centerDist = Util.dist(this.pos, otherObject.pos);
+    return centerDist < (this.radius + otherObject.radius);
+  }
+
+  move(timeDelta) {
+    // timeDelta is number of milliseconds since last move
+    // if the computer is busy the time delta will be larger
+    // in this case the PhysicsObject should move farther in this frame
+    // velocity of object is how far it should move in 1/60th of a second or something
+    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA,
+    offsetX = this.vel[0] * velocityScale,
+    offsetY = this.vel[1] * velocityScale;
+    this.pos = [this.pos[0] + offsetX, this.pos[1] + offsetY];
+
+    
+
+    if (this.game.isOutOfBounds(this.pos)) {
+      if (this.bounce) {
+        this.pos = this.game.wrap(this.pos);
+      } else {
+
+        this.game.add(new BulletWallExplosion(this.pos[0], this.pos[1], this.game.ctx, this.game))
+        if (!this.game.muted) {
+          let wallhit = new Sound("GEOWars/sounds/bullet_hitwall.wav", 1)
+          this.game.soundsToPlay[wallhit.url] = wallhit
+        } 
+        this.remove();
+      }
+    }
+  }
+
+  remove() {
+
+
+    this.game.remove(this);
+
+
+  }
+}
+
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+
+module.exports = GameObject;
+
 
 /***/ }),
 
@@ -1615,89 +1685,6 @@ GameView.MOREMOVES = {
 }
 
 module.exports = GameView;
-
-
-/***/ }),
-
-/***/ "./lib/moving_object.js":
-/*!******************************!*\
-  !*** ./lib/moving_object.js ***!
-  \******************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-const Util = __webpack_require__(/*! ./util */ "./lib/util.js");
-const Sound = __webpack_require__(/*! ./sound */ "./lib/sound.js")
-const BulletWallExplosion = __webpack_require__(/*! ./particles/bullet_wall_explosion */ "./lib/particles/bullet_wall_explosion.js")
-class MovingObject {
-  constructor(options) {
-    this.pos = options.pos;
-    this.vel = options.vel;
-    this.radius = options.radius || 5;
-    this.color = options.color;
-    this.game = options.game;
-    this.isWrappable = true;
-  }
-  
-  collideWith(otherObject) {
-    // default do nothing
-  }
-
-  draw(ctx) {
-    ctx.fillStyle = this.color;
-    // ctx.fillStyle = "#98f517";
-    // ctx.fillRect(this.pos[0], this.pos[1], 10, 10);
-    ctx.beginPath();
-    ctx.arc(
-      this.pos[0], this.pos[1], this.radius, 0, 2 * Math.PI, true
-    );
-    ctx.fill();
-  }
-  
-  isCollidedWith(otherObject) {
-    const centerDist = Util.dist(this.pos, otherObject.pos);
-    return centerDist < (this.radius + otherObject.radius);
-  }
-
-  move(timeDelta) {
-    // timeDelta is number of milliseconds since last move
-    // if the computer is busy the time delta will be larger
-    // in this case the MovingObject should move farther in this frame
-    // velocity of object is how far it should move in 1/60th of a second or something
-    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA,
-    offsetX = this.vel[0] * velocityScale,
-    offsetY = this.vel[1] * velocityScale;
-    this.pos = [this.pos[0] + offsetX, this.pos[1] + offsetY];
-
-    
-
-    if (this.game.isOutOfBounds(this.pos)) {
-      if (this.isWrappable) {
-        this.pos = this.game.wrap(this.pos);
-      } else {
-
-        this.game.add(new BulletWallExplosion(this.pos[0], this.pos[1], this.game.ctx, this.game))
-        if (!this.game.muted) {
-          let wallhit = new Sound("GEOWars/sounds/bullet_hitwall.wav", 1)
-          this.game.soundsToPlay[wallhit.url] = wallhit
-        } 
-        this.remove();
-      }
-    }
-  }
-
-  remove() {
-
-
-    this.game.remove(this);
-
-
-  }
-}
-
-const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
-
-module.exports = MovingObject;
 
 
 /***/ }),
@@ -1833,9 +1820,6 @@ module.exports = EnemySpawn;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-
-
-
 // direction of the particle is the direction of the velocity vector
 // the direction of the 
 // the particle dies when the hue reaches 0 
@@ -1852,12 +1836,11 @@ class Particle {
   constructor(xpos, ypos, initialSpeed, ctx, game, explosionId, particleID, colors) {
     this.game = game;
     this.active = true;
-    
     this.color = colors[Math.floor(colors.length * Math.random())];
     this.particleId;
     this.explosionId;
 
-    this.pos = [xpos,ypos]; // x and y position
+    this.pos = [xpos, ypos]; // x and y position
 
     this.rectLength = 15;
     this.rectWidth = 2;
@@ -1873,25 +1856,7 @@ class Particle {
     this.opacity = Math.random() * 0.5 + 0.5;
     this.active = true;
     this.hue = Math.random() * 0.3 + 0.6;
-
-    ctx.save();
-    ctx.fillStyle = `${this.color},${this.hue})`;
-    ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
-    
-    // ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
-    
-    // ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
-    
-    // ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
-
-    // ctx.fillRect(this.pos[0], this.pos[1], this.rectLength, this.rectWidth);
-
-
-    ctx.restore();
   }
-
-
-
 
   // private method
   rand(max, min, _int) {
@@ -1927,12 +1892,12 @@ class Particle {
     this.active = true;
     // this.x += this.vx;
     // this.y += this.vy;
-    
+
     if (this.hue < 0.1 || this.rectLength < 0.25 || ((Math.abs(this.vel[0]) + Math.abs(this.vel[1])) < 0.25)) {
       this.remove();
     } else {
       let pos = this.pos;
-      
+
       let l = 15;
       let w = 5;
       let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
@@ -1947,28 +1912,12 @@ class Particle {
       ctx.lineWidth = this.rectWidth;
 
       ctx.moveTo(0, 0); //1
-      ctx.lineTo(0,this.rectLength); //2
-      // ctx.lineTo(w / 6, l / 2); //3
-      // ctx.lineTo(0, l / 4); //4
-      // ctx.lineTo(-w / 6, l / 2); //5
-      // ctx.lineTo(-w / 2, l / 4); //6
+      ctx.lineTo(0, this.rectLength); //2
 
       ctx.closePath();
       ctx.stroke();
       ctx.restore();
 
-
-
-
-      // ctx.save()
-      // ctx.translate(this.pos[0], this.pos[1]);
-      // ctx.rotate(movementDirection);
-      // ctx.beginPath();
-      // ctx.strokeStyle = `${this.color},${this.hue})`;
-      // ctx.lineWidth = this.rectWidth;
-      // ctx.lineTo(this.rectLength, 0);
-      // ctx.stroke();
-      // ctx.restore();
     }
   }
 
@@ -2115,7 +2064,7 @@ module.exports = SingularityExplosion;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-const MovingObject = __webpack_require__(/*! ./moving_object */ "./lib/moving_object.js");
+const GameObject = __webpack_require__(/*! ./game_object */ "./lib/game_object.js");
 const Bullet = __webpack_require__(/*! ./bullet */ "./lib/bullet.js");
 const Util = __webpack_require__(/*! ./util */ "./lib/util.js");
 
@@ -2131,7 +2080,7 @@ function randomColor() {
   return color;
 }
 
-class Ship extends MovingObject {
+class Ship extends GameObject {
   constructor(options) {
     options.radius = Ship.RADIUS;
     options.vel = options.vel || [0, 0];

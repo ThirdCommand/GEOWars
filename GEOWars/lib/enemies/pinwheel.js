@@ -1,10 +1,10 @@
-const MovingObject = require("../moving_object")
+const GameObject = require("../game_object")
 const Bullet = require("../bullet")
 const Ship = require("../ship")
 const Util = require("../util");
 const Singularity = require("./singularity")
 const Sound = require("../sound")
-class Pinwheel extends MovingObject {
+class Pinwheel extends GameObject {
   constructor(options) {
     super(options)
     this.pos = options.pos || options.game.randomPosition();

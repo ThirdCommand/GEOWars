@@ -1,10 +1,10 @@
-const MovingObject = require("../moving_object")
+const GameObject = require("../game_object")
 const Bullet = require("../bullet")
 const Ship = require("../ship")
 const Singularity = require("./singularity")
 const Sound = require("../sound")
 const Util = require("../util")
-class Grunt extends MovingObject {
+class Grunt extends GameObject {
   constructor(options) {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
@@ -48,15 +48,9 @@ class Grunt extends MovingObject {
     if (this.stretchScale_W < 0.7 || this.stretchScale_W > 1) {
       this.stretchDirection *= -1
     } 
-    if (this.game.enemies.length > 40){
-      this.stretchDirection = 1;
-      this.stretchScale_W = 1;
-      this.stretchScale_L = 1;
-    } else {
       
-      this.stretchScale_W = this.stretchScale_W +  -this.stretchDirection * cycleSpeed * cycleSpeedScale;
-      this.stretchScale_L = this.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
-    }
+    this.stretchScale_W = this.stretchScale_W +  -this.stretchDirection * cycleSpeed * cycleSpeedScale;
+    this.stretchScale_L = this.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
 
     if (this.game.isOutOfBounds(this.pos)) {
       Util.bounce(this, [1000, 600]) // HARD CODED

@@ -1,9 +1,9 @@
-const MovingObject = require("../moving_object")
+const GameObject = require("../game_object")
 const Bullet = require("../bullet")
 const Ship = require("../ship")
 const Util = require("../util")
 const Sound = require("../sound")
-class Singularity extends MovingObject {
+class Singularity extends GameObject {
   constructor(options) {
     super(options)
     this.pos = options.pos || options.game.randomPosition();

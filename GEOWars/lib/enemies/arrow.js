@@ -1,11 +1,11 @@
-const MovingObject = require("../moving_object")
+const GameObject = require("../game_object")
 const Bullet = require("../bullet")
 const Ship = require("../ship")
 const Util = require("../util");
 const Singularity = require("./singularity")
 const Sound = require("../sound")
 
-class Arrow extends MovingObject {
+class Arrow extends GameObject {
   constructor(options) {
     super(options)
     this.pos = options.pos || options.game.randomPosition();
@@ -14,7 +14,6 @@ class Arrow extends MovingObject {
     this.speed = 3;
     this.vel = Util.vectorCartisian(this.angle, this.speed);
     this.acc = [0,0];
-    this.something = 0;
   }
 
   move(timeDelta) {
@@ -28,12 +27,13 @@ class Arrow extends MovingObject {
     if (this.game.isOutOfBounds(this.pos)) {
       Util.redirect(this,[1000, 600]) // HARD CODED
     }
+    this.acc = [0, 0];
   }
 
   
 
   draw(ctx, spawningScale) {
-    this.acc = [0, 0];
+    
     let pos = this.pos;
     spawningScale = spawningScale || 1;
     let shipLength = 8 * 2.2 * spawningScale;

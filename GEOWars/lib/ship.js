@@ -1,4 +1,4 @@
-const MovingObject = require("./moving_object");
+const GameObject = require("./game_object");
 const Bullet = require("./bullet");
 const Util = require("./util");
 
@@ -14,7 +14,7 @@ function randomColor() {
   return color;
 }
 
-class Ship extends MovingObject {
+class Ship extends GameObject {
   constructor(options) {
     options.radius = Ship.RADIUS;
     options.vel = options.vel || [0, 0];

@@ -1,14 +1,14 @@
 const Util = require("./util");
 const Sound = require("./sound")
 const BulletWallExplosion = require("./particles/bullet_wall_explosion")
-class MovingObject {
+class GameObject {
   constructor(options) {
     this.pos = options.pos;
     this.vel = options.vel;
     this.radius = options.radius || 5;
     this.color = options.color;
     this.game = options.game;
-    this.isWrappable = true;
+    this.bounce = true;
   }
   
   collideWith(otherObject) {
@@ -34,7 +34,7 @@ class MovingObject {
   move(timeDelta) {
     // timeDelta is number of milliseconds since last move
     // if the computer is busy the time delta will be larger
-    // in this case the MovingObject should move farther in this frame
+    // in this case the PhysicsObject should move farther in this frame
     // velocity of object is how far it should move in 1/60th of a second or something
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA,
     offsetX = this.vel[0] * velocityScale,
@@ -44,7 +44,7 @@ class MovingObject {
     
 
     if (this.game.isOutOfBounds(this.pos)) {
-      if (this.isWrappable) {
+      if (this.bounce) {
         this.pos = this.game.wrap(this.pos);
       } else {
 
@@ -69,4 +69,4 @@ class MovingObject {
 
 const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
-module.exports = MovingObject;
+module.exports = GameObject;

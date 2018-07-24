@@ -99,8 +99,6 @@ class Game {
     for (let i = 0; i < Game.NUM_SINGULARITIES; i++) {
       this.add(new Singularity({ game: this, id: this.singularities.length, pos: [500,500] }));
     }
-    
-  
   }
 
   randomSpawnEnemy(enemy){
@@ -417,13 +415,8 @@ module.exports = Game;
 
 Game.Spawn1 = {
   BoxBox: 50,
-  
-  
 }
   
-  
-
-
 Game.spawnListList = [
   Game.Spawn1
 ]
