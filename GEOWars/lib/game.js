@@ -1,6 +1,6 @@
 const Bullet = require("./game_objects/bullet");
 const Ship = require("./game_objects/ship");
-const Util = require("./util");
+const Util = require("./game_engine/util");
 const Particle = require("./particles/particle");
 const EnemySpawn = require("./particles/enemy_spawn");
 const ParticleExplosion = require("./particles/particle_explosion");
@@ -12,7 +12,7 @@ const Arrow = require("./game_objects/enemies/arrow");
 const Grunt = require("./game_objects/enemies/grunt");
 const Weaver = require("./game_objects/enemies/weaver");
 const Singularity = require("./game_objects/enemies/singularity");
-const Sound = require("./sound")
+const Sound = require("./game_engine/sound")
 
 class Game {
   constructor() {
@@ -110,7 +110,6 @@ class Game {
     }
   }
   
-
   spawnEnemies(spawnList) {
     if (this.enemies.length < 50 ) {
       spawnList.forEach((enemy) => {
@@ -321,7 +320,7 @@ class Game {
     return (pos[0] < 0) || (pos[1] < 0) ||
       (pos[0] > Game.DIM_X) || (pos[1] > Game.DIM_Y);
   }
-
+  // move physics objects
   moveObjects(delta) {
     this.allObjects().forEach((object) => {
       object.move(delta);
@@ -374,13 +373,10 @@ class Game {
       throw new Error("unknown type of object");
     }
   }
-  
 
   updateShipFireAngle(){
     this.ships[0].setFireAngle()
   }
-
- 
 
   // spawning handled here. checks the delta time, 
   // adds units when appropriate
@@ -388,6 +384,7 @@ class Game {
     this.ctx = ctx
     this.spawnSequence(delta);
     this.checkCollisions(ctx);
+    // this.updateObjects(delta);
     this.moveObjects(delta);
     this.updateShipFireAngle();
     this.playSounds();
@@ -405,7 +402,7 @@ Game.BG_COLOR = "#000000";
 Game.DIM_X = 1000;
 Game.DIM_Y = 600;
 // Game.FPS = 32;
-Game.NUM_BOXES = 0;
+Game.NUM_BOXES = 10;
 Game.NUM_PINWHEELS = 0;
 Game.NUM_ARROWS = 0;
 Game.NUM_GRUNTS = 0;

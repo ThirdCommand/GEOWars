@@ -1,9 +1,9 @@
-const GameObject = require("../../game_object")
+const GameObject = require("../../game_engine/game_object")
 const Bullet = require("../bullet")
 const Ship = require("../ship")
-const Util = require("../../util");
 const Singularity = require("./singularity")
-const Sound = require("../../sound")
+const Sound = require("../../game_engine/sound")
+const Util = require("../../game_engine/util")
 class Pinwheel extends GameObject {
   constructor(options) {
     super(options)

@@ -1,14 +1,17 @@
 const Util = require("./util");
 const Sound = require("./sound")
-const BulletWallExplosion = require("./particles/bullet_wall_explosion")
+const BulletWallExplosion = require("../particles/bullet_wall_explosion")
+
 class GameObject {
   constructor(options) {
-    this.pos = options.pos;
-    this.vel = options.vel;
+    this.pos = options.pos || options.game.randomPosition();
+    this.vel = options.vel || [0, 0];
+    this.acc = options.acc || [0, 0];
     this.radius = options.radius || 5;
     this.color = options.color;
     this.game = options.game;
     this.bounce = true;
+    this.speed = 0;
   }
   
   collideWith(otherObject) {
@@ -36,26 +39,19 @@ class GameObject {
     // if the computer is busy the time delta will be larger
     // in this case the PhysicsObject should move farther in this frame
     // velocity of object is how far it should move in 1/60th of a second or something
-    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA,
-    offsetX = this.vel[0] * velocityScale,
-    offsetY = this.vel[1] * velocityScale;
-    this.pos = [this.pos[0] + offsetX, this.pos[1] + offsetY];
+    const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    this.pos[0] += this.vel[0] * timeScale + this.acc[0] * (timeScale * timeScale) / 2;
+    this.pos[1] += this.vel[1] * timeScale + this.acc[1] * (timeScale * timeScale) / 2;
+    this.vel[0] += this.acc[0] * timeScale;
+    this.vel[1] += this.acc[1] * timeScale;
 
-    
+    this.acc = [0, 0];
+
 
     if (this.game.isOutOfBounds(this.pos)) {
-      if (this.bounce) {
-        this.pos = this.game.wrap(this.pos);
-      } else {
-
-        this.game.add(new BulletWallExplosion(this.pos[0], this.pos[1], this.game.ctx, this.game))
-        if (!this.game.muted) {
-          let wallhit = new Sound("GEOWars/sounds/bullet_hitwall.wav", 1)
-          this.game.soundsToPlay[wallhit.url] = wallhit
-        } 
-        this.remove();
-      }
+      this.pos = this.game.wrap(this.pos);
     }
+    
   }
 
   remove() {

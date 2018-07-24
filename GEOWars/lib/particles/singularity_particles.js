@@ -59,7 +59,7 @@ module.exports = SingularityExplosion;
 
 
 
-const Util = require("../util");
+const Util = require("../game_engine/util");
 
 class Particle {
   constructor(xpos, ypos, initialSpeed, ctx, game, explosionId, particleID, colors) {

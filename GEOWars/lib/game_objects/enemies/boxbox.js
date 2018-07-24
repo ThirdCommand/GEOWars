@@ -1,35 +1,23 @@
-const GameObject = require("../../game_object")
+const GameObject = require("../../game_engine/game_object")
 const Bullet = require("../bullet")
 const Ship = require("../ship")
 const Singularity = require("./singularity")
-const Sound = require("../../sound")
-const Util = require("../../util")
+const Sound = require("../../game_engine/sound")
+const Util  = require("../../game_engine/util")
+
 class BoxBox extends GameObject {
   constructor(options) {
     super(options)
-    this.pos = options.pos || options.game.randomPosition();
-    this.vel = [0,0]
-    this.acc = [0,0];
+    
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
   }
-
-  move(timeDelta) {
-    // let speed = 1.5;
-   
-    
-    const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    this.pos[0] += this.vel[0] * timeScale + this.acc[0] * (timeScale * timeScale) / 2;
-    this.pos[1] += this.vel[1] * timeScale + this.acc[1] * (timeScale * timeScale) / 2;
-    this.vel[0] += this.acc[0] * timeScale;
-    this.vel[1] += this.acc[1] * timeScale;
-
-    if (this.game.isOutOfBounds(this.pos)) {
-      Util.bounce(this, [1000, 600]) // HARD CODED
-    }
+ 
+  bounce(){
+    Util.bounce(this, [1000, 600])
   }
 
   draw(ctx, spawningScale) {
-    this.acc = [0, 0];
+    
     spawningScale = spawningScale || 1;
     let pos = this.pos
     let boxsize = 10 * spawningScale;
