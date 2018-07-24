@@ -1,11 +1,11 @@
 const Util = require("./util");
 class Transform {
-  constructor(parentTransform = null){
+  constructor(pos = [0,0], vel = [0,0], acc = [0,0], angle = 0, parentTransform = null){
     this.parentTransform = parentTransform
-    this.angle = 0
-    this.pos = [0,0]
-    this.vel = [0,0]
-    this.acc = [0,0]
+    this.angle = angle
+    this.pos = pos
+    this.vel = vel
+    this.acc = acc
   }
 
   // call up the tree of parent transforms until null
