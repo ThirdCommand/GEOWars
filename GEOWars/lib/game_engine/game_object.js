@@ -3,13 +3,16 @@ const Sound = require("./sound")
 
 const Transform = require( "./transform")
 const PhysicsComponent = require("./physics_component")
-const lineRenderer = require("./line_renderer")
+const lineSprite = require("./line_sprite")
 
 class GameObject {
   constructor(engine) {
     this.gameEngine = engine
+    this.gameEngine.addGameObject(this)
     this.transform = new Transform()
     this.childObjects = []
+    this.physicsComponent = null 
+    this.lineRenderer = null
     // this.color = options.color;
     // this.game = options.game;
     // this.bounce = true;
@@ -22,7 +25,7 @@ class GameObject {
   }
 
   addLineRenderer(drawFunction) {
-    this.lineRenderer = new LineRenderer(drawFunction)
+    this.lineRenderer = new LineSprite(drawFunction)
     this.gameEngine.addLineRenderer(this.lineRenderer)
   }
 
@@ -33,7 +36,7 @@ class GameObject {
   }
 
   update() {
-
+    // overwritten by child class for update scripts
   }
 
   remove() {

@@ -1,4 +1,4 @@
-class LineRenderer {
+class LineSprite {
   constructor(drawFunction, transform) {
     this.drawFunction = draw
     this.transform = transform 
@@ -10,3 +10,5 @@ class LineRenderer {
     this.drawFunction(ctx, pos, angle)
   }
 }
+
+module.exports = LineSprite;

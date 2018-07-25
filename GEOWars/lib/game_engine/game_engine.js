@@ -29,7 +29,7 @@ class GameEngine {
   }
 
   checkCollisions() {
-    
+
   }
 
   updateGameObjects(delta) {
@@ -48,9 +48,20 @@ class GameEngine {
     gameScript.update(delta)
   }
 
-  remove(GameObject) {
-    if (GameObject.physicsComponent) {
-
-    }
+  addGameObject(object) {
+    this.gameObjects.append(object)
   }
+
+  remove(gameObject) {
+    if (gameObject.physicsComponent) {
+      this.physicsComponents.splice(this.physicsComponents.indexOf(gameObject), 1)
+    }
+    if (gameObject.lineSprite){
+      this.lineSprites.splice(this.lineSprites.indexOf(gameObject.linesSprite), 1)
+    }
+    this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1)
+  }
+
 }
+
+module.exports = GameEngine;

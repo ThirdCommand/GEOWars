@@ -536,13 +536,16 @@ const Sound = __webpack_require__(/*! ./sound */ "./lib/game_engine/sound.js")
 
 const Transform = __webpack_require__( /*! ./transform */ "./lib/game_engine/transform.js")
 const PhysicsComponent = __webpack_require__(/*! ./physics_component */ "./lib/game_engine/physics_component.js")
-const lineRenderer = __webpack_require__(/*! ./line_renderer */ "./lib/game_engine/line_renderer.js")
+const lineSprite = __webpack_require__(/*! ./line_sprite */ "./lib/game_engine/line_sprite.js")
 
 class GameObject {
   constructor(engine) {
     this.gameEngine = engine
+    this.gameEngine.addGameObject(this)
     this.transform = new Transform()
     this.childObjects = []
+    this.physicsComponent = null 
+    this.lineRenderer = null
     // this.color = options.color;
     // this.game = options.game;
     // this.bounce = true;
@@ -555,7 +558,7 @@ class GameObject {
   }
 
   addLineRenderer(drawFunction) {
-    this.lineRenderer = new LineRenderer(drawFunction)
+    this.lineRenderer = new LineSprite(drawFunction)
     this.gameEngine.addLineRenderer(this.lineRenderer)
   }
 
@@ -566,7 +569,7 @@ class GameObject {
   }
 
   update() {
-
+    // overwritten by child class for update scripts
   }
 
   remove() {
@@ -584,14 +587,14 @@ module.exports = GameObject;
 
 /***/ }),
 
-/***/ "./lib/game_engine/line_renderer.js":
-/*!******************************************!*\
-  !*** ./lib/game_engine/line_renderer.js ***!
-  \******************************************/
+/***/ "./lib/game_engine/line_sprite.js":
+/*!****************************************!*\
+  !*** ./lib/game_engine/line_sprite.js ***!
+  \****************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-class LineRenderer {
+class LineSprite {
   constructor(drawFunction, transform) {
     this.drawFunction = draw
     this.transform = transform 
@@ -603,6 +606,8 @@ class LineRenderer {
     this.drawFunction(ctx, pos, angle)
   }
 }
+
+module.exports = LineSprite;
 
 /***/ }),
 
@@ -641,7 +646,7 @@ class PhysicsComponent {
     this.transform.pos[1] += this.transform.vel[1] * timeScale + this.transform.acc[1] * (timeScale * timeScale) / 2;
     this.transform.vel[0] += this.transform.acc[0] * timeScale;
     this.transform.vel[1] += this.transform.acc[1] * timeScale;
-
+    
     this.transform.acc = [0, 0];
 
   }
