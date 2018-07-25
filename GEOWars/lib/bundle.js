@@ -533,66 +533,24 @@ Game.spawnListList = [
 
 const Util = __webpack_require__(/*! ./util */ "./lib/game_engine/util.js");
 const Sound = __webpack_require__(/*! ./sound */ "./lib/game_engine/sound.js")
-const BulletWallExplosion = __webpack_require__(/*! ../particles/bullet_wall_explosion */ "./lib/particles/bullet_wall_explosion.js")
+const Transform = __webpack_require__( /*! ./transform */ "./lib/game_engine/transform.js")
 
 class GameObject {
-  constructor(options) {
-    this.pos = options.pos || options.game.randomPosition();
-    this.vel = options.vel || [0, 0];
-    this.acc = options.acc || [0, 0];
-    this.radius = options.radius || 5;
-    this.color = options.color;
-    this.game = options.game;
-    this.bounce = true;
-    this.speed = 0;
-  }
-  
-  collideWith(otherObject) {
-    // default do nothing
+  constructor(engine) {
+    this.gameEngine = engine
+    this.transform = new Transform
+    // this.color = options.color;
+    // this.game = options.game;
+    // this.bounce = true;
+    // this.speed = 0;
   }
 
-  draw(ctx) {
-    ctx.fillStyle = this.color;
-    // ctx.fillStyle = "#98f517";
-    // ctx.fillRect(this.pos[0], this.pos[1], 10, 10);
-    ctx.beginPath();
-    ctx.arc(
-      this.pos[0], this.pos[1], this.radius, 0, 2 * Math.PI, true
-    );
-    ctx.fill();
-  }
-  
-  isCollidedWith(otherObject) {
-    const centerDist = Util.dist(this.pos, otherObject.pos);
-    return centerDist < (this.radius + otherObject.radius);
-  }
+  update() {
 
-  move(timeDelta) {
-    // timeDelta is number of milliseconds since last move
-    // if the computer is busy the time delta will be larger
-    // in this case the PhysicsObject should move farther in this frame
-    // velocity of object is how far it should move in 1/60th of a second or something
-    const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    this.pos[0] += this.vel[0] * timeScale + this.acc[0] * (timeScale * timeScale) / 2;
-    this.pos[1] += this.vel[1] * timeScale + this.acc[1] * (timeScale * timeScale) / 2;
-    this.vel[0] += this.acc[0] * timeScale;
-    this.vel[1] += this.acc[1] * timeScale;
-
-    this.acc = [0, 0];
-
-
-    if (this.game.isOutOfBounds(this.pos)) {
-      this.pos = this.game.wrap(this.pos);
-    }
-    
   }
 
   remove() {
-
-
-    this.game.remove(this);
-
-
+    this.gameEngine.remove(this);
   }
 }
 
@@ -623,6 +581,76 @@ class Sound {
 }
 
 module.exports = Sound;
+
+/***/ }),
+
+/***/ "./lib/game_engine/transform.js":
+/*!**************************************!*\
+  !*** ./lib/game_engine/transform.js ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Util = __webpack_require__(/*! ./util */ "./lib/game_engine/util.js");
+class Transform {
+  constructor(pos = [0,0], vel = [0,0], acc = [0,0], angle = 0, parentTransform = null){
+    this.parentTransform = parentTransform
+    this.angle = angle
+    this.pos = pos
+    this.vel = vel
+    this.acc = acc
+  }
+
+  // call up the tree of parent transforms until null
+  // performing the transformation each step for the absolute
+  absoluteAngle() {
+    if (this.parentTransform == null) {
+      return this.angle
+    } else {
+      return angleAdd(this.angle, this.parentTransform.absoluteAngle())
+    }
+  }
+
+  absolutePosition() {
+    absPos = []
+    if (this.parentTransform == null){
+      absPos = this.pos
+      return absPos
+    } else { 
+      return vectorAdd(this.pos, this.parentTransform.absolutePosition())
+    }
+  }
+
+  absoluteVelocity() {
+    absVel = []
+    if (this.parentTransform == null) {
+      absVel = this.vel
+      return absVel
+    } else {
+      return vectorAdd(this.vel, this.parentTransform.absoluteVelocity())
+    }
+  }
+
+  absoluteAcceleration() {
+    absAcc = []
+    if (this.parentTransform == null) {
+      absAcc = this.acc
+      return absAcc
+    } else {
+      return vectorAdd(this.acc, this.parentTransform.absoluteAcceleration())
+    }
+  }
+
+  vectorAdd(vector1, vector2) {
+    return [vector1[0] + vector1[0], vector1[1] + vector2[1]]
+  }
+
+  angleAdd(angle1, angle2) {
+
+    return (angle1 + angle2) % (2 * Math.PI)
+  }
+
+}
 
 /***/ }),
 

@@ -10,6 +10,14 @@ class Transform {
 
   // call up the tree of parent transforms until null
   // performing the transformation each step for the absolute
+  absoluteAngle() {
+    if (this.parentTransform == null) {
+      return this.angle
+    } else {
+      return angleAdd(this.angle, this.parentTransform.absoluteAngle())
+    }
+  }
+
   absolutePosition() {
     absPos = []
     if (this.parentTransform == null){
@@ -42,6 +50,11 @@ class Transform {
 
   vectorAdd(vector1, vector2) {
     return [vector1[0] + vector1[0], vector1[1] + vector2[1]]
+  }
+
+  angleAdd(angle1, angle2) {
+
+    return (angle1 + angle2) % (2 * Math.PI)
   }
 
 }
