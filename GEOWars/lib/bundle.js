@@ -533,16 +533,36 @@ Game.spawnListList = [
 
 const Util = __webpack_require__(/*! ./util */ "./lib/game_engine/util.js");
 const Sound = __webpack_require__(/*! ./sound */ "./lib/game_engine/sound.js")
+
 const Transform = __webpack_require__( /*! ./transform */ "./lib/game_engine/transform.js")
+const PhysicsComponent = __webpack_require__(/*! ./physics_component */ "./lib/game_engine/physics_component.js")
+const lineRenderer = __webpack_require__(/*! ./line_renderer */ "./lib/game_engine/line_renderer.js")
 
 class GameObject {
   constructor(engine) {
     this.gameEngine = engine
-    this.transform = new Transform
+    this.transform = new Transform()
+    this.childObjects = []
     // this.color = options.color;
     // this.game = options.game;
     // this.bounce = true;
     // this.speed = 0;
+  }
+
+  addPhysicsComponent() {
+    this.physicsComponent = new PhysicsComponent(this.transform)
+    this.gameEngine.addPhysicsComponent(this.physicsComponent)
+  }
+
+  addLineRenderer(drawFunction) {
+    this.lineRenderer = new LineRenderer(drawFunction)
+    this.gameEngine.addLineRenderer(this.lineRenderer)
+  }
+
+  //hmm. user makes a new game object, then adds it to the parent
+  addChildGameObject(obj){
+    this.childObjects.append(obj)
+    obj.parentTransform = this.transform
   }
 
   update() {
@@ -550,6 +570,9 @@ class GameObject {
   }
 
   remove() {
+    this.childObjects.forEach((obj) => {
+      this.gameEngine.remove(obj)
+    })
     this.gameEngine.remove(this);
   }
 }
@@ -557,6 +580,86 @@ class GameObject {
 const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 module.exports = GameObject;
+
+
+/***/ }),
+
+/***/ "./lib/game_engine/line_renderer.js":
+/*!******************************************!*\
+  !*** ./lib/game_engine/line_renderer.js ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+class LineRenderer {
+  constructor(drawFunction, transform) {
+    this.drawFunction = draw
+    this.transform = transform 
+  }
+
+  draw(ctx) {
+    pos = this.transform.absolutePosition()
+    angle = this.transform.abosluteAngle()
+    this.drawFunction(ctx, pos, angle)
+  }
+}
+
+/***/ }),
+
+/***/ "./lib/game_engine/physics_component.js":
+/*!**********************************************!*\
+  !*** ./lib/game_engine/physics_component.js ***!
+  \**********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Util = __webpack_require__(/*! ./util */ "./lib/game_engine/util.js");
+const Sound = __webpack_require__(/*! ./sound */ "./lib/game_engine/sound.js")
+
+class PhysicsComponent {
+  constructor(transform, radius) {
+    this.transform = transform
+    this.radius = radius || 5;
+  }
+
+  collideWith(otherObject) {
+    // default do nothing
+  }
+
+  isCollidedWith(otherObject) {
+    const centerDist = Util.dist(this.pos, otherObject.pos);
+    return centerDist < (this.radius + otherObject.radius);
+  }
+
+  move(timeDelta) {
+    // timeDelta is number of milliseconds since last move
+    // if the computer is busy the time delta will be larger
+    // in this case the PhysicsObject should move farther in this frame
+    // velocity of object is how far it should move in 1/60th of a second or something
+    const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    this.transform.pos[0] += this.transform.vel[0] * timeScale + this.transform.acc[0] * (timeScale * timeScale) / 2;
+    this.transform.pos[1] += this.transform.vel[1] * timeScale + this.transform.acc[1] * (timeScale * timeScale) / 2;
+    this.transform.vel[0] += this.transform.acc[0] * timeScale;
+    this.transform.vel[1] += this.transform.acc[1] * timeScale;
+
+    this.transform.acc = [0, 0];
+
+  }
+
+  // ADD TO UPDATE FOR THE OBJECTS
+  // if (this.game.isOutOfBounds(this.pos)) {
+  //   this.pos = this.game.wrap(this.pos);
+  // }
+
+  // Game handles this shit
+  // remove() {
+  //   this.game.remove(this);
+  // }
+}
+
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+
+module.exports = PhysicsComponent;
 
 
 /***/ }),

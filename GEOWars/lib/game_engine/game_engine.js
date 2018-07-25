@@ -1,4 +1,10 @@
 const gameScript = require("../game_script");
+// const GameObject = require("./game_boject");
+// const LineRenderer = require("./line_renderer");
+// const PhysicsComponent = require("./physics_component")
+const Sound = require("./sound")
+// const Transform = require("./transform")
+const Util = require("./util")
 
 class GameEngine {
   constructor() {
@@ -23,7 +29,7 @@ class GameEngine {
   }
 
   checkCollisions() {
-
+    
   }
 
   updateGameObjects(delta) {
@@ -32,13 +38,19 @@ class GameEngine {
     })
   }
 
-  renderLineSprites() {
+  renderLineSprites(ctx) {
     this.lineSprites.forEach((sprite) => {
-      sprite.draw()
+      sprite.draw(ctx)
     })
   }
 
   updateGameScript(delta) {
     gameScript.update(delta)
+  }
+
+  remove(GameObject) {
+    if (GameObject.physicsComponent) {
+
+    }
   }
 }

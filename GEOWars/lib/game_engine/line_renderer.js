@@ -9,7 +9,4 @@ class LineRenderer {
     angle = this.transform.abosluteAngle()
     this.drawFunction(ctx, pos, angle)
   }
-
-  
-  
 }
