@@ -1,5 +1,5 @@
 class LineSprite {
-  constructor(drawFunction, transform) {
+  constructor(transform) {
     this.drawFunction = draw
     this.transform = transform 
   }

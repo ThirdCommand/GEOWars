@@ -529,143 +529,9 @@ Game.spawnListList = [
   !*** ./lib/game_engine/game_object.js ***!
   \****************************************/
 /*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-const Util = __webpack_require__(/*! ./util */ "./lib/game_engine/util.js");
-const Sound = __webpack_require__(/*! ./sound */ "./lib/game_engine/sound.js")
-
-const Transform = __webpack_require__( /*! ./transform */ "./lib/game_engine/transform.js")
-const PhysicsComponent = __webpack_require__(/*! ./physics_component */ "./lib/game_engine/physics_component.js")
-const lineSprite = __webpack_require__(/*! ./line_sprite */ "./lib/game_engine/line_sprite.js")
-
-class GameObject {
-  constructor(engine) {
-    this.gameEngine = engine
-    this.gameEngine.addGameObject(this)
-    this.transform = new Transform()
-    this.childObjects = []
-    this.physicsComponent = null 
-    this.lineRenderer = null
-    // this.color = options.color;
-    // this.game = options.game;
-    // this.bounce = true;
-    // this.speed = 0;
-  }
-
-  addPhysicsComponent() {
-    this.physicsComponent = new PhysicsComponent(this.transform)
-    this.gameEngine.addPhysicsComponent(this.physicsComponent)
-  }
-
-  addLineRenderer(drawFunction) {
-    this.lineRenderer = new LineSprite(drawFunction)
-    this.gameEngine.addLineRenderer(this.lineRenderer)
-  }
-
-  //hmm. user makes a new game object, then adds it to the parent
-  addChildGameObject(obj){
-    this.childObjects.append(obj)
-    obj.parentTransform = this.transform
-  }
-
-  update() {
-    // overwritten by child class for update scripts
-  }
-
-  remove() {
-    this.childObjects.forEach((obj) => {
-      this.gameEngine.remove(obj)
-    })
-    this.gameEngine.remove(this);
-  }
-}
-
-const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
-
-module.exports = GameObject;
-
-
-/***/ }),
-
-/***/ "./lib/game_engine/line_sprite.js":
-/*!****************************************!*\
-  !*** ./lib/game_engine/line_sprite.js ***!
-  \****************************************/
-/*! no static exports found */
 /***/ (function(module, exports) {
 
-class LineSprite {
-  constructor(drawFunction, transform) {
-    this.drawFunction = draw
-    this.transform = transform 
-  }
-
-  draw(ctx) {
-    pos = this.transform.absolutePosition()
-    angle = this.transform.abosluteAngle()
-    this.drawFunction(ctx, pos, angle)
-  }
-}
-
-module.exports = LineSprite;
-
-/***/ }),
-
-/***/ "./lib/game_engine/physics_component.js":
-/*!**********************************************!*\
-  !*** ./lib/game_engine/physics_component.js ***!
-  \**********************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-const Util = __webpack_require__(/*! ./util */ "./lib/game_engine/util.js");
-const Sound = __webpack_require__(/*! ./sound */ "./lib/game_engine/sound.js")
-
-class PhysicsComponent {
-  constructor(transform, radius) {
-    this.transform = transform
-    this.radius = radius || 5;
-  }
-
-  collideWith(otherObject) {
-    // default do nothing
-  }
-
-  isCollidedWith(otherObject) {
-    const centerDist = Util.dist(this.pos, otherObject.pos);
-    return centerDist < (this.radius + otherObject.radius);
-  }
-
-  move(timeDelta) {
-    // timeDelta is number of milliseconds since last move
-    // if the computer is busy the time delta will be larger
-    // in this case the PhysicsObject should move farther in this frame
-    // velocity of object is how far it should move in 1/60th of a second or something
-    const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    this.transform.pos[0] += this.transform.vel[0] * timeScale + this.transform.acc[0] * (timeScale * timeScale) / 2;
-    this.transform.pos[1] += this.transform.vel[1] * timeScale + this.transform.acc[1] * (timeScale * timeScale) / 2;
-    this.transform.vel[0] += this.transform.acc[0] * timeScale;
-    this.transform.vel[1] += this.transform.acc[1] * timeScale;
-    
-    this.transform.acc = [0, 0];
-
-  }
-
-  // ADD TO UPDATE FOR THE OBJECTS
-  // if (this.game.isOutOfBounds(this.pos)) {
-  //   this.pos = this.game.wrap(this.pos);
-  // }
-
-  // Game handles this shit
-  // remove() {
-  //   this.game.remove(this);
-  // }
-}
-
-const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
-
-module.exports = PhysicsComponent;
-
+throw new Error("Module parse failed: Unexpected token (9:0)\nYou may need an appropriate loader to handle this file type.\n| const Collider\n| \n| class GameObject {\n|   constructor(engine) {\n|     this.gameEngine = engine");
 
 /***/ }),
 
@@ -676,11 +542,13 @@ module.exports = PhysicsComponent;
 /*! no static exports found */
 /***/ (function(module, exports) {
 
+
 class Sound {
   constructor(url, volume = 1){
     this.url = url;
     this.volume = volume;
   }
+
   play() {
     this.sound = new Audio(this.url);
     this.sound.volume = this.volume;
@@ -689,76 +557,6 @@ class Sound {
 }
 
 module.exports = Sound;
-
-/***/ }),
-
-/***/ "./lib/game_engine/transform.js":
-/*!**************************************!*\
-  !*** ./lib/game_engine/transform.js ***!
-  \**************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-const Util = __webpack_require__(/*! ./util */ "./lib/game_engine/util.js");
-class Transform {
-  constructor(pos = [0,0], vel = [0,0], acc = [0,0], angle = 0, parentTransform = null){
-    this.parentTransform = parentTransform
-    this.angle = angle
-    this.pos = pos
-    this.vel = vel
-    this.acc = acc
-  }
-
-  // call up the tree of parent transforms until null
-  // performing the transformation each step for the absolute
-  absoluteAngle() {
-    if (this.parentTransform == null) {
-      return this.angle
-    } else {
-      return angleAdd(this.angle, this.parentTransform.absoluteAngle())
-    }
-  }
-
-  absolutePosition() {
-    absPos = []
-    if (this.parentTransform == null){
-      absPos = this.pos
-      return absPos
-    } else { 
-      return vectorAdd(this.pos, this.parentTransform.absolutePosition())
-    }
-  }
-
-  absoluteVelocity() {
-    absVel = []
-    if (this.parentTransform == null) {
-      absVel = this.vel
-      return absVel
-    } else {
-      return vectorAdd(this.vel, this.parentTransform.absoluteVelocity())
-    }
-  }
-
-  absoluteAcceleration() {
-    absAcc = []
-    if (this.parentTransform == null) {
-      absAcc = this.acc
-      return absAcc
-    } else {
-      return vectorAdd(this.acc, this.parentTransform.absoluteAcceleration())
-    }
-  }
-
-  vectorAdd(vector1, vector2) {
-    return [vector1[0] + vector1[0], vector1[1] + vector2[1]]
-  }
-
-  angleAdd(angle1, angle2) {
-
-    return (angle1 + angle2) % (2 * Math.PI)
-  }
-
-}
 
 /***/ }),
 
@@ -942,127 +740,9 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
   !*** ./lib/game_objects/enemies/arrow.js ***!
   \*******************************************/
 /*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-const GameObject = __webpack_require__(/*! ../../game_engine/game_object */ "./lib/game_engine/game_object.js")
-const Bullet = __webpack_require__(/*! ../bullet */ "./lib/game_objects/bullet.js")
-const Ship = __webpack_require__(/*! ../ship */ "./lib/game_objects/ship.js")
-const Singularity = __webpack_require__(/*! ./singularity */ "./lib/game_objects/enemies/singularity.js")
-const Util = __webpack_require__(/*! ../../game_engine/util */ "./lib/game_engine/util.js");
-const Sound = __webpack_require__(/*! ../../game_engine/sound */ "./lib/game_engine/sound.js")
- 
-class Arrow extends GameObject {
-  constructor(options) {
-    super(options)
-    this.pos = options.pos || options.game.randomPosition();
-    this.angle = options.angle || Math.PI / 3;
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_purple.wav", 0.5);
-    this.speed = 3;
-    this.vel = Util.vectorCartisian(this.angle, this.speed);
-    this.acc = [0,0];
-  }
-
-  move(timeDelta) {
-    let rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    let velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2
-    this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2
-    this.vel[0] += this.acc[0] * velocityScale;
-    this.vel[1] += this.acc[1] * velocityScale;
-    
-    if (this.game.isOutOfBounds(this.pos)) {
-      Util.redirect(this,[1000, 600]) // HARD CODED
-    }
-    this.acc = [0, 0];
-  }
-
-  
-
-  draw(ctx, spawningScale) {
-    
-    let pos = this.pos;
-    spawningScale = spawningScale || 1;
-    let shipLength = 8 * 2.2 * spawningScale;
-    let shipWidth = 6 * 2.2 * spawningScale;
-    let l = shipLength;
-    let w = shipWidth;
-    let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
-
-    // let r = 255;
-    // let g = 255;
-    // let b = 13;
-    let r = 255;
-    let g = 255;
-    let b = 50;
-
-
-
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.translate(pos[0], pos[1]);
-    ctx.rotate(movementDirection + 2 * Math.PI );
-
-    
-    // ctx.strokeStyle = "#f2ff00"; // look up rgb and put here
-    ctx.lineWidth = 2;
-
-    let blurFactor = 0.5
-    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
-    ctx.shadowBlur = 10 * blurFactor ;
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
-    ctx.lineWidth = 7.5 * blurFactor;
-    this.drawArrow(ctx, l, w);
-    ctx.lineWidth = 6 * blurFactor;
-    this.drawArrow(ctx, l, w);
-    ctx.lineWidth = 4.5;
-    this.drawArrow(ctx, l, w);
-    ctx.lineWidth = 3;
-    this.drawArrow(ctx, l, w);
-    ctx.strokeStyle = 'rgb(255, 255, 255)';
-    ctx.lineWidth = 1.5;
-    this.drawArrow(ctx, l, w);
-    
-    // drawArraw(ctx)
-   
-
-    
-    ctx.restore();
-  }
-
-  drawArrow(ctx, l, w) {
-    ctx.beginPath();
-    ctx.moveTo(0, -l / 2); //1
-    ctx.lineTo(w / 2, l / 4); //2
-    ctx.lineTo(w / 6, l / 2); //3
-    ctx.lineTo(0, l / 4); //4
-    ctx.lineTo(-w / 6, l / 2); //5
-    ctx.lineTo(-w / 2, l / 4); //6
-    ctx.closePath();
-    ctx.stroke();
-  }
-
-  collideWith(otherObject) {
-    if (otherObject instanceof Ship) {
-
-      otherObject.relocate();
-      return true;
-    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
-      
-      this.remove();
-      otherObject.remove();
-      return true;
-    }
-
-    return false;
-  }
-
-}
-
-
-
-const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
-module.exports = Arrow;
+throw new Error("Module build failed: Error: ENOENT: no such file or directory, open '/Users/maxdom/Desktop/projects/Geometry/GEOWars/lib/game_objects/enemies/arrow.js'");
 
 /***/ }),
 
@@ -1071,99 +751,9 @@ module.exports = Arrow;
   !*** ./lib/game_objects/enemies/boxbox.js ***!
   \********************************************/
 /*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-const GameObject = __webpack_require__(/*! ../../game_engine/game_object */ "./lib/game_engine/game_object.js")
-const Bullet = __webpack_require__(/*! ../bullet */ "./lib/game_objects/bullet.js")
-const Ship = __webpack_require__(/*! ../ship */ "./lib/game_objects/ship.js")
-const Singularity = __webpack_require__(/*! ./singularity */ "./lib/game_objects/enemies/singularity.js")
-const Sound = __webpack_require__(/*! ../../game_engine/sound */ "./lib/game_engine/sound.js")
-const Util  = __webpack_require__(/*! ../../game_engine/util */ "./lib/game_engine/util.js")
-
-class BoxBox extends GameObject {
-  constructor(options) {
-    super(options)
-    
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
-  }
- 
-  bounce(){
-    Util.bounce(this, [1000, 600])
-  }
-
-  draw(ctx, spawningScale) {
-    
-    spawningScale = spawningScale || 1;
-    let pos = this.pos
-    let boxsize = 10 * spawningScale;
-
-    
-    // ctx.strokeStyle = "#F173BA";
-
-    let r = 230;
-    let g = 30;
-    let b = 30;
-    
-    let blurFactor = 0.5
-    ctx.save();
-    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
-    ctx.shadowBlur = 10
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
-    ctx.restore();
-    ctx.lineWidth = 2;
-
-    // drawRect()
-
-    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
-    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
-    // ctx.stroke();
-    // ctx.lineWidth = 6 // * blurFactor;
-    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
-    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
-    // ctx.stroke();
-    // ctx.lineWidth = 4.5 // * blurFactor;
-    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
-    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
-    // ctx.stroke();
-    // ctx.lineWidth = 3 // * blurFactor;
-    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
-    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
-    // ctx.stroke();
-    // ctx.strokeStyle = 'rgb(255, 255, 255)';
-    // ctx.lineWidth = 1.5 // * blurFactor;
-    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
-    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
-    // ctx.stroke();
-
-    ctx.restore();
-  }
-
-  drawRect(ctx, boxsize) {
-
-  }
-
-  collideWith(otherObject) {
-    if (otherObject instanceof Ship) {
-      otherObject.relocate();
-      return true;
-    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
-      
-      this.remove();
-      otherObject.remove();
-      return true;
-    }
-
-    return false;
-  }
-
-}
-
-BoxBox.BOX_SIZE = 10;
-BoxBox.COLOR = "#f00745"
-
-module.exports = BoxBox;
-
-const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+throw new Error("Module build failed: Error: ENOENT: no such file or directory, open '/Users/maxdom/Desktop/projects/Geometry/GEOWars/lib/game_objects/enemies/boxbox.js'");
 
 /***/ }),
 
@@ -2176,17 +1766,19 @@ class BulletWallExplosion{
   !*** ./lib/particles/enemy_spawn.js ***!
   \**************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-class EnemySpawn{
-  constructor(enemy, game){
-    this.enemy = enemy;
+const GameObject = __webpack_require__(/*! ../game_engine/game_object */ "./lib/game_engine/game_object.js")
+
+class EnemySpawn extends GameObject{
+  constructor(parent, game){
+    this.enemy = parent;
     this.game = game;
     this.initialSpawningScale = 1.5;
     this.spawningScale = 1.5;
     this.lifeTime = 1000;
     this.existTime = 0;
-
+    
     if (!this.game.muted){
       this.game.soundsToPlay[this.enemy.spawnSound.url] = this.enemy.spawnSound;
     }

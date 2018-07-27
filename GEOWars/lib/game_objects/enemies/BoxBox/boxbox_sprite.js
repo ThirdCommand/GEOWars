@@ -1,34 +1,22 @@
-const GameObject = require("../../game_engine/game_object")
-const Bullet = require("../bullet")
-const Ship = require("../ship")
-const Singularity = require("./singularity")
-const Sound = require("../../game_engine/sound")
-const Util  = require("../../game_engine/util")
 
-class BoxBox extends GameObject {
-  constructor(options) {
-    super(options)
-    
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
-  }
- 
-  bounce(){
-    Util.bounce(this, [1000, 600])
+class BoxBoxSprite extends LinSprite{
+  constructor(transform, spawningScale = 1) {
+    this.super(transform)
+    this.spawningScale = spawningScale
   }
 
-  draw(ctx, spawningScale) {
-    
-    spawningScale = spawningScale || 1;
-    let pos = this.pos
+  draw(ctx) {
+
+    spawningScale = this.spawningScale || 1;
+    let pos = this.transform.pos
     let boxsize = 10 * spawningScale;
 
-    
     // ctx.strokeStyle = "#F173BA";
 
     let r = 230;
     let g = 30;
     let b = 30;
-    
+
     let blurFactor = 0.5
     ctx.save();
     ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
@@ -67,25 +55,8 @@ class BoxBox extends GameObject {
 
   }
 
-  collideWith(otherObject) {
-    if (otherObject instanceof Ship) {
-      otherObject.relocate();
-      return true;
-    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
-      
-      this.remove();
-      otherObject.remove();
-      return true;
-    }
 
-    return false;
-  }
 
 }
 
-BoxBox.BOX_SIZE = 10;
-BoxBox.COLOR = "#f00745"
-
-module.exports = BoxBox;
-
-const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+module.exports = BoxBoxSprite;

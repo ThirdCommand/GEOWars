@@ -1,24 +1,23 @@
-class EnemySpawn{
-  constructor(enemy, game){
-    this.enemy = enemy;
-    this.game = game;
+const GameObject = require("../game_engine/game_object")
+
+class EnemySpawn extends GameObject{
+  constructor(){
     this.initialSpawningScale = 1.5;
     this.spawningScale = 1.5;
     this.lifeTime = 1000;
     this.existTime = 0;
-
     if (!this.game.muted){
-      this.game.soundsToPlay[this.enemy.spawnSound.url] = this.enemy.spawnSound;
+      this.gameEngine.queueSound(this.parentObject.spawnSound)
     }
-
   }
-  move(timeDelta) {
+
+  update(timeDelta) {
     
     this.existTime += timeDelta;
 
     if (this.existTime >= this.lifeTime){
-      this.spawn(this.enemy)
-      this.game.remove(this)
+      this.parentObject.exist()
+      this.remove()
     }
 
     let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
@@ -32,17 +31,8 @@ class EnemySpawn{
   }
 
   draw (ctx) {
-
     let pos = this.pos
-    this.enemy.draw(ctx, this.spawningScale)
-  }
-
-  spawn(enemy){
-    this.game.add(enemy)
-  }
-
-  remove(){
-    this.game.remove(this)
+    this.parent.draw(ctx, this.spawningScale)
   }
 
 }

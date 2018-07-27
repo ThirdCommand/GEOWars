@@ -3,7 +3,8 @@ const Sound = require("./sound")
 
 const Transform = require( "./transform")
 const PhysicsComponent = require("./physics_component")
-const lineSprite = require("./line_sprite")
+const LineSprite = require("./line_sprite")
+const Collider
 
 class GameObject {
   constructor(engine) {
@@ -11,8 +12,11 @@ class GameObject {
     this.gameEngine.addGameObject(this)
     this.transform = new Transform()
     this.childObjects = []
+    
     this.physicsComponent = null 
-    this.lineRenderer = null
+    this.lineSprite = null
+    this.parentObject = null
+    this.collider = null
     // this.color = options.color;
     // this.game = options.game;
     // this.bounce = true;
@@ -24,19 +28,38 @@ class GameObject {
     this.gameEngine.addPhysicsComponent(this.physicsComponent)
   }
 
-  addLineRenderer(drawFunction) {
-    this.lineRenderer = new LineSprite(drawFunction)
-    this.gameEngine.addLineRenderer(this.lineRenderer)
+  addLineSprite(lineSprite) {
+    this.lineSprite = lineSprite
+    this.gameEngine.addLineSprite(this.lineSprite)
+  }
+
+  addColider(type, radius, subscriptions){
+
+    // game engine checks every collider with it's subscription types
+    this.collider = new Collider
+    this.gameEngine.addCollider()
+    // engine takes in a collider with gameobject type as string 
+    // 
+  }
+
+  // store sound in instance
+  playSound(sound){
+    this.gameEngine.queueSound(sound)
   }
 
   //hmm. user makes a new game object, then adds it to the parent
   addChildGameObject(obj){
     this.childObjects.append(obj)
     obj.parentTransform = this.transform
+    obj.parentObject = this
   }
 
   update() {
     // overwritten by child class for update scripts
+  }
+
+  onCollision(objectType){
+    // overwritten by child class for handler
   }
 
   remove() {

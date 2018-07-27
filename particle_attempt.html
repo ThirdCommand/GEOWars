@@ -1,4 +1,4 @@
-<!-- < !DOCTYPE HTML > -->
+
   <html>
     <head>
       <style>
@@ -59,21 +59,11 @@
         c.fillRect(this.radial,0,this.rectLength,this.rectWidth);
       };
       
-      // this function handles where the ball should be next
       Particle.prototype.draw = function() {
         this.active = true;
         this.radial += this.initialVelocity;
-        // this.y += this.vy;
-        // this.vy += this.gravity + this.acceleration * Math.sin(this.movementAngle);
-        // this.vx += this.gravity + this.acceleration * Math.cos(this.movementAngle);
         this.initialVelocity += this.acceleration
         this.hue -= 0.5;
-
-        // this.r = Math.abs(this.r - .05);
-        // console.log(this.vy + this.vx);
-        
-        // c.beginPath();
-        // c.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
         
         c.save()
         c.translate(this.x,this.y);
@@ -160,8 +150,6 @@
           // }
         }
       }
-      
-      
       //init
       (function() {
         initCanvas();
@@ -177,38 +165,6 @@
       
         return (_int) ? Math.round(gen) : gen;
       };
-
-      // function drawSpark() {
-      //     // Pill shape
-      //     canvas = document.getElementById("pill");
-      //     if (canvas.getContext) {
-      //       // starting angle depends on the orientation of the 
-      //       // build parameters
-      //       var ctx = canvas.getContext("2d");
-      //       var x1 = 75;
-      //       var y1 = 75;
-      //       var radius1 = 75;
-      //       var startAngle1 = Math.PI * 0.5;
-      //       var endAngle1 = Math.PI * 1.5;
-      //       var antiClockwise1 = false;
-
-      //       var x2 = 200;
-      //       var y2 = 75;
-      //       var radius2 = 75;
-      //       var startAngle2 = Math.PI * 1.5;
-      //       var endAngle2 = Math.PI * 0.5;
-      //       var antiClockwise2 = false;
-            
-      //       //Draw function
-      //       ctx.beginPath();
-      //       ctx.arc(x1, y1, radius1, startAngle1, endAngle1, antiClockwise1);
-      //       ctx.lineTo(200, 0);
-      //       ctx.arc(x2, y2, radius2, startAngle2, endAngle2, antiClockwise2);
-      //       ctx.closePath();
-
-      //       ctx.fill();
-      //     }
-      //   }
       
     </script>
     </body>
