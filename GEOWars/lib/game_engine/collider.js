@@ -26,7 +26,7 @@ class Collider {
   collisionCheck(otherCollider) {
     const centerDist = Util.dist(this.gameObject.transform.pos, otherCollider.gameObject.transform.pos);
     if (centerDist < (this.radius + otherCollider.radius)){
-      this.gameObject.onCollision(otherCollider)
+      this.gameObject.onCollision(otherCollider, this.type)
     }
   }
 

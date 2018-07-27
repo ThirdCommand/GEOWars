@@ -14,7 +14,6 @@ class EnemySpawn extends GameObject{
   update(timeDelta) {
     
     this.existTime += timeDelta;
-
     if (this.existTime >= this.lifeTime){
       this.parentObject.exist()
       this.remove()
@@ -22,18 +21,18 @@ class EnemySpawn extends GameObject{
 
     let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     let cycleSpeed = 0.1;
-
+    
     if (this.spawningScale < 0.7){
-      this.spawningScale = this.initialSpawningScale
+      this.spawningScale = this.initialSpawningScale;
     } else {
       this.spawningScale -= cycleSpeed * cycleSpeedScale;
     }
   }
 
-  draw (ctx) {
-    let pos = this.pos
-    this.parent.draw(ctx, this.spawningScale)
-  }
+  // draw (ctx) {
+  //   let pos = this.pos;
+  //   this.parent.draw(ctx, this.spawningScale)
+  // }
 
 }
 const NORMAL_FRAME_TIME_DELTA = 1000 / 60;

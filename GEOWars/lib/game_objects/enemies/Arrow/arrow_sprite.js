@@ -5,8 +5,7 @@ class ArrowSprite extends LinSprite {
   }
 
   draw(ctx) {
-
-    let pos = this.transform.pos;
+    let pos = this.transform.absolutePosition();
     spawningScale = this.spawningScale || 1;
     let shipLength = 8 * 2.2 * spawningScale;
     let shipWidth = 6 * 2.2 * spawningScale;
@@ -14,9 +13,6 @@ class ArrowSprite extends LinSprite {
     let w = shipWidth;
     let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
 
-    // let r = 255;
-    // let g = 255;
-    // let b = 13;
     let r = 255;
     let g = 255;
     let b = 50;
@@ -63,10 +59,6 @@ class ArrowSprite extends LinSprite {
     ctx.closePath();
     ctx.stroke();
   }
-
-
-
-
 }
 
-module.exports = BoxBoxSprite;
+module.exports = ArrowSprite;

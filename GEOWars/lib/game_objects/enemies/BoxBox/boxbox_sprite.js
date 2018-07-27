@@ -8,7 +8,7 @@ class BoxBoxSprite extends LinSprite{
   draw(ctx) {
 
     spawningScale = this.spawningScale || 1;
-    let pos = this.transform.pos
+    let pos = this.transform.absolutePosition()
     let boxsize = 10 * spawningScale;
 
     // ctx.strokeStyle = "#F173BA";

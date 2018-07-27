@@ -12,7 +12,17 @@ class BoxBox extends GameObject {
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
     this.transform.pos = pos
     // this.addPhysicsComponent()
-    this.addLineRenderer(new BoxBoxSprite())
+    this.addLineSprite(new BoxBoxSprite(this.transform))
+    this.addChildGameObject(new EnemySpawn)
+    // adds self as parent before parent needed.. magic?
+  }
+
+
+  exist() {
+    // leaving off subscriptions means that things will subscribe to it
+    this.addCollider("general", this, 3)
+    // now it will move
+    this.addPhysicsComponent()
   }
  
   bounce(){
@@ -20,30 +30,13 @@ class BoxBox extends GameObject {
   }
 
   update(delta){
-    
-  }
-
-  
-
-  collideWith(otherObject) {
-    if (otherObject instanceof Ship) {
-      otherObject.relocate();
-      return true;
-    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
-      
-      this.remove();
-      otherObject.remove();
-      return true;
+    if (this.gameEngine.gameScript.isOutOfBounds(this.pos)) {
+      Util.bounce(this, [1000, 600]) // HARD CODED
     }
-
-    return false;
   }
+
+
 
 }
 
-BoxBox.BOX_SIZE = 10;
-BoxBox.COLOR = "#f00745"
-
 module.exports = BoxBox;
-
-const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
