@@ -13,22 +13,9 @@ class GameEngine {
     this.physicsComponents = [];
     this.lineSprites = [];
     this.soundsToPlay = {};
-    // the idea:
-    // engine takes in collider with gameobject type as string
-    // this way subscriptions can be done via string names
-    // enemy is subscribed to bullets..
-    // each enemy will check every bullet
-    // convert gameobject type to string
-    // colliders can be added without subscriptions
-    // subscriptions are an array of strings stored with the collider
-    
-    // collider: object absolute transform
-    // collider { "transform" transform, "subscriptions" ["name", "name"] }
-    // colliders {"BoxBox" [collider, collider]}
-
-    // colliders.
     this.colliders = {};
-
+    this.subscibers = {};
+    this.muted = true;
   }
 
   tick(delta) {
@@ -46,41 +33,37 @@ class GameEngine {
     })
   }
 
-  checkCollisions() {
-    const bullets = this.bullets;
-    const allObjects = this.allObjects();
-    const allObjects2 = this.allObjects2();
-    for (let i = 0; i < allObjects.length; i++) {
-      for (let j = 0; j < allObjects2.length; j++) {
-        const obj1 = allObjects[i];
-        const obj2 = allObjects2[j];
-        // if (obj1 instanceof Singularity && obj2 instanceof Singularity){
-        //   if (obj1.id === obj2.id){
-        //     continue;
-        //   }
-        // }
-        if (obj2 instanceof Singularity) {
-          obj2.isCollidedWith(obj1)
-          continue
-        }
-        if (obj1.isCollidedWith(obj2)) {
-          const explosionId = this.particleExplosions.length
-
-          if (!this.muted) {
-            let death = new Sound("GEOWars/sounds/Enemy_explode.wav", 0.4)
-            this.soundsToPlay[death.url] = death
-          }
-          if (obj1 instanceof Singularity) {
-            this.add(new SingularityExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
-            const collision = obj1.collideWith(obj2);
-          } else {
-            this.add(new ParticleExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
-            const collision = obj1.collideWith(obj2);
-          }
-          // if (collision) return;
-        }
+  addCollider(collider){
+    if (collider.subscribers) {
+      this.subscribers.append(collider)
+    }
+    // collider: object absolute transform
+    // collider { "objectType": "Bullet", "type": "general", "subscriptions": ["BoxBox", "Arrow"] }
+    // colliders {"Singularity": {"General": [collider, collider], "GravityWell": [collider,collider]}}
+    if (!colliders[collider.objectType]) {
+      let collidersSameTypeAndObject = {}
+      colliders[collider.objectType] = collidersSameTypeAndObject[collider.type] = [collider]
+    } else {
+      if (!colliders[collider.objectType][collider.type]){
+        colliders[collider.objectType][collider.type] = [collider]
+      } else {
+        colliders[collider.objectType][collider.type].append(collider)
       }
     }
+  }
+
+  // must be a way to only retrieve 
+  // the data for subscribed colliders once
+
+  checkCollisions() {
+    let subscribers = this.subscribers
+    subscribers.forEach((subscribingCollider) => {
+      subscribingCollider.subsciptions.forEach((subscribedType) => {
+        colliders[subscriberType].forEach((subscribedCollider) => {
+          subscribingCollider.collisionCheck(subscribedCollider)
+        })
+      })
+    })
   }
 
   updateGameObjects(delta) {
@@ -115,7 +98,9 @@ class GameEngine {
   }
 
   queueSound(sound){
-    this.soundsToPlay[sound.url] = sound
+    if (!this.muted){
+      this.soundsToPlay[sound.url] = sound
+    }
   }
 
   remove(gameObject) {
@@ -125,10 +110,28 @@ class GameEngine {
     if (gameObject.lineSprites){
       this.lineSprites.splice(this.lineSprites.indexOf(gameObject.lineSprites), 1)
     }
-    if (gameObject.collider)
+    removeColliders(gameObject.colliders)
     this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1)
   }
 
+  removeColliders(colliders){
+    colliders.forEach((collider) => {
+      if (collider.subscribers) {
+        this.subscribers.splice(this.subscribers.indexOf(collider), 1)
+      }
+      objectAndColliderTypeList = this.colliders[collider.objectType][collider.type]
+      objectAndColliderTypeList.splice(objectAndColliderTypeList.indexOf(gameObject), 1)
+    })
+  }
 }
 
 module.exports = GameEngine;
+
+    // the idea:
+    // engine takes in collider with gameobject type as string
+    // this way subscriptions can be done via string names
+    // enemy is subscribed to bullets..
+    // each enemy will check every bullet
+    // convert gameobject type to string
+    // colliders can be added without subscriptions
+    // subscriptions are an array of strings stored with the collider

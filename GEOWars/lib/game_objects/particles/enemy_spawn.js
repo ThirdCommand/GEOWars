@@ -6,9 +6,7 @@ class EnemySpawn extends GameObject{
     this.spawningScale = 1.5;
     this.lifeTime = 1000;
     this.existTime = 0;
-    if (!this.game.muted){
-      this.gameEngine.queueSound(this.parentObject.spawnSound)
-    }
+    this.gameEngine.queueSound(this.parentObject.spawnSound)
   }
 
   update(timeDelta) {

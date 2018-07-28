@@ -4,7 +4,7 @@ const Sound = require("./sound")
 const Transform = require( "./transform")
 const PhysicsComponent = require("./physics_component")
 const LineSprite = require("./line_sprite")
-const Collider
+const Collider = require("./collider")
 
 class GameObject {
   constructor(engine) {
@@ -12,11 +12,10 @@ class GameObject {
     this.gameEngine.addGameObject(this)
     this.transform = new Transform()
     this.childObjects = []
-    
     this.physicsComponent = null 
     this.lineSprite = null
     this.parentObject = null
-    this.collider = null
+    this.colliders = []
     // this.color = options.color;
     // this.game = options.game;
     // this.bounce = true;
@@ -33,13 +32,11 @@ class GameObject {
     this.gameEngine.addLineSprite(this.lineSprite)
   }
 
-  addColider(type, radius, subscriptions){
-
+  addColider(type, gameObject, radius, subscriptionTypes, subscriptions){
     // game engine checks every collider with it's subscription types
-    this.collider = new Collider
-    this.gameEngine.addCollider()
-    // engine takes in a collider with gameobject type as string 
-    // 
+    let newCollider = new Collider(type, gameObject, radius, subscriptionTypes, subscriptions)
+    this.colliders.append(newCollider)
+    this.gameEngine.addCollider(newCollider)
   }
 
   // store sound in instance

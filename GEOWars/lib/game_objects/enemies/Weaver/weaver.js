@@ -22,13 +22,13 @@ class Weaver extends GameObject {
   exist() {
     // leaving off subscriptions means that things will subscribe to it
     this.addCollider("general", this, 3)
-    this.addCollider("bulletDodge", this, this.weaverCloseHitBox, ["Bullet"])
+    this.addCollider("bulletDodge", this, this.weaverCloseHitBox, ["Bullet"], ["General"])
     // now it will move
     this.addPhysicsComponent()
   }
 
   onCollision(collider, type){
-    if (type === "bulletDodge"){
+    if (type === "bulletDodge") {
       this.acceptBulletDirection(collider.gameObject.transform.pos)
     }
   }

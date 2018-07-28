@@ -3,6 +3,7 @@ const Bullet = require("../bullet")
 const Ship = require("../ship")
 const Sound = require("../../game_engine/sound")
 const Util = require("../../game_engine/util")
+
 class Singularity extends GameObject {
   constructor(pos, engine) {
     super(engine)
@@ -14,7 +15,7 @@ class Singularity extends GameObject {
     // this.id = options.id
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
     this.increasing = true
-
+    
     this.addLineSprite(new SingularitySprite(this.transform))
     this.addChildGameObject(new EnemySpawn)
 
@@ -23,16 +24,16 @@ class Singularity extends GameObject {
 
   exist() {
     // leaving off subscriptions means that things will subscribe to it
-    this.addCollider("general", this, 3)
-    this.addCollider("gravityWell", this, this.gravityWellSize, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver", "Particle"])
-    this.addCollider("gravityAbsorb", this, this.radius, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver"])
+    this.addCollider("General", this, 3)
+    this.addCollider("GravityWell", this, this.gravityWellSize, ["General"], ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver", "Particle"])
+    this.addCollider("GravityAbsorb", this, this.radius, ["General"], ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver"])
     // now it will move
     this.addPhysicsComponent()
   }
 
   onCollision(collider, type){
     if (type === "gravityWell"){
-
+      this.influenceAcceleration(collider.gameObject)
     }
   }
 

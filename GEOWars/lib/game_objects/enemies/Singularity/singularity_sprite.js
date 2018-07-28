@@ -7,7 +7,7 @@ class SingularitySprite extends LineSprite {
   }
 
   draw(ctx) {
-
+    
     if (!this.spawningScale) {
       spawningScale = this.throbbingScale
     }

@@ -524,14 +524,209 @@ Game.spawnListList = [
 
 /***/ }),
 
+/***/ "./lib/game_engine/collider.js":
+/*!*************************************!*\
+  !*** ./lib/game_engine/collider.js ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+// engine takes in collider with gameobject type as string
+// this way subscriptions can be done via string names
+// enemy is subscribed to bullets..
+// each enemy will check every bullet
+// convert gameobject type to string
+// colliders can be added without subscriptions
+// subscriptions are an array of strings stored with the collider
+
+// collider: object absolute transform
+// collider { gameObject gameObject, "subscriptions" ["name", "name"] }
+// colliders {"BoxBox" [collider, collider]}
+
+const Util = __webpack_require__(/*! ./util */ "./lib/game_engine/util.js")
+
+class Collider {
+  constructor(type, gameObject, radius = 5, subscriptionTypes = [], subscriptions = false) {
+    this.objectType = gameObject.constructor.name
+    this.type = type
+    this.subscriptions = subscriptions
+    this.subscriptionTypes = subscriptionTypes
+    this.radius = radius
+    this.gameObject = gameObject
+  }
+  // wondering if collision should cascade up the parent objects
+  // nope not yet anyway
+
+  collisionCheck(otherCollider) {
+    const centerDist = Util.dist(this.gameObject.transform.pos, otherCollider.gameObject.transform.pos);
+    if (centerDist < (this.radius + otherCollider.radius)){
+      this.gameObject.onCollision(otherCollider, this.type)
+    }
+  } 
+}
+
+// on
+
+// When you add new things that effect other things
+// like a new type of bullet, singularity effect, etc
+// you just have to add that functionality to the bullet
+// add the things it effects as things 
+// the collider subscribes to
+// this way you don't have to edit every object type
+// that is effected
+
+// singularity has two colliders
+// outer one for gravity effects 
+// inner one for actual hits
+// it's subscribed to everything
+// on collision it changes that object properties either 
+// directly or with a object method... preferably
+
+/***/ }),
+
 /***/ "./lib/game_engine/game_object.js":
 /*!****************************************!*\
   !*** ./lib/game_engine/game_object.js ***!
   \****************************************/
 /*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Util = __webpack_require__(/*! ./util */ "./lib/game_engine/util.js");
+const Sound = __webpack_require__(/*! ./sound */ "./lib/game_engine/sound.js")
+
+const Transform = __webpack_require__( /*! ./transform */ "./lib/game_engine/transform.js")
+const PhysicsComponent = __webpack_require__(/*! ./physics_component */ "./lib/game_engine/physics_component.js")
+const LineSprite = __webpack_require__(/*! ./line_sprite */ "./lib/game_engine/line_sprite.js")
+const Collider = __webpack_require__(/*! ./collider */ "./lib/game_engine/collider.js")
+
+class GameObject {
+  constructor(engine) {
+    this.gameEngine = engine
+    this.gameEngine.addGameObject(this)
+    this.transform = new Transform()
+    this.childObjects = []
+    this.physicsComponent = null 
+    this.lineSprite = null
+    this.parentObject = null
+    this.colliders = []
+    // this.color = options.color;
+    // this.game = options.game;
+    // this.bounce = true;
+    // this.speed = 0;
+  }
+
+  addPhysicsComponent() {
+    this.physicsComponent = new PhysicsComponent(this.transform)
+    this.gameEngine.addPhysicsComponent(this.physicsComponent)
+  }
+
+  addLineSprite(lineSprite) {
+    this.lineSprite = lineSprite
+    this.gameEngine.addLineSprite(this.lineSprite)
+  }
+
+  addColider(type, gameObject, radius, subscriptionTypes, subscriptions){
+    // game engine checks every collider with it's subscription types
+    let newCollider = new Collider(type, gameObject, radius, subscriptionTypes, subscriptions)
+    this.colliders.append(newCollider)
+    this.gameEngine.addCollider(newCollider)
+  }
+
+  // store sound in instance
+  playSound(sound){
+    this.gameEngine.queueSound(sound)
+  }
+
+  //hmm. user makes a new game object, then adds it to the parent
+  addChildGameObject(obj){
+    this.childObjects.append(obj)
+    obj.parentTransform = this.transform
+    obj.parentObject = this
+  }
+
+  update() {
+    // overwritten by child class for update scripts
+  }
+
+  onCollision(objectType){
+    // overwritten by child class for handler
+  }
+
+  remove() {
+    this.childObjects.forEach((obj) => {
+      this.gameEngine.remove(obj)
+    })
+    this.gameEngine.remove(this);
+  }
+}
+
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+
+module.exports = GameObject;
+
+
+/***/ }),
+
+/***/ "./lib/game_engine/line_sprite.js":
+/*!****************************************!*\
+  !*** ./lib/game_engine/line_sprite.js ***!
+  \****************************************/
+/*! no static exports found */
 /***/ (function(module, exports) {
 
-throw new Error("Module parse failed: Unexpected token (9:0)\nYou may need an appropriate loader to handle this file type.\n| const Collider\n| \n| class GameObject {\n|   constructor(engine) {\n|     this.gameEngine = engine");
+class LineSprite {
+  constructor(transform) {
+    this.drawFunction = draw
+    this.transform = transform 
+  }
+
+  draw(ctx) {
+    pos = this.transform.absolutePosition()
+    angle = this.transform.abosluteAngle()
+    this.drawFunction(ctx, pos, angle)
+  }
+}
+
+module.exports = LineSprite;
+
+/***/ }),
+
+/***/ "./lib/game_engine/physics_component.js":
+/*!**********************************************!*\
+  !*** ./lib/game_engine/physics_component.js ***!
+  \**********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Util = __webpack_require__(/*! ./util */ "./lib/game_engine/util.js");
+const Sound = __webpack_require__(/*! ./sound */ "./lib/game_engine/sound.js")
+
+class PhysicsComponent {
+  constructor(transform, radius) {
+    this.transform = transform
+  }
+
+  move(timeDelta) {
+    // timeDelta is number of milliseconds since last move
+    // if the computer is busy the time delta will be larger
+    // in this case the PhysicsObject should move farther in this frame
+    // velocity of object is how far it should move in 1/60th of a second or something
+    const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    this.transform.pos[0] += this.transform.vel[0] * timeScale + this.transform.acc[0] * (timeScale * timeScale) / 2;
+    this.transform.pos[1] += this.transform.vel[1] * timeScale + this.transform.acc[1] * (timeScale * timeScale) / 2;
+    this.transform.vel[0] += this.transform.acc[0] * timeScale;
+    this.transform.vel[1] += this.transform.acc[1] * timeScale;
+
+    this.transform.acc = [0, 0];
+
+  }
+
+}
+
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+
+module.exports = PhysicsComponent;
+
 
 /***/ }),
 
@@ -557,6 +752,76 @@ class Sound {
 }
 
 module.exports = Sound;
+
+/***/ }),
+
+/***/ "./lib/game_engine/transform.js":
+/*!**************************************!*\
+  !*** ./lib/game_engine/transform.js ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Util = __webpack_require__(/*! ./util */ "./lib/game_engine/util.js");
+class Transform {
+  constructor(pos = [0,0], vel = [0,0], acc = [0,0], angle = 0, parentTransform = null){
+    this.parentTransform = parentTransform
+    this.angle = angle
+    this.pos = pos
+    this.vel = vel
+    this.acc = acc
+  }
+
+  // call up the tree of parent transforms until null
+  // performing the transformation each step for the absolute
+  absoluteAngle() {
+    if (this.parentTransform == null) {
+      return this.angle
+    } else {
+      return angleAdd(this.angle, this.parentTransform.absoluteAngle())
+    }
+  }
+
+  absolutePosition() {
+    absPos = []
+    if (this.parentTransform == null){
+      absPos = this.pos
+      return absPos
+    } else { 
+      return vectorAdd(this.pos, this.parentTransform.absolutePosition())
+    }
+  }
+
+  absoluteVelocity() {
+    absVel = []
+    if (this.parentTransform == null) {
+      absVel = this.vel
+      return absVel
+    } else {
+      return vectorAdd(this.vel, this.parentTransform.absoluteVelocity())
+    }
+  }
+
+  absoluteAcceleration() {
+    absAcc = []
+    if (this.parentTransform == null) {
+      absAcc = this.acc
+      return absAcc
+    } else {
+      return vectorAdd(this.acc, this.parentTransform.absoluteAcceleration())
+    }
+  }
+
+  vectorAdd(vector1, vector2) {
+    return [vector1[0] + vector1[0], vector1[1] + vector2[1]]
+  }
+
+  angleAdd(angle1, angle2) {
+
+    return (angle1 + angle2) % (2 * Math.PI)
+  }
+
+}
 
 /***/ }),
 
@@ -658,80 +923,9 @@ module.exports = Util;
   !*** ./lib/game_objects/bullet.js ***!
   \************************************/
 /*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-const GameObject = __webpack_require__(/*! ../game_engine/game_object */ "./lib/game_engine/game_object.js");
-const Sound = __webpack_require__(/*! ../game_engine/sound */ "./lib/game_engine/sound.js")
-
-const BulletWallExplosion = __webpack_require__(/*! ../particles/bullet_wall_explosion */ "./lib/particles/bullet_wall_explosion.js")
-class Bullet extends GameObject {
-  constructor(options) {
-    super(options);
-    this.bounce = false;
-    this.color = "#FFFBCE";
-    this.acc = [0,0];
-    this.vel = options.vel
-    this.speed = 8.5;
-    this.length = 12;
-    options.radius = this.length / 4;
-    this.wrap = false
-  }
-
-  move(timeDelta) {
-    // timeDelta is number of milliseconds since last move
-    // if the computer is busy the time delta will be larger
-    // in this case the PhysicsObject should move farther in this frame
-    // velocity of object is how far it should move in 1/60th of a second or something
-    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA,
-      offsetX = this.vel[0] * velocityScale,
-      offsetY = this.vel[1] * velocityScale;
-    this.pos = [this.pos[0] + offsetX, this.pos[1] + offsetY];
-
-    if (this.game.isOutOfBounds(this.pos)) {
-      this.game.add(new BulletWallExplosion(this.pos[0], this.pos[1], this.game.ctx, this.game))
-      if (!this.game.muted) {
-        let wallhit = new Sound("GEOWars/sounds/bullet_hitwall.wav", 1)
-        this.game.soundsToPlay[wallhit.url] = wallhit
-      }
-      this.remove();
-    }
-
-  }
-
-  draw(ctx) {
-    let l = this.length
-    let pos = this.pos;
-    let w = this.length/2;
-    let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.translate(pos[0], pos[1]);
-    ctx.rotate(movementDirection + 2 * Math.PI);
-
-    ctx.beginPath();
-    ctx.strokeStyle = "#FBFBC2";
-    ctx.lineWidth = 1;
-
-    ctx.moveTo(-l / 4, l / 2); //1
-    ctx.lineTo(0, -l / 2); //2
-    ctx.lineTo(l / 4, l / 2); //3
-
-    ctx.closePath();
-    ctx.stroke();
-    ctx.restore();
-
-  }
-    
-}
-
-
-Bullet.RADIUS = 3;
-Bullet.SPEED = 7;
-
-module.exports = Bullet;
-
-const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+throw new Error("Module build failed: Error: ENOENT: no such file or directory, open '/Users/maxdom/Desktop/projects/Geometry/GEOWars/lib/game_objects/bullet.js'");
 
 /***/ }),
 
@@ -806,206 +1000,9 @@ throw new Error("Module build failed: Error: ENOENT: no such file or directory, 
   !*** ./lib/game_objects/ship.js ***!
   \**********************************/
 /*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-const GameObject = __webpack_require__(/*! ../game_engine/game_object */ "./lib/game_engine/game_object.js");
-const Bullet = __webpack_require__(/*! ./bullet */ "./lib/game_objects/bullet.js");
-const Util = __webpack_require__(/*! ../game_engine/util */ "./lib/game_engine/util.js");
-
-function randomColor() {
-  const hexDigits = "0123456789ABCDEF";
-
-  let color = "#";
-  for (let i = 0; i < 3; i++) {
-    color += hexDigits[Math.floor((Math.random() * 16))];
-  }
-
-
-  return color;
-}
-
-class Ship extends GameObject {
-  constructor(options) {
-    options.radius = Ship.RADIUS;
-    options.vel = options.vel || [0, 0];
-    options.color = options.color || randomColor();
-    super(options);
-    this.speed = 2.5;
-    // this.vel = [0,0];
-    // this.acc = [0,0];
-    this.mousePos = [0,0];
-    this.fireAngle = 0; // might have to make it null
-  }
-
-  start(){
-    setInterval(
-      () => {
-        this.fireBullet()
-        if (! this.game.muted) {
-          let bulletSound = new Audio("GEOWars/sounds/Fire_normal.wav");
-          bulletSound.volume = 0.2;
-          bulletSound.play()
-        }
-      },
-      1000 * 60 / (340 * 1.5)
-    )
-  }
-
-  draw(ctx) {
-    let pos = this.pos 
-    let shipWidth = 10
-    let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
-    ctx.save();
-    ctx.beginPath();
-    ctx.translate(pos[0], pos[1]);
-    ctx.rotate(movementDirection + 3/4 * Math.PI + Math.PI);
-    ctx.translate(-shipWidth / 2, shipWidth / 2);
-   
-    ctx.strokeStyle = "#ffffff";
-    let r = 255;
-    let g = 255;
-    let b = 255;
-
-    let blurFactor = 0.5
-    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
-    ctx.shadowBlur = 10 * blurFactor * blurFactor
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
-    ctx.lineWidth = 7.5 * blurFactor * blurFactor
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
-    this.drawShip(ctx, shipWidth)
-    ctx.lineWidth = 6 * blurFactor
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
-    this.drawShip(ctx, shipWidth)
-    ctx.lineWidth = 4.5;
-    this.drawShip(ctx, shipWidth)
-    ctx.lineWidth = 3;
-    this.drawShip(ctx, shipWidth)
-    ctx.strokeStyle = 'rgb(255, 255, 255)';
-    ctx.lineWidth = 1.5;
-    this.drawShip(ctx, shipWidth)
-    
-    ctx.restore();
-  }
-
-  drawShip(ctx, shipWidth) {
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(0, -shipWidth);
-    ctx.lineTo(2 / 3 * shipWidth, -(1 + 1 / 6) * shipWidth); //1
-    ctx.lineTo(1 / 3 * shipWidth, -5 / 6 * shipWidth) // 2
-    ctx.lineTo(1 / 3 * shipWidth, -1 / 3 * shipWidth) // 2.5
-    ctx.lineTo(5 / 6 * shipWidth, -1 / 3 * shipWidth) // 3
-    ctx.lineTo((1 + 1 / 6) * shipWidth, -2 / 3 * shipWidth) // 4
-    ctx.lineTo(shipWidth, 0) // 5
-    ctx.closePath();
-    ctx.stroke();
-  }
-  move(timeDelta) {
-    // timeDelta is number of milliseconds since last move
-    // if the computer is busy the time delta will be larger
-    // in this case the MovingObject should move farther in this frame
-    // velocity of object is how far it should move in 1/60th of a second or something
-    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA,
-    offsetX = this.vel[0] * velocityScale * this.speed,
-    offsetY = this.vel[1] * velocityScale * this.speed;
-    this.pos = [this.pos[0] + offsetX, this.pos[1] + offsetY];
-
-
-
-    if (this.game.isOutOfBounds(this.pos)) {
-      if (this.isWrappable) {
-        this.pos = this.game.wrap(this.pos);
-      } 
-    }
-  }
-
-  // move(timeDelta){
-  //   const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-  //   this.pos[0] += this.vel[0] * velocityScale + this.acc[0] * (velocityScale * velocityScale) / 2;
-  //   this.pos[1] += this.vel[1] * velocityScale + this.acc[1] * (velocityScale * velocityScale) / 2;
-  //   this.vel[0] += this.acc[0] * velocityScale;
-  //   this.vel[1] += this.acc[1] * velocityScale;
-
-  //   if (this.game.isOutOfBounds(this.pos)) {
-  //     if (this.isWrappable) {
-  //       this.pos = this.game.wrap(this.pos);
-  //     } else {
-  //       this.remove();
-  //     }
-  //   }
-  // }
-
-
-  setFireAngle(mousePos) {
-    if (mousePos === undefined){
-      mousePos = this.mousePos;
-    } else {
-      this.mousePos = mousePos
-    }
-    let dy = mousePos[1] - this.pos[1];
-    let dx = mousePos[0] - this.pos[0];
-    this.fireAngle =  Math.atan2(dy, dx)
-
-  }
-  
-
-  fireBullet(e) {
-    
-    let shipvx = this.vel[0];
-    let shipvy = this.vel[1];
-
-    let relBulletVelX1 = Bullet.SPEED * Math.cos(this.fireAngle);
-    let relBulletVelY1 = Bullet.SPEED * Math.sin(this.fireAngle);
-    let relBulletVelX2 = (Bullet.SPEED - 0.5) * Math.cos(this.fireAngle + Math.PI / 32);
-    let relBulletVelY2 = (Bullet.SPEED - 0.5) * Math.sin(this.fireAngle + Math.PI / 32);
-    let relBulletVelX3 = (Bullet.SPEED - 0.5) * Math.cos(this.fireAngle - Math.PI / 32);
-    let relBulletVelY3 = (Bullet.SPEED - 0.5) * Math.sin(this.fireAngle - Math.PI / 32);
-
-    const bulletVel1 = [shipvx + relBulletVelX1, shipvy + relBulletVelY1];
-    const bulletVel2 = [shipvx + relBulletVelX2, shipvy + relBulletVelY2];
-    const bulletVel3 = [shipvx + relBulletVelX3, shipvy + relBulletVelY3];
-
-    const bullet1 = new Bullet({
-      pos: this.pos,
-      vel: bulletVel1,
-      color: this.color,
-      game: this.game
-    });
-    const bullet2 = new Bullet({
-      pos: this.pos,
-      vel: bulletVel2,
-      color: this.color,
-      game: this.game
-    });
-    const bullet3 = new Bullet({
-      pos: this.pos,
-      vel: bulletVel3,
-      color: this.color,
-      game: this.game
-    });
-
-    this.game.add(bullet1);
-    this.game.add(bullet2);
-    this.game.add(bullet3);
-  }
-
-  power(impulse) {
-    this.vel = impulse
-  }
-
-  relocate() {
-    // this.game.die();
-    // this.pos = this.game.randomPosition();
-    // this.vel = [0, 0];
-    // this.acc = [0, 0];
-  }
-}
-
-Ship.RADIUS = 1;
-module.exports = Ship;
-const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
-
-
+throw new Error("Module build failed: Error: ENOENT: no such file or directory, open '/Users/maxdom/Desktop/projects/Geometry/GEOWars/lib/game_objects/ship.js'");
 
 /***/ }),
 
