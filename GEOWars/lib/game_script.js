@@ -1,31 +1,25 @@
-const Bullet = require("./game_objects/bullet");
+// const Bullet = require("./game_objects/bullet");
+// const Particle = require("./particles/particle");
+// const EnemySpawn = require("./particles/enemy_spawn");
+// const ParticleExplosion = require("./particles/particle_explosion");
+// const BulletWallExplosion = require("./particles/bullet_wall_explosion");
+// const SingularityExplosion = require("./particles/singularity_explosion");
 const Ship = require("./game_objects/ship");
-const Util = require("./game_engine/util");
-const Particle = require("./particles/particle");
-const EnemySpawn = require("./particles/enemy_spawn");
-const ParticleExplosion = require("./particles/particle_explosion");
-const BulletWallExplosion = require("./particles/bullet_wall_explosion");
-const SingularityExplosion = require("./particles/singularity_explosion");
 const BoxBox = require("./game_objects/enemies/boxbox");
 const Pinwheel = require("./game_objects/enemies/pinwheel");
 const Arrow = require("./game_objects/enemies/arrow");
 const Grunt = require("./game_objects/enemies/grunt");
 const Weaver = require("./game_objects/enemies/weaver");
 const Singularity = require("./game_objects/enemies/singularity");
+
+const Util = require("./game_engine/util");
 const Sound = require("./game_engine/sound")
 
-class Game {
-  constructor() {
-    this.enemies = [];
-    this.bullets = [];
-    this.ships = [];
-    this.particleExplosions = [];
-    this.spawningEnemies = [];
-    this.singularities = [];
-    this.muted = true;
-    // this.addEnemies();
+class GameScript {
+  constructor(engine) {
+    
     this.gameTime = 0;
-    this.spawned = false; // REFACTOR PLEASE
+   
     this.enemyCreatorList = this.createEnemyCreatorList()
     this.deathSound = new Audio("GEOWars/sounds/Enemy_explode.wav")
     this.deathSound.volume = 0.5;

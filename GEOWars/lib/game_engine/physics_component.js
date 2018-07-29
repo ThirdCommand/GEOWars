@@ -2,7 +2,7 @@ const Util = require("./util");
 const Sound = require("./sound")
 
 class PhysicsComponent {
-  constructor(transform, radius) {
+  constructor(transform) {
     this.transform = transform
   }
 

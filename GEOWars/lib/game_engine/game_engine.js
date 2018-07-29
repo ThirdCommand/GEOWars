@@ -8,7 +8,7 @@ const Util = require("./util")
 
 class GameEngine {
   constructor() {
-    this.gameScript = new gameScript;
+    this.gameScript = new GameScript(this);
     this.gameObjects = [];
     this.physicsComponents = [];
     this.lineSprites = [];

@@ -214,55 +214,7 @@ class Game {
     return ship;
   }
 
-  allObjects() {
-    return [].concat(this.enemies, this.singularities); //this.singularities);
-  }
-
-  //explosions
-  particleObjects() {
-    return [].concat(this.particleExplosions, this.spawningEnemies);
-  }
-
-  allObjects2() {
-    return [].concat(this.bullets, this.singularities, this.ships)
-  }
-
-  checkCollisions(ctx) {
-    const bullets = this.bullets;
-    const allObjects = this.allObjects();
-    const allObjects2 = this.allObjects2();
-    for (let i = 0; i < allObjects.length; i++) {
-      for (let j = 0; j < allObjects2.length; j++) {
-        const obj1 = allObjects[i];
-        const obj2 = allObjects2[j];
-        // if (obj1 instanceof Singularity && obj2 instanceof Singularity){
-        //   if (obj1.id === obj2.id){
-        //     continue;
-        //   }
-        // }
-        if (obj2 instanceof Singularity) {
-          obj2.isCollidedWith(obj1)
-          continue
-        }
-        if (obj1.isCollidedWith(obj2)) {
-          const explosionId = this.particleExplosions.length
-
-          if (!this.muted) {
-            let death = new Sound("GEOWars/sounds/Enemy_explode.wav", 0.4)
-            this.soundsToPlay[death.url] = death
-          }
-          if (obj1 instanceof Singularity){
-            this.add(new SingularityExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
-            const collision = obj1.collideWith(obj2);
-          } else {
-            this.add(new ParticleExplosion(obj1.pos[0], obj1.pos[1], ctx, this, explosionId))
-            const collision = obj1.collideWith(obj2);
-          }
-          // if (collision) return;
-        }
-      }
-    }
-  }
+  
 
   die(){
     this.intervalTiming = this.intervalTiming;

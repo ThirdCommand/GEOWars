@@ -2,6 +2,8 @@ class GruntSprite extends LinSprite {
   constructor(transform, spawningScale = 1) {
     this.super(transform)
     this.spawningScale = spawningScale
+    this.stretchScale_L = 
+    this.stretchScale_W = 
   }
 
   draw(ctx) {

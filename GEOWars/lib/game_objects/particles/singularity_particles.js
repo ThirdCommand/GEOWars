@@ -1,12 +1,4 @@
-// direction of the particle is the direction of the velocity vector
-// the direction of the 
-// the particle dies when the hue reaches 0 
 
-// random movement angle created
-// initial speed (scale)
-// vel = Util.vectorCartisian(angle, scale)
-//
-// 
 
 const Particle = require("./particle")
 

@@ -5,7 +5,7 @@ const Particle = require("./particle")
 const speeds = [21,19,17,15,13,11,9,7, 6, 5, 4];
 
 class SingularityExplosion {
-  constructor(xpos, ypos, ctx, game, explosionId) {
+  constructor(engine, pos) {
     this.COLORS = [
       ["rgba(152,245,23", "rgba(126,185,43", "rgba(189,236,122", "rgba(103,124,74"],
       ["rgba(255,241,44", "rgba(245,236,109", "rgba(165,160,87", "rgba(177,167,28"],
@@ -14,36 +14,28 @@ class SingularityExplosion {
       ["rgba(190,86,250", "rgba(159,96,196", "rgba(87,17,128", "rgba(199,150,228"]
     ]
     this.color = this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
+    this.pos = pos;
     this.game = game;
-    this.particleNum = 400;
+    this.particleNum = 200;
     this.particles = [];
-    this.explosionId;
+    createExplosionParticles()
+  }
 
+  createExplosionParticles() {
     for (var i = 0; i < this.particleNum; i++) {
-      const particleId = i;
-      const speed = Math.random() * (21 - 4) + 4
+      const speed = Math.random() * 3 + 4
       // const speed = speeds[Math.floor(Math.random() * speeds.length)]
-      this.particles.push(new Particle(xpos, ypos, speed, ctx, game, this.explosionId, particleId, this.color));
+      // making the position relative to the world instead of explosion
+      this.addChildObject(new Particle(this.engine, this.pos, speed, this.color));
     }
   }
 
-  move(deltaTime) {
-    for (let i = 0; i < this.particles.length; i++) {
-      if (this.particles[i].active === true) {
-        this.particles[i].move(deltaTime);
-      }
+  update() {
+    if (this.childObjects.length === 0) {
+      this.remove()
     }
   }
-  draw(ctx) {
-
-    for (let i = 0; i < this.particles.length; i++) {
-      if (this.particles[i].active === true) {
-        this.particles[i].draw(ctx);
-      }
-    }
-
-    // ANIMATION = requestAnimationFrame(drawScene);
-  }
+  // ANIMATION = requestAnimationFrame(drawScene);
 
 }
 

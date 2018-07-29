@@ -7,7 +7,7 @@ const Util  = require("../../game_engine/util")
 const BoxBoxSprite = require("../../sprites/boxbox_sprite")
 
 class BoxBox extends GameObject {
-  constructor(pos, engine) {
+  constructor(engine, pos) {
     super(engine)
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
     this.transform.pos = pos

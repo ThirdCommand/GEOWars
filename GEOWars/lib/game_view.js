@@ -9,9 +9,10 @@ class GameView {
 
   bindKeyHandlers() {
     const ship = this.ship;
+
     Object.keys(GameView.MOREMOVES).forEach((k) => {
       const move = GameView.MOREMOVES[k];
-      key(k, () => { ship.power(move); });
+      key(k, () => { ship.controlsDirection(move); });
     });
 
     key("m", () => {

@@ -6,7 +6,7 @@ const Util = require("../../game_engine/util");
 const Sound = require("../../game_engine/sound")
  
 class Arrow extends GameObject {
-  constructor(pos, angle = Math.PI / 3, engine) {
+  constructor(engine, pos, angle = Math.PI / 3) {
     super(engine)
     // transform made then give it values
     this.transform.pos = pos;

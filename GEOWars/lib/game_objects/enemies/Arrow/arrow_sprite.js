@@ -42,9 +42,6 @@ class ArrowSprite extends LinSprite {
     this.drawArrow(ctx, l, w);
 
     // drawArraw(ctx)
-
-
-
     ctx.restore();
   }
 

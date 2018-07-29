@@ -5,9 +5,9 @@ const Util = require("../../game_engine/util")
 
 class Grunt extends GameObject {
   // requires the instance of the ship
-  constructor(pos, engine) {
+  constructor(engine, pos) {
     super(engine)
-    this.transform.pos
+    this.transform.pos = pos
     this.stretchScale_W = 1;
     this.stretchScale_L = 1;
     this.stretchDirection = -1;
@@ -44,13 +44,12 @@ class Grunt extends GameObject {
     let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     let cycleSpeed = 0.01;
 
-    
-    if (this.stretchScale_W < 0.7 || this.stretchScale_W > 1) {
+    if (this.linesprite.stretchScale_W < 0.7 || this.linesprite.stretchScale_W > 1) {
       this.stretchDirection *= -1
     }
 
-    this.stretchScale_W = this.stretchScale_W + -this.stretchDirection * cycleSpeed * cycleSpeedScale;
-    this.stretchScale_L = this.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
+    this.linesprite.stretchScale_W = this.linesprite.stretchScale_W + -this.stretchDirection * cycleSpeed * cycleSpeedScale;
+    this.linesprite.stretchScale_L = this.linesprite.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
 
     if (this.gameEngine.gameScript.isOutOfBounds(this.pos)) {
       Util.bounce(this, [1000, 600]) // HARD CODED

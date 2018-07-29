@@ -8,12 +8,14 @@ class Bullet extends GameObject {
     this.transform.pos = pos 
     this.transform.vel = vel
     this.bounce = false;
-
+    
     this.length = 12;
     this.radius = this.length / 4;
     this.wrap = false
     this.wallhit = new Sound("GEOWars/sounds/bullet_hitwall.wav", 1)
     this.addExplosionCollider()
+    this.addPhysicsComponent()
+    this.addLineSprite(new BulletSprite())
   }
 
   addExplosionCollider(){
@@ -21,7 +23,7 @@ class Bullet extends GameObject {
     this.addCollider("bulletHit", this, this.radius, subscribers)
   }
 
-  update(){
+  update(deltaTime){
     
   }
 
