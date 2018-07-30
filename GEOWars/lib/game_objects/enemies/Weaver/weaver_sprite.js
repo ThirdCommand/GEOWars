@@ -1,11 +1,12 @@
+const LineSprite = require("../../../game_engine/line_sprite")
 
-class WeaverSprite extends LinSprite {
+class WeaverSprite extends LineSprite {
   constructor(transform, spawningScale = 1) {
     this.super(transform)
     this.spawningScale = spawningScale
   }
 
-  draw(ctx, spawningScale) {
+  draw(ctx) {
 
     let pos = this.transform.absolutePosition();
     let angle = this.transform.absoluteAngle();

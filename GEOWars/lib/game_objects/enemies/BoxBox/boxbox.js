@@ -1,10 +1,9 @@
-const GameObject = require("../../game_engine/game_object")
-const Bullet = require("../bullet")
-const Ship = require("../ship")
-const Singularity = require("./singularity")
-const Sound = require("../../game_engine/sound")
-const Util  = require("../../game_engine/util")
-const BoxBoxSprite = require("../../sprites/boxbox_sprite")
+const GameObject = require("../../../game_engine/game_object")
+const Util = require("../../../game_engine/util")
+const Sound = require("../../../game_engine/sound")
+
+const EnemySpawn = require("../../particles/enemy_spawn")
+const BoxBoxSprite = require("./boxbox_sprite")
 
 class BoxBox extends GameObject {
   constructor(engine, pos) {
@@ -13,15 +12,16 @@ class BoxBox extends GameObject {
     this.transform.pos = pos
     // this.addPhysicsComponent()
     this.addLineSprite(new BoxBoxSprite(this.transform))
-    this.addChildGameObject(new EnemySpawn)
+    this.addChildGameObject(new EnemySpawn())
     this.playSound(this.spawnSound)
     // adds self as parent before parent needed.. magic?
+    
   }
 
 
   exist() {
     // leaving off subscriptions means that things will subscribe to it
-    this.addCollider("general", this, 3)
+    this.addCollider("General", this, 3)
     // now it will move
     this.addPhysicsComponent()
   }

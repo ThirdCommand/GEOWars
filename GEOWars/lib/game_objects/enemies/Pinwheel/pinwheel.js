@@ -1,11 +1,12 @@
-const GameObject = require("../../game_engine/game_object")
-// const Bullet = require("../bullet")
-// const Ship = require("../ship")
-// const Singularity = require("./singularity")
-const Sound = require("../../game_engine/sound")
-const Util = require("../../game_engine/util")
+const Sound = require("../../../game_engine/sound")
+const Util = require("../../../game_engine/util")
+const GameObject = require("../../../game_engine/game_object")
+
+const EnemySpawn = require("../../particles/enemy_spawn")
+const PinwheelSprite = require("./pinwheel_sprite")
+
 class Pinwheel extends GameObject {
-  constructor(pos, engine) {
+  constructor(engine, pos) {
     super(engine)
     this.rotation_speed = 0.05;
     let speed = 1;
@@ -13,13 +14,13 @@ class Pinwheel extends GameObject {
     this.transform.vel = Util.randomVec(speed);
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
     this.playSound(this.spawnSound)
-    this.addLineSprite(new GruntSprite(this.transform))
-    this.addChildGameObject(new EnemySpawn)
+    this.addLineSprite(new PinwheelSprite(this.transform))
+    this.addChildGameObject(new EnemySpawn())
   }
   
   exist() {
     // leaving off subscriptions means that things will subscribe to it
-    this.addCollider("general", this, 3)
+    this.addCollider("General", this, 3)
     // now it will move
     this.addPhysicsComponent()
   }

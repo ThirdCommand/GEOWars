@@ -1,24 +1,26 @@
-const GameObject = require("../../game_engine/game_object")
-const Bullet = require("../bullet")
-const Ship = require("../ship")
-const Sound = require("../../game_engine/sound")
-const Util = require("../../game_engine/util")
+const GameObject = require("../../../game_engine/game_object")
+const Sound = require("../../../game_engine/sound")
+const Util = require("../../../game_engine/util")
+
+const EnemySpawn = require("../../particles/enemy_spawn")
+const SingularitySprite = require("./singularity_sprite")
 
 class Singularity extends GameObject {
-  constructor(pos, engine) {
+  constructor(engine, pos) {
     super(engine)
     this.transform.pos = pos;
     this.existTime = 0;
     this.gravityWellSize = 500;
     this.gravityConstant = 1000;
     this.radius = 3
+
     // this.id = options.id
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
     this.playSound(this.spawnSound)
 
     this.increasing = true
     this.addLineSprite(new SingularitySprite(this.transform))
-    this.addChildGameObject(new EnemySpawn)
+    this.addChildGameObject(new EnemySpawn())
 
     this.lineSprite.throbbingScale = 1
   }
@@ -33,7 +35,7 @@ class Singularity extends GameObject {
   }
 
   onCollision(collider, type){
-    if (type === "gravityWell"){
+    if (type === "GravityWell"){
       this.influenceAcceleration(collider.gameObject)
     }
   }

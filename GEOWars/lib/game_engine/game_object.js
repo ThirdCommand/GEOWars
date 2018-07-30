@@ -8,6 +8,7 @@ const Collider = require("./collider")
 
 class GameObject {
   constructor(engine) {
+    // debugger
     this.gameEngine = engine
     this.gameEngine.addGameObject(this)
     this.transform = new Transform()
@@ -36,8 +37,9 @@ class GameObject {
     this.gameEngine.addMouseListener(this)
   }
 
-  addLeftControllStickListener() {
-    this.gameEngine.addLeftControllStickListener(this)
+
+  addLeftControlStickListener() {
+    this.gameEngine.addLeftControlStickListener(this)
   }
 
   updateLeftControlStickInput(direction){
@@ -51,7 +53,7 @@ class GameObject {
   addColider(type, gameObject, radius, subscriptionTypes, subscriptions){
     // game engine checks every collider with it's subscription types
     let newCollider = new Collider(type, gameObject, radius, subscriptionTypes, subscriptions)
-    this.colliders.append(newCollider)
+    this.colliders.push(newCollider)
     this.gameEngine.addCollider(newCollider)
   }
 
@@ -62,7 +64,7 @@ class GameObject {
 
   //hmm. user makes a new game object, then adds it to the parent
   addChildGameObject(obj){
-    this.childObjects.append(obj)
+    this.childObjects.push(obj)
     obj.parentTransform = this.transform
     obj.parentObject = this
   }

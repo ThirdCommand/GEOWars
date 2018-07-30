@@ -1,5 +1,5 @@
-
-class BoxBoxSprite extends LinSprite{
+const LineSprite = require("../../../game_engine/line_sprite")
+class BoxBoxSprite extends LineSprite{
   constructor(transform, spawningScale = 1) {
     this.super(transform)
     this.spawningScale = spawningScale

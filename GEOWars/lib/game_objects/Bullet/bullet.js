@@ -1,5 +1,5 @@
-const GameObject = require("../game_engine/game_object");
-const Sound = require("../game_engine/sound")
+const GameObject = require("../../game_engine/game_object");
+const Sound = require("../../game_engine/sound")
 const BulletWallExplosion = require("../particles/bullet_wall_explosion")
 
 class Bullet extends GameObject {
@@ -8,7 +8,7 @@ class Bullet extends GameObject {
     this.transform.pos = pos 
     this.transform.vel = vel
     this.bounce = false;
-    
+
     this.length = 12;
     this.radius = this.length / 4;
     this.wrap = false

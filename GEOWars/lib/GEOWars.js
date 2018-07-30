@@ -1,5 +1,6 @@
 const GameScript = require("./game_script");
 const GameView = require("./game_view");
+const GameEngine = require("./game_engine/game_engine");
 
 document.addEventListener("DOMContentLoaded", () => {
   const canvasEl = document.getElementsByTagName("canvas")[0];

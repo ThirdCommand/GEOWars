@@ -1,4 +1,4 @@
-const gameScript = require("../game_script");
+const GameScript = require("../game_script");
 // const GameObject = require("./game_boject");
 // const LineRenderer = require("./line_renderer");
 // const PhysicsComponent = require("./physics_component")
@@ -8,8 +8,7 @@ const Util = require("./util")
 
 class GameEngine {
   constructor(ctx) {
-    this.gameScript = new GameScript(this);
-    this.ctx
+    this.ctx = ctx
     this.gameObjects = [];
     this.physicsComponents = [];
     this.lineSprites = [];
@@ -19,6 +18,7 @@ class GameEngine {
     this.muted = true;
     this.mouseListeners = [];
     this.leftControlStickListeners = [];
+    this.gameScript = new GameScript(this);
   }
 
   tick(delta) {
@@ -31,7 +31,7 @@ class GameEngine {
   }
 
   addLeftControlStickListener(object){
-    this.leftControlStickListeners.append(object)
+    this.leftControlStickListeners.push(object)
   }
 
   updateLeftControlStickListeners(unitVector){
@@ -54,7 +54,7 @@ class GameEngine {
 
   addCollider(collider){
     if (collider.subscribers) {
-      this.subscribers.append(collider)
+      this.subscribers.push(collider)
     }
     // collider: object absolute transform
     // collider { "objectType": "Bullet", "type": "general", "subscriptions": ["BoxBox", "Arrow"] }
@@ -66,7 +66,7 @@ class GameEngine {
       if (!colliders[collider.objectType][collider.type]){
         colliders[collider.objectType][collider.type] = [collider]
       } else {
-        colliders[collider.objectType][collider.type].append(collider)
+        colliders[collider.objectType][collider.type].push(collider)
       }
     }
   }
@@ -105,7 +105,8 @@ class GameEngine {
   }
 
   addMouseListener(object){
-    this.mouseListeners.append(object)
+    this.mouseListeners.push(object)
+  }
   
 
   updateGameScript(delta) {
@@ -113,11 +114,16 @@ class GameEngine {
   }
 
   addGameObject(object) {
-    this.gameObjects.append(object)
+    
+    this.gameObjects.push(object)
+  }
+
+  addPhysicsComponent(physicsComponent){
+    this.physicsComponents.push(physicsComponent)
   }
 
   addLineSprite(lineSprite) {
-    this.lineSprite.append(lineSprite)
+    this.lineSprite.push(lineSprite)
   }
 
   queueSound(sound){

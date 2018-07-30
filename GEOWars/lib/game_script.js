@@ -4,13 +4,13 @@
 // const ParticleExplosion = require("./particles/particle_explosion");
 // const BulletWallExplosion = require("./particles/bullet_wall_explosion");
 // const SingularityExplosion = require("./particles/singularity_explosion");
-const Ship = require("./game_objects/ship");
-const BoxBox = require("./game_objects/enemies/boxbox");
-const Pinwheel = require("./game_objects/enemies/pinwheel");
-const Arrow = require("./game_objects/enemies/arrow");
-const Grunt = require("./game_objects/enemies/grunt");
-const Weaver = require("./game_objects/enemies/weaver");
-const Singularity = require("./game_objects/enemies/singularity");
+const Ship = require("./game_objects/ship/ship");
+const BoxBox = require("./game_objects/enemies/BoxBox/boxbox");
+const Pinwheel = require("./game_objects/enemies/Pinwheel/pinwheel");
+const Arrow = require("./game_objects/enemies/Arrow/arrow");
+const Grunt = require("./game_objects/enemies/Grunt/grunt");
+const Weaver = require("./game_objects/enemies/Weaver/weaver");
+const Singularity = require("./game_objects/enemies/Singularity/singularity");
 
 const Util = require("./game_engine/util");
 const Sound = require("./game_engine/sound")
@@ -20,6 +20,7 @@ class GameScript {
     
     this.gameTime = 0;
     this.engine = engine
+    this.addShip();
     this.enemyCreatorList = this.createEnemyCreatorList()
     this.deathSound = new Audio("GEOWars/sounds/Enemy_explode.wav")
     this.deathSound.volume = 0.5;
@@ -31,8 +32,6 @@ class GameScript {
     this.hugeSequenceTime = 0;
     this.sequenceCount = 0;
     this.lives = 3;
-    this.addShip();
-    this.addEnemies();
     this.soundsToPlay = {}
   }
 
@@ -47,13 +46,13 @@ class GameScript {
   }
 
   createEnemyCreatorList() {
-    engine = this.engine 
+    let engine = this.engine 
     return {
       BoxBox:      (pos)        => (new BoxBox(engine, pos)),
       Pinwheel:    (pos)        => (new Pinwheel(engine, pos)),
       Arrow:       (pos, angle) => (new Arrow(engine, pos, angle)),
-      Grunt:       (pos)        => (new Grunt(engine, pos)),
-      Weaver:      (pos)        => (new Weaver(engine, pos)),
+      Grunt:       (pos)        => (new Grunt(engine, pos, this.ship.transform)),
+      Weaver:      (pos)        => (new Weaver(engine, pos, this.ship.transform)),
       Singularity: (pos)        => (new Singularity(engine, pos))
     };
   }
@@ -75,8 +74,8 @@ class GameScript {
 
   randomPosition() {
     return [
-      Game.DIM_X * Math.random(),
-      Game.DIM_Y * Math.random(),
+      GameScrip.DIM_X * Math.random(),
+      GameScript.DIM_Y * Math.random(),
       // 500,300
     ];
   }
@@ -122,9 +121,9 @@ class GameScript {
       let enemies_to_spawn = [];
       let fourCorners = [
         [40, 40],
-        [Game.DIM_X - 40, 40],
+        [GameScript.DIM_X - 40, 40],
         [40, Game.DIM_Y - 40],
-        [Game.DIM_X - 40, Game.DIM_Y - 40]
+        [GameScript.DIM_X - 40, GameScript.DIM_Y - 40]
       ]
       fourCorners.forEach((corner) => {
         this.enemyCreatorList["Grunt"](corner)
@@ -137,7 +136,7 @@ class GameScript {
       let enemies_to_spawn = [];
       let arrowWallPositions = []
       let arrowDirection = Math.PI * 3 / 2 + Math.PI
-      for (let i = 40; i < Game.DIM_X; i += 40) {
+      for (let i = 40; i < GameScript.DIM_X; i += 40) {
         arrowWallPositions.push([i, 50])
       }
 
@@ -162,12 +161,14 @@ class GameScript {
   }
 
   addShip() {
-    this.ship = new Ship(500,500, this.engine)
+    // console.log(this.engine);
+    
+    this.ship = new Ship(this.engine, [500,500])
   }
 
   isOutOfBounds(pos) {
     return (pos[0] < 0) || (pos[1] < 0) ||
-      (pos[0] > Game.DIM_X) || (pos[1] > Game.DIM_Y);
+      (pos[0] > GameScript.DIM_X) || (pos[1] > GameScript.DIM_Y);
   }
 
   updateShipFireAngle() {
@@ -176,7 +177,7 @@ class GameScript {
 
   bounce(pos){
     return [
-      Util.bounce(pos[0], Game.DIM_X), Util.bounce(pos[1], Game.DIM_Y)
+      Util.bounce(pos[0], GameScript.DIM_X), Util.bounce(pos[1], GameScript.DIM_Y)
     ];
   }
 
@@ -191,8 +192,9 @@ class GameScript {
   }
 
   redirect(arrow, max) {
-    let max = Game.DIM_X 
-    let max = Game.DIM_Y
+    max = []
+    max[0] = GameScript.DIM_X 
+    max[1] = GameScript.DIM_Y
     if (arrow.pos[0] <= 0 || arrow.pos[0] >= max[0]) {
       if (arrow.pos[0] <= 0) {
         arrow.pos[0] = 1
@@ -224,7 +226,7 @@ GameScript.BG_COLOR = "#000000";
 
 GameScript.DIM_X = 1000;
 GameScript.DIM_Y = 600;
-// Game.FPS = 32;
+// GameScript.FPS = 32;
 // GameScript.NUM_BOXES = 10;
 // GameScript.NUM_PINWHEELS = 0;
 // GameScript.NUM_ARROWS = 0;
@@ -238,5 +240,5 @@ GameScript.Spawn1 = {
 }
 
 GameScript.spawnListList = [
-  Game.Spawn1
+  GameScript.Spawn1
 ]

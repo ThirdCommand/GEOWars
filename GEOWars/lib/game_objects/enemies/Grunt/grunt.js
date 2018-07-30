@@ -1,26 +1,28 @@
-const GameObject = require("../../game_engine/game_object")
+const GameObject = require("../../../game_engine/game_object")
+const Sound = require("../../../game_engine/sound")
+const Util = require("../../../game_engine/util")
+
+const EnemySpawn = require("../../particles/enemy_spawn")
 const GruntSprite = require("./grunt_sprite")
-const Sound = require("../../game_engine/sound")
-const Util = require("../../game_engine/util")
 
 class Grunt extends GameObject {
   // requires the instance of the ship
-  constructor(engine, pos) {
+  constructor(engine, pos, shipTransform) {
     super(engine)
     this.transform.pos = pos
     this.stretchScale_W = 1;
     this.stretchScale_L = 1;
     this.stretchDirection = -1;
-    
+    this.shipTransform = shipTransform
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
     this.playSound(this.spawnSound)
     this.addLineSprite(new GruntSprite(this.transform))
-    this.addChildGameObject(new EnemySpawn)
+    this.addChildGameObject(new EnemySpawn())
   }
 
   exist() {
     // leaving off subscriptions means that things will subscribe to it
-    this.addCollider("general", this, 3)
+    this.addCollider("General", this, 3)
     // now it will move
     this.addPhysicsComponent()
   }
@@ -29,7 +31,7 @@ class Grunt extends GameObject {
 
   chase(timeDelta) {
     let speed = 1.5
-    let shipPos = this.shiptransform.pos;
+    let shipPos = this.shipTransform.pos;
     let dy = shipPos[1] - this.transform.pos[1];
     let dx = shipPos[0] - this.transform.pos[0];
 

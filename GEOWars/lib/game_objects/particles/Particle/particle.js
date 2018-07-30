@@ -8,18 +8,21 @@
 //
 // 
 
-const Util = require("../game_engine/util");
+const Util = require("../../../game_engine/util")
+const GameObject = require("../../../game_engine/game_object")
+
 
 class Particle extends GameObject{
   constructor(engine, pos, initialSpeed, colors) {
     super(engine)
-    this.active = true;
-    this.color = colors[Math.floor(colors.length * Math.random())];
     this.transform.pos = pos
-    
-    this.speed = initialSpeed;
+    this.addLineSprite(new ParticleSprite(this.transform))
+    this.addPhysicsComponent()
+    this.addCollider("General", this, 3)
+
+    this.color = colors[Math.floor(colors.length * Math.random())];
     this.movementAngle = Math.random() * Math.PI * 2;
-    this.vel = Util.vectorCartisian(this.movementAngle, this.speed)
+    this.vel = Util.vectorCartisian(this.movementAngle, initialSpeed)
 
     this.explosionDeceleration = 0.1; // in the direction the particle is moving
     this.transform.acc = [-this.explosionDeceleration * Math.cos(this.movementAngle), -this.explosionDeceleration * Math.sin(this.movementAngle)]

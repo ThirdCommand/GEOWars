@@ -1,34 +1,36 @@
-const GameObject = require("../../game_engine/game_object")
-const Bullet = require("../bullet")
-const Ship = require("../ship")
-const Singularity = require("./singularity")
-const Sound = require("../../game_engine/sound")
-const Util = require("../../game_engine/util")
+const GameObject = require("../../../game_engine/game_object")
+const Sound = require("../../../game_engine/sound")
+const Util = require("../../../game_engine/util")
 
+const WeaverSprite = require("./weaver_sprite")
 class Weaver extends GameObject {
-  constructor(pos, engine) {
+  constructor(engine, pos, shipTransform) {
     super(engine)
     this.rotation_speed = 0.075;
     this.transform.pos = pos
     this.speed = 2;
 
+    this.shipTransform = shipTransform
     this.weaverCloseHitBox = 35;
     this.directionInfluenced = false;
     this.influencers = [];
 
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_green.wav", 0.5);
+    this.playSound(this.spawnSound)
+    this.addLineSprite(new WeaverSprite(this.transform))
+    this.addChildGameObject(new EnemySpawn())
   }
 
   exist() {
     // leaving off subscriptions means that things will subscribe to it
-    this.addCollider("general", this, 3)
-    this.addCollider("bulletDodge", this, this.weaverCloseHitBox, ["Bullet"], ["General"])
+    this.addCollider("General", this, 3)
+    this.addCollider("BulletDodge", this, this.weaverCloseHitBox, ["Bullet"], ["General"])
     // now it will move
     this.addPhysicsComponent()
   }
 
   onCollision(collider, type){
-    if (type === "bulletDodge") {
+    if (type === "BulletDodge") {
       this.acceptBulletDirection(collider.gameObject.transform.pos)
     }
   }
@@ -79,7 +81,7 @@ class Weaver extends GameObject {
 
   chase(timeDelta) {
     let speed = 2
-    let shipPos = this.shiptransform.pos;
+    let shipPos = this.shipTransform.pos;
     let dy = shipPos[1] - this.transform.pos[1];
     let dx = shipPos[0] - this.transform.pos[0];
 

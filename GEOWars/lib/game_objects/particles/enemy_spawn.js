@@ -1,4 +1,4 @@
-const GameObject = require("../game_engine/game_object")
+const GameObject = require("../../game_engine/game_object")
 
 class EnemySpawn extends GameObject{
   constructor(){

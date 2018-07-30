@@ -1,9 +1,10 @@
-class GruntSprite extends LinSprite {
+const LineSprite = require("../../../game_engine/line_sprite")
+class GruntSprite extends LineSprite {
   constructor(transform, spawningScale = 1) {
     this.super(transform)
     this.spawningScale = spawningScale
-    this.stretchScale_L = 
-    this.stretchScale_W = 
+    this.stretchScale_L = 1
+    this.stretchScale_W = 0.7
   }
 
   draw(ctx) {

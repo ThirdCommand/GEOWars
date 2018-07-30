@@ -1,17 +1,22 @@
-const GameObject = require("../game_engine/game_object");
-const Bullet = require("./bullet");
-const Util = require("../game_engine/util");
+const GameObject = require("../../game_engine/game_object");
+const Bullet = require("../Bullet/bullet");
+const Util = require("../../game_engine/util");
+const Sound = require("../../game_engine/sound");
+
 
 class Ship extends GameObject {
-  constructor(pos, engine) {
+  constructor(engine, pos) { 
+    // console.log(engine);
+    
     super(engine);
+
+    this.transform.pos = pos
     this.addPhysicsComponent()
     this.addMousePosListener()
     this.addLeftControlStickListener()
     this.speed = 2.5;
     this.mousePos = [0,0];
     this.fireAngle = 0; 
-    
     this.bulletSound = new Sound("GEOWars/sounds/Fire_normal.wav", 0.2);
     this.bulletTimeCheck;
     this.bulletInterval = 120;
