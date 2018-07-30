@@ -14,6 +14,7 @@ class BoxBox extends GameObject {
     // this.addPhysicsComponent()
     this.addLineSprite(new BoxBoxSprite(this.transform))
     this.addChildGameObject(new EnemySpawn)
+    this.playSound(this.spawnSound)
     // adds self as parent before parent needed.. magic?
   }
 

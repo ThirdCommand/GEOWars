@@ -1,23 +1,22 @@
 
 class GameView {
-  constructor(game, ctx, canvasEl) {
+  constructor(engine, ctx, canvasEl) {
     this.ctx = ctx;
-    this.game = game;
-    this.ship = this.game.addShip();
+    this.engine = engine;
+    // this.ship = this.game.addShip(); belongs in game script
     this.canvasEl = canvasEl;
   }
 
   bindKeyHandlers() {
-    const ship = this.ship;
-
+    const engine = this.engine
     Object.keys(GameView.MOREMOVES).forEach((k) => {
       const move = GameView.MOREMOVES[k];
       key(k, () => { ship.controlsDirection(move); });
     });
 
     key("m", () => {
-      this.game.muted = !this.game.muted;
-      if (this.game.muted) {
+      engine.muted = !engine.muted;
+      if (engine.muted) {
         this.theme.pause();
       } else {
         this.theme.play();
@@ -28,9 +27,8 @@ class GameView {
       const x = {x: e.layerX};
       const y = {y: e.layerY};
       const mousePos = [e.layerX, e.layerY];
-      
-      ship.setFireAngle(mousePos);
-      
+      this.engine.updateMousePos(mousePos)
+      // ship.setFireAngle(mousePos); add to game script event listener thing
     });
     
     // key("space", () => { ship.fireBullet(); });
@@ -43,15 +41,14 @@ class GameView {
       this.theme = new Audio("GEOWars/sounds/Geometry_OST.mp3");
       this.theme.id = "OST";
 
-      this.game.ships[0].start();
+      // this.game.ships[0].start();
       requestAnimationFrame(this.animate.bind(this));
     });
   }
   
   animate(time) {
     const timeDelta = time - this.lastTime;
-    this.game.step(timeDelta, this.ctx);
-    this.game.draw(this.ctx);
+    this.engine.step(timeDelta, this.ctx);
     this.lastTime = time;
     // every call to animate requests causes another call to animate
     requestAnimationFrame(this.animate.bind(this));

@@ -7,8 +7,9 @@ const Sound = require("./sound")
 const Util = require("./util")
 
 class GameEngine {
-  constructor() {
+  constructor(ctx) {
     this.gameScript = new GameScript(this);
+    this.ctx
     this.gameObjects = [];
     this.physicsComponents = [];
     this.lineSprites = [];
@@ -16,15 +17,33 @@ class GameEngine {
     this.colliders = {};
     this.subscibers = {};
     this.muted = true;
+    this.mouseListeners = [];
+    this.leftControlStickListeners = [];
   }
 
   tick(delta) {
     movePhysicsComponents(delta)
     checkCollisions()
     updateGameObjects(delta)
-    renderLineSprites()
+    renderLineSprites(this.ctx)
     updateGameScript(delta)
     playSounds()
+  }
+
+  addLeftControlStickListener(object){
+    this.leftControlStickListeners.append(object)
+  }
+
+  updateLeftControlStickListeners(unitVector){
+    this.leftControllStickListeners.forEach((listener) => {
+      listener.updateLeftControlStickInput(unitVector)
+    })
+  }
+
+  updateMousePos(mousePos){
+    this.mouseListeners.forEach((object) => {
+      object.updateMousePos(mousePos)
+    })
   }
 
   movePhysicsComponents(delta) {
@@ -84,6 +103,10 @@ class GameEngine {
       sprite.draw(ctx)
     })
   }
+
+  addMouseListener(object){
+    this.mouseListeners.append(object)
+  
 
   updateGameScript(delta) {
     gameScript.update(delta)

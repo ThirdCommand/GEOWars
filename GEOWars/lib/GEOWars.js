@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   canvasEl.height = GameScript.DIM_Y;
 
   const ctx = canvasEl.getContext("2d");
-  const gameEngine = new GameEngine();
+  const gameEngine = new GameEngine(ctx);
   new GameView(gameEngine, ctx, canvasEl).start();
 });
 

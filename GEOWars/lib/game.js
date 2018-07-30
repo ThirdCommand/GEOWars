@@ -231,33 +231,33 @@ class Game {
   }
 
 
-  draw(ctx) {
+  // draw(ctx) {
 
-    // var ctx = document.createElement("canvas").getContext("2d");
-    // ctx.canvas.width = this.DIM_X;
-    // ctx.canvas.height = this.DIM_Y;
+  //   // var ctx = document.createElement("canvas").getContext("2d");
+  //   // ctx.canvas.width = this.DIM_X;
+  //   // ctx.canvas.height = this.DIM_Y;
 
-    ctx.save()
-    ctx.clearRect(0, 0, Game.DIM_X, Game.DIM_Y);
-    ctx.fillStyle = Game.BG_COLOR;
-    ctx.fillRect(0, 0, Game.DIM_X, Game.DIM_Y);
+  //   ctx.save()
+  //   ctx.clearRect(0, 0, Game.DIM_X, Game.DIM_Y);
+  //   ctx.fillStyle = Game.BG_COLOR;
+  //   ctx.fillRect(0, 0, Game.DIM_X, Game.DIM_Y);
 
-    this.ships.forEach((object) => {
-      object.draw(ctx);
-    })
-    this.allObjects().forEach((object) => {
-      object.draw(ctx);
-    });
-    this.bullets.forEach((object) => {
-      object.draw(ctx)
-    });
-    this.particleObjects().forEach((particle) => {
-      particle.draw(ctx);
-    });
-    this.singularities.forEach((object) => {
-      object.draw(ctx);
-    });
-  }
+  //   this.ships.forEach((object) => {
+  //     object.draw(ctx);
+  //   })
+  //   this.allObjects().forEach((object) => {
+  //     object.draw(ctx);
+  //   });
+  //   this.bullets.forEach((object) => {
+  //     object.draw(ctx)
+  //   });
+  //   this.particleObjects().forEach((particle) => {
+  //     particle.draw(ctx);
+  //   });
+  //   this.singularities.forEach((object) => {
+  //     object.draw(ctx);
+  //   });
+  // }
   
 
   playSounds() {

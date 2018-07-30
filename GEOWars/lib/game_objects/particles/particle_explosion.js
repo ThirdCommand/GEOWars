@@ -1,7 +1,5 @@
 const Particle = require("./particle")
 
-
-
 const speeds = [7,6,5.5,5,4];
 
 class ParticleExplosion{
@@ -20,7 +18,7 @@ class ParticleExplosion{
     this.particles = [];
     explosionSound = new Sound("GEOWars/sounds/Enemy_explode.wav", 0.5)
     this.playSound(explosionSound)
-    
+
     createExplosionParticles()
   }
 

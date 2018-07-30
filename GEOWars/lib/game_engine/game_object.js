@@ -32,6 +32,22 @@ class GameObject {
     this.gameEngine.addLineSprite(this.lineSprite)
   }
 
+  addMousePosListener(){
+    this.gameEngine.addMouseListener(this)
+  }
+
+  addLeftControllStickListener() {
+    this.gameEngine.addLeftControllStickListener(this)
+  }
+
+  updateLeftControlStickInput(direction){
+
+  }
+
+  updateMousePos(mousePos){
+
+  }
+
   addColider(type, gameObject, radius, subscriptionTypes, subscriptions){
     // game engine checks every collider with it's subscription types
     let newCollider = new Collider(type, gameObject, radius, subscriptionTypes, subscriptions)

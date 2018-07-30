@@ -19,7 +19,7 @@ class GameScript {
   constructor(engine) {
     
     this.gameTime = 0;
-   
+    this.engine = engine
     this.enemyCreatorList = this.createEnemyCreatorList()
     this.deathSound = new Audio("GEOWars/sounds/Enemy_explode.wav")
     this.deathSound.volume = 0.5;
@@ -31,11 +31,15 @@ class GameScript {
     this.hugeSequenceTime = 0;
     this.sequenceCount = 0;
     this.lives = 3;
+    this.addShip();
     this.addEnemies();
     this.soundsToPlay = {}
   }
 
+  update(deltaTime){
+    this.spawnSequence(deltaTime)
 
+  }
 
   randomArrowDirection() {
     let angles = [0, Math.PI / 2, Math.PI, Math.PI * 3 / 2]
@@ -43,43 +47,21 @@ class GameScript {
   }
 
   createEnemyCreatorList() {
+    engine = this.engine 
     return {
-      BoxBox: (pos) => (new BoxBox({
-        game: this,
-        pos: pos
-      })),
-      Pinwheel: (pos) => (new Pinwheel({
-        game: this,
-        pos: pos
-      })),
-      Arrow: (pos, angle) => (new Arrow({
-        game: this,
-        pos: pos,
-        angle: angle
-      })),
-      Grunt: (pos) => (new Grunt({
-        game: this,
-        pos: pos
-      })),
-      Weaver: (pos) => (new Weaver({
-        game: this,
-        pos: pos
-      })),
-      Singularity: (pos) => (new Singularity({
-        game: this,
-        pos: pos
-      }))
+      BoxBox:      (pos)        => (new BoxBox(engine, pos)),
+      Pinwheel:    (pos)        => (new Pinwheel(engine, pos)),
+      Arrow:       (pos, angle) => (new Arrow(engine, pos, angle)),
+      Grunt:       (pos)        => (new Grunt(engine, pos)),
+      Weaver:      (pos)        => (new Weaver(engine, pos)),
+      Singularity: (pos)        => (new Singularity(engine, pos))
     };
-
   }
 
   randomSpawnEnemy(enemy) {
-    if (this.enemies.length < 50) {
-      let pos = this.randomPosition();
-      let enemyCreators = Object.values(this.enemyCreatorList)
-      let spawn = new EnemySpawn(enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](), this);
-      this.add(spawn)
-    }
+    let pos = this.randomPosition();
+    let enemyCreators = Object.values(this.enemyCreatorList)
+    enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos);
   }
 
   spawnEnemies(spawnList) {
@@ -89,6 +71,14 @@ class GameScript {
         this.add(spawn)
       })
     }
+  }
+
+  randomPosition() {
+    return [
+      Game.DIM_X * Math.random(),
+      Game.DIM_Y * Math.random(),
+      // 500,300
+    ];
   }
 
   spawnSequence(delta) {
@@ -110,7 +100,6 @@ class GameScript {
           )
         }
       }
-      this.spawnEnemies(enemies_to_spawn);
 
     } else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 1) {
       this.intervalTime = 0
@@ -119,12 +108,10 @@ class GameScript {
       let randomPos = this.randomPosition();
       for (let i = 0; i < 2; i++) {
         for (let j = 0; j < 2; j++) {
-          enemies_to_spawn.push(
-            this.enemyCreatorList["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
-          )
+          this.enemyCreatorList["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
         }
       }
-      this.spawnEnemies(enemies_to_spawn);
+
     } else if (this.intervalTime > (5000 * this.intervalTiming) && this.sequenceCount === 11) {
       this.intervalTime = 0;
       this.sequenceCount += 1;
@@ -140,9 +127,9 @@ class GameScript {
         [Game.DIM_X - 40, Game.DIM_Y - 40]
       ]
       fourCorners.forEach((corner) => {
-        enemies_to_spawn.push(this.enemyCreatorList["Grunt"](corner))
+        this.enemyCreatorList["Grunt"](corner)
       })
-      this.spawnEnemies(enemies_to_spawn);
+
     } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 1) {
       this.intervalTime = 0;
       this.sequenceCount += 14;
@@ -155,10 +142,9 @@ class GameScript {
       }
 
       arrowWallPositions.forEach((position) => {
-        enemies_to_spawn.push(this.enemyCreatorList["Arrow"](position, arrowDirection))
+        this.enemyCreatorList["Arrow"](position, arrowDirection)
       })
 
-      this.spawnEnemies(enemies_to_spawn);
     } else if (this.sequenceCount >= 26) {
       this.sequenceCount = 0;
       if (!(this.intervalTiming < 0.5)) {
@@ -176,14 +162,7 @@ class GameScript {
   }
 
   addShip() {
-    const ship = new Ship({
-      pos: this.randomPosition(),
-      game: this
-    });
-
-    this.add(ship);
-
-    return ship;
+    this.ship = new Ship(500,500, this.engine)
   }
 
   isOutOfBounds(pos) {
@@ -191,43 +170,73 @@ class GameScript {
       (pos[0] > Game.DIM_X) || (pos[1] > Game.DIM_Y);
   }
 
-  randomPosition() {
-    return [
-      Game.DIM_X * Math.random(),
-      Game.DIM_Y * Math.random(),
-      // 500,300
-    ];
-  }
-
   updateShipFireAngle() {
     this.ships[0].setFireAngle()
   }
 
-  wrap(pos) {
+  bounce(pos){
     return [
-      Util.wrap(pos[0], Game.DIM_X), Util.wrap(pos[1], Game.DIM_Y)
+      Util.bounce(pos[0], Game.DIM_X), Util.bounce(pos[1], Game.DIM_Y)
     ];
+  }
+
+  bounce(shape, max) {
+
+    if (shape.pos[0] <= 0 || shape.pos[0] >= max[0]) {
+      shape.vel[0] = -shape.vel[0];
+    }
+    if (shape.pos[1] <= 0 || shape.pos[1] >= max[1]) {
+      shape.vel[1] = -shape.vel[1];
+    }
+  }
+
+  redirect(arrow, max) {
+    let max = Game.DIM_X 
+    let max = Game.DIM_Y
+    if (arrow.pos[0] <= 0 || arrow.pos[0] >= max[0]) {
+      if (arrow.pos[0] <= 0) {
+        arrow.pos[0] = 1
+      }
+      if (arrow.pos[0] >= max[0]) {
+        arrow.pos[0] = max[0] - 1
+      }
+
+      arrow.vel[0] = -arrow.vel[0];
+      arrow.vel[1] = -arrow.vel[1];
+    }
+    if (arrow.pos[1] <= 0 || arrow.pos[1] >= max[1]) {
+      if (arrow.pos[1] <= 0) {
+        arrow.pos[1] = 1
+      }
+      if (arrow.pos[1] >= max[1]) {
+        arrow.pos[1] = max[1] - 1
+      }
+
+
+      arrow.vel[0] = -arrow.vel[0];
+      arrow.vel[1] = -arrow.vel[1];
+    }
   }
 
 }
 
-Game.BG_COLOR = "#000000";
+GameScript.BG_COLOR = "#000000";
 
-Game.DIM_X = 1000;
-Game.DIM_Y = 600;
+GameScript.DIM_X = 1000;
+GameScript.DIM_Y = 600;
 // Game.FPS = 32;
-Game.NUM_BOXES = 10;
-Game.NUM_PINWHEELS = 0;
-Game.NUM_ARROWS = 0;
-Game.NUM_GRUNTS = 0;
-Game.NUM_WEAVERS = 0;
-Game.NUM_SINGULARITIES = 1;
-module.exports = Game;
+// GameScript.NUM_BOXES = 10;
+// GameScript.NUM_PINWHEELS = 0;
+// GameScript.NUM_ARROWS = 0;
+// GameScript.NUM_GRUNTS = 0;
+// GameScript.NUM_WEAVERS = 0;
+// GameScript.NUM_SINGULARITIES = 1;
+module.exports = GameScript;
 
-Game.Spawn1 = {
+GameScript.Spawn1 = {
   BoxBox: 50,
 }
 
-Game.spawnListList = [
+GameScript.spawnListList = [
   Game.Spawn1
 ]

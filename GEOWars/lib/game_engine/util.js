@@ -31,51 +31,7 @@ const Util = {
     return [vec[0] * m, vec[1] * m];
   },
 
-  wrap(coord, max) {
-    if (coord < 0) {
-      return max - (coord % max);
-    } else if (coord > max) {
-      return coord % max;
-    } else {
-      return coord;
-    }
-  },
-
-  bounce(shape, max){
-
-    if(shape.pos[0] <= 0 || shape.pos[0] >= max[0]){
-      shape.vel[0] = -shape.vel[0];
-    }
-    if( shape.pos[1] <= 0 || shape.pos[1] >= max[1]){
-      shape.vel[1] = -shape.vel[1];
-    }
-  },
-
-  redirect(arrow, max){
-    if (arrow.pos[0] <= 0 || arrow.pos[0] >= max[0]) {
-      if (arrow.pos[0] <= 0) {
-        arrow.pos[0] = 1
-      }
-      if (arrow.pos[0] >= max[0]) {
-        arrow.pos[0] = max[0] - 1
-      }
-
-      arrow.vel[0] = -arrow.vel[0];
-      arrow.vel[1] = -arrow.vel[1];
-    }
-    if (arrow.pos[1] <= 0 || arrow.pos[1] >= max[1]) {
-      if (arrow.pos[1] <= 0) {
-        arrow.pos[1] = 1
-      }
-      if (arrow.pos[1] >= max[1]) {
-        arrow.pos[1] = max[1] - 1
-      }
-
-
-      arrow.vel[0] = -arrow.vel[0];
-      arrow.vel[1] = -arrow.vel[1];
-    }
-  }
+  
  
 };
 

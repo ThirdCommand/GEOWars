@@ -6,12 +6,13 @@ class Ship extends GameObject {
   constructor(pos, engine) {
     super(engine);
     this.addPhysicsComponent()
-
+    this.addMousePosListener()
+    this.addLeftControlStickListener()
     this.speed = 2.5;
     this.mousePos = [0,0];
     this.fireAngle = 0; 
-    this.bulletSound = new Audio("GEOWars/sounds/Fire_normal.wav");
-    this.bulletSound.volume = 0.2;
+    
+    this.bulletSound = new Sound("GEOWars/sounds/Fire_normal.wav", 0.2);
     this.bulletTimeCheck;
     this.bulletInterval = 120;
     this.controlsDirection = [0,0];
@@ -25,21 +26,30 @@ class Ship extends GameObject {
       this.fireBullet();
     } 
     
-    acceptControllerDirection(timeDelta)
+    moveInControllerDirection(timeDelta)
     // if ship is out of x bounds, maintain y speed, keep x at edge value
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
-      this.gameEngine.gameScript.bounce(this.transform.pos);
-    }
+    
 
   }
 
-  acceptControllerDirection(timeDelta){
+  updateMousePos(mousePos){
+    this.setFireAngle(mousePos)
+  }
+
+  updateLeftControlStickInput(unitVector) {
+    this.controlsDirection = unitVector
+  }
+
+  moveInControllerDirection(timeDelta){
     let speed = this.speed
 
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-
-    this.transform.pos[0] += speed * this.controlsDirection[0] * velocityScale
-    this.transform.pos[1] += speed * this.controlsDirection[1] * velocityScale
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
+      this.gameEngine.gameScript.bounce(this.transform.pos);
+    } else {
+      this.transform.pos[0] += speed * this.controlsDirection[0] * velocityScale
+      this.transform.pos[1] += speed * this.controlsDirection[1] * velocityScale
+    }
   }
 
   setFireAngle(mousePos) {
@@ -54,7 +64,7 @@ class Ship extends GameObject {
   }
 
   fireBullet(e) {
-    this.gameEngine.queueSound(bulletSound)
+    this.gameEngine.queueSound(this.bulletSound)
     let shipvx = this.transform.vel[0];
     let shipvy = this.transform.vel[1];
 
@@ -77,20 +87,13 @@ class Ship extends GameObject {
       const bullet2 = new Bullet(this.transform.pos, this.engine, bulletVel2);
       const bullet3 = new Bullet(this.transform.pos, this.engine, bulletVel3);
 
-      this.game.add(bullet2);
-      this.game.add(bullet3);
     }
-
-    this.game.add(bullet1);
-    
   }
 
 
   // implement threshold so it's not too sensitive
 
-  controlsDirection(unitVector) {
-    this.controlsDirection = unitVector
-  }
+  
 
   relocate() {
     // this.game.die();
