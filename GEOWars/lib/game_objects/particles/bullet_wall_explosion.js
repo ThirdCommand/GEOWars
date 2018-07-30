@@ -5,7 +5,7 @@ const speeds = [1, 2, 3, 4];
 
 class BulletWallExplosion extends GameObject{
   constructor(engine, pos, vel) {
-    this.super(engine)
+    super(engine)
     this.COLORS = [
       ["rgba(152,245,23", "rgba(126,185,43", "rgba(189,236,122", "rgba(103,124,74"],
       ["rgba(255,241,44", "rgba(245,236,109", "rgba(165,160,87", "rgba(177,167,28"],
@@ -14,7 +14,6 @@ class BulletWallExplosion extends GameObject{
       ["rgba(190,86,250", "rgba(159,96,196", "rgba(87,17,128", "rgba(199,150,228"]
     ]
     this.color = this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
-    this.game = game;
     this.particleNum = 20;
     bulletWallHit = new Sound("GEOWars/sounds/bullet_hitwall.wav", 0.2)
     this.playSound(bulletWallHit)
@@ -25,7 +24,7 @@ class BulletWallExplosion extends GameObject{
     for (var i = 0; i < this.particleNum; i++) {
       const particleId = i;
       const speed = speeds[Math.floor(Math.random() * speeds.length)]
-      this.addChildObject(new Particle(this.engine, this.pos, speed, this.color));
+      this.addChildObject(new Particle(this.engine, this.transform.pos, speed, this.color));
     }
   }
 

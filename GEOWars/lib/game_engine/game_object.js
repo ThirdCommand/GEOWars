@@ -8,7 +8,7 @@ const Collider = require("./collider")
 
 class GameObject {
   constructor(engine) {
-    // debugger
+
     this.gameEngine = engine
     this.gameEngine.addGameObject(this)
     this.transform = new Transform()
@@ -18,7 +18,6 @@ class GameObject {
     this.parentObject = null
     this.colliders = []
     // this.color = options.color;
-    // this.game = options.game;
     // this.bounce = true;
     // this.speed = 0;
   }
@@ -50,7 +49,7 @@ class GameObject {
 
   }
 
-  addColider(type, gameObject, radius, subscriptionTypes, subscriptions){
+  addCollider(type, gameObject, radius, subscriptionTypes, subscriptions){
     // game engine checks every collider with it's subscription types
     let newCollider = new Collider(type, gameObject, radius, subscriptionTypes, subscriptions)
     this.colliders.push(newCollider)

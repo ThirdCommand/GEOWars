@@ -1,13 +1,13 @@
 const LineSprite = require("../../../game_engine/line_sprite")
 class BoxBoxSprite extends LineSprite{
   constructor(transform, spawningScale = 1) {
-    this.super(transform)
+    super(transform)
     this.spawningScale = spawningScale
   }
 
   draw(ctx) {
 
-    spawningScale = this.spawningScale || 1;
+    let spawningScale = this.spawningScale || 1;
     let pos = this.transform.absolutePosition()
     let boxsize = 10 * spawningScale;
 

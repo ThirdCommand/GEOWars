@@ -19,7 +19,7 @@ class Transform {
   }
 
   absolutePosition() {
-    absPos = []
+    let absPos = []
     if (this.parentTransform == null){
       absPos = this.pos
       return absPos
@@ -29,7 +29,7 @@ class Transform {
   }
 
   absoluteVelocity() {
-    absVel = []
+    let absVel = []
     if (this.parentTransform == null) {
       absVel = this.vel
       return absVel
@@ -39,7 +39,7 @@ class Transform {
   }
 
   absoluteAcceleration() {
-    absAcc = []
+    let absAcc = []
     if (this.parentTransform == null) {
       absAcc = this.acc
       return absAcc

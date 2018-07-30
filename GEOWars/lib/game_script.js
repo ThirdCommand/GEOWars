@@ -17,7 +17,8 @@ const Sound = require("./game_engine/sound")
 
 class GameScript {
   constructor(engine) {
-    
+    this.DIM_X = 1000;
+    this.DIM_Y = 600;
     this.gameTime = 0;
     this.engine = engine
     this.addShip();
@@ -63,18 +64,18 @@ class GameScript {
     enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos);
   }
 
-  spawnEnemies(spawnList) {
-    if (this.enemies.length < 50) {
-      spawnList.forEach((enemy) => {
-        let spawn = new EnemySpawn(enemy, this)
-        this.add(spawn)
-      })
-    }
-  }
+  // spawnEnemies(spawnList) {
+  //   if (this.enemies.length < 50) {
+  //     spawnList.forEach((enemy) => {
+  //       let spawn = new EnemySpawn(enemy, this)
+  //       this.add(spawn)
+  //     })
+  //   }
+  // }
 
   randomPosition() {
     return [
-      GameScrip.DIM_X * Math.random(),
+      GameScript.DIM_X * Math.random(),
       GameScript.DIM_Y * Math.random(),
       // 500,300
     ];
@@ -122,7 +123,7 @@ class GameScript {
       let fourCorners = [
         [40, 40],
         [GameScript.DIM_X - 40, 40],
-        [40, Game.DIM_Y - 40],
+        [40, GameScript.DIM_Y - 40],
         [GameScript.DIM_X - 40, GameScript.DIM_Y - 40]
       ]
       fourCorners.forEach((corner) => {
@@ -175,19 +176,20 @@ class GameScript {
     this.ships[0].setFireAngle()
   }
 
-  bounce(pos){
-    return [
-      Util.bounce(pos[0], GameScript.DIM_X), Util.bounce(pos[1], GameScript.DIM_Y)
-    ];
-  }
+  // bounce(pos){
+  //   return [
+  //     Util.bounce(pos[0], GameScript.DIM_X), Util.bounce(pos[1], GameScript.DIM_Y)
+  //   ];
+  // }
 
-  bounce(shape, max) {
-
-    if (shape.pos[0] <= 0 || shape.pos[0] >= max[0]) {
-      shape.vel[0] = -shape.vel[0];
+  bounce(transform) {
+    let max = [this.DIM_X, this.DIM_Y]
+    // debugger
+    if (transform.pos[0] <= 0 || transform.pos[0] >= max[0]) {
+      transform.vel[0] = -transform.vel[0];
     }
-    if (shape.pos[1] <= 0 || shape.pos[1] >= max[1]) {
-      shape.vel[1] = -shape.vel[1];
+    if (transform.pos[1] <= 0 || transform.pos[1] >= max[1]) {
+      transform.vel[1] = -transform.vel[1];
     }
   }
 

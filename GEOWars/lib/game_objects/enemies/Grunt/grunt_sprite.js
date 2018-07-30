@@ -1,7 +1,7 @@
 const LineSprite = require("../../../game_engine/line_sprite")
 class GruntSprite extends LineSprite {
   constructor(transform, spawningScale = 1) {
-    this.super(transform)
+    super(transform)
     this.spawningScale = spawningScale
     this.stretchScale_L = 1
     this.stretchScale_W = 0.7
@@ -10,7 +10,7 @@ class GruntSprite extends LineSprite {
   draw(ctx) {
     let pos = this.transform.absolutePosition();
     
-    spawningScale = this.spawningScale;
+    let spawningScale = this.spawningScale;
     let shipLength = 10 * 2.2 * spawningScale * this.stretchScale_L;
     let shipWidth = 10 * 2.2 * spawningScale * this.stretchScale_W;
     let l = shipLength;

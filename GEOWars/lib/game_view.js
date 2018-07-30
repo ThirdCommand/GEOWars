@@ -48,7 +48,7 @@ class GameView {
   
   animate(time) {
     const timeDelta = time - this.lastTime;
-    this.engine.step(timeDelta, this.ctx);
+    this.engine.tick(timeDelta, this.ctx);
     this.lastTime = time;
     // every call to animate requests causes another call to animate
     requestAnimationFrame(this.animate.bind(this));

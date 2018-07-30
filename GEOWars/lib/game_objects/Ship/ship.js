@@ -6,14 +6,12 @@ const Sound = require("../../game_engine/sound");
 
 class Ship extends GameObject {
   constructor(engine, pos) { 
-    // console.log(engine);
-    
     super(engine);
-
     this.transform.pos = pos
     this.addPhysicsComponent()
     this.addMousePosListener()
     this.addLeftControlStickListener()
+    this.addCollider("General", this, 3)
     this.speed = 2.5;
     this.mousePos = [0,0];
     this.fireAngle = 0; 
@@ -31,10 +29,8 @@ class Ship extends GameObject {
       this.fireBullet();
     } 
     
-    moveInControllerDirection(timeDelta)
+    this.moveInControllerDirection(deltaTime)
     // if ship is out of x bounds, maintain y speed, keep x at edge value
-    
-
   }
 
   updateMousePos(mousePos){
@@ -50,7 +46,7 @@ class Ship extends GameObject {
 
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
-      this.gameEngine.gameScript.bounce(this.transform.pos);
+      this.gameEngine.gameScript.bounce(this.transform);
     } else {
       this.transform.pos[0] += speed * this.controlsDirection[0] * velocityScale
       this.transform.pos[1] += speed * this.controlsDirection[1] * velocityScale
@@ -58,13 +54,14 @@ class Ship extends GameObject {
   }
 
   setFireAngle(mousePos) {
+    
     if (mousePos === undefined){
       mousePos = this.mousePos;
     } else {
       this.mousePos = mousePos
     }
-    let dy = mousePos[1] - this.pos[1];
-    let dx = mousePos[0] - this.pos[0];
+    let dy = mousePos[1] - this.transform.pos[1];
+    let dx = mousePos[0] - this.transform.pos[0];
     this.fireAngle =  Math.atan2(dy, dx)
   }
 
@@ -101,8 +98,8 @@ class Ship extends GameObject {
   
 
   relocate() {
-    // this.game.die();
-    // this.pos = this.game.randomPosition();
+    // this.GameScript.die();
+    // this.transform.pos = this.game.randomPosition();
     // this.vel = [0, 0];
     // this.acc = [0, 0];
   }

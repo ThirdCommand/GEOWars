@@ -2,7 +2,7 @@ const LineSprite = require("../../../game_engine/line_sprite")
 
 class WeaverSprite extends LineSprite {
   constructor(transform, spawningScale = 1) {
-    this.super(transform)
+    super(transform)
     this.spawningScale = spawningScale
   }
 
@@ -63,3 +63,5 @@ class WeaverSprite extends LineSprite {
     ctx.stroke();
   }
 }
+
+module.exports = WeaverSprite

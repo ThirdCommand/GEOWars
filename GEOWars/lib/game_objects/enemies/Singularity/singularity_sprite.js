@@ -2,14 +2,14 @@ const LineSprite = require("../../../game_engine/line_sprite")
 
 class SingularitySprite extends LineSprite {
   constructor(transform, spawningScale = 1) {
-    this.super(transform)
+    super(transform)
     this.spawningScale = spawningScale
     this.throbbingScale = 1
     this.radius = 15;
   }
 
   draw(ctx) {
-    
+    let spawningScale = this.spawningScale
     if (!this.spawningScale) {
       spawningScale = this.throbbingScale
     }
@@ -48,7 +48,9 @@ class SingularitySprite extends LineSprite {
 
   drawSingularity(ctx, radius) {
     ctx.beginPath();
-    ctx.arc(this.pos[0], this.pos[1], radius, 0, 2 * Math.PI, true);
+    ctx.arc(this.transform.pos[0], this.transform.pos[1], radius, 0, 2 * Math.PI, true);
     ctx.stroke();
   }
 }
+
+module.exports = SingularitySprite

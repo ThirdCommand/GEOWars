@@ -1,6 +1,6 @@
 class ShipSprite extends LinSprite {
   constructor(transform, spawningScale = 1) {
-    this.super(transform)
+    super(transform)
     this.spawningScale = spawningScale
   }
 

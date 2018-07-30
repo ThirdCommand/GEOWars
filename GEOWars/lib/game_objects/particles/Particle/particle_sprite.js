@@ -2,7 +2,7 @@ const LineSprite = require("../../../game_engine/line_sprite")
 
 class ParticleSprite extends LineSprite {
   constructor(transform, spawningScale = 1) {
-    this.super(transform)
+    super(transform)
     this.spawningScale = spawningScale
     this.rectLength = 15;
     this.rectWidth = 2;

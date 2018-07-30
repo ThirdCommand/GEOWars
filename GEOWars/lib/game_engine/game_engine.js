@@ -14,7 +14,7 @@ class GameEngine {
     this.lineSprites = [];
     this.soundsToPlay = {};
     this.colliders = {};
-    this.subscibers = {};
+    this.subscribers = [];
     this.muted = true;
     this.mouseListeners = [];
     this.leftControlStickListeners = [];
@@ -22,12 +22,18 @@ class GameEngine {
   }
 
   tick(delta) {
-    movePhysicsComponents(delta)
-    checkCollisions()
-    updateGameObjects(delta)
-    renderLineSprites(this.ctx)
-    updateGameScript(delta)
-    playSounds()
+    this.movePhysicsComponents(delta)
+    this.checkCollisions()
+    this.updateGameObjects(delta)
+    this.clearCanvas()
+    this.renderLineSprites(this.ctx)
+    this.updateGameScript(delta)
+    this.playSounds()
+  }
+
+  clearCanvas(){
+
+    this.ctx.clearRect(0, 0, this.gameScript.DIM_X, this.gameScript.DIM_Y);
   }
 
   addLeftControlStickListener(object){
@@ -56,12 +62,14 @@ class GameEngine {
     if (collider.subscribers) {
       this.subscribers.push(collider)
     }
+    let colliders = this.colliders
     // collider: object absolute transform
     // collider { "objectType": "Bullet", "type": "general", "subscriptions": ["BoxBox", "Arrow"] }
     // colliders {"Singularity": {"General": [collider, collider], "GravityWell": [collider,collider]}}
     if (!colliders[collider.objectType]) {
       let collidersSameTypeAndObject = {}
-      colliders[collider.objectType] = collidersSameTypeAndObject[collider.type] = [collider]
+      collidersSameTypeAndObject[collider.type] = [collider]
+      colliders[collider.objectType] = collidersSameTypeAndObject
     } else {
       if (!colliders[collider.objectType][collider.type]){
         colliders[collider.objectType][collider.type] = [collider]
@@ -76,6 +84,7 @@ class GameEngine {
 
   checkCollisions() {
     let subscribers = this.subscribers
+    
     subscribers.forEach((subscribingCollider) => {
       subscribingCollider.subsciptions.forEach((subscribedType) => {
         colliders[subscriberType].forEach((subscribedCollider) => {
@@ -110,7 +119,7 @@ class GameEngine {
   
 
   updateGameScript(delta) {
-    gameScript.update(delta)
+    this.gameScript.update(delta)
   }
 
   addGameObject(object) {
@@ -123,7 +132,7 @@ class GameEngine {
   }
 
   addLineSprite(lineSprite) {
-    this.lineSprite.push(lineSprite)
+    this.lineSprites.push(lineSprite)
   }
 
   queueSound(sound){
@@ -139,7 +148,7 @@ class GameEngine {
     if (gameObject.lineSprites){
       this.lineSprites.splice(this.lineSprites.indexOf(gameObject.lineSprites), 1)
     }
-    removeColliders(gameObject.colliders)
+    this.removeColliders(gameObject.colliders)
     this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1)
   }
 

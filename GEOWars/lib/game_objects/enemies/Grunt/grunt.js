@@ -10,14 +10,14 @@ class Grunt extends GameObject {
   constructor(engine, pos, shipTransform) {
     super(engine)
     this.transform.pos = pos
-    this.stretchScale_W = 1;
-    this.stretchScale_L = 1;
+    // this.stretchScale_W = 1;
+    // this.stretchScale_L = 1;
     this.stretchDirection = -1;
     this.shipTransform = shipTransform
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
     this.playSound(this.spawnSound)
     this.addLineSprite(new GruntSprite(this.transform))
-    this.addChildGameObject(new EnemySpawn())
+    this.addChildGameObject(new EnemySpawn(this.gameEngine))
   }
 
   exist() {
@@ -46,16 +46,15 @@ class Grunt extends GameObject {
     this.chase(timeDelta)
     let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     let cycleSpeed = 0.01;
-
-    if (this.linesprite.stretchScale_W < 0.7 || this.linesprite.stretchScale_W > 1) {
+    if (this.lineSprite.stretchScale_W < 0.7 || this.lineSprite.stretchScale_W > 1) {
       this.stretchDirection *= -1
     }
 
-    this.linesprite.stretchScale_W = this.linesprite.stretchScale_W + -this.stretchDirection * cycleSpeed * cycleSpeedScale;
-    this.linesprite.stretchScale_L = this.linesprite.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
+    this.lineSprite.stretchScale_W = this.lineSprite.stretchScale_W + -this.stretchDirection * cycleSpeed * cycleSpeedScale;
+    this.lineSprite.stretchScale_L = this.lineSprite.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
 
-    if (this.gameEngine.gameScript.isOutOfBounds(this.pos)) {
-      Util.bounce(this, [1000, 600]) // HARD CODED
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
+      this.gameEngine.gameScript.bounce(this, [1000, 600]) // HARD CODED
     }
   }
 

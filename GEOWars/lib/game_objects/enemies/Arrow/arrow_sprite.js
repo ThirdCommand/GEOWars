@@ -1,18 +1,18 @@
 const LineSprite = require("../../../game_engine/line_sprite")
 class ArrowSprite extends LineSprite {
   constructor(transform, spawningScale = 1) {
-    this.super(transform)
+    super(transform)
     this.spawningScale = spawningScale
   }
 
   draw(ctx) {
     let pos = this.transform.absolutePosition();
-    spawningScale = this.spawningScale || 1;
+    let spawningScale = this.spawningScale || 1;
     let shipLength = 8 * 2.2 * spawningScale;
     let shipWidth = 6 * 2.2 * spawningScale;
     let l = shipLength;
     let w = shipWidth;
-    let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
+    let movementDirection = Math.atan2(this.transform.vel[0], -this.transform.vel[1])
 
     let r = 255;
     let g = 255;

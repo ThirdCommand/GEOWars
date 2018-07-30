@@ -12,7 +12,7 @@ class BoxBox extends GameObject {
     this.transform.pos = pos
     // this.addPhysicsComponent()
     this.addLineSprite(new BoxBoxSprite(this.transform))
-    this.addChildGameObject(new EnemySpawn())
+    this.addChildGameObject(new EnemySpawn(this.gameEngine))
     this.playSound(this.spawnSound)
     // adds self as parent before parent needed.. magic?
     
@@ -27,12 +27,12 @@ class BoxBox extends GameObject {
   }
  
   bounce(){
-    Util.bounce(this, [1000, 600])
+    this.gameEngine.gameScript.bounce(this.transform, [1000, 600])
   }
 
   update(delta){
-    if (this.gameEngine.gameScript.isOutOfBounds(this.pos)) {
-      Util.bounce(this, [1000, 600]) // HARD CODED
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
+      this.gameEngine.gameScript.bounce(this, [1000, 600]) // HARD CODED
     }
   }
 

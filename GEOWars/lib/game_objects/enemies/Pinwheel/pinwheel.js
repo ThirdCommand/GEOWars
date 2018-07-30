@@ -15,7 +15,7 @@ class Pinwheel extends GameObject {
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
     this.playSound(this.spawnSound)
     this.addLineSprite(new PinwheelSprite(this.transform))
-    this.addChildGameObject(new EnemySpawn())
+    this.addChildGameObject(new EnemySpawn(this.gameEngine))
   }
   
   exist() {
@@ -26,11 +26,11 @@ class Pinwheel extends GameObject {
   }
 
   update(deltaTime){
-    let rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    let rotationSpeedScale = deltaTime / NORMAL_FRAME_TIME_DELTA;
     this.transform.angle = (this.transform.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
 
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
-      Util.bounce(this, [1000, 600]) // HARD CODED
+      this.gameEngine.gameScript.bounce(this.transform) // HARD CODED
     }
   }
 

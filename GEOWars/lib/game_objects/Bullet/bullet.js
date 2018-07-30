@@ -7,7 +7,6 @@ class Bullet extends GameObject {
     super(engine);
     this.transform.pos = pos 
     this.transform.vel = vel
-    this.bounce = false;
 
     this.length = 12;
     this.radius = this.length / 4;
@@ -24,7 +23,12 @@ class Bullet extends GameObject {
   }
 
   update(deltaTime){
-    
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
+      new BulletWallExplosion(this.transform.pos, this.gameEngine)
+
+      this.game.soundsToPlay[this.wallhit.url] = this.wallhit
+      this.remove();
+    }
   }
 
   onCollision(collider, type){
@@ -37,16 +41,11 @@ class Bullet extends GameObject {
     }
   }
   
-  move(timeDelta) {
+  // move(timeDelta) {
 
-    if (this.gameEngine.gameScript.isOutOfBounds(this.pos)) {
-      new BulletWallExplosion(this.pos, this.gameEngine)
-      
-      this.game.soundsToPlay[this.wallhit.url] = this.wallhit
-      this.remove();
-    }
+    
 
-  }
+  // }
     
 }
 

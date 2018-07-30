@@ -1,13 +1,13 @@
 const LineSprite = require("../../../game_engine/line_sprite")
 class PinwheelSprite extends LineSprite {
   constructor(transform, spawningScale = 1) {
-    this.super(transform)
+    super(transform)
     this.spawningScale = spawningScale
   }
 
   draw(ctx) {
     let spawningScale = this.spawningScale || 1
-    let pos = this.transform.absolutePos()
+    let pos = this.transform.absolutePosition()
     let angle = this.transform.absoluteAngle()
 
     let shipWidth = 12 * spawningScale

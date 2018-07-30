@@ -32,6 +32,8 @@ class Collider {
   } 
 }
 
+module.exports = Collider;
+
 // on
 
 // When you add new things that effect other things

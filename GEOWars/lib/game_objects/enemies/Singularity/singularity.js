@@ -20,7 +20,7 @@ class Singularity extends GameObject {
 
     this.increasing = true
     this.addLineSprite(new SingularitySprite(this.transform))
-    this.addChildGameObject(new EnemySpawn())
+    this.addChildGameObject(new EnemySpawn(this.gameEngine))
 
     this.lineSprite.throbbingScale = 1
   }
@@ -41,8 +41,8 @@ class Singularity extends GameObject {
   }
 
   update(deltaTime) {
-    if (this.game.isOutOfBounds(this.pos)) {
-      Util.bounce(this, [1000, 600]) // HARD CODED
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
+      this.gameEngine.gameScriptbounce(this, [1000, 600]) // HARD CODED
     }
 
     this.throb(deltaTime)

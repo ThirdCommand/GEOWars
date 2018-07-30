@@ -2,7 +2,9 @@ const GameObject = require("../../../game_engine/game_object")
 const Sound = require("../../../game_engine/sound")
 const Util = require("../../../game_engine/util")
 
+const EnemySpawn = require("../../particles/enemy_spawn")
 const WeaverSprite = require("./weaver_sprite")
+
 class Weaver extends GameObject {
   constructor(engine, pos, shipTransform) {
     super(engine)
@@ -18,7 +20,7 @@ class Weaver extends GameObject {
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_green.wav", 0.5);
     this.playSound(this.spawnSound)
     this.addLineSprite(new WeaverSprite(this.transform))
-    this.addChildGameObject(new EnemySpawn())
+    this.addChildGameObject(new EnemySpawn(this.gameEngine))
   }
 
   exist() {
@@ -73,8 +75,8 @@ class Weaver extends GameObject {
 
     this.directionInfluenced = false;
 
-    if (this.game.isOutOfBounds(this.pos)) {
-      Util.bounce(this, [1000, 600]) // HARD CODED
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
+      this.gameEngine.gameScript.bounce(this.transform) 
     }
     
   }
