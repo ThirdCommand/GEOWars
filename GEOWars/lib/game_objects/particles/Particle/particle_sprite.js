@@ -1,20 +1,22 @@
 const LineSprite = require("../../../game_engine/line_sprite")
 
 class ParticleSprite extends LineSprite {
-  constructor(transform, spawningScale = 1) {
+  constructor(transform, color, hue) {
     super(transform)
-    this.spawningScale = spawningScale
+    // this.spawningScale = spawningScale
     this.rectLength = 15;
     this.rectWidth = 2;
-    this.hue
+    this.color = color
+    this.hue = hue
   }
 
   draw(ctx) {
-    
-    let pos = this.transform.pos;
+    // debugger
+    let pos = this.transform.absolutePosition();
+    let vel = this.transform.absoluteVelocity();
     let l = 15;
     let w = 5;
-    let movementDirection = Math.atan2(this.vel[0], -this.vel[1])
+    let movementDirection = Math.atan2(vel[0], -vel[1])
 
     ctx.save();
     ctx.beginPath();
@@ -34,4 +36,4 @@ class ParticleSprite extends LineSprite {
   }
 }
 
-module.exports = ArrowSprite;
+module.exports = ParticleSprite;

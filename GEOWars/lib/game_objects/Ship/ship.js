@@ -1,8 +1,9 @@
 const GameObject = require("../../game_engine/game_object");
-const Bullet = require("../Bullet/bullet");
 const Util = require("../../game_engine/util");
 const Sound = require("../../game_engine/sound");
 
+const Bullet = require("../Bullet/bullet");
+const ShipSprite = require("./ship_sprite")
 
 class Ship extends GameObject {
   constructor(engine, pos) { 
@@ -12,19 +13,23 @@ class Ship extends GameObject {
     this.addMousePosListener()
     this.addLeftControlStickListener()
     this.addCollider("General", this, 3)
+    this.addLineSprite(new ShipSprite(this.transform))
     this.speed = 2.5;
     this.mousePos = [0,0];
-    this.fireAngle = 0; 
+    this.fireAngle = 0;
     this.bulletSound = new Sound("GEOWars/sounds/Fire_normal.wav", 0.2);
-    this.bulletTimeCheck;
+    this.bulletTimeCheck = 0;
     this.bulletInterval = 120;
     this.controlsDirection = [0,0];
     this.powerLevel = 1;
+    this.bulletNumber = 0;
   }
   
   update(deltaTime){
+    
     this.bulletTimeCheck += deltaTime
-    if (this.bulletTimeCheck >= this.bulletInterval) {
+    if (this.bulletTimeCheck >= this.bulletInterval ) {
+      this.bulletNumber += 1
       this.bulletTimeCheck = 0;
       this.fireBullet();
     } 
@@ -65,7 +70,8 @@ class Ship extends GameObject {
     this.fireAngle =  Math.atan2(dy, dx)
   }
 
-  fireBullet(e) {
+  fireBullet() {
+    
     this.gameEngine.queueSound(this.bulletSound)
     let shipvx = this.transform.vel[0];
     let shipvy = this.transform.vel[1];
@@ -74,8 +80,8 @@ class Ship extends GameObject {
     let relBulletVelY1 = Bullet.SPEED * Math.sin(this.fireAngle);
 
     const bulletVel1 = [shipvx + relBulletVelX1, shipvy + relBulletVelY1];
-    const bullet1 = new Bullet(this.transform.pos, this.engine, bulletVel1);
-    
+    this.addChildGameObject(new Bullet(this.gameEngine, this.transform.pos, bulletVel1, this.bulletNumber))
+
     if (this.powerLevel === 2) {
 
       let relBulletVelX2 = (Bullet.SPEED - 0.5) * Math.cos(this.fireAngle + Math.PI / 32);
@@ -85,10 +91,9 @@ class Ship extends GameObject {
 
       const bulletVel2 = [shipvx + relBulletVelX2, shipvy + relBulletVelY2];
       const bulletVel3 = [shipvx + relBulletVelX3, shipvy + relBulletVelY3];
-
-      const bullet2 = new Bullet(this.transform.pos, this.engine, bulletVel2);
-      const bullet3 = new Bullet(this.transform.pos, this.engine, bulletVel3);
-
+      // doesn't support parent transformations... yet
+      this.addChildGameObject(new Bullet(this.gameEngine, this.transform.pos, bulletVel2))
+      this.addChildGameObject(new Bullet(this.gameEngine, this.transform.pos, bulletVel3))
     }
   }
 

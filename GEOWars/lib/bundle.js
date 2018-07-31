@@ -201,6 +201,8 @@ class GameEngine {
   clearCanvas(){
 
     this.ctx.clearRect(0, 0, this.gameScript.DIM_X, this.gameScript.DIM_Y);
+    this.ctx.fillStyle = this.gameScript.BG_COLOR;
+    this.ctx.fillRect(0, 0, this.gameScript.DIM_X, this.gameScript.DIM_Y);
   }
 
   addLeftControlStickListener(object){
@@ -262,6 +264,8 @@ class GameEngine {
   }
 
   updateGameObjects(delta) {
+    console.log(this.gameObjects);
+    
     this.gameObjects.forEach((object) => {
       object.update(delta)
     })
@@ -275,6 +279,8 @@ class GameEngine {
   }
 
   renderLineSprites(ctx) {
+    // console.log(this.lineSprites);
+    
     this.lineSprites.forEach((sprite) => {
       sprite.draw(ctx)
     })
@@ -312,11 +318,11 @@ class GameEngine {
     if (gameObject.physicsComponent) {
       this.physicsComponents.splice(this.physicsComponents.indexOf(gameObject), 1)
     }
-    if (gameObject.lineSprites){
-      this.lineSprites.splice(this.lineSprites.indexOf(gameObject.lineSprites), 1)
+    if (gameObject.lineSprite){
+      this.lineSprites.splice(this.lineSprites.indexOf(gameObject.lineSprite), 1)
     }
     this.removeColliders(gameObject.colliders)
-    this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1)
+    this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1);
   }
 
   removeColliders(colliders){
@@ -324,8 +330,11 @@ class GameEngine {
       if (collider.subscribers) {
         this.subscribers.splice(this.subscribers.indexOf(collider), 1)
       }
-      objectAndColliderTypeList = this.colliders[collider.objectType][collider.type]
-      objectAndColliderTypeList.splice(objectAndColliderTypeList.indexOf(gameObject), 1)
+
+      let objectAndColliderTypeList = this.colliders[collider.objectType][collider.type]
+      objectAndColliderTypeList.splice(objectAndColliderTypeList.indexOf(collider), 1)
+
+
     })
   }
 }
@@ -428,10 +437,14 @@ class GameObject {
     // overwritten by child class for handler
   }
 
+  // remove is the issue
   remove() {
     this.childObjects.forEach((obj) => {
       this.gameEngine.remove(obj)
     })
+    if(this.parentObject){
+      // this.parentObject.childObjects.splice(this.parentObject.childObjects.indexOf(this), 1)
+    }
     this.gameEngine.remove(this);
   }
 }
@@ -662,20 +675,25 @@ module.exports = Util;
 const GameObject = __webpack_require__(/*! ../../game_engine/game_object */ "./lib/game_engine/game_object.js");
 const Sound = __webpack_require__(/*! ../../game_engine/sound */ "./lib/game_engine/sound.js")
 const BulletWallExplosion = __webpack_require__(/*! ../particles/bullet_wall_explosion */ "./lib/game_objects/particles/bullet_wall_explosion.js")
+const BulletSprite = __webpack_require__(/*! ./bullet_sprite */ "./lib/game_objects/Bullet/bullet_sprite.js")
 
 class Bullet extends GameObject {
-  constructor(pos, engine, vel) {
+  constructor(engine, pos, vel, bulletNumber) {
     super(engine);
-    this.transform.pos = pos 
+    this.ID = bulletNumber
+    // console.log(bulletNumber);
+    
+    this.transform.pos[0] = pos[0]
+    this.transform.pos[1] = pos[1]
     this.transform.vel = vel
-
     this.length = 12;
     this.radius = this.length / 4;
     this.wrap = false
     this.wallhit = new Sound("GEOWars/sounds/bullet_hitwall.wav", 1)
     this.addExplosionCollider()
     this.addPhysicsComponent()
-    this.addLineSprite(new BulletSprite())
+    this.addLineSprite(new BulletSprite(this.transform))
+    this.exploded = false;
   }
 
   addExplosionCollider(){
@@ -684,10 +702,17 @@ class Bullet extends GameObject {
   }
 
   update(deltaTime){
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
-      new BulletWallExplosion(this.transform.pos, this.gameEngine)
+    // let vel = this.transform.vel
+    // console.log(vel[0] * vel[0] + vel[1] * vel[1] <= 0.1);
+    
+    // if(vel[0] * vel[0]  + vel[1] * vel[1] <= 0.1){
+    //   debugger
+    // }
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition()) && !this.exploded) {
+      this.exploded = true
+      // new BulletWallExplosion(this.gameEngine, this.transform.pos)
 
-      this.game.soundsToPlay[this.wallhit.url] = this.wallhit
+      this.gameEngine.queueSound(this.wallhit)
       this.remove();
     }
   }
@@ -695,8 +720,8 @@ class Bullet extends GameObject {
   onCollision(collider, type){
     if (type === "bulletHit") {
       let hitObjectTransform = collider.gameObject.transform
-      let pos = hitObjectTransform.pos 
-      let vel = hitObjectTransform.vel
+      let pos = hitObjectTransform.absolutePosition() 
+      let vel = hitObjectTransform.absoluteVelocity()
       explosion = new ParticleExplosion(engine, pos, vel)
       collider.gameObject.remove()
     }
@@ -720,6 +745,53 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 /***/ }),
 
+/***/ "./lib/game_objects/Bullet/bullet_sprite.js":
+/*!**************************************************!*\
+  !*** ./lib/game_objects/Bullet/bullet_sprite.js ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const LineSprite = __webpack_require__(/*! ../../game_engine/line_sprite */ "./lib/game_engine/line_sprite.js")
+
+class BulletSprite extends LineSprite {
+  constructor(transform, spawningScale = 1) {
+    super(transform)
+    this.spawningScale = spawningScale
+    this.length = 12
+  }
+
+  draw(ctx) {
+
+    let l = this.length
+    let pos = this.transform.pos;
+    let vel = this.transform.vel;
+    let w = this.length / 2;
+    let movementDirection = Math.atan2(vel[0], -vel[1])
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.translate(pos[0], pos[1]);
+    ctx.rotate(movementDirection + 2 * Math.PI);
+
+    ctx.beginPath();
+    ctx.strokeStyle = "#FBFBC2";
+    ctx.lineWidth = 1;
+
+    ctx.moveTo(-l / 4, l / 2); //1
+    ctx.lineTo(0, -l / 2); //2
+    ctx.lineTo(l / 4, l / 2); //3
+
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+
+  }
+}
+module.exports = BulletSprite
+
+/***/ }),
+
 /***/ "./lib/game_objects/enemies/Arrow/arrow.js":
 /*!*************************************************!*\
   !*** ./lib/game_objects/enemies/Arrow/arrow.js ***!
@@ -737,31 +809,32 @@ const ArrowSprite = __webpack_require__(/*! ./arrow_sprite */ "./lib/game_object
 class Arrow extends GameObject {
   constructor(engine, pos, angle = Math.PI / 3) {
     super(engine)
-    // transform made then give it values
     this.transform.pos = pos;
     this.transform.angle = angle;
-    let speed = 3;
+    this.speed = 3;
     this.transform.vel = Util.vectorCartisian(this.transform.angle, this.speed);
+    
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_purple.wav", 0.5);
     this.playSound(this.spawnSound)
     this.addLineSprite(new ArrowSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
-    // adds self as parent before parent needed.. magic?
+    this.exists = false
   }
-
   
   exist(){
+    // debugger
     // leaving off subscriptions means that things will subscribe to it
     this.addCollider("General", this, 3)
     // now it will move
     this.addPhysicsComponent()
+    this.exists = true
   }
 
   update(delta) {
       // ADD TO UPDATE FOR THE OBJECTS
     let pos = this.transform.absolutePosition()
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
-      // redirect
+    if (this.gameEngine.gameScript.isOutOfBounds(pos)) {
+      this.gameEngine.gameScript.redirect(this.transform)
     }
   }
 }
@@ -982,12 +1055,10 @@ const EnemySpawn = __webpack_require__(/*! ../../particles/enemy_spawn */ "./lib
 const GruntSprite = __webpack_require__(/*! ./grunt_sprite */ "./lib/game_objects/enemies/Grunt/grunt_sprite.js")
 
 class Grunt extends GameObject {
-  // requires the instance of the ship
   constructor(engine, pos, shipTransform) {
     super(engine)
     this.transform.pos = pos
-    // this.stretchScale_W = 1;
-    // this.stretchScale_L = 1;
+    this.exists = false;
     this.stretchDirection = -1;
     this.shipTransform = shipTransform
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
@@ -997,6 +1068,7 @@ class Grunt extends GameObject {
   }
 
   exist() {
+    this.exists = true;
     // leaving off subscriptions means that things will subscribe to it
     this.addCollider("General", this, 3)
     // now it will move
@@ -1019,18 +1091,20 @@ class Grunt extends GameObject {
   }
 
   update(timeDelta) {
-    this.chase(timeDelta)
-    let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    let cycleSpeed = 0.01;
-    if (this.lineSprite.stretchScale_W < 0.7 || this.lineSprite.stretchScale_W > 1) {
-      this.stretchDirection *= -1
-    }
+    if (this.exists) {
+      this.chase(timeDelta)
+      let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+      let cycleSpeed = 0.01;
+      if (this.lineSprite.stretchScale_W < 0.7 || this.lineSprite.stretchScale_W > 1) {
+        this.stretchDirection *= -1
+      }
 
-    this.lineSprite.stretchScale_W = this.lineSprite.stretchScale_W + -this.stretchDirection * cycleSpeed * cycleSpeedScale;
-    this.lineSprite.stretchScale_L = this.lineSprite.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
+      this.lineSprite.stretchScale_W = this.lineSprite.stretchScale_W + -this.stretchDirection * cycleSpeed * cycleSpeedScale;
+      this.lineSprite.stretchScale_L = this.lineSprite.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
 
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
-      this.gameEngine.gameScript.bounce(this, [1000, 600]) // HARD CODED
+      if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
+        this.gameEngine.gameScript.bounce(this) 
+      }
     }
   }
 
@@ -1623,6 +1697,7 @@ module.exports = WeaverSprite
 // vel = Util.vectorCartisian(angle, scale)
 //
 // 
+const ParticleSprite = __webpack_require__(/*! ./particle_sprite */ "./lib/game_objects/particles/Particle/particle_sprite.js")
 
 const Util = __webpack_require__(/*! ../../../game_engine/util */ "./lib/game_engine/util.js")
 const GameObject = __webpack_require__(/*! ../../../game_engine/game_object */ "./lib/game_engine/game_object.js")
@@ -1631,20 +1706,22 @@ const GameObject = __webpack_require__(/*! ../../../game_engine/game_object */ "
 class Particle extends GameObject{
   constructor(engine, pos, initialSpeed, colors) {
     super(engine)
-    this.transform.pos = pos
-    this.addLineSprite(new ParticleSprite(this.transform))
-    this.addPhysicsComponent()
-    this.addCollider("General", this, 3)
+
+    this.transform.pos[0] = pos[0]
+    this.transform.pos[1] = pos[1]
 
     this.color = colors[Math.floor(colors.length * Math.random())];
     this.movementAngle = Math.random() * Math.PI * 2;
-    this.vel = Util.vectorCartisian(this.movementAngle, initialSpeed)
-
+    this.transform.vel = Util.vectorCartisian(this.movementAngle, initialSpeed)
     this.explosionDeceleration = 0.1; // in the direction the particle is moving
     this.transform.acc = [-this.explosionDeceleration * Math.cos(this.movementAngle), -this.explosionDeceleration * Math.sin(this.movementAngle)]
-
     this.opacity = Math.random() * 0.5 + 0.5;
     this.hue = Math.random() * 0.3 + 0.6;
+
+    this.addLineSprite(new ParticleSprite(this.transform, this.color, this.hue))
+    this.addPhysicsComponent()
+    this.addCollider("General", this, 3)
+
   }
 
   rand(max, min, _int) {
@@ -1658,18 +1735,66 @@ class Particle extends GameObject{
   update(deltaTime){
     this.rectLength -= 0.25;
     this.hue -= 0.01;
-
-    if (this.hue < 0.1 || this.rectLength < 0.25 || ((Math.abs(this.vel[0]) + Math.abs(this.vel[1])) < 0.25)) {
+    if (this.hue < 0.1 || this.rectLength < 0.25 || ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1])) < 0.25)) {
       this.remove();
     }
     // acc is influenced by singularities, then changed to usual acc
-    this.movementAngle = Math.atan2(this.vel[1], this.vel[0])
+    this.movementAngle = Math.atan2(this.transform.vel[1], this.transform.vel[0])
     this.transform.acc = [-this.explosionDeceleration * Math.cos(this.movementAngle), -this.explosionDeceleration * Math.sin(this.movementAngle)]
   }
 
 }
 
 module.exports = Particle;
+
+/***/ }),
+
+/***/ "./lib/game_objects/particles/Particle/particle_sprite.js":
+/*!****************************************************************!*\
+  !*** ./lib/game_objects/particles/Particle/particle_sprite.js ***!
+  \****************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const LineSprite = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./lib/game_engine/line_sprite.js")
+
+class ParticleSprite extends LineSprite {
+  constructor(transform, color, hue) {
+    super(transform)
+    // this.spawningScale = spawningScale
+    this.rectLength = 15;
+    this.rectWidth = 2;
+    this.color = color
+    this.hue = hue
+  }
+
+  draw(ctx) {
+    // debugger
+    let pos = this.transform.absolutePosition();
+    let vel = this.transform.absoluteVelocity();
+    let l = 15;
+    let w = 5;
+    let movementDirection = Math.atan2(vel[0], -vel[1])
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.translate(pos[0], pos[1]);
+    ctx.rotate(movementDirection + 2 * Math.PI);
+
+    ctx.beginPath();
+    ctx.strokeStyle = `${this.color},${this.hue})`;
+    ctx.lineWidth = this.rectWidth;
+
+    ctx.moveTo(0, 0); //1
+    ctx.lineTo(0, this.rectLength); //2
+
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+module.exports = ParticleSprite;
 
 /***/ }),
 
@@ -1682,12 +1807,15 @@ module.exports = Particle;
 
 const Particle = __webpack_require__(/*! ./Particle/particle */ "./lib/game_objects/particles/Particle/particle.js")
 const GameObject = __webpack_require__(/*! ../../game_engine/game_object */ "./lib/game_engine/game_object.js")
+const Sound = __webpack_require__(/*! ../../game_engine/sound */ "./lib/game_engine/sound.js")
+
 const speeds = [1, 2, 3, 4];
 
-
 class BulletWallExplosion extends GameObject{
-  constructor(engine, pos, vel) {
+  constructor(engine, pos) {
     super(engine)
+    this.transform.pos[0] = pos[0]
+    this.transform.pos[1] = pos[1]
     this.COLORS = [
       ["rgba(152,245,23", "rgba(126,185,43", "rgba(189,236,122", "rgba(103,124,74"],
       ["rgba(255,241,44", "rgba(245,236,109", "rgba(165,160,87", "rgba(177,167,28"],
@@ -1697,25 +1825,27 @@ class BulletWallExplosion extends GameObject{
     ]
     this.color = this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
     this.particleNum = 20;
-    bulletWallHit = new Sound("GEOWars/sounds/bullet_hitwall.wav", 0.2)
+    let bulletWallHit = new Sound("GEOWars/sounds/bullet_hitwall.wav", 0.2)
     this.playSound(bulletWallHit)
     this.createParticles()
   }
 
   createParticles(){
     for (var i = 0; i < this.particleNum; i++) {
-      const particleId = i;
       const speed = speeds[Math.floor(Math.random() * speeds.length)]
-      this.addChildObject(new Particle(this.engine, this.transform.pos, speed, this.color));
+      this.addChildGameObject(new Particle(this.gameEngine, this.transform.pos, speed, this.color));
     }
   }
 
   update() {
+    
     if (this.childObjects.length === 0) {
       this.remove()
     }
   }
 }
+
+module.exports = BulletWallExplosion
 
 /***/ }),
 
@@ -1732,16 +1862,16 @@ class EnemySpawn extends GameObject{
   constructor(engine){
     super(engine)
     this.initialSpawningScale = 1.5;
-    this.spawningScale = 1.5;
+    // this.spawningScale = 1.5;
     this.lifeTime = 1000;
     this.existTime = 0;
     // this.gameEngine.queueSound(this.parentObject.spawnSound)
   }
 
   update(timeDelta) {
-    
     this.existTime += timeDelta;
     if (this.existTime >= this.lifeTime){
+      
       this.parentObject.exist()
       this.remove()
     }
@@ -1749,10 +1879,10 @@ class EnemySpawn extends GameObject{
     let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     let cycleSpeed = 0.1;
     
-    if (this.spawningScale < 0.7){
-      this.spawningScale = this.initialSpawningScale;
+    if (this.parentObject.lineSprite.spawningScale < 0.7){
+      this.parentObject.lineSprite.spawningScale = this.initialSpawningScale;
     } else {
-      this.spawningScale -= cycleSpeed * cycleSpeedScale;
+      this.parentObject.lineSprite.spawningScale -= cycleSpeed * cycleSpeedScale;
     }
   }
 
@@ -1775,10 +1905,11 @@ module.exports = EnemySpawn;
 /***/ (function(module, exports, __webpack_require__) {
 
 const GameObject = __webpack_require__(/*! ../../game_engine/game_object */ "./lib/game_engine/game_object.js");
-const Bullet = __webpack_require__(/*! ../Bullet/bullet */ "./lib/game_objects/Bullet/bullet.js");
 const Util = __webpack_require__(/*! ../../game_engine/util */ "./lib/game_engine/util.js");
 const Sound = __webpack_require__(/*! ../../game_engine/sound */ "./lib/game_engine/sound.js");
 
+const Bullet = __webpack_require__(/*! ../Bullet/bullet */ "./lib/game_objects/Bullet/bullet.js");
+const ShipSprite = __webpack_require__(/*! ./ship_sprite */ "./lib/game_objects/ship/ship_sprite.js")
 
 class Ship extends GameObject {
   constructor(engine, pos) { 
@@ -1788,19 +1919,23 @@ class Ship extends GameObject {
     this.addMousePosListener()
     this.addLeftControlStickListener()
     this.addCollider("General", this, 3)
+    this.addLineSprite(new ShipSprite(this.transform))
     this.speed = 2.5;
     this.mousePos = [0,0];
-    this.fireAngle = 0; 
+    this.fireAngle = 0;
     this.bulletSound = new Sound("GEOWars/sounds/Fire_normal.wav", 0.2);
-    this.bulletTimeCheck;
+    this.bulletTimeCheck = 0;
     this.bulletInterval = 120;
     this.controlsDirection = [0,0];
     this.powerLevel = 1;
+    this.bulletNumber = 0;
   }
   
   update(deltaTime){
+    
     this.bulletTimeCheck += deltaTime
-    if (this.bulletTimeCheck >= this.bulletInterval) {
+    if (this.bulletTimeCheck >= this.bulletInterval ) {
+      this.bulletNumber += 1
       this.bulletTimeCheck = 0;
       this.fireBullet();
     } 
@@ -1822,7 +1957,7 @@ class Ship extends GameObject {
 
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
-      this.gameEngine.gameScript.bounce(this.transform.pos);
+      this.gameEngine.gameScript.bounce(this.transform);
     } else {
       this.transform.pos[0] += speed * this.controlsDirection[0] * velocityScale
       this.transform.pos[1] += speed * this.controlsDirection[1] * velocityScale
@@ -1841,7 +1976,8 @@ class Ship extends GameObject {
     this.fireAngle =  Math.atan2(dy, dx)
   }
 
-  fireBullet(e) {
+  fireBullet() {
+    
     this.gameEngine.queueSound(this.bulletSound)
     let shipvx = this.transform.vel[0];
     let shipvy = this.transform.vel[1];
@@ -1850,8 +1986,8 @@ class Ship extends GameObject {
     let relBulletVelY1 = Bullet.SPEED * Math.sin(this.fireAngle);
 
     const bulletVel1 = [shipvx + relBulletVelX1, shipvy + relBulletVelY1];
-    const bullet1 = new Bullet(this.transform.pos, this.engine, bulletVel1);
-    
+    this.addChildGameObject(new Bullet(this.gameEngine, this.transform.pos, bulletVel1, this.bulletNumber))
+
     if (this.powerLevel === 2) {
 
       let relBulletVelX2 = (Bullet.SPEED - 0.5) * Math.cos(this.fireAngle + Math.PI / 32);
@@ -1861,10 +1997,9 @@ class Ship extends GameObject {
 
       const bulletVel2 = [shipvx + relBulletVelX2, shipvy + relBulletVelY2];
       const bulletVel3 = [shipvx + relBulletVelX3, shipvy + relBulletVelY3];
-
-      const bullet2 = new Bullet(this.transform.pos, this.engine, bulletVel2);
-      const bullet3 = new Bullet(this.transform.pos, this.engine, bulletVel3);
-
+      // doesn't support parent transformations... yet
+      this.addChildGameObject(new Bullet(this.gameEngine, this.transform.pos, bulletVel2))
+      this.addChildGameObject(new Bullet(this.gameEngine, this.transform.pos, bulletVel3))
     }
   }
 
@@ -1885,6 +2020,76 @@ module.exports = Ship;
 const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 
+
+/***/ }),
+
+/***/ "./lib/game_objects/ship/ship_sprite.js":
+/*!**********************************************!*\
+  !*** ./lib/game_objects/ship/ship_sprite.js ***!
+  \**********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const LineSprite = __webpack_require__(/*! ../../game_engine/line_sprite */ "./lib/game_engine/line_sprite.js")
+
+class ShipSprite extends LineSprite {
+  constructor(transform, spawningScale = 1) {
+    super(transform)
+    this.spawningScale = spawningScale
+  }
+
+  draw(ctx) {
+    let pos = this.transform.pos
+    let shipWidth = 10
+    let movementDirection = Math.atan2(this.transform.vel[0], -this.transform.vel[1])
+    ctx.save();
+    ctx.beginPath();
+    ctx.translate(pos[0], pos[1]);
+    ctx.rotate(movementDirection + 3 / 4 * Math.PI + Math.PI);
+    ctx.translate(-shipWidth / 2, shipWidth / 2);
+
+    ctx.strokeStyle = "#ffffff";
+    let r = 255;
+    let g = 255;
+    let b = 255;
+
+    let blurFactor = 0.5
+    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+    ctx.shadowBlur = 10 * blurFactor * blurFactor
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
+    ctx.lineWidth = 7.5 * blurFactor * blurFactor
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
+    this.drawShip(ctx, shipWidth)
+    ctx.lineWidth = 6 * blurFactor
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
+    this.drawShip(ctx, shipWidth)
+    ctx.lineWidth = 4.5;
+    this.drawShip(ctx, shipWidth)
+    ctx.lineWidth = 3;
+    this.drawShip(ctx, shipWidth)
+    ctx.strokeStyle = 'rgb(255, 255, 255)';
+    ctx.lineWidth = 1.5;
+    this.drawShip(ctx, shipWidth)
+
+    ctx.restore();
+  }
+
+  drawShip(ctx, shipWidth) {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, -shipWidth);
+    ctx.lineTo(2 / 3 * shipWidth, -(1 + 1 / 6) * shipWidth); //1
+    ctx.lineTo(1 / 3 * shipWidth, -5 / 6 * shipWidth) // 2
+    ctx.lineTo(1 / 3 * shipWidth, -1 / 3 * shipWidth) // 2.5
+    ctx.lineTo(5 / 6 * shipWidth, -1 / 3 * shipWidth) // 3
+    ctx.lineTo((1 + 1 / 6) * shipWidth, -2 / 3 * shipWidth) // 4
+    ctx.lineTo(shipWidth, 0) // 5
+    ctx.closePath();
+    ctx.stroke();
+  }
+}
+
+module.exports = ShipSprite;
 
 /***/ }),
 
@@ -1916,14 +2121,15 @@ class GameScript {
   constructor(engine) {
     this.DIM_X = 1000;
     this.DIM_Y = 600;
+    this.BG_COLOR = "#000000";
     this.gameTime = 0;
     this.engine = engine
     this.addShip();
     this.enemyCreatorList = this.createEnemyCreatorList()
-    this.deathSound = new Audio("GEOWars/sounds/Enemy_explode.wav")
-    this.deathSound.volume = 0.5;
-    this.bulletWallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
-    this.bulletWallhit.volume = 0.25;
+    // this.deathSound = new Audio("GEOWars/sounds/Enemy_explode.wav")
+    // this.deathSound.volume = 0.5;
+    // this.bulletWallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
+    // this.bulletWallhit.volume = 0.25;
 
     this.intervalTiming = 1;
     this.intervalTime = 0;
@@ -1931,6 +2137,8 @@ class GameScript {
     this.sequenceCount = 0;
     this.lives = 3;
     this.soundsToPlay = {}
+
+    this.spawnthing = false;
   }
 
   update(deltaTime){
@@ -1958,7 +2166,8 @@ class GameScript {
   randomSpawnEnemy(enemy) {
     let pos = this.randomPosition();
     let enemyCreators = Object.values(this.enemyCreatorList)
-    enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos);
+    // enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos);
+    this.enemyCreatorList["Arrow"](pos, Math.PI)
   }
 
   // spawnEnemies(spawnList) {
@@ -1972,83 +2181,94 @@ class GameScript {
 
   randomPosition() {
     return [
-      GameScript.DIM_X * Math.random(),
-      GameScript.DIM_Y * Math.random(),
+      this.DIM_X * Math.random(),
+      this.DIM_Y * Math.random(),
       // 500,300
     ];
   }
 
   spawnSequence(delta) {
     this.intervalTime += delta;
-    // this.gameTime += delta;
-    if (this.intervalTime > (500 * this.intervalTiming) && this.sequenceCount < 10) {
-      this.intervalTime = 0;
+    if(!this.spawnthing){
       this.randomSpawnEnemy();
-      this.sequenceCount += 1
-    } else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 0) {
-      this.intervalTime = 0
-      this.sequenceCount += 1
-      let enemies_to_spawn = []
-      let randomPos = this.randomPosition();
-      for (let i = 0; i < 2; i++) {
-        for (let j = 0; j < 2; j++) {
-          enemies_to_spawn.push(
-            this.enemyCreatorList["BoxBox"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
-          )
-        }
-      }
-
-    } else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 1) {
-      this.intervalTime = 0
-      this.sequenceCount += 1
-      let enemies_to_spawn = []
-      let randomPos = this.randomPosition();
-      for (let i = 0; i < 2; i++) {
-        for (let j = 0; j < 2; j++) {
-          this.enemyCreatorList["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
-        }
-      }
-
-    } else if (this.intervalTime > (5000 * this.intervalTiming) && this.sequenceCount === 11) {
-      this.intervalTime = 0;
-      this.sequenceCount += 1;
-    } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 0) {
-      this.intervalTime = 0;
-      this.sequenceCount += 1;
-
-      let enemies_to_spawn = [];
-      let fourCorners = [
-        [40, 40],
-        [GameScript.DIM_X - 40, 40],
-        [40, GameScript.DIM_Y - 40],
-        [GameScript.DIM_X - 40, GameScript.DIM_Y - 40]
-      ]
-      fourCorners.forEach((corner) => {
-        this.enemyCreatorList["Grunt"](corner)
-      })
-
-    } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 1) {
-      this.intervalTime = 0;
-      this.sequenceCount += 14;
-
-      let enemies_to_spawn = [];
-      let arrowWallPositions = []
-      let arrowDirection = Math.PI * 3 / 2 + Math.PI
-      for (let i = 40; i < GameScript.DIM_X; i += 40) {
-        arrowWallPositions.push([i, 50])
-      }
-
-      arrowWallPositions.forEach((position) => {
-        this.enemyCreatorList["Arrow"](position, arrowDirection)
-      })
-
-    } else if (this.sequenceCount >= 26) {
-      this.sequenceCount = 0;
-      if (!(this.intervalTiming < 0.5)) {
-        this.intervalTiming *= 0.9;
-      }
-      this.hugeSequenceTime += 1;
+      this.spawnthing = true
     }
+    this.gameTime += delta;
+    // if (this.intervalTime > (500 * this.intervalTiming) && this.sequenceCount < 10) {
+    //   this.intervalTime = 0;
+    //   this.randomSpawnEnemy();
+    //   this.sequenceCount += 1
+
+    // } 
+    // else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 0) {
+    //   this.intervalTime = 0
+    //   this.sequenceCount += 1
+    //   let enemies_to_spawn = []
+    //   let randomPos = this.randomPosition();
+    //   for (let i = 0; i < 2; i++) {
+    //     for (let j = 0; j < 2; j++) {
+    //       enemies_to_spawn.push(
+    //         this.enemyCreatorList["BoxBox"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
+    //       )
+    //     }
+    //   }
+
+    // } else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 1) {
+    //   this.intervalTime = 0
+    //   this.sequenceCount += 1
+    //   let enemies_to_spawn = []
+    //   let randomPos = this.randomPosition();
+    //   for (let i = 0; i < 2; i++) {
+    //     for (let j = 0; j < 2; j++) {
+    //       this.enemyCreatorList["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
+    //     }
+    //   }
+
+    // } else if (this.intervalTime > (5000 * this.intervalTiming) && this.sequenceCount === 11) {
+    //   this.intervalTime = 0;
+    //   this.sequenceCount += 1;
+    // } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 0) {
+    //   this.intervalTime = 0;
+    //   this.sequenceCount += 1;
+
+    //   let enemies_to_spawn = [];
+    //   let fourCorners = [
+    //     [40, 40],
+    //     [GameScript.DIM_X - 40, 40],
+    //     [40, GameScript.DIM_Y - 40],
+    //     [GameScript.DIM_X - 40, GameScript.DIM_Y - 40]
+    //   ]
+    //   fourCorners.forEach((corner) => {
+    //     this.enemyCreatorList["Grunt"](corner)
+    //   })
+
+    // } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 1) {
+    //   this.intervalTime = 0;
+    //   this.sequenceCount += 14;
+
+    //   let enemies_to_spawn = [];
+    //   let arrowWallPositions = []
+    //   let arrowDirection = Math.PI * 3 / 2 + Math.PI
+    //   for (let i = 40; i < GameScript.DIM_X; i += 40) {
+    //     arrowWallPositions.push([i, 50])
+    //   }
+
+    //   arrowWallPositions.forEach((position) => {
+    //     this.enemyCreatorList["Arrow"](position, arrowDirection)
+    //   })
+
+    // } else if (this.sequenceCount >= 26) {
+    //   this.sequenceCount = 0;
+    //   if (!(this.intervalTiming < 0.5)) {
+    //     this.intervalTiming *= 0.9;
+    //   }
+    //   this.hugeSequenceTime += 1;
+    // }
+
+
+
+
+
     // if (this.gameTime % 2000 === 0){
     //   this.spawned = false
     // }
@@ -2081,7 +2301,7 @@ class GameScript {
 
   bounce(transform) {
     let max = [this.DIM_X, this.DIM_Y]
-    // debugger
+
     if (transform.pos[0] <= 0 || transform.pos[0] >= max[0]) {
       transform.vel[0] = -transform.vel[0];
     }
@@ -2090,33 +2310,38 @@ class GameScript {
     }
   }
 
-  redirect(arrow, max) {
-    max = []
-    max[0] = GameScript.DIM_X 
-    max[1] = GameScript.DIM_Y
-    if (arrow.pos[0] <= 0 || arrow.pos[0] >= max[0]) {
-      if (arrow.pos[0] <= 0) {
-        arrow.pos[0] = 1
-      }
-      if (arrow.pos[0] >= max[0]) {
-        arrow.pos[0] = max[0] - 1
-      }
+  redirect(transform) {
+    let max = [this.DIM_X, this.DIM_Y]
+    
+    
+    if (transform.pos[0] <= 0 || transform.pos[0] >= max[0]) {
+      if (transform.pos[0] <= 0) {
+        transform.pos[0] = 1
 
-      arrow.vel[0] = -arrow.vel[0];
-      arrow.vel[1] = -arrow.vel[1];
+        
+      }
+      if (transform.pos[0] >= max[0]) {
+        transform.pos[0] = max[0] - 1
+
+      }
     }
-    if (arrow.pos[1] <= 0 || arrow.pos[1] >= max[1]) {
-      if (arrow.pos[1] <= 0) {
-        arrow.pos[1] = 1
-      }
-      if (arrow.pos[1] >= max[1]) {
-        arrow.pos[1] = max[1] - 1
-      }
+    if (transform.pos[1] <= 0 || transform.pos[1] >= max[1]) {
+      if (transform.pos[1] <= 0) {
+        transform.pos[1] = 1
 
+      }
+      if (transform.pos[1] >= max[1]) {
+        transform.pos[1] = max[1] - 1
 
-      arrow.vel[0] = -arrow.vel[0];
-      arrow.vel[1] = -arrow.vel[1];
+      }
     }
+    // console.log(transform);
+    // debugger
+
+    transform.vel[0] = -transform.vel[0];
+    transform.vel[1] = -transform.vel[1];
+    // console.log(transform);
+    // debugger
   }
 
 }
@@ -2150,7 +2375,6 @@ GameScript.spawnListList = [
   \**************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
-
 
 class GameView {
   constructor(engine, ctx, canvasEl) {

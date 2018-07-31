@@ -19,14 +19,15 @@ class GameScript {
   constructor(engine) {
     this.DIM_X = 1000;
     this.DIM_Y = 600;
+    this.BG_COLOR = "#000000";
     this.gameTime = 0;
     this.engine = engine
     this.addShip();
     this.enemyCreatorList = this.createEnemyCreatorList()
-    this.deathSound = new Audio("GEOWars/sounds/Enemy_explode.wav")
-    this.deathSound.volume = 0.5;
-    this.bulletWallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
-    this.bulletWallhit.volume = 0.25;
+    // this.deathSound = new Audio("GEOWars/sounds/Enemy_explode.wav")
+    // this.deathSound.volume = 0.5;
+    // this.bulletWallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
+    // this.bulletWallhit.volume = 0.25;
 
     this.intervalTiming = 1;
     this.intervalTime = 0;
@@ -34,6 +35,8 @@ class GameScript {
     this.sequenceCount = 0;
     this.lives = 3;
     this.soundsToPlay = {}
+
+    this.spawnthing = false;
   }
 
   update(deltaTime){
@@ -61,7 +64,8 @@ class GameScript {
   randomSpawnEnemy(enemy) {
     let pos = this.randomPosition();
     let enemyCreators = Object.values(this.enemyCreatorList)
-    enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos);
+    // enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos);
+    this.enemyCreatorList["Arrow"](pos, Math.PI)
   }
 
   // spawnEnemies(spawnList) {
@@ -75,83 +79,94 @@ class GameScript {
 
   randomPosition() {
     return [
-      GameScript.DIM_X * Math.random(),
-      GameScript.DIM_Y * Math.random(),
+      this.DIM_X * Math.random(),
+      this.DIM_Y * Math.random(),
       // 500,300
     ];
   }
 
   spawnSequence(delta) {
     this.intervalTime += delta;
-    // this.gameTime += delta;
-    if (this.intervalTime > (500 * this.intervalTiming) && this.sequenceCount < 10) {
-      this.intervalTime = 0;
+    if(!this.spawnthing){
       this.randomSpawnEnemy();
-      this.sequenceCount += 1
-    } else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 0) {
-      this.intervalTime = 0
-      this.sequenceCount += 1
-      let enemies_to_spawn = []
-      let randomPos = this.randomPosition();
-      for (let i = 0; i < 2; i++) {
-        for (let j = 0; j < 2; j++) {
-          enemies_to_spawn.push(
-            this.enemyCreatorList["BoxBox"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
-          )
-        }
-      }
-
-    } else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 1) {
-      this.intervalTime = 0
-      this.sequenceCount += 1
-      let enemies_to_spawn = []
-      let randomPos = this.randomPosition();
-      for (let i = 0; i < 2; i++) {
-        for (let j = 0; j < 2; j++) {
-          this.enemyCreatorList["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
-        }
-      }
-
-    } else if (this.intervalTime > (5000 * this.intervalTiming) && this.sequenceCount === 11) {
-      this.intervalTime = 0;
-      this.sequenceCount += 1;
-    } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 0) {
-      this.intervalTime = 0;
-      this.sequenceCount += 1;
-
-      let enemies_to_spawn = [];
-      let fourCorners = [
-        [40, 40],
-        [GameScript.DIM_X - 40, 40],
-        [40, GameScript.DIM_Y - 40],
-        [GameScript.DIM_X - 40, GameScript.DIM_Y - 40]
-      ]
-      fourCorners.forEach((corner) => {
-        this.enemyCreatorList["Grunt"](corner)
-      })
-
-    } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 1) {
-      this.intervalTime = 0;
-      this.sequenceCount += 14;
-
-      let enemies_to_spawn = [];
-      let arrowWallPositions = []
-      let arrowDirection = Math.PI * 3 / 2 + Math.PI
-      for (let i = 40; i < GameScript.DIM_X; i += 40) {
-        arrowWallPositions.push([i, 50])
-      }
-
-      arrowWallPositions.forEach((position) => {
-        this.enemyCreatorList["Arrow"](position, arrowDirection)
-      })
-
-    } else if (this.sequenceCount >= 26) {
-      this.sequenceCount = 0;
-      if (!(this.intervalTiming < 0.5)) {
-        this.intervalTiming *= 0.9;
-      }
-      this.hugeSequenceTime += 1;
+      this.spawnthing = true
     }
+    this.gameTime += delta;
+    // if (this.intervalTime > (500 * this.intervalTiming) && this.sequenceCount < 10) {
+    //   this.intervalTime = 0;
+    //   this.randomSpawnEnemy();
+    //   this.sequenceCount += 1
+
+    // } 
+    // else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 0) {
+    //   this.intervalTime = 0
+    //   this.sequenceCount += 1
+    //   let enemies_to_spawn = []
+    //   let randomPos = this.randomPosition();
+    //   for (let i = 0; i < 2; i++) {
+    //     for (let j = 0; j < 2; j++) {
+    //       enemies_to_spawn.push(
+    //         this.enemyCreatorList["BoxBox"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
+    //       )
+    //     }
+    //   }
+
+    // } else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 1) {
+    //   this.intervalTime = 0
+    //   this.sequenceCount += 1
+    //   let enemies_to_spawn = []
+    //   let randomPos = this.randomPosition();
+    //   for (let i = 0; i < 2; i++) {
+    //     for (let j = 0; j < 2; j++) {
+    //       this.enemyCreatorList["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
+    //     }
+    //   }
+
+    // } else if (this.intervalTime > (5000 * this.intervalTiming) && this.sequenceCount === 11) {
+    //   this.intervalTime = 0;
+    //   this.sequenceCount += 1;
+    // } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 0) {
+    //   this.intervalTime = 0;
+    //   this.sequenceCount += 1;
+
+    //   let enemies_to_spawn = [];
+    //   let fourCorners = [
+    //     [40, 40],
+    //     [GameScript.DIM_X - 40, 40],
+    //     [40, GameScript.DIM_Y - 40],
+    //     [GameScript.DIM_X - 40, GameScript.DIM_Y - 40]
+    //   ]
+    //   fourCorners.forEach((corner) => {
+    //     this.enemyCreatorList["Grunt"](corner)
+    //   })
+
+    // } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 1) {
+    //   this.intervalTime = 0;
+    //   this.sequenceCount += 14;
+
+    //   let enemies_to_spawn = [];
+    //   let arrowWallPositions = []
+    //   let arrowDirection = Math.PI * 3 / 2 + Math.PI
+    //   for (let i = 40; i < GameScript.DIM_X; i += 40) {
+    //     arrowWallPositions.push([i, 50])
+    //   }
+
+    //   arrowWallPositions.forEach((position) => {
+    //     this.enemyCreatorList["Arrow"](position, arrowDirection)
+    //   })
+
+    // } else if (this.sequenceCount >= 26) {
+    //   this.sequenceCount = 0;
+    //   if (!(this.intervalTiming < 0.5)) {
+    //     this.intervalTiming *= 0.9;
+    //   }
+    //   this.hugeSequenceTime += 1;
+    // }
+
+
+
+
+
     // if (this.gameTime % 2000 === 0){
     //   this.spawned = false
     // }
@@ -184,7 +199,7 @@ class GameScript {
 
   bounce(transform) {
     let max = [this.DIM_X, this.DIM_Y]
-    // debugger
+
     if (transform.pos[0] <= 0 || transform.pos[0] >= max[0]) {
       transform.vel[0] = -transform.vel[0];
     }
@@ -193,33 +208,38 @@ class GameScript {
     }
   }
 
-  redirect(arrow, max) {
-    max = []
-    max[0] = GameScript.DIM_X 
-    max[1] = GameScript.DIM_Y
-    if (arrow.pos[0] <= 0 || arrow.pos[0] >= max[0]) {
-      if (arrow.pos[0] <= 0) {
-        arrow.pos[0] = 1
-      }
-      if (arrow.pos[0] >= max[0]) {
-        arrow.pos[0] = max[0] - 1
-      }
+  redirect(transform) {
+    let max = [this.DIM_X, this.DIM_Y]
+    
+    
+    if (transform.pos[0] <= 0 || transform.pos[0] >= max[0]) {
+      if (transform.pos[0] <= 0) {
+        transform.pos[0] = 1
 
-      arrow.vel[0] = -arrow.vel[0];
-      arrow.vel[1] = -arrow.vel[1];
+        
+      }
+      if (transform.pos[0] >= max[0]) {
+        transform.pos[0] = max[0] - 1
+
+      }
     }
-    if (arrow.pos[1] <= 0 || arrow.pos[1] >= max[1]) {
-      if (arrow.pos[1] <= 0) {
-        arrow.pos[1] = 1
-      }
-      if (arrow.pos[1] >= max[1]) {
-        arrow.pos[1] = max[1] - 1
-      }
+    if (transform.pos[1] <= 0 || transform.pos[1] >= max[1]) {
+      if (transform.pos[1] <= 0) {
+        transform.pos[1] = 1
 
+      }
+      if (transform.pos[1] >= max[1]) {
+        transform.pos[1] = max[1] - 1
 
-      arrow.vel[0] = -arrow.vel[0];
-      arrow.vel[1] = -arrow.vel[1];
+      }
     }
+    // console.log(transform);
+    // debugger
+
+    transform.vel[0] = -transform.vel[0];
+    transform.vel[1] = -transform.vel[1];
+    // console.log(transform);
+    // debugger
   }
 
 }

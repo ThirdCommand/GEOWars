@@ -1,4 +1,6 @@
-class ShipSprite extends LinSprite {
+const LineSprite = require("../../game_engine/line_sprite")
+
+class ShipSprite extends LineSprite {
   constructor(transform, spawningScale = 1) {
     super(transform)
     this.spawningScale = spawningScale
@@ -54,3 +56,5 @@ class ShipSprite extends LinSprite {
     ctx.stroke();
   }
 }
+
+module.exports = ShipSprite;

@@ -34,6 +34,8 @@ class GameEngine {
   clearCanvas(){
 
     this.ctx.clearRect(0, 0, this.gameScript.DIM_X, this.gameScript.DIM_Y);
+    this.ctx.fillStyle = this.gameScript.BG_COLOR;
+    this.ctx.fillRect(0, 0, this.gameScript.DIM_X, this.gameScript.DIM_Y);
   }
 
   addLeftControlStickListener(object){
@@ -95,6 +97,8 @@ class GameEngine {
   }
 
   updateGameObjects(delta) {
+    console.log(this.gameObjects);
+    
     this.gameObjects.forEach((object) => {
       object.update(delta)
     })
@@ -108,6 +112,8 @@ class GameEngine {
   }
 
   renderLineSprites(ctx) {
+    // console.log(this.lineSprites);
+    
     this.lineSprites.forEach((sprite) => {
       sprite.draw(ctx)
     })
@@ -145,11 +151,11 @@ class GameEngine {
     if (gameObject.physicsComponent) {
       this.physicsComponents.splice(this.physicsComponents.indexOf(gameObject), 1)
     }
-    if (gameObject.lineSprites){
-      this.lineSprites.splice(this.lineSprites.indexOf(gameObject.lineSprites), 1)
+    if (gameObject.lineSprite){
+      this.lineSprites.splice(this.lineSprites.indexOf(gameObject.lineSprite), 1)
     }
     this.removeColliders(gameObject.colliders)
-    this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1)
+    this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1);
   }
 
   removeColliders(colliders){
@@ -157,8 +163,11 @@ class GameEngine {
       if (collider.subscribers) {
         this.subscribers.splice(this.subscribers.indexOf(collider), 1)
       }
-      objectAndColliderTypeList = this.colliders[collider.objectType][collider.type]
-      objectAndColliderTypeList.splice(objectAndColliderTypeList.indexOf(gameObject), 1)
+
+      let objectAndColliderTypeList = this.colliders[collider.objectType][collider.type]
+      objectAndColliderTypeList.splice(objectAndColliderTypeList.indexOf(collider), 1)
+
+
     })
   }
 }

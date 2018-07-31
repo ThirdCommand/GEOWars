@@ -6,12 +6,10 @@ const EnemySpawn = require("../../particles/enemy_spawn")
 const GruntSprite = require("./grunt_sprite")
 
 class Grunt extends GameObject {
-  // requires the instance of the ship
   constructor(engine, pos, shipTransform) {
     super(engine)
     this.transform.pos = pos
-    // this.stretchScale_W = 1;
-    // this.stretchScale_L = 1;
+    this.exists = false;
     this.stretchDirection = -1;
     this.shipTransform = shipTransform
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
@@ -21,6 +19,7 @@ class Grunt extends GameObject {
   }
 
   exist() {
+    this.exists = true;
     // leaving off subscriptions means that things will subscribe to it
     this.addCollider("General", this, 3)
     // now it will move
@@ -43,18 +42,20 @@ class Grunt extends GameObject {
   }
 
   update(timeDelta) {
-    this.chase(timeDelta)
-    let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    let cycleSpeed = 0.01;
-    if (this.lineSprite.stretchScale_W < 0.7 || this.lineSprite.stretchScale_W > 1) {
-      this.stretchDirection *= -1
-    }
+    if (this.exists) {
+      this.chase(timeDelta)
+      let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+      let cycleSpeed = 0.01;
+      if (this.lineSprite.stretchScale_W < 0.7 || this.lineSprite.stretchScale_W > 1) {
+        this.stretchDirection *= -1
+      }
 
-    this.lineSprite.stretchScale_W = this.lineSprite.stretchScale_W + -this.stretchDirection * cycleSpeed * cycleSpeedScale;
-    this.lineSprite.stretchScale_L = this.lineSprite.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
+      this.lineSprite.stretchScale_W = this.lineSprite.stretchScale_W + -this.stretchDirection * cycleSpeed * cycleSpeedScale;
+      this.lineSprite.stretchScale_L = this.lineSprite.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
 
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
-      this.gameEngine.gameScript.bounce(this, [1000, 600]) // HARD CODED
+      if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
+        this.gameEngine.gameScript.bounce(this) 
+      }
     }
   }
 

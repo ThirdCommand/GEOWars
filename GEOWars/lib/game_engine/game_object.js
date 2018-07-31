@@ -76,10 +76,14 @@ class GameObject {
     // overwritten by child class for handler
   }
 
+  // remove is the issue
   remove() {
     this.childObjects.forEach((obj) => {
       this.gameEngine.remove(obj)
     })
+    if(this.parentObject){
+      // this.parentObject.childObjects.splice(this.parentObject.childObjects.indexOf(this), 1)
+    }
     this.gameEngine.remove(this);
   }
 }

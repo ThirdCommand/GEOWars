@@ -1,6 +1,6 @@
 const LineSprite = require("../../game_engine/line_sprite")
 
-class ShipSprite extends LineSprite {
+class BulletSprite extends LineSprite {
   constructor(transform, spawningScale = 1) {
     super(transform)
     this.spawningScale = spawningScale
@@ -34,3 +34,4 @@ class ShipSprite extends LineSprite {
 
   }
 }
+module.exports = BulletSprite

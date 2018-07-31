@@ -4,16 +4,16 @@ class EnemySpawn extends GameObject{
   constructor(engine){
     super(engine)
     this.initialSpawningScale = 1.5;
-    this.spawningScale = 1.5;
+    // this.spawningScale = 1.5;
     this.lifeTime = 1000;
     this.existTime = 0;
     // this.gameEngine.queueSound(this.parentObject.spawnSound)
   }
 
   update(timeDelta) {
-    
     this.existTime += timeDelta;
     if (this.existTime >= this.lifeTime){
+      
       this.parentObject.exist()
       this.remove()
     }
@@ -21,10 +21,10 @@ class EnemySpawn extends GameObject{
     let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     let cycleSpeed = 0.1;
     
-    if (this.spawningScale < 0.7){
-      this.spawningScale = this.initialSpawningScale;
+    if (this.parentObject.lineSprite.spawningScale < 0.7){
+      this.parentObject.lineSprite.spawningScale = this.initialSpawningScale;
     } else {
-      this.spawningScale -= cycleSpeed * cycleSpeedScale;
+      this.parentObject.lineSprite.spawningScale -= cycleSpeed * cycleSpeedScale;
     }
   }
 
