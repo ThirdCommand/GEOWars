@@ -21,7 +21,6 @@ class Arrow extends GameObject {
   }
   
   exist(){
-    // debugger
     // leaving off subscriptions means that things will subscribe to it
     this.addCollider("General", this, 3)
     // now it will move

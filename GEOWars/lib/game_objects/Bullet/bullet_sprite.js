@@ -10,8 +10,9 @@ class BulletSprite extends LineSprite {
   draw(ctx) {
 
     let l = this.length
-    let pos = this.transform.pos;
-    let vel = this.transform.vel;
+    let pos = this.transform.absolutePosition();
+    let vel = this.transform.absoluteVelocity();
+    
     let w = this.length / 2;
     let movementDirection = Math.atan2(vel[0], -vel[1])
 

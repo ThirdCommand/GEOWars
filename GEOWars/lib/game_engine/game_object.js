@@ -61,10 +61,13 @@ class GameObject {
     this.gameEngine.queueSound(sound)
   }
 
-  //hmm. user makes a new game object, then adds it to the parent
-  addChildGameObject(obj){
+
+  // relative motion needs to be fixed... FOR ANOTHER TIME
+  addChildGameObject(obj, relative){
     this.childObjects.push(obj)
-    obj.parentTransform = this.transform
+    if(relative){
+      obj.transform.parentTransform = this.transform
+    }
     obj.parentObject = this
   }
 

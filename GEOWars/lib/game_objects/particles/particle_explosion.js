@@ -27,7 +27,7 @@ class ParticleExplosion{
       const speed = Math.random() * 3 + 4
       // const speed = speeds[Math.floor(Math.random() * speeds.length)]
       // making the position relative to the world instead of explosion
-      this.addChildGameObject(new Particle(this.engine, this.transform.pos, speed, this.color));
+      this.addChildGameObject(new Particle(this.engine, this.transform.absolutePosition(), speed, this.color));
     }
   }
 

@@ -41,7 +41,7 @@ class Singularity extends GameObject {
   }
 
   update(deltaTime) {
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
       this.gameEngine.gameScriptbounce(this, [1000, 600]) // HARD CODED
     }
 
@@ -69,8 +69,10 @@ class Singularity extends GameObject {
   }
 
   influenceAcceleration(object) {
-    let dy = this.transform.pos[1] - object.transform.pos[1];
-    let dx = this.transform.pos[0] - object.transform.pos[0];
+    let pos = this.transform.absolutePosition()
+    let objectPos = object.transform.absolutePosition()
+    let dy = pos[1] - objectPos[1];
+    let dx = pos[0] - objectPos[0];
     let unitVector = Util.dir([dx, dy]);
     let r = Math.sqrt(dy * dy + dx * dx);
     if (r > this.gravityWellSize * 7 / 8 || r < this.radius * 2){

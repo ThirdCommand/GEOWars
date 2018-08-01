@@ -265,7 +265,6 @@ class GameEngine {
   }
 
   updateGameObjects(delta) {
-    console.log(this.gameObjects);
     
     this.gameObjects.forEach((object) => {
       object.update(delta)
@@ -280,7 +279,6 @@ class GameEngine {
   }
 
   renderLineSprites(ctx) {
-    // console.log(this.lineSprites);
     
     this.lineSprites.forEach((sprite) => {
       sprite.draw(ctx)
@@ -434,10 +432,13 @@ class GameObject {
     this.gameEngine.queueSound(sound)
   }
 
-  //hmm. user makes a new game object, then adds it to the parent
-  addChildGameObject(obj){
+
+  // relative motion needs to be fixed... FOR ANOTHER TIME
+  addChildGameObject(obj, relative){
     this.childObjects.push(obj)
-    obj.parentTransform = this.transform
+    if(relative){
+      obj.transform.parentTransform = this.transform
+    }
     obj.parentObject = this
   }
 
@@ -581,7 +582,7 @@ class Transform {
     if (this.parentTransform == null) {
       return this.angle
     } else {
-      return angleAdd(this.angle, this.parentTransform.absoluteAngle())
+      return this.angleAdd(this.angle, this.parentTransform.absoluteAngle())
     }
   }
 
@@ -591,7 +592,7 @@ class Transform {
       absPos = this.pos
       return absPos
     } else { 
-      return vectorAdd(this.pos, this.parentTransform.absolutePosition())
+      return this.vectorAdd(this.pos, this.parentTransform.absolutePosition())
     }
   }
 
@@ -601,7 +602,7 @@ class Transform {
       absVel = this.vel
       return absVel
     } else {
-      return vectorAdd(this.vel, this.parentTransform.absoluteVelocity())
+      return this.vectorAdd(this.vel, this.parentTransform.absoluteVelocity())
     }
   }
 
@@ -611,7 +612,7 @@ class Transform {
       absAcc = this.acc
       return absAcc
     } else {
-      return vectorAdd(this.acc, this.parentTransform.absoluteAcceleration())
+      return this.vectorAdd(this.acc, this.parentTransform.absoluteAcceleration())
     }
   }
 
@@ -695,7 +696,6 @@ class Bullet extends GameObject {
   constructor(engine, pos, vel, bulletNumber) {
     super(engine);
     this.ID = bulletNumber
-    // console.log(bulletNumber);
     
     this.transform.pos[0] = pos[0]
     this.transform.pos[1] = pos[1]
@@ -717,16 +717,11 @@ class Bullet extends GameObject {
   }
 
   update(deltaTime){
-    // let vel = this.transform.vel
-    // console.log(vel[0] * vel[0] + vel[1] * vel[1] <= 0.1);
     
-    // if(vel[0] * vel[0]  + vel[1] * vel[1] <= 0.1){
-    //   debugger
-    // }
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition()) && !this.exploded) {
       this.exploded = true
-      // new BulletWallExplosion(this.gameEngine, this.transform.pos)
-
+      new BulletWallExplosion(this.gameEngine, this.transform.pos)
+      
       this.gameEngine.queueSound(this.wallhit)
       this.remove();
     }
@@ -779,8 +774,9 @@ class BulletSprite extends LineSprite {
   draw(ctx) {
 
     let l = this.length
-    let pos = this.transform.pos;
-    let vel = this.transform.vel;
+    let pos = this.transform.absolutePosition();
+    let vel = this.transform.absoluteVelocity();
+    
     let w = this.length / 2;
     let movementDirection = Math.atan2(vel[0], -vel[1])
 
@@ -837,7 +833,6 @@ class Arrow extends GameObject {
   }
   
   exist(){
-    // debugger
     // leaving off subscriptions means that things will subscribe to it
     this.addCollider("General", this, 3)
     // now it will move
@@ -970,7 +965,7 @@ class BoxBox extends GameObject {
   }
 
   update(delta){
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
       this.gameEngine.gameScript.bounce(this, [1000, 600]) // HARD CODED
     }
   }
@@ -1094,15 +1089,16 @@ class Grunt extends GameObject {
 
   chase(timeDelta) {
     let speed = 1.5
-    let shipPos = this.shipTransform.pos;
-    let dy = shipPos[1] - this.transform.pos[1];
-    let dx = shipPos[0] - this.transform.pos[0];
+    let shipPos = this.shipTransform.absolutePosition();
+    let pos = this.transform.absolutePosition()
+    let dy = shipPos[1] - pos[1];
+    let dx = shipPos[0] - pos[0];
 
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     let direction = Math.atan2(dy, dx);
 
-    this.transform.pos[0] += speed * Math.cos(direction) * velocityScale
-    this.transform.pos[1] += speed * Math.sin(direction) * velocityScale
+    pos[0] += speed * Math.cos(direction) * velocityScale
+    pos[1] += speed * Math.sin(direction) * velocityScale
   }
 
   update(timeDelta) {
@@ -1117,7 +1113,7 @@ class Grunt extends GameObject {
       this.lineSprite.stretchScale_W = this.lineSprite.stretchScale_W + -this.stretchDirection * cycleSpeed * cycleSpeedScale;
       this.lineSprite.stretchScale_L = this.lineSprite.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
 
-      if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
+      if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
         this.gameEngine.gameScript.bounce(this) 
       }
     }
@@ -1241,7 +1237,7 @@ class Pinwheel extends GameObject {
     let rotationSpeedScale = deltaTime / NORMAL_FRAME_TIME_DELTA;
     this.transform.angle = (this.transform.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
 
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
       this.gameEngine.gameScript.bounce(this.transform) // HARD CODED
     }
   }
@@ -1389,7 +1385,7 @@ class Singularity extends GameObject {
   }
 
   update(deltaTime) {
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
       this.gameEngine.gameScriptbounce(this, [1000, 600]) // HARD CODED
     }
 
@@ -1417,8 +1413,10 @@ class Singularity extends GameObject {
   }
 
   influenceAcceleration(object) {
-    let dy = this.transform.pos[1] - object.transform.pos[1];
-    let dx = this.transform.pos[0] - object.transform.pos[0];
+    let pos = this.transform.absolutePosition()
+    let objectPos = object.transform.absolutePosition()
+    let dy = pos[1] - objectPos[1];
+    let dx = pos[0] - objectPos[0];
     let unitVector = Util.dir([dx, dy]);
     let r = Math.sqrt(dy * dy + dx * dx);
     if (r > this.gravityWellSize * 7 / 8 || r < this.radius * 2){
@@ -1496,7 +1494,8 @@ class SingularitySprite extends LineSprite {
 
   drawSingularity(ctx, radius) {
     ctx.beginPath();
-    ctx.arc(this.transform.pos[0], this.transform.pos[1], radius, 0, 2 * Math.PI, true);
+    let pos = this.transform.absolutePosition()
+    ctx.arc(pos[0], pos[1], radius, 0, 2 * Math.PI, true);
     ctx.stroke();
   }
 }
@@ -1784,7 +1783,6 @@ class ParticleSprite extends LineSprite {
   }
 
   draw(ctx) {
-    // debugger
     let pos = this.transform.absolutePosition();
     let vel = this.transform.absoluteVelocity();
     let l = 15;
@@ -1848,7 +1846,7 @@ class BulletWallExplosion extends GameObject{
   createParticles(){
     for (var i = 0; i < this.particleNum; i++) {
       const speed = speeds[Math.floor(Math.random() * speeds.length)]
-      this.addChildGameObject(new Particle(this.gameEngine, this.transform.pos, speed, this.color));
+      this.addChildGameObject(new Particle(this.gameEngine, this.transform.absolutePosition(), speed, this.color));
     }
   }
 
@@ -2209,7 +2207,7 @@ class GameScript {
       this.randomSpawnEnemy();
       this.intervalTime = 0
     }
-    
+
     this.gameTime += delta;
     // if (this.intervalTime > (500 * this.intervalTiming) && this.sequenceCount < 10) {
     //   this.intervalTime = 0;
@@ -2296,7 +2294,6 @@ class GameScript {
   }
 
   addShip() {
-    // console.log(this.engine);
     
     this.ship = new Ship(this.engine, [500,500])
   }
@@ -2318,47 +2315,43 @@ class GameScript {
 
   bounce(transform) {
     let max = [this.DIM_X, this.DIM_Y]
-
-    if (transform.pos[0] <= 0 || transform.pos[0] >= max[0]) {
+    let pos = transform.absolutePosition()
+    if (pos[0] <= 0 || pos[0] >= max[0]) {
       transform.vel[0] = -transform.vel[0];
     }
-    if (transform.pos[1] <= 0 || transform.pos[1] >= max[1]) {
+    if (pos[1] <= 0 || pos[1] >= max[1]) {
       transform.vel[1] = -transform.vel[1];
     }
   }
 
   redirect(transform) {
     let max = [this.DIM_X, this.DIM_Y]
+    let pos = transform.absolutePosition()
     
-    
-    if (transform.pos[0] <= 0 || transform.pos[0] >= max[0]) {
-      if (transform.pos[0] <= 0) {
-        transform.pos[0] = 1
+    if (pos[0] <= 0 || pos[0] >= max[0]) {
+      if (pos[0] <= 0) {
+        pos[0] = 1
 
         
       }
-      if (transform.pos[0] >= max[0]) {
-        transform.pos[0] = max[0] - 1
+      if (pos[0] >= max[0]) {
+        pos[0] = max[0] - 1
 
       }
     }
-    if (transform.pos[1] <= 0 || transform.pos[1] >= max[1]) {
-      if (transform.pos[1] <= 0) {
-        transform.pos[1] = 1
+    if (pos[1] <= 0 || pos[1] >= max[1]) {
+      if (pos[1] <= 0) {
+        pos[1] = 1
 
       }
-      if (transform.pos[1] >= max[1]) {
-        transform.pos[1] = max[1] - 1
+      if (pos[1] >= max[1]) {
+        pos[1] = max[1] - 1
 
       }
     }
-    // console.log(transform);
-    // debugger
-
+    
     transform.vel[0] = -transform.vel[0];
     transform.vel[1] = -transform.vel[1];
-    // console.log(transform);
-    // debugger
   }
 
 }

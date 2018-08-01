@@ -7,9 +7,10 @@ class ShipSprite extends LineSprite {
   }
 
   draw(ctx) {
-    let pos = this.transform.pos
+    let pos = this.transform.absolutePosition()
     let shipWidth = 10
-    let movementDirection = Math.atan2(this.transform.vel[0], -this.transform.vel[1])
+    let vel = this.transform.absoluteVelocity()
+    let movementDirection = Math.atan2(vel[0], -vel[1])
     ctx.save();
     ctx.beginPath();
     ctx.translate(pos[0], pos[1]);

@@ -92,7 +92,7 @@ class GameScript {
       this.randomSpawnEnemy();
       this.intervalTime = 0
     }
-    
+
     this.gameTime += delta;
     // if (this.intervalTime > (500 * this.intervalTiming) && this.sequenceCount < 10) {
     //   this.intervalTime = 0;
@@ -179,7 +179,6 @@ class GameScript {
   }
 
   addShip() {
-    // console.log(this.engine);
     
     this.ship = new Ship(this.engine, [500,500])
   }
@@ -201,47 +200,43 @@ class GameScript {
 
   bounce(transform) {
     let max = [this.DIM_X, this.DIM_Y]
-
-    if (transform.pos[0] <= 0 || transform.pos[0] >= max[0]) {
+    let pos = transform.absolutePosition()
+    if (pos[0] <= 0 || pos[0] >= max[0]) {
       transform.vel[0] = -transform.vel[0];
     }
-    if (transform.pos[1] <= 0 || transform.pos[1] >= max[1]) {
+    if (pos[1] <= 0 || pos[1] >= max[1]) {
       transform.vel[1] = -transform.vel[1];
     }
   }
 
   redirect(transform) {
     let max = [this.DIM_X, this.DIM_Y]
+    let pos = transform.absolutePosition()
     
-    
-    if (transform.pos[0] <= 0 || transform.pos[0] >= max[0]) {
-      if (transform.pos[0] <= 0) {
-        transform.pos[0] = 1
+    if (pos[0] <= 0 || pos[0] >= max[0]) {
+      if (pos[0] <= 0) {
+        pos[0] = 1
 
         
       }
-      if (transform.pos[0] >= max[0]) {
-        transform.pos[0] = max[0] - 1
+      if (pos[0] >= max[0]) {
+        pos[0] = max[0] - 1
 
       }
     }
-    if (transform.pos[1] <= 0 || transform.pos[1] >= max[1]) {
-      if (transform.pos[1] <= 0) {
-        transform.pos[1] = 1
+    if (pos[1] <= 0 || pos[1] >= max[1]) {
+      if (pos[1] <= 0) {
+        pos[1] = 1
 
       }
-      if (transform.pos[1] >= max[1]) {
-        transform.pos[1] = max[1] - 1
+      if (pos[1] >= max[1]) {
+        pos[1] = max[1] - 1
 
       }
     }
-    // console.log(transform);
-    // debugger
-
+    
     transform.vel[0] = -transform.vel[0];
     transform.vel[1] = -transform.vel[1];
-    // console.log(transform);
-    // debugger
   }
 
 }

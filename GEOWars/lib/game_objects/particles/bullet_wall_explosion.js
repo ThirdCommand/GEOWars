@@ -26,7 +26,7 @@ class BulletWallExplosion extends GameObject{
   createParticles(){
     for (var i = 0; i < this.particleNum; i++) {
       const speed = speeds[Math.floor(Math.random() * speeds.length)]
-      this.addChildGameObject(new Particle(this.gameEngine, this.transform.pos, speed, this.color));
+      this.addChildGameObject(new Particle(this.gameEngine, this.transform.absolutePosition(), speed, this.color));
     }
   }
 

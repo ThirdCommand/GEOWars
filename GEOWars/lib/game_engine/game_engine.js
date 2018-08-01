@@ -98,7 +98,6 @@ class GameEngine {
   }
 
   updateGameObjects(delta) {
-    console.log(this.gameObjects);
     
     this.gameObjects.forEach((object) => {
       object.update(delta)
@@ -113,7 +112,6 @@ class GameEngine {
   }
 
   renderLineSprites(ctx) {
-    // console.log(this.lineSprites);
     
     this.lineSprites.forEach((sprite) => {
       sprite.draw(ctx)

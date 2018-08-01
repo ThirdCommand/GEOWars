@@ -11,7 +11,6 @@ class ParticleSprite extends LineSprite {
   }
 
   draw(ctx) {
-    // debugger
     let pos = this.transform.absolutePosition();
     let vel = this.transform.absoluteVelocity();
     let l = 15;

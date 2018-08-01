@@ -48,7 +48,8 @@ class SingularitySprite extends LineSprite {
 
   drawSingularity(ctx, radius) {
     ctx.beginPath();
-    ctx.arc(this.transform.pos[0], this.transform.pos[1], radius, 0, 2 * Math.PI, true);
+    let pos = this.transform.absolutePosition()
+    ctx.arc(pos[0], pos[1], radius, 0, 2 * Math.PI, true);
     ctx.stroke();
   }
 }

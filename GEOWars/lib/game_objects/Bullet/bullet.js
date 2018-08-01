@@ -7,7 +7,6 @@ class Bullet extends GameObject {
   constructor(engine, pos, vel, bulletNumber) {
     super(engine);
     this.ID = bulletNumber
-    // console.log(bulletNumber);
     
     this.transform.pos[0] = pos[0]
     this.transform.pos[1] = pos[1]
@@ -29,16 +28,11 @@ class Bullet extends GameObject {
   }
 
   update(deltaTime){
-    // let vel = this.transform.vel
-    // console.log(vel[0] * vel[0] + vel[1] * vel[1] <= 0.1);
     
-    // if(vel[0] * vel[0]  + vel[1] * vel[1] <= 0.1){
-    //   debugger
-    // }
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition()) && !this.exploded) {
       this.exploded = true
-      // new BulletWallExplosion(this.gameEngine, this.transform.pos)
-
+      new BulletWallExplosion(this.gameEngine, this.transform.pos)
+      
       this.gameEngine.queueSound(this.wallhit)
       this.remove();
     }

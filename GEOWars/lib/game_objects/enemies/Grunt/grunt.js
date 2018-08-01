@@ -30,15 +30,16 @@ class Grunt extends GameObject {
 
   chase(timeDelta) {
     let speed = 1.5
-    let shipPos = this.shipTransform.pos;
-    let dy = shipPos[1] - this.transform.pos[1];
-    let dx = shipPos[0] - this.transform.pos[0];
+    let shipPos = this.shipTransform.absolutePosition();
+    let pos = this.transform.absolutePosition()
+    let dy = shipPos[1] - pos[1];
+    let dx = shipPos[0] - pos[0];
 
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     let direction = Math.atan2(dy, dx);
 
-    this.transform.pos[0] += speed * Math.cos(direction) * velocityScale
-    this.transform.pos[1] += speed * Math.sin(direction) * velocityScale
+    pos[0] += speed * Math.cos(direction) * velocityScale
+    pos[1] += speed * Math.sin(direction) * velocityScale
   }
 
   update(timeDelta) {
@@ -53,7 +54,7 @@ class Grunt extends GameObject {
       this.lineSprite.stretchScale_W = this.lineSprite.stretchScale_W + -this.stretchDirection * cycleSpeed * cycleSpeedScale;
       this.lineSprite.stretchScale_L = this.lineSprite.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
 
-      if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
+      if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
         this.gameEngine.gameScript.bounce(this) 
       }
     }

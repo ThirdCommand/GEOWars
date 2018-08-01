@@ -71,7 +71,6 @@
         c.beginPath();
         c.strokeStyle = "#ffffff";
         c.lineWidth = this.rectWidth;
-        // console.log(this.radial);
         
         c.moveTo(this.radial,0);
         
@@ -99,7 +98,6 @@
       function drawScene() {
         c.fillStyle = "black";
         c.fillRect(0,0,w,h);
-        // console.log("GOT HERE");
         
         for(var i = 0; i < particles.length; i++) {
           if(particles[i].active === true) {
@@ -122,7 +120,6 @@
           particles = [];
           cancelAnimationFrame(ANIMATION);
           ANIMATION;
-          console.log(ANIMATION);
         }
     
         w = a.width = window.innerWidth;
@@ -132,11 +129,9 @@
         
         createExplosion();
         drawScene();
-        console.log(ANIMATION);
       }
 
       function createExplosion() {
-        console.log("explosion creation");
         
         for (var i = 0; i < particleNum; i++) {
           particles.push(new Particle(i));

@@ -14,7 +14,7 @@ class Transform {
     if (this.parentTransform == null) {
       return this.angle
     } else {
-      return angleAdd(this.angle, this.parentTransform.absoluteAngle())
+      return this.angleAdd(this.angle, this.parentTransform.absoluteAngle())
     }
   }
 
@@ -24,7 +24,7 @@ class Transform {
       absPos = this.pos
       return absPos
     } else { 
-      return vectorAdd(this.pos, this.parentTransform.absolutePosition())
+      return this.vectorAdd(this.pos, this.parentTransform.absolutePosition())
     }
   }
 
@@ -34,7 +34,7 @@ class Transform {
       absVel = this.vel
       return absVel
     } else {
-      return vectorAdd(this.vel, this.parentTransform.absoluteVelocity())
+      return this.vectorAdd(this.vel, this.parentTransform.absoluteVelocity())
     }
   }
 
@@ -44,7 +44,7 @@ class Transform {
       absAcc = this.acc
       return absAcc
     } else {
-      return vectorAdd(this.acc, this.parentTransform.absoluteAcceleration())
+      return this.vectorAdd(this.acc, this.parentTransform.absoluteAcceleration())
     }
   }
 

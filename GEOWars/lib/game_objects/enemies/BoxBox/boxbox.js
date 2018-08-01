@@ -31,7 +31,7 @@ class BoxBox extends GameObject {
   }
 
   update(delta){
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
       this.gameEngine.gameScript.bounce(this, [1000, 600]) // HARD CODED
     }
   }
