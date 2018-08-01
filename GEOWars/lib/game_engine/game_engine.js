@@ -19,6 +19,7 @@ class GameEngine {
     this.mouseListeners = [];
     this.leftControlStickListeners = [];
     this.gameScript = new GameScript(this);
+    this.toRemoveQueue = []
   }
 
   tick(delta) {
@@ -147,14 +148,25 @@ class GameEngine {
     }
   }
 
+  // remove(gameObject){
+  //   this.toRemoveQueue.push(gameObject)
+  // }
+
+  // emptyRemoveQueue(){
+  //   this.toRemoveQueue.forEach((gameObject) => {
+  //     this.removeAction(gameObject)
+  //   })
+  // }
+
   remove(gameObject) {
     if (gameObject.physicsComponent) {
-      this.physicsComponents.splice(this.physicsComponents.indexOf(gameObject), 1)
+      this.physicsComponents.splice(this.physicsComponents.indexOf(gameObject.physicsComponent), 1)
     }
     if (gameObject.lineSprite){
       this.lineSprites.splice(this.lineSprites.indexOf(gameObject.lineSprite), 1)
     }
     this.removeColliders(gameObject.colliders)
+
     this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1);
   }
 

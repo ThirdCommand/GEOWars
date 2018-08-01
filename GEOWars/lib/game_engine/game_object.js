@@ -77,6 +77,8 @@ class GameObject {
   }
 
   // remove is the issue
+  // i need a remove queue!!!
+  // ... I think
   remove() {
     this.childObjects.forEach((obj) => {
       this.gameEngine.remove(obj)

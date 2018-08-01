@@ -11,7 +11,8 @@ class Bullet extends GameObject {
     
     this.transform.pos[0] = pos[0]
     this.transform.pos[1] = pos[1]
-    this.transform.vel = vel
+    this.transform.vel[0] = vel[0]
+    this.transform.vel[1] = vel[1]
     this.length = 12;
     this.radius = this.length / 4;
     this.wrap = false

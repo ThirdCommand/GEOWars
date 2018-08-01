@@ -186,6 +186,7 @@ class GameEngine {
     this.mouseListeners = [];
     this.leftControlStickListeners = [];
     this.gameScript = new GameScript(this);
+    this.toRemoveQueue = []
   }
 
   tick(delta) {
@@ -314,14 +315,25 @@ class GameEngine {
     }
   }
 
+  // remove(gameObject){
+  //   this.toRemoveQueue.push(gameObject)
+  // }
+
+  // emptyRemoveQueue(){
+  //   this.toRemoveQueue.forEach((gameObject) => {
+  //     this.removeAction(gameObject)
+  //   })
+  // }
+
   remove(gameObject) {
     if (gameObject.physicsComponent) {
-      this.physicsComponents.splice(this.physicsComponents.indexOf(gameObject), 1)
+      this.physicsComponents.splice(this.physicsComponents.indexOf(gameObject.physicsComponent), 1)
     }
     if (gameObject.lineSprite){
       this.lineSprites.splice(this.lineSprites.indexOf(gameObject.lineSprite), 1)
     }
     this.removeColliders(gameObject.colliders)
+
     this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1);
   }
 
@@ -438,6 +450,8 @@ class GameObject {
   }
 
   // remove is the issue
+  // i need a remove queue!!!
+  // ... I think
   remove() {
     this.childObjects.forEach((obj) => {
       this.gameEngine.remove(obj)
@@ -685,7 +699,8 @@ class Bullet extends GameObject {
     
     this.transform.pos[0] = pos[0]
     this.transform.pos[1] = pos[1]
-    this.transform.vel = vel
+    this.transform.vel[0] = vel[0]
+    this.transform.vel[1] = vel[1]
     this.length = 12;
     this.radius = this.length / 4;
     this.wrap = false
@@ -2189,10 +2204,12 @@ class GameScript {
 
   spawnSequence(delta) {
     this.intervalTime += delta;
-    if(!this.spawnthing){
+    
+    if (this.intervalTime > 2000) {
       this.randomSpawnEnemy();
-      this.spawnthing = true
+      this.intervalTime = 0
     }
+    
     this.gameTime += delta;
     // if (this.intervalTime > (500 * this.intervalTiming) && this.sequenceCount < 10) {
     //   this.intervalTime = 0;

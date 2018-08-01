@@ -87,10 +87,12 @@ class GameScript {
 
   spawnSequence(delta) {
     this.intervalTime += delta;
-    if(!this.spawnthing){
+    
+    if (this.intervalTime > 2000) {
       this.randomSpawnEnemy();
-      this.spawnthing = true
+      this.intervalTime = 0
     }
+    
     this.gameTime += delta;
     // if (this.intervalTime > (500 * this.intervalTiming) && this.sequenceCount < 10) {
     //   this.intervalTime = 0;
