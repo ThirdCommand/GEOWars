@@ -55,6 +55,9 @@ class Ship extends GameObject {
     } else {
       this.transform.pos[0] += speed * this.controlsDirection[0] * velocityScale
       this.transform.pos[1] += speed * this.controlsDirection[1] * velocityScale
+      this.transform.angle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
+      console.log(this.transform.angle / (Math.PI * 2) * 360);
+      
     }
   }
 

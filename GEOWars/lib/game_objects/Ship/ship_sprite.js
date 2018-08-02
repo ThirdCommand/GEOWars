@@ -10,11 +10,11 @@ class ShipSprite extends LineSprite {
     let pos = this.transform.absolutePosition()
     let shipWidth = 10
     let vel = this.transform.absoluteVelocity()
-    let movementDirection = Math.atan2(vel[0], -vel[1])
+    // let movementDirection = Math.atan2(vel[0], -vel[1])
     ctx.save();
     ctx.beginPath();
     ctx.translate(pos[0], pos[1]);
-    ctx.rotate(movementDirection + 3 / 4 * Math.PI + Math.PI);
+    ctx.rotate(this.transform.angle + Math.PI / 4);
     ctx.translate(-shipWidth / 2, shipWidth / 2);
 
     ctx.strokeStyle = "#ffffff";

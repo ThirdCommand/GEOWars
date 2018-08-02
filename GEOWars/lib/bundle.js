@@ -118,11 +118,11 @@ document.addEventListener("DOMContentLoaded", () => {
 const Util = __webpack_require__(/*! ./util */ "./lib/game_engine/util.js")
 
 class Collider {
-  constructor(type, gameObject, radius = 5, subscriptionTypes = [], subscriptions = false) {
+  constructor(type, gameObject, radius = 5, subscriptions, subscribedColliderTypes) {
     this.objectType = gameObject.constructor.name
     this.type = type
     this.subscriptions = subscriptions
-    this.subscriptionTypes = subscriptionTypes
+    this.subscribedColliderTypes = subscribedColliderTypes
     this.radius = radius
     this.gameObject = gameObject
   }
@@ -130,7 +130,7 @@ class Collider {
   // nope not yet anyway
 
   collisionCheck(otherCollider) {
-    const centerDist = Util.dist(this.gameObject.transform.pos, otherCollider.gameObject.transform.pos);
+    const centerDist = Util.dist(this.gameObject.transform.absolutePosition(), otherCollider.gameObject.transform.absolutePosition());
     if (centerDist < (this.radius + otherCollider.radius)){
       this.gameObject.onCollision(otherCollider, this.type)
     }
@@ -229,13 +229,13 @@ class GameEngine {
   }
 
   addCollider(collider){
-    if (collider.subscribers) {
+    if (collider.subscriptions) {
       this.subscribers.push(collider)
     }
     let colliders = this.colliders
     // collider: object absolute transform
-    // collider { "objectType": "Bullet", "type": "general", "subscriptions": ["BoxBox", "Arrow"] }
-    // colliders {"Singularity": {"General": [collider, collider], "GravityWell": [collider,collider]}}
+    // collider {"objectType": "Bullet", "type": "general", "subscriptions": ["BoxBox", "Arrow"], "subscribedColliderTypes": ["General"]}
+    // colliders {"Singularity": {"General": [collider, collider], "GravityWell": [collider, collider]}}
     if (!colliders[collider.objectType]) {
       let collidersSameTypeAndObject = {}
       collidersSameTypeAndObject[collider.type] = [collider]
@@ -253,12 +253,28 @@ class GameEngine {
   // the data for subscribed colliders once
 
   checkCollisions() {
+// colliders{
+// "Arrow": [collider, collider]
+// }
+
+// collider {
+//   "objectType": "Bullet",
+//   "type": "general",
+//   "subscriptions": ["BoxBox", "Arrow"],
+//   "subscribedColliderTypes": ["general"]
+// }
+
     let subscribers = this.subscribers
-    
-    subscribers.forEach((subscribingCollider) => {
-      subscribingCollider.subsciptions.forEach((subscribedType) => {
-        colliders[subscriberType].forEach((subscribedCollider) => {
-          subscribingCollider.collisionCheck(subscribedCollider)
+    let colliders = this.colliders
+    subscribers.forEach((subscriber) => {
+      subscriber.subscriptions.forEach((subscription) => {
+        colliders[subscription] = colliders[subscription] || {}
+        subscriber.subscribedColliderTypes.forEach((colliderType) => {
+          colliders[subscription][colliderType] = colliders[subscription][colliderType] || []
+          colliders[subscription][colliderType].forEach((subscribedCollider) => {
+            // debugger
+            subscriber.collisionCheck(subscribedCollider)
+          })
         })
       })
     })
@@ -295,7 +311,6 @@ class GameEngine {
   }
 
   addGameObject(object) {
-    
     this.gameObjects.push(object)
   }
 
@@ -691,12 +706,13 @@ const GameObject = __webpack_require__(/*! ../../game_engine/game_object */ "./l
 const Sound = __webpack_require__(/*! ../../game_engine/sound */ "./lib/game_engine/sound.js")
 const BulletWallExplosion = __webpack_require__(/*! ../particles/bullet_wall_explosion */ "./lib/game_objects/particles/bullet_wall_explosion.js")
 const BulletSprite = __webpack_require__(/*! ./bullet_sprite */ "./lib/game_objects/Bullet/bullet_sprite.js")
+const ParticleExplosion = __webpack_require__(/*! ../particles/particle_explosion */ "./lib/game_objects/particles/particle_explosion.js")
 
 class Bullet extends GameObject {
   constructor(engine, pos, vel, bulletNumber) {
     super(engine);
     this.ID = bulletNumber
-    
+
     this.transform.pos[0] = pos[0]
     this.transform.pos[1] = pos[1]
     this.transform.vel[0] = vel[0]
@@ -712,8 +728,9 @@ class Bullet extends GameObject {
   }
 
   addExplosionCollider(){
-    let subscribers = ["Grunt", "Pinwheel", "Bullet", "BoxBox", "Arrow", "Singularity", "Weaver"]
-    this.addCollider("bulletHit", this, this.radius, subscribers)
+    let subscribers = ["Grunt", "Pinwheel", "BoxBox", "Arrow", "Singularity", "Weaver"]
+    this.addCollider("bulletHit", this, this.radius, subscribers, ["General"])
+    this.addCollider("General", this, 3)
   }
 
   update(deltaTime){
@@ -721,7 +738,7 @@ class Bullet extends GameObject {
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition()) && !this.exploded) {
       this.exploded = true
       new BulletWallExplosion(this.gameEngine, this.transform.pos)
-      
+
       this.gameEngine.queueSound(this.wallhit)
       this.remove();
     }
@@ -732,7 +749,7 @@ class Bullet extends GameObject {
       let hitObjectTransform = collider.gameObject.transform
       let pos = hitObjectTransform.absolutePosition() 
       let vel = hitObjectTransform.absoluteVelocity()
-      explosion = new ParticleExplosion(engine, pos, vel)
+      let explosion = new ParticleExplosion(this.gameEngine, pos, vel)
       collider.gameObject.remove()
     }
   }
@@ -1910,6 +1927,61 @@ module.exports = EnemySpawn;
 
 /***/ }),
 
+/***/ "./lib/game_objects/particles/particle_explosion.js":
+/*!**********************************************************!*\
+  !*** ./lib/game_objects/particles/particle_explosion.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+const Particle = __webpack_require__(/*! ./Particle/particle */ "./lib/game_objects/particles/Particle/particle.js")
+const GameObject = __webpack_require__(/*! ../../game_engine/game_object */ "./lib/game_engine/game_object.js")
+const Sound = __webpack_require__(/*! ../../game_engine/sound */ "./lib/game_engine/sound.js")
+
+class ParticleExplosion extends GameObject{
+  constructor(engine, pos){
+    super(engine)
+    this.transform.pos[0] = pos[0]
+    this.transform.pos[1] = pos[1]
+    this.COLORS = [
+      ["rgba(152,245,23", "rgba(126,185,43", "rgba(189,236,122", "rgba(103,124,74"],
+      ["rgba(255,241,44", "rgba(245,236,109", "rgba(165,160,87", "rgba(177,167,28"],
+      ["rgba(18,225,252", "rgba(60,198,216", "rgba(113,223,238", "rgba(149,220,230"],
+      ["rgba(252,87,224", "rgba(204,72,182", "rgba(170,72,154", "rgba(250,137,231"],
+      ["rgba(190,86,250", "rgba(159,96,196", "rgba(87,17,128", "rgba(199,150,228"]
+    ]
+    this.color = this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
+    this.particleNum = 80;
+    let explosionSound = new Sound("GEOWars/sounds/Enemy_explode.wav", 0.5)
+    this.playSound(explosionSound)
+    this.createExplosionParticles()
+  }
+
+  createExplosionParticles(){
+    for (var i = 0; i < this.particleNum; i++) {
+      const speed = Math.random() * 3 + 4
+      // const speed = speeds[Math.floor(Math.random() * speeds.length)]
+      // making the position relative to the world instead of explosion
+      this.addChildGameObject(new Particle(this.gameEngine, this.transform.absolutePosition(), speed, this.color));
+    }
+  }
+
+  update(){
+    if(this.childObjects.length === 0){
+      this.remove()
+    }
+  }
+    // ANIMATION = requestAnimationFrame(drawScene);
+}
+
+
+
+
+module.exports = ParticleExplosion;
+
+/***/ }),
+
 /***/ "./lib/game_objects/ship/ship.js":
 /*!***************************************!*\
   !*** ./lib/game_objects/ship/ship.js ***!
@@ -1974,6 +2046,9 @@ class Ship extends GameObject {
     } else {
       this.transform.pos[0] += speed * this.controlsDirection[0] * velocityScale
       this.transform.pos[1] += speed * this.controlsDirection[1] * velocityScale
+      this.transform.angle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
+      console.log(this.transform.angle / (Math.PI * 2) * 360);
+      
     }
   }
 
@@ -2052,13 +2127,14 @@ class ShipSprite extends LineSprite {
   }
 
   draw(ctx) {
-    let pos = this.transform.pos
+    let pos = this.transform.absolutePosition()
     let shipWidth = 10
-    let movementDirection = Math.atan2(this.transform.vel[0], -this.transform.vel[1])
+    let vel = this.transform.absoluteVelocity()
+    // let movementDirection = Math.atan2(vel[0], -vel[1])
     ctx.save();
     ctx.beginPath();
     ctx.translate(pos[0], pos[1]);
-    ctx.rotate(movementDirection + 3 / 4 * Math.PI + Math.PI);
+    ctx.rotate(this.transform.angle + Math.PI / 4);
     ctx.translate(-shipWidth / 2, shipWidth / 2);
 
     ctx.strokeStyle = "#ffffff";
@@ -2137,13 +2213,14 @@ class GameScript {
     this.BG_COLOR = "#000000";
     this.gameTime = 0;
     this.engine = engine
-    this.addShip();
+    this.arrowAdded = false
+    this.ship = this.createShip();
     this.enemyCreatorList = this.createEnemyCreatorList()
     // this.deathSound = new Audio("GEOWars/sounds/Enemy_explode.wav")
     // this.deathSound.volume = 0.5;
     // this.bulletWallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
     // this.bulletWallhit.volume = 0.25;
-
+    
     this.intervalTiming = 1;
     this.intervalTime = 0;
     this.hugeSequenceTime = 0;
@@ -2206,6 +2283,10 @@ class GameScript {
     if (this.intervalTime > 2000) {
       this.randomSpawnEnemy();
       this.intervalTime = 0
+      if (this.firstArrowAdded) {
+        this.arrowAdded = true
+      }
+      this.firstArrowAdded = true 
     }
 
     this.gameTime += delta;
@@ -2293,9 +2374,8 @@ class GameScript {
     // }
   }
 
-  addShip() {
-    
-    this.ship = new Ship(this.engine, [500,500])
+  createShip() {
+    return new Ship(this.engine, [500, 500])
   }
 
   isOutOfBounds(pos) {
@@ -2349,7 +2429,7 @@ class GameScript {
 
       }
     }
-    
+
     transform.vel[0] = -transform.vel[0];
     transform.vel[1] = -transform.vel[1];
   }
@@ -2398,7 +2478,10 @@ class GameView {
     const engine = this.engine
     Object.keys(GameView.MOREMOVES).forEach((k) => {
       const move = GameView.MOREMOVES[k];
-      key(k, () => { ship.controlsDirection(move); });
+      // debugger
+      key(k, () => {
+        this.engine.gameScript.ship.updateLeftControlStickInput(move);
+      });
     });
 
     key("m", () => {

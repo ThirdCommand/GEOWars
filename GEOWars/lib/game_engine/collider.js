@@ -13,11 +13,11 @@
 const Util = require("./util")
 
 class Collider {
-  constructor(type, gameObject, radius = 5, subscriptionTypes = [], subscriptions = false) {
+  constructor(type, gameObject, radius = 5, subscriptions, subscribedColliderTypes) {
     this.objectType = gameObject.constructor.name
     this.type = type
     this.subscriptions = subscriptions
-    this.subscriptionTypes = subscriptionTypes
+    this.subscribedColliderTypes = subscribedColliderTypes
     this.radius = radius
     this.gameObject = gameObject
   }
@@ -25,7 +25,7 @@ class Collider {
   // nope not yet anyway
 
   collisionCheck(otherCollider) {
-    const centerDist = Util.dist(this.gameObject.transform.pos, otherCollider.gameObject.transform.pos);
+    const centerDist = Util.dist(this.gameObject.transform.absolutePosition(), otherCollider.gameObject.transform.absolutePosition());
     if (centerDist < (this.radius + otherCollider.radius)){
       this.gameObject.onCollision(otherCollider, this.type)
     }

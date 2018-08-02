@@ -10,7 +10,10 @@ class GameView {
     const engine = this.engine
     Object.keys(GameView.MOREMOVES).forEach((k) => {
       const move = GameView.MOREMOVES[k];
-      key(k, () => { ship.controlsDirection(move); });
+      // debugger
+      key(k, () => {
+        this.engine.gameScript.ship.updateLeftControlStickInput(move);
+      });
     });
 
     key("m", () => {

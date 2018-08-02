@@ -62,13 +62,13 @@ class GameEngine {
   }
 
   addCollider(collider){
-    if (collider.subscribers) {
+    if (collider.subscriptions) {
       this.subscribers.push(collider)
     }
     let colliders = this.colliders
     // collider: object absolute transform
-    // collider { "objectType": "Bullet", "type": "general", "subscriptions": ["BoxBox", "Arrow"] }
-    // colliders {"Singularity": {"General": [collider, collider], "GravityWell": [collider,collider]}}
+    // collider {"objectType": "Bullet", "type": "general", "subscriptions": ["BoxBox", "Arrow"], "subscribedColliderTypes": ["General"]}
+    // colliders {"Singularity": {"General": [collider, collider], "GravityWell": [collider, collider]}}
     if (!colliders[collider.objectType]) {
       let collidersSameTypeAndObject = {}
       collidersSameTypeAndObject[collider.type] = [collider]
@@ -86,12 +86,28 @@ class GameEngine {
   // the data for subscribed colliders once
 
   checkCollisions() {
+// colliders{
+// "Arrow": [collider, collider]
+// }
+
+// collider {
+//   "objectType": "Bullet",
+//   "type": "general",
+//   "subscriptions": ["BoxBox", "Arrow"],
+//   "subscribedColliderTypes": ["general"]
+// }
+
     let subscribers = this.subscribers
-    
-    subscribers.forEach((subscribingCollider) => {
-      subscribingCollider.subsciptions.forEach((subscribedType) => {
-        colliders[subscriberType].forEach((subscribedCollider) => {
-          subscribingCollider.collisionCheck(subscribedCollider)
+    let colliders = this.colliders
+    subscribers.forEach((subscriber) => {
+      subscriber.subscriptions.forEach((subscription) => {
+        colliders[subscription] = colliders[subscription] || {}
+        subscriber.subscribedColliderTypes.forEach((colliderType) => {
+          colliders[subscription][colliderType] = colliders[subscription][colliderType] || []
+          colliders[subscription][colliderType].forEach((subscribedCollider) => {
+            // debugger
+            subscriber.collisionCheck(subscribedCollider)
+          })
         })
       })
     })
@@ -128,7 +144,6 @@ class GameEngine {
   }
 
   addGameObject(object) {
-    
     this.gameObjects.push(object)
   }
 

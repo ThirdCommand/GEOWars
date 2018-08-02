@@ -22,13 +22,14 @@ class GameScript {
     this.BG_COLOR = "#000000";
     this.gameTime = 0;
     this.engine = engine
-    this.addShip();
+    this.arrowAdded = false
+    this.ship = this.createShip();
     this.enemyCreatorList = this.createEnemyCreatorList()
     // this.deathSound = new Audio("GEOWars/sounds/Enemy_explode.wav")
     // this.deathSound.volume = 0.5;
     // this.bulletWallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
     // this.bulletWallhit.volume = 0.25;
-
+    
     this.intervalTiming = 1;
     this.intervalTime = 0;
     this.hugeSequenceTime = 0;
@@ -91,6 +92,10 @@ class GameScript {
     if (this.intervalTime > 2000) {
       this.randomSpawnEnemy();
       this.intervalTime = 0
+      if (this.firstArrowAdded) {
+        this.arrowAdded = true
+      }
+      this.firstArrowAdded = true 
     }
 
     this.gameTime += delta;
@@ -178,9 +183,8 @@ class GameScript {
     // }
   }
 
-  addShip() {
-    
-    this.ship = new Ship(this.engine, [500,500])
+  createShip() {
+    return new Ship(this.engine, [500, 500])
   }
 
   isOutOfBounds(pos) {
@@ -234,7 +238,7 @@ class GameScript {
 
       }
     }
-    
+
     transform.vel[0] = -transform.vel[0];
     transform.vel[1] = -transform.vel[1];
   }
