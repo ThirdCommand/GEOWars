@@ -15,7 +15,6 @@ class BoxBox extends GameObject {
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
     this.playSound(this.spawnSound)
     // adds self as parent before parent needed.. magic?
-    
   }
 
 
@@ -32,7 +31,7 @@ class BoxBox extends GameObject {
 
   update(delta){
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
-      this.gameEngine.gameScript.bounce(this, [1000, 600]) // HARD CODED
+      this.gameEngine.gameScript.bounce(this.transform) 
     }
   }
 

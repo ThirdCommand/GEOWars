@@ -14,7 +14,7 @@ class Ship extends GameObject {
     this.addLeftControlStickListener()
     this.addCollider("General", this, 3)
     this.addLineSprite(new ShipSprite(this.transform))
-    this.speed = 2.5;
+    this.maxSpeed = 2.5;
     this.mousePos = [0,0];
     this.fireAngle = 0;
     this.bulletSound = new Sound("GEOWars/sounds/Fire_normal.wav", 0.2);
@@ -23,6 +23,7 @@ class Ship extends GameObject {
     this.controlsDirection = [0,0];
     this.powerLevel = 1;
     this.bulletNumber = 0;
+    this.speed
   }
   
   update(deltaTime){
@@ -33,6 +34,7 @@ class Ship extends GameObject {
       this.bulletTimeCheck = 0;
       this.fireBullet();
     } 
+
     
     this.moveInControllerDirection(deltaTime)
     // if ship is out of x bounds, maintain y speed, keep x at edge value
@@ -42,23 +44,41 @@ class Ship extends GameObject {
     this.setFireAngle(mousePos)
   }
 
+  updateRightControlStickInput(){
+
+  }
+
   updateLeftControlStickInput(unitVector) {
     this.controlsDirection = unitVector
   }
 
   moveInControllerDirection(timeDelta){
-    let speed = this.speed
+    let maxSpeed = this.maxSpeed
 
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
       this.gameEngine.gameScript.bounce(this.transform);
     } else {
-      this.transform.pos[0] += speed * this.controlsDirection[0] * velocityScale
-      this.transform.pos[1] += speed * this.controlsDirection[1] * velocityScale
-      this.transform.angle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
-      console.log(this.transform.angle / (Math.PI * 2) * 360);
+      this.movementMechanics(timeDelta)
       
+
     }
+  }
+
+  movementMechanics(timeDelta){
+    let speed = this.maxSpeed
+    if (this.checkInputDirectionSpeed() > speed ){
+      Math.cos(this.controlsDirection)
+      
+      this.transform.acc[0] += speed * this.controlsDirection[0] * velocityScale
+      this.transform.acc[1] += speed * this.controlsDirection[1] * velocityScale
+      this.transform.angle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
+    }
+  }
+
+  checkInputDirectionSpeed(){
+    //calculate input direction speed
+    this.controlsDirection
   }
 
   setFireAngle(mousePos) {

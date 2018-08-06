@@ -23,6 +23,8 @@ class GameEngine {
   }
 
   tick(delta) {
+    // console.log(delta);
+    
     this.movePhysicsComponents(delta)
     this.checkCollisions()
     this.updateGameObjects(delta)
@@ -96,7 +98,6 @@ class GameEngine {
 //   "subscriptions": ["BoxBox", "Arrow"],
 //   "subscribedColliderTypes": ["general"]
 // }
-
     let subscribers = this.subscribers
     let colliders = this.colliders
     subscribers.forEach((subscriber) => {

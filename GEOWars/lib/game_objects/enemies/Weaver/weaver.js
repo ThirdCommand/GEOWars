@@ -9,14 +9,13 @@ class Weaver extends GameObject {
   constructor(engine, pos, shipTransform) {
     super(engine)
     this.rotation_speed = 0.075;
-    this.transform.pos = pos
+    this.transform.pos[0] = pos[0]
+    this.transform.pos[1] = pos[0]
     this.speed = 2;
-
     this.shipTransform = shipTransform
     this.weaverCloseHitBox = 35;
     this.directionInfluenced = false;
     this.influencers = [];
-
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_green.wav", 0.5);
     this.playSound(this.spawnSound)
     this.addLineSprite(new WeaverSprite(this.transform))
@@ -60,6 +59,7 @@ class Weaver extends GameObject {
   }
 
   update(timeDelta){
+
     let speed = 2
     const rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
@@ -75,7 +75,7 @@ class Weaver extends GameObject {
 
     this.directionInfluenced = false;
 
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
       this.gameEngine.gameScript.bounce(this.transform) 
     }
     

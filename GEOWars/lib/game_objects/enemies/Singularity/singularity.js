@@ -12,7 +12,7 @@ class Singularity extends GameObject {
     this.existTime = 0;
     this.gravityWellSize = 500;
     this.gravityConstant = 1000;
-    this.radius = 3
+    this.radius = 15
 
     // this.id = options.id
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
@@ -28,8 +28,8 @@ class Singularity extends GameObject {
   exist() {
     // leaving off subscriptions means that things will subscribe to it
     this.addCollider("General", this, 3)
-    this.addCollider("GravityWell", this, this.gravityWellSize, ["General"], ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver", "Particle"])
-    this.addCollider("GravityAbsorb", this, this.radius, ["General"], ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver"])
+    this.addCollider("GravityWell", this, this.gravityWellSize, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver", "Particle"], ["General"])
+    // this.addCollider("GravityAbsorb", this, this.radius, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver"], ["General"])
     // now it will move
     this.addPhysicsComponent()
   }
@@ -42,7 +42,7 @@ class Singularity extends GameObject {
 
   update(deltaTime) {
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
-      this.gameEngine.gameScriptbounce(this, [1000, 600]) // HARD CODED
+      this.gameEngine.gameScript.bounce(this.transform) // HARD CODED
     }
 
     this.throb(deltaTime)

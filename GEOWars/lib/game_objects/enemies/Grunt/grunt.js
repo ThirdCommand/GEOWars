@@ -55,7 +55,7 @@ class Grunt extends GameObject {
       this.lineSprite.stretchScale_L = this.lineSprite.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
 
       if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
-        this.gameEngine.gameScript.bounce(this) 
+        this.gameEngine.gameScript.bounce(this.transform) 
       }
     }
   }

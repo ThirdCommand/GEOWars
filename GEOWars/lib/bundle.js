@@ -190,6 +190,8 @@ class GameEngine {
   }
 
   tick(delta) {
+    // console.log(delta);
+    
     this.movePhysicsComponents(delta)
     this.checkCollisions()
     this.updateGameObjects(delta)
@@ -263,7 +265,6 @@ class GameEngine {
 //   "subscriptions": ["BoxBox", "Arrow"],
 //   "subscribedColliderTypes": ["general"]
 // }
-
     let subscribers = this.subscribers
     let colliders = this.colliders
     subscribers.forEach((subscriber) => {
@@ -966,7 +967,6 @@ class BoxBox extends GameObject {
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
     this.playSound(this.spawnSound)
     // adds self as parent before parent needed.. magic?
-    
   }
 
 
@@ -983,7 +983,7 @@ class BoxBox extends GameObject {
 
   update(delta){
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
-      this.gameEngine.gameScript.bounce(this, [1000, 600]) // HARD CODED
+      this.gameEngine.gameScript.bounce(this.transform) 
     }
   }
 
@@ -1131,7 +1131,7 @@ class Grunt extends GameObject {
       this.lineSprite.stretchScale_L = this.lineSprite.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
 
       if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
-        this.gameEngine.gameScript.bounce(this) 
+        this.gameEngine.gameScript.bounce(this.transform) 
       }
     }
   }
@@ -1373,7 +1373,7 @@ class Singularity extends GameObject {
     this.existTime = 0;
     this.gravityWellSize = 500;
     this.gravityConstant = 1000;
-    this.radius = 3
+    this.radius = 15
 
     // this.id = options.id
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
@@ -1389,8 +1389,8 @@ class Singularity extends GameObject {
   exist() {
     // leaving off subscriptions means that things will subscribe to it
     this.addCollider("General", this, 3)
-    this.addCollider("GravityWell", this, this.gravityWellSize, ["General"], ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver", "Particle"])
-    this.addCollider("GravityAbsorb", this, this.radius, ["General"], ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver"])
+    this.addCollider("GravityWell", this, this.gravityWellSize, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver", "Particle"], ["General"])
+    // this.addCollider("GravityAbsorb", this, this.radius, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver"], ["General"])
     // now it will move
     this.addPhysicsComponent()
   }
@@ -1403,7 +1403,7 @@ class Singularity extends GameObject {
 
   update(deltaTime) {
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
-      this.gameEngine.gameScriptbounce(this, [1000, 600]) // HARD CODED
+      this.gameEngine.gameScript.bounce(this.transform) // HARD CODED
     }
 
     this.throb(deltaTime)
@@ -1539,14 +1539,13 @@ class Weaver extends GameObject {
   constructor(engine, pos, shipTransform) {
     super(engine)
     this.rotation_speed = 0.075;
-    this.transform.pos = pos
+    this.transform.pos[0] = pos[0]
+    this.transform.pos[1] = pos[0]
     this.speed = 2;
-
     this.shipTransform = shipTransform
     this.weaverCloseHitBox = 35;
     this.directionInfluenced = false;
     this.influencers = [];
-
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_green.wav", 0.5);
     this.playSound(this.spawnSound)
     this.addLineSprite(new WeaverSprite(this.transform))
@@ -1590,6 +1589,7 @@ class Weaver extends GameObject {
   }
 
   update(timeDelta){
+
     let speed = 2
     const rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
@@ -1605,7 +1605,7 @@ class Weaver extends GameObject {
 
     this.directionInfluenced = false;
 
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
       this.gameEngine.gameScript.bounce(this.transform) 
     }
     
@@ -2005,7 +2005,7 @@ class Ship extends GameObject {
     this.addLeftControlStickListener()
     this.addCollider("General", this, 3)
     this.addLineSprite(new ShipSprite(this.transform))
-    this.speed = 2.5;
+    this.maxSpeed = 2.5;
     this.mousePos = [0,0];
     this.fireAngle = 0;
     this.bulletSound = new Sound("GEOWars/sounds/Fire_normal.wav", 0.2);
@@ -2014,6 +2014,7 @@ class Ship extends GameObject {
     this.controlsDirection = [0,0];
     this.powerLevel = 1;
     this.bulletNumber = 0;
+    this.speed
   }
   
   update(deltaTime){
@@ -2024,6 +2025,7 @@ class Ship extends GameObject {
       this.bulletTimeCheck = 0;
       this.fireBullet();
     } 
+
     
     this.moveInControllerDirection(deltaTime)
     // if ship is out of x bounds, maintain y speed, keep x at edge value
@@ -2033,23 +2035,41 @@ class Ship extends GameObject {
     this.setFireAngle(mousePos)
   }
 
+  updateRightControlStickInput(){
+
+  }
+
   updateLeftControlStickInput(unitVector) {
     this.controlsDirection = unitVector
   }
 
   moveInControllerDirection(timeDelta){
-    let speed = this.speed
+    let maxSpeed = this.maxSpeed
 
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
       this.gameEngine.gameScript.bounce(this.transform);
     } else {
-      this.transform.pos[0] += speed * this.controlsDirection[0] * velocityScale
-      this.transform.pos[1] += speed * this.controlsDirection[1] * velocityScale
-      this.transform.angle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
-      console.log(this.transform.angle / (Math.PI * 2) * 360);
+      this.movementMechanics(timeDelta)
       
+
     }
+  }
+
+  movementMechanics(timeDelta){
+    let speed = this.maxSpeed
+    if (this.checkInputDirectionSpeed() > speed ){
+      Math.cos(this.controlsDirection)
+      
+      this.transform.acc[0] += speed * this.controlsDirection[0] * velocityScale
+      this.transform.acc[1] += speed * this.controlsDirection[1] * velocityScale
+      this.transform.angle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
+    }
+  }
+
+  checkInputDirectionSpeed(){
+    //calculate input direction speed
+    this.controlsDirection
   }
 
   setFireAngle(mousePos) {
@@ -2256,8 +2276,8 @@ class GameScript {
   randomSpawnEnemy(enemy) {
     let pos = this.randomPosition();
     let enemyCreators = Object.values(this.enemyCreatorList)
-    // enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos);
-    this.enemyCreatorList["Arrow"](pos, Math.PI)
+    enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos);
+    // this.enemyCreatorList["Arrow"](pos, Math.PI)
   }
 
   // spawnEnemies(spawnList) {
@@ -2280,86 +2300,86 @@ class GameScript {
   spawnSequence(delta) {
     this.intervalTime += delta;
     
-    if (this.intervalTime > 2000) {
-      this.randomSpawnEnemy();
-      this.intervalTime = 0
-      if (this.firstArrowAdded) {
-        this.arrowAdded = true
-      }
-      this.firstArrowAdded = true 
-    }
+    // if (this.intervalTime > 2000) {
+    //   this.randomSpawnEnemy();
+    //   this.intervalTime = 0
+    //   if (this.firstArrowAdded) {
+    //     this.arrowAdded = true
+    //   }
+    //   this.firstArrowAdded = true 
+    // }
 
     this.gameTime += delta;
-    // if (this.intervalTime > (500 * this.intervalTiming) && this.sequenceCount < 10) {
-    //   this.intervalTime = 0;
-    //   this.randomSpawnEnemy();
-    //   this.sequenceCount += 1
+    if (this.intervalTime > (500 * this.intervalTiming) && this.sequenceCount < 10) {
+      this.intervalTime = 0;
+      this.randomSpawnEnemy();
+      this.sequenceCount += 1
 
-    // } 
-    // else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 0) {
-    //   this.intervalTime = 0
-    //   this.sequenceCount += 1
-    //   let enemies_to_spawn = []
-    //   let randomPos = this.randomPosition();
-    //   for (let i = 0; i < 2; i++) {
-    //     for (let j = 0; j < 2; j++) {
-    //       enemies_to_spawn.push(
-    //         this.enemyCreatorList["BoxBox"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
-    //       )
-    //     }
-    //   }
+    } 
+    else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 0) {
+      this.intervalTime = 0
+      this.sequenceCount += 1
+      let enemies_to_spawn = []
+      let randomPos = this.randomPosition();
+      for (let i = 0; i < 2; i++) {
+        for (let j = 0; j < 2; j++) {
+          enemies_to_spawn.push(
+            this.enemyCreatorList["BoxBox"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
+          )
+        }
+      }
 
-    // } else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 1) {
-    //   this.intervalTime = 0
-    //   this.sequenceCount += 1
-    //   let enemies_to_spawn = []
-    //   let randomPos = this.randomPosition();
-    //   for (let i = 0; i < 2; i++) {
-    //     for (let j = 0; j < 2; j++) {
-    //       this.enemyCreatorList["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
-    //     }
-    //   }
+    } else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 1) {
+      this.intervalTime = 0
+      this.sequenceCount += 1
+      let enemies_to_spawn = []
+      let randomPos = this.randomPosition();
+      for (let i = 0; i < 2; i++) {
+        for (let j = 0; j < 2; j++) {
+          this.enemyCreatorList["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
+        }
+      }
 
-    // } else if (this.intervalTime > (5000 * this.intervalTiming) && this.sequenceCount === 11) {
-    //   this.intervalTime = 0;
-    //   this.sequenceCount += 1;
-    // } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 0) {
-    //   this.intervalTime = 0;
-    //   this.sequenceCount += 1;
+    } else if (this.intervalTime > (5000 * this.intervalTiming) && this.sequenceCount === 11) {
+      this.intervalTime = 0;
+      this.sequenceCount += 1;
+    } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 0) {
+      this.intervalTime = 0;
+      this.sequenceCount += 1;
 
-    //   let enemies_to_spawn = [];
-    //   let fourCorners = [
-    //     [40, 40],
-    //     [GameScript.DIM_X - 40, 40],
-    //     [40, GameScript.DIM_Y - 40],
-    //     [GameScript.DIM_X - 40, GameScript.DIM_Y - 40]
-    //   ]
-    //   fourCorners.forEach((corner) => {
-    //     this.enemyCreatorList["Grunt"](corner)
-    //   })
+      let enemies_to_spawn = [];
+      let fourCorners = [
+        [40, 40],
+        [GameScript.DIM_X - 40, 40],
+        [40, GameScript.DIM_Y - 40],
+        [GameScript.DIM_X - 40, GameScript.DIM_Y - 40]
+      ]
+      fourCorners.forEach((corner) => {
+        this.enemyCreatorList["Grunt"](corner)
+      })
 
-    // } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 1) {
-    //   this.intervalTime = 0;
-    //   this.sequenceCount += 14;
+    } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 1) {
+      this.intervalTime = 0;
+      this.sequenceCount += 14;
 
-    //   let enemies_to_spawn = [];
-    //   let arrowWallPositions = []
-    //   let arrowDirection = Math.PI * 3 / 2 + Math.PI
-    //   for (let i = 40; i < GameScript.DIM_X; i += 40) {
-    //     arrowWallPositions.push([i, 50])
-    //   }
+      let enemies_to_spawn = [];
+      let arrowWallPositions = []
+      let arrowDirection = Math.PI * 3 / 2 + Math.PI
+      for (let i = 40; i < GameScript.DIM_X; i += 40) {
+        arrowWallPositions.push([i, 50])
+      }
 
-    //   arrowWallPositions.forEach((position) => {
-    //     this.enemyCreatorList["Arrow"](position, arrowDirection)
-    //   })
+      arrowWallPositions.forEach((position) => {
+        this.enemyCreatorList["Arrow"](position, arrowDirection)
+      })
 
-    // } else if (this.sequenceCount >= 26) {
-    //   this.sequenceCount = 0;
-    //   if (!(this.intervalTiming < 0.5)) {
-    //     this.intervalTiming *= 0.9;
-    //   }
-    //   this.hugeSequenceTime += 1;
-    // }
+    } else if (this.sequenceCount >= 26) {
+      this.sequenceCount = 0;
+      if (!(this.intervalTiming < 0.5)) {
+        this.intervalTiming *= 0.9;
+      }
+      this.hugeSequenceTime += 1;
+    }
 
 
 
