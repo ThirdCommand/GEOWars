@@ -10,33 +10,29 @@ class BoxBox extends GameObject {
     super(engine)
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
     this.transform.pos = pos
+    this.radius = 3
     // this.addPhysicsComponent()
     this.addLineSprite(new BoxBoxSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
     this.playSound(this.spawnSound)
-    // adds self as parent before parent needed.. magic?
   }
-
 
   exist() {
     // leaving off subscriptions means that things will subscribe to it
-    this.addCollider("General", this, 3)
+    this.addCollider("General", this, this.radius)
     // now it will move
     this.addPhysicsComponent()
   }
  
-  bounce(){
-    this.gameEngine.gameScript.bounce(this.transform, [1000, 600])
+  wallGraze(){
+    this.gameEngine.gameScript.wallGraze(this.transform, this.radius)
   }
 
   update(delta){
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
-      this.gameEngine.gameScript.bounce(this.transform) 
+      this.wallGraze() 
     }
   }
-
-
-
 }
 
 module.exports = BoxBox;

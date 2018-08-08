@@ -12,9 +12,10 @@ class Ship extends GameObject {
     this.addPhysicsComponent()
     this.addMousePosListener()
     this.addLeftControlStickListener()
-    this.addCollider("General", this, 3)
+    this.radius = 5
+    this.addCollider("General", this, this.radius)
     this.addLineSprite(new ShipSprite(this.transform))
-    this.maxSpeed = 2.5;
+    this.maxSpeed = 10;
     this.mousePos = [0,0];
     this.fireAngle = 0;
     this.bulletSound = new Sound("GEOWars/sounds/Fire_normal.wav", 0.2);
@@ -24,6 +25,7 @@ class Ship extends GameObject {
     this.powerLevel = 1;
     this.bulletNumber = 0;
     this.speed
+    this.shipEngineAcceleration = 0.5;
   }
   
   update(deltaTime){
@@ -37,11 +39,22 @@ class Ship extends GameObject {
 
     
     this.moveInControllerDirection(deltaTime)
+
+    if (this.isOutOfBounds()) {
+      this.wallGraze();
+    } else {
+      this.movementMechanics(deltaTime)
+    }
     // if ship is out of x bounds, maintain y speed, keep x at edge value
+  }
+
+  isOutOfBounds(){
+    return this.gameEngine.gameScript.isOutOfBounds(this.transform.pos, this.radius)
   }
 
   updateMousePos(mousePos){
     this.setFireAngle(mousePos)
+    
   }
 
   updateRightControlStickInput(){
@@ -50,35 +63,42 @@ class Ship extends GameObject {
 
   updateLeftControlStickInput(unitVector) {
     this.controlsDirection = unitVector
+    // console.log(this.controlsDirection);
+  }
+
+  wallGraze() {
+    this.gameEngine.gameScript.wallGraze(this.transform, this.radius)
   }
 
   moveInControllerDirection(timeDelta){
     let maxSpeed = this.maxSpeed
 
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
-      this.gameEngine.gameScript.bounce(this.transform);
-    } else {
-      this.movementMechanics(timeDelta)
-      
-
-    }
+    
   }
 
   movementMechanics(timeDelta){
-    let speed = this.maxSpeed
-    if (this.checkInputDirectionSpeed() > speed ){
-      Math.cos(this.controlsDirection)
+    if (this.checkInputDirectionSpeed() < this.maxSpeed) {
+      // console.log("Slower than maxspeed");
       
-      this.transform.acc[0] += speed * this.controlsDirection[0] * velocityScale
-      this.transform.acc[1] += speed * this.controlsDirection[1] * velocityScale
+      const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+      this.transform.acc[0] += this.shipEngineAcceleration * this.controlsDirection[0]
+      this.transform.acc[1] += this.shipEngineAcceleration * this.controlsDirection[1]
       this.transform.angle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
+    } else {
+      // console.log("Faster than maxspeed");
+      
     }
   }
 
   checkInputDirectionSpeed(){
+
     //calculate input direction speed
-    this.controlsDirection
+    let movementDirection = Math.atan2(this.transform.vel[1], this.transform.vel[0])
+    let controlsAngle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
+    let relativeAngle =  controlsAngle - movementDirection
+    let currentSpeed = Math.sqrt((this.transform.vel[1] * this.transform.vel[1] + this.transform.vel[0] * this.transform.vel[1]))
+    return currentSpeed * Math.cos(relativeAngle)
   }
 
   setFireAngle(mousePos) {

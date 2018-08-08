@@ -23,10 +23,8 @@ class GameEngine {
   }
 
   tick(delta) {
-    // console.log(delta);
-    
-    this.movePhysicsComponents(delta)
     this.checkCollisions()
+    this.movePhysicsComponents(delta)
     this.updateGameObjects(delta)
     this.clearCanvas()
     this.renderLineSprites(this.ctx)
@@ -186,7 +184,8 @@ class GameEngine {
 
   removeColliders(colliders){
     colliders.forEach((collider) => {
-      if (collider.subscribers) {
+
+      if (collider.subscriptions) {
         this.subscribers.splice(this.subscribers.indexOf(collider), 1)
       }
 

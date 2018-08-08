@@ -6,11 +6,12 @@ class SingularitySprite extends LineSprite {
     this.spawningScale = spawningScale
     this.throbbingScale = 1
     this.radius = 15;
+    this.spawned = false;
   }
 
   draw(ctx) {
     let spawningScale = this.spawningScale
-    if (!this.spawningScale) {
+    if (this.spawned) {
       spawningScale = this.throbbingScale
     }
 

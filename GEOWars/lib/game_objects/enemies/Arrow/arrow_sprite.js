@@ -42,7 +42,6 @@ class ArrowSprite extends LineSprite {
     ctx.lineWidth = 1.5;
     this.drawArrow(ctx, l, w);
 
-    // drawArraw(ctx)
     ctx.restore();
   }
 

@@ -15,6 +15,7 @@ class EnemySpawn extends GameObject{
     if (this.existTime >= this.lifeTime){
       
       this.parentObject.exist()
+      this.parentObject.lineSprite.spawningScale = 1;
       this.remove()
     }
 
@@ -27,12 +28,6 @@ class EnemySpawn extends GameObject{
       this.parentObject.lineSprite.spawningScale -= cycleSpeed * cycleSpeedScale;
     }
   }
-
-  // draw (ctx) {
-  //   let pos = this.pos;
-  //   this.parent.draw(ctx, this.spawningScale)
-  // }
-
 }
 const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 module.exports = EnemySpawn;

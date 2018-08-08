@@ -66,7 +66,7 @@ class GameScript {
     let pos = this.randomPosition();
     let enemyCreators = Object.values(this.enemyCreatorList)
     enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos);
-    // this.enemyCreatorList["Arrow"](pos, Math.PI)
+    // this.enemyCreatorList["Singularity"](pos, Math.PI)
   }
 
   // spawnEnemies(spawnList) {
@@ -89,14 +89,14 @@ class GameScript {
   spawnSequence(delta) {
     this.intervalTime += delta;
     
-    // if (this.intervalTime > 2000) {
-    //   this.randomSpawnEnemy();
-    //   this.intervalTime = 0
-    //   if (this.firstArrowAdded) {
-    //     this.arrowAdded = true
-    //   }
-    //   this.firstArrowAdded = true 
-    // }
+    if (this.intervalTime > 2000) {
+      this.randomSpawnEnemy();
+      this.intervalTime = 0
+      if (this.firstArrowAdded) {
+        this.arrowAdded = true
+      }
+      this.firstArrowAdded = true 
+    }
 
     this.gameTime += delta;
     if (this.intervalTime > (500 * this.intervalTiming) && this.sequenceCount < 10) {
@@ -177,10 +177,6 @@ class GameScript {
     // if (this.gameTime % 2000 === 0){
     //   this.spawned = false
     // }
-    // if( !this.spawned){
-    //   this.spawnEnemy()
-    //   this.spawned = true
-    // }
   }
 
   createShip() {
@@ -202,14 +198,33 @@ class GameScript {
   //   ];
   // }
 
-  bounce(transform) {
-    let max = [this.DIM_X, this.DIM_Y]
+  bounce(transform, radius = 0) {
+    let max = [this.DIM_X - radius, this.DIM_Y - radius]
     let pos = transform.absolutePosition()
-    if (pos[0] <= 0 || pos[0] >= max[0]) {
+    if (pos[0] <= radius || pos[0] >= max[0]) {
       transform.vel[0] = -transform.vel[0];
     }
-    if (pos[1] <= 0 || pos[1] >= max[1]) {
+    if (pos[1] <= radius || pos[1] >= max[1]) {
       transform.vel[1] = -transform.vel[1];
+    }
+  }
+
+  wallGraze(transform, radius = 0){
+    let max = [this.DIM_X - radius, this.DIM_Y - radius]
+    let pos = transform.absolutePosition()
+    if (pos[0] <= radius || pos[0] >= max[0]) {
+      if (transform.vel[0] < 0 && transform.pos[0] <= radius){
+        transform.vel[0] = 0;
+      } else if (transform.vel[0] > 0 && transform.pos[0] >= max[0]){
+        transform.vel[0] = 0;
+      }
+    }
+    if (pos[1] <= radius || pos[1] >= max[1]) {
+      if (transform.vel[1] < 0 && transform.pos[1] <= radius) {
+        transform.vel[1] = 0;
+      } else if (transform.vel[1] > 0 && transform.pos[1] >= max[0]) {
+        transform.vel[1] = 0;
+      }
     }
   }
 

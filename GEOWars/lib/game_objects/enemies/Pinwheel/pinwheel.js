@@ -16,11 +16,12 @@ class Pinwheel extends GameObject {
     this.playSound(this.spawnSound)
     this.addLineSprite(new PinwheelSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
+    this.radius = 5;
   }
   
   exist() {
     // leaving off subscriptions means that things will subscribe to it
-    this.addCollider("General", this, 3)
+    this.addCollider("General", this, this.radius)
     // now it will move
     this.addPhysicsComponent()
   }
@@ -30,7 +31,7 @@ class Pinwheel extends GameObject {
     this.transform.angle = (this.transform.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
 
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
-      this.gameEngine.gameScript.bounce(this.transform) // HARD CODED
+      this.gameEngine.gameScript.bounce(this.transform, this.radius) // HARD CODED
     }
   }
 

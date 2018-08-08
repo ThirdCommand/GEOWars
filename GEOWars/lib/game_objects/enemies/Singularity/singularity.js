@@ -11,7 +11,7 @@ class Singularity extends GameObject {
     this.transform.pos = pos;
     this.existTime = 0;
     this.gravityWellSize = 500;
-    this.gravityConstant = 1000;
+    this.gravityConstant = 1000 * 0.5;
     this.radius = 15
 
     // this.id = options.id
@@ -27,11 +27,12 @@ class Singularity extends GameObject {
 
   exist() {
     // leaving off subscriptions means that things will subscribe to it
-    this.addCollider("General", this, 3)
+    this.addCollider("General", this, this.radius)
     this.addCollider("GravityWell", this, this.gravityWellSize, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver", "Particle"], ["General"])
     // this.addCollider("GravityAbsorb", this, this.radius, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver"], ["General"])
     // now it will move
     this.addPhysicsComponent()
+    this.lineSprite.spawned = true
   }
 
   onCollision(collider, type){
@@ -40,9 +41,14 @@ class Singularity extends GameObject {
     }
   }
 
+  wallGraze() {
+    this.gameEngine.gameScript.wallGraze(this.transform, this.radius)
+  }
+  
+
   update(deltaTime) {
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
-      this.gameEngine.gameScript.bounce(this.transform) // HARD CODED
+      this.wallGraze()
     }
 
     this.throb(deltaTime)
@@ -78,11 +84,12 @@ class Singularity extends GameObject {
     if (r > this.gravityWellSize * 7 / 8 || r < this.radius * 2){
       object.transform.acc = [0,0];
     } else {
-      let newAcc = [
+      let accContribution= [
         unitVector[0] * this.gravityConstant / (r * r),
         unitVector[1] * this.gravityConstant / (r * r)
       ]
-      object.transform.acc = newAcc;
+      object.transform.acc[0] += accContribution[0];
+      object.transform.acc[1] += accContribution[1];
     }
   }
 }

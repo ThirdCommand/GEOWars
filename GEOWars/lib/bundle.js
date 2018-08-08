@@ -190,10 +190,8 @@ class GameEngine {
   }
 
   tick(delta) {
-    // console.log(delta);
-    
-    this.movePhysicsComponents(delta)
     this.checkCollisions()
+    this.movePhysicsComponents(delta)
     this.updateGameObjects(delta)
     this.clearCanvas()
     this.renderLineSprites(this.ctx)
@@ -353,7 +351,8 @@ class GameEngine {
 
   removeColliders(colliders){
     colliders.forEach((collider) => {
-      if (collider.subscribers) {
+
+      if (collider.subscriptions) {
         this.subscribers.splice(this.subscribers.indexOf(collider), 1)
       }
 
@@ -395,7 +394,6 @@ const Collider = __webpack_require__(/*! ./collider */ "./lib/game_engine/collid
 
 class GameObject {
   constructor(engine) {
-
     this.gameEngine = engine
     this.gameEngine.addGameObject(this)
     this.transform = new Transform()
@@ -404,9 +402,6 @@ class GameObject {
     this.lineSprite = null
     this.parentObject = null
     this.colliders = []
-    // this.color = options.color;
-    // this.bounce = true;
-    // this.speed = 0;
   }
 
   addPhysicsComponent() {
@@ -922,7 +917,6 @@ class ArrowSprite extends LineSprite {
     ctx.lineWidth = 1.5;
     this.drawArrow(ctx, l, w);
 
-    // drawArraw(ctx)
     ctx.restore();
   }
 
@@ -962,33 +956,29 @@ class BoxBox extends GameObject {
     super(engine)
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
     this.transform.pos = pos
+    this.radius = 3
     // this.addPhysicsComponent()
     this.addLineSprite(new BoxBoxSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
     this.playSound(this.spawnSound)
-    // adds self as parent before parent needed.. magic?
   }
-
 
   exist() {
     // leaving off subscriptions means that things will subscribe to it
-    this.addCollider("General", this, 3)
+    this.addCollider("General", this, this.radius)
     // now it will move
     this.addPhysicsComponent()
   }
  
-  bounce(){
-    this.gameEngine.gameScript.bounce(this.transform, [1000, 600])
+  wallGraze(){
+    this.gameEngine.gameScript.wallGraze(this.transform, this.radius)
   }
 
   update(delta){
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
-      this.gameEngine.gameScript.bounce(this.transform) 
+      this.wallGraze() 
     }
   }
-
-
-
 }
 
 module.exports = BoxBox;
@@ -1088,6 +1078,7 @@ class Grunt extends GameObject {
     this.exists = false;
     this.stretchDirection = -1;
     this.shipTransform = shipTransform
+    this.radius = 5;
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
     this.playSound(this.spawnSound)
     this.addLineSprite(new GruntSprite(this.transform))
@@ -1097,7 +1088,7 @@ class Grunt extends GameObject {
   exist() {
     this.exists = true;
     // leaving off subscriptions means that things will subscribe to it
-    this.addCollider("General", this, 3)
+    this.addCollider("General", this, this.radius)
     // now it will move
     this.addPhysicsComponent()
   }
@@ -1131,9 +1122,13 @@ class Grunt extends GameObject {
       this.lineSprite.stretchScale_L = this.lineSprite.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
 
       if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
-        this.gameEngine.gameScript.bounce(this.transform) 
+        this.wallGraze()
       }
     }
+  }
+
+  wallGraze() {
+    this.gameEngine.gameScript.wallGraze(this.transform, this.radius)
   }
 
   
@@ -1241,11 +1236,12 @@ class Pinwheel extends GameObject {
     this.playSound(this.spawnSound)
     this.addLineSprite(new PinwheelSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
+    this.radius = 5;
   }
   
   exist() {
     // leaving off subscriptions means that things will subscribe to it
-    this.addCollider("General", this, 3)
+    this.addCollider("General", this, this.radius)
     // now it will move
     this.addPhysicsComponent()
   }
@@ -1255,7 +1251,7 @@ class Pinwheel extends GameObject {
     this.transform.angle = (this.transform.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
 
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
-      this.gameEngine.gameScript.bounce(this.transform) // HARD CODED
+      this.gameEngine.gameScript.bounce(this.transform, this.radius) // HARD CODED
     }
   }
 
@@ -1372,7 +1368,7 @@ class Singularity extends GameObject {
     this.transform.pos = pos;
     this.existTime = 0;
     this.gravityWellSize = 500;
-    this.gravityConstant = 1000;
+    this.gravityConstant = 1000 * 0.5;
     this.radius = 15
 
     // this.id = options.id
@@ -1388,11 +1384,12 @@ class Singularity extends GameObject {
 
   exist() {
     // leaving off subscriptions means that things will subscribe to it
-    this.addCollider("General", this, 3)
+    this.addCollider("General", this, this.radius)
     this.addCollider("GravityWell", this, this.gravityWellSize, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver", "Particle"], ["General"])
     // this.addCollider("GravityAbsorb", this, this.radius, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver"], ["General"])
     // now it will move
     this.addPhysicsComponent()
+    this.lineSprite.spawned = true
   }
 
   onCollision(collider, type){
@@ -1401,9 +1398,14 @@ class Singularity extends GameObject {
     }
   }
 
+  wallGraze() {
+    this.gameEngine.gameScript.wallGraze(this.transform, this.radius)
+  }
+  
+
   update(deltaTime) {
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
-      this.gameEngine.gameScript.bounce(this.transform) // HARD CODED
+      this.wallGraze()
     }
 
     this.throb(deltaTime)
@@ -1439,11 +1441,12 @@ class Singularity extends GameObject {
     if (r > this.gravityWellSize * 7 / 8 || r < this.radius * 2){
       object.transform.acc = [0,0];
     } else {
-      let newAcc = [
+      let accContribution= [
         unitVector[0] * this.gravityConstant / (r * r),
         unitVector[1] * this.gravityConstant / (r * r)
       ]
-      object.transform.acc = newAcc;
+      object.transform.acc[0] += accContribution[0];
+      object.transform.acc[1] += accContribution[1];
     }
   }
 }
@@ -1469,11 +1472,12 @@ class SingularitySprite extends LineSprite {
     this.spawningScale = spawningScale
     this.throbbingScale = 1
     this.radius = 15;
+    this.spawned = false;
   }
 
   draw(ctx) {
     let spawningScale = this.spawningScale
-    if (!this.spawningScale) {
+    if (this.spawned) {
       spawningScale = this.throbbingScale
     }
 
@@ -1903,6 +1907,7 @@ class EnemySpawn extends GameObject{
     if (this.existTime >= this.lifeTime){
       
       this.parentObject.exist()
+      this.parentObject.lineSprite.spawningScale = 1;
       this.remove()
     }
 
@@ -1915,12 +1920,6 @@ class EnemySpawn extends GameObject{
       this.parentObject.lineSprite.spawningScale -= cycleSpeed * cycleSpeedScale;
     }
   }
-
-  // draw (ctx) {
-  //   let pos = this.pos;
-  //   this.parent.draw(ctx, this.spawningScale)
-  // }
-
 }
 const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 module.exports = EnemySpawn;
@@ -2003,9 +2002,10 @@ class Ship extends GameObject {
     this.addPhysicsComponent()
     this.addMousePosListener()
     this.addLeftControlStickListener()
-    this.addCollider("General", this, 3)
+    this.radius = 5
+    this.addCollider("General", this, this.radius)
     this.addLineSprite(new ShipSprite(this.transform))
-    this.maxSpeed = 2.5;
+    this.maxSpeed = 10;
     this.mousePos = [0,0];
     this.fireAngle = 0;
     this.bulletSound = new Sound("GEOWars/sounds/Fire_normal.wav", 0.2);
@@ -2015,6 +2015,7 @@ class Ship extends GameObject {
     this.powerLevel = 1;
     this.bulletNumber = 0;
     this.speed
+    this.shipEngineAcceleration = 0.5;
   }
   
   update(deltaTime){
@@ -2028,11 +2029,22 @@ class Ship extends GameObject {
 
     
     this.moveInControllerDirection(deltaTime)
+
+    if (this.isOutOfBounds()) {
+      this.wallGraze();
+    } else {
+      this.movementMechanics(deltaTime)
+    }
     // if ship is out of x bounds, maintain y speed, keep x at edge value
+  }
+
+  isOutOfBounds(){
+    return this.gameEngine.gameScript.isOutOfBounds(this.transform.pos, this.radius)
   }
 
   updateMousePos(mousePos){
     this.setFireAngle(mousePos)
+    
   }
 
   updateRightControlStickInput(){
@@ -2041,35 +2053,42 @@ class Ship extends GameObject {
 
   updateLeftControlStickInput(unitVector) {
     this.controlsDirection = unitVector
+    // console.log(this.controlsDirection);
+  }
+
+  wallGraze() {
+    this.gameEngine.gameScript.wallGraze(this.transform, this.radius)
   }
 
   moveInControllerDirection(timeDelta){
     let maxSpeed = this.maxSpeed
 
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.pos)) {
-      this.gameEngine.gameScript.bounce(this.transform);
-    } else {
-      this.movementMechanics(timeDelta)
-      
-
-    }
+    
   }
 
   movementMechanics(timeDelta){
-    let speed = this.maxSpeed
-    if (this.checkInputDirectionSpeed() > speed ){
-      Math.cos(this.controlsDirection)
+    if (this.checkInputDirectionSpeed() < this.maxSpeed) {
+      // console.log("Slower than maxspeed");
       
-      this.transform.acc[0] += speed * this.controlsDirection[0] * velocityScale
-      this.transform.acc[1] += speed * this.controlsDirection[1] * velocityScale
+      const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+      this.transform.acc[0] += this.shipEngineAcceleration * this.controlsDirection[0]
+      this.transform.acc[1] += this.shipEngineAcceleration * this.controlsDirection[1]
       this.transform.angle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
+    } else {
+      // console.log("Faster than maxspeed");
+      
     }
   }
 
   checkInputDirectionSpeed(){
+
     //calculate input direction speed
-    this.controlsDirection
+    let movementDirection = Math.atan2(this.transform.vel[1], this.transform.vel[0])
+    let controlsAngle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
+    let relativeAngle =  controlsAngle - movementDirection
+    let currentSpeed = Math.sqrt((this.transform.vel[1] * this.transform.vel[1] + this.transform.vel[0] * this.transform.vel[1]))
+    return currentSpeed * Math.cos(relativeAngle)
   }
 
   setFireAngle(mousePos) {
@@ -2277,7 +2296,7 @@ class GameScript {
     let pos = this.randomPosition();
     let enemyCreators = Object.values(this.enemyCreatorList)
     enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos);
-    // this.enemyCreatorList["Arrow"](pos, Math.PI)
+    // this.enemyCreatorList["Singularity"](pos, Math.PI)
   }
 
   // spawnEnemies(spawnList) {
@@ -2300,14 +2319,14 @@ class GameScript {
   spawnSequence(delta) {
     this.intervalTime += delta;
     
-    // if (this.intervalTime > 2000) {
-    //   this.randomSpawnEnemy();
-    //   this.intervalTime = 0
-    //   if (this.firstArrowAdded) {
-    //     this.arrowAdded = true
-    //   }
-    //   this.firstArrowAdded = true 
-    // }
+    if (this.intervalTime > 2000) {
+      this.randomSpawnEnemy();
+      this.intervalTime = 0
+      if (this.firstArrowAdded) {
+        this.arrowAdded = true
+      }
+      this.firstArrowAdded = true 
+    }
 
     this.gameTime += delta;
     if (this.intervalTime > (500 * this.intervalTiming) && this.sequenceCount < 10) {
@@ -2388,10 +2407,6 @@ class GameScript {
     // if (this.gameTime % 2000 === 0){
     //   this.spawned = false
     // }
-    // if( !this.spawned){
-    //   this.spawnEnemy()
-    //   this.spawned = true
-    // }
   }
 
   createShip() {
@@ -2413,14 +2428,33 @@ class GameScript {
   //   ];
   // }
 
-  bounce(transform) {
-    let max = [this.DIM_X, this.DIM_Y]
+  bounce(transform, radius = 0) {
+    let max = [this.DIM_X - radius, this.DIM_Y - radius]
     let pos = transform.absolutePosition()
-    if (pos[0] <= 0 || pos[0] >= max[0]) {
+    if (pos[0] <= radius || pos[0] >= max[0]) {
       transform.vel[0] = -transform.vel[0];
     }
-    if (pos[1] <= 0 || pos[1] >= max[1]) {
+    if (pos[1] <= radius || pos[1] >= max[1]) {
       transform.vel[1] = -transform.vel[1];
+    }
+  }
+
+  wallGraze(transform, radius = 0){
+    let max = [this.DIM_X - radius, this.DIM_Y - radius]
+    let pos = transform.absolutePosition()
+    if (pos[0] <= radius || pos[0] >= max[0]) {
+      if (transform.vel[0] < 0 && transform.pos[0] <= radius){
+        transform.vel[0] = 0;
+      } else if (transform.vel[0] > 0 && transform.pos[0] >= max[0]){
+        transform.vel[0] = 0;
+      }
+    }
+    if (pos[1] <= radius || pos[1] >= max[1]) {
+      if (transform.vel[1] < 0 && transform.pos[1] <= radius) {
+        transform.vel[1] = 0;
+      } else if (transform.vel[1] > 0 && transform.pos[1] >= max[0]) {
+        transform.vel[1] = 0;
+      }
     }
   }
 

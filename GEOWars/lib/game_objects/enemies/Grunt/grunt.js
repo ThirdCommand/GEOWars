@@ -12,6 +12,7 @@ class Grunt extends GameObject {
     this.exists = false;
     this.stretchDirection = -1;
     this.shipTransform = shipTransform
+    this.radius = 5;
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
     this.playSound(this.spawnSound)
     this.addLineSprite(new GruntSprite(this.transform))
@@ -21,7 +22,7 @@ class Grunt extends GameObject {
   exist() {
     this.exists = true;
     // leaving off subscriptions means that things will subscribe to it
-    this.addCollider("General", this, 3)
+    this.addCollider("General", this, this.radius)
     // now it will move
     this.addPhysicsComponent()
   }
@@ -55,9 +56,13 @@ class Grunt extends GameObject {
       this.lineSprite.stretchScale_L = this.lineSprite.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
 
       if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
-        this.gameEngine.gameScript.bounce(this.transform) 
+        this.wallGraze()
       }
     }
+  }
+
+  wallGraze() {
+    this.gameEngine.gameScript.wallGraze(this.transform, this.radius)
   }
 
   

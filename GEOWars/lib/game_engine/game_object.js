@@ -8,7 +8,6 @@ const Collider = require("./collider")
 
 class GameObject {
   constructor(engine) {
-
     this.gameEngine = engine
     this.gameEngine.addGameObject(this)
     this.transform = new Transform()
@@ -17,9 +16,6 @@ class GameObject {
     this.lineSprite = null
     this.parentObject = null
     this.colliders = []
-    // this.color = options.color;
-    // this.bounce = true;
-    // this.speed = 0;
   }
 
   addPhysicsComponent() {
