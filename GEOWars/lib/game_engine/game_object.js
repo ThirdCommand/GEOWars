@@ -83,10 +83,11 @@ class GameObject {
       this.gameEngine.remove(obj)
     })
     if(this.parentObject){
-      // this.parentObject.childObjects.splice(this.parentObject.childObjects.indexOf(this), 1)
+      this.parentObject.childObjects.splice(this.parentObject.childObjects.indexOf(this), 1)
     }
     this.gameEngine.remove(this);
   }
+
 }
 
 const NORMAL_FRAME_TIME_DELTA = 1000 / 60;

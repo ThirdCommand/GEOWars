@@ -469,10 +469,11 @@ class GameObject {
       this.gameEngine.remove(obj)
     })
     if(this.parentObject){
-      // this.parentObject.childObjects.splice(this.parentObject.childObjects.indexOf(this), 1)
+      this.parentObject.childObjects.splice(this.parentObject.childObjects.indexOf(this), 1)
     }
     this.gameEngine.remove(this);
   }
+
 }
 
 const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
@@ -2005,7 +2006,7 @@ class Ship extends GameObject {
     this.radius = 5
     this.addCollider("General", this, this.radius)
     this.addLineSprite(new ShipSprite(this.transform))
-    this.maxSpeed = 10;
+    this.maxSpeed = 2.5;
     this.mousePos = [0,0];
     this.fireAngle = 0;
     this.bulletSound = new Sound("GEOWars/sounds/Fire_normal.wav", 0.2);
@@ -2015,7 +2016,7 @@ class Ship extends GameObject {
     this.powerLevel = 1;
     this.bulletNumber = 0;
     this.speed
-    this.shipEngineAcceleration = 0.5;
+    this.shipEngineAcceleration = 1;
   }
   
   update(deltaTime){
@@ -2044,16 +2045,20 @@ class Ship extends GameObject {
 
   updateMousePos(mousePos){
     this.setFireAngle(mousePos)
-    
+
   }
 
   updateRightControlStickInput(){
 
   }
 
-  updateLeftControlStickInput(unitVector) {
-    this.controlsDirection = unitVector
-    // console.log(this.controlsDirection);
+  updateLeftControlStickInput(unitVector, down = true) {
+    // accelerates to V = [0,0] when not pressed
+    if (down) {
+      this.controlsDirection = unitVector
+    } else if (this.controlsDirection[0] === unitVector[0] && this.controlsDirection[1] === unitVector[1]) {
+      this.controlsDirection = [0,0]
+    }
   }
 
   wallGraze() {
@@ -2064,16 +2069,27 @@ class Ship extends GameObject {
     let maxSpeed = this.maxSpeed
 
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    
+  }
+
+  enginePowerDirection(){
+    let dx = this.transform.vel[0] - this.controlsDirection[0]
+    let dy = this.transform.vel[1] - this.controlsDirection[1]
+    if((dx + dy) < 0.5){
+      return Math.atan2(dy,dx)
+    } else {
+      return false
+    }
   }
 
   movementMechanics(timeDelta){
     if (this.checkInputDirectionSpeed() < this.maxSpeed) {
       // console.log("Slower than maxspeed");
-      
       const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-      this.transform.acc[0] += this.shipEngineAcceleration * this.controlsDirection[0]
-      this.transform.acc[1] += this.shipEngineAcceleration * this.controlsDirection[1]
+      let enginePowerDirection = this.enginePowerDirection();
+      if (enginePowerDirection){
+        this.transform.acc[0] += this.shipEngineAcceleration * Math.cos(enginePowerDirection)
+        this.transform.acc[1] += this.shipEngineAcceleration * Math.sin(enginePowerDirection)
+      }
       this.transform.angle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
     } else {
       // console.log("Faster than maxspeed");
@@ -2082,7 +2098,6 @@ class Ship extends GameObject {
   }
 
   checkInputDirectionSpeed(){
-
     //calculate input direction speed
     let movementDirection = Math.atan2(this.transform.vel[1], this.transform.vel[0])
     let controlsAngle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
@@ -2319,86 +2334,86 @@ class GameScript {
   spawnSequence(delta) {
     this.intervalTime += delta;
     
-    if (this.intervalTime > 2000) {
-      this.randomSpawnEnemy();
-      this.intervalTime = 0
-      if (this.firstArrowAdded) {
-        this.arrowAdded = true
-      }
-      this.firstArrowAdded = true 
-    }
+    // if (this.intervalTime > 2000) {
+    //   this.randomSpawnEnemy();
+    //   this.intervalTime = 0
+    //   if (this.firstArrowAdded) {
+    //     this.arrowAdded = true
+    //   }
+    //   this.firstArrowAdded = true 
+    // }
 
-    this.gameTime += delta;
-    if (this.intervalTime > (500 * this.intervalTiming) && this.sequenceCount < 10) {
-      this.intervalTime = 0;
-      this.randomSpawnEnemy();
-      this.sequenceCount += 1
+    // this.gameTime += delta;
+    // if (this.intervalTime > (500 * this.intervalTiming) && this.sequenceCount < 10) {
+    //   this.intervalTime = 0;
+    //   this.randomSpawnEnemy();
+    //   this.sequenceCount += 1
 
-    } 
-    else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 0) {
-      this.intervalTime = 0
-      this.sequenceCount += 1
-      let enemies_to_spawn = []
-      let randomPos = this.randomPosition();
-      for (let i = 0; i < 2; i++) {
-        for (let j = 0; j < 2; j++) {
-          enemies_to_spawn.push(
-            this.enemyCreatorList["BoxBox"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
-          )
-        }
-      }
+    // } 
+    // else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 0) {
+    //   this.intervalTime = 0
+    //   this.sequenceCount += 1
+    //   let enemies_to_spawn = []
+    //   let randomPos = this.randomPosition();
+    //   for (let i = 0; i < 2; i++) {
+    //     for (let j = 0; j < 2; j++) {
+    //       enemies_to_spawn.push(
+    //         this.enemyCreatorList["BoxBox"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
+    //       )
+    //     }
+    //   }
 
-    } else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 1) {
-      this.intervalTime = 0
-      this.sequenceCount += 1
-      let enemies_to_spawn = []
-      let randomPos = this.randomPosition();
-      for (let i = 0; i < 2; i++) {
-        for (let j = 0; j < 2; j++) {
-          this.enemyCreatorList["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
-        }
-      }
+    // } else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 1) {
+    //   this.intervalTime = 0
+    //   this.sequenceCount += 1
+    //   let enemies_to_spawn = []
+    //   let randomPos = this.randomPosition();
+    //   for (let i = 0; i < 2; i++) {
+    //     for (let j = 0; j < 2; j++) {
+    //       this.enemyCreatorList["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
+    //     }
+    //   }
 
-    } else if (this.intervalTime > (5000 * this.intervalTiming) && this.sequenceCount === 11) {
-      this.intervalTime = 0;
-      this.sequenceCount += 1;
-    } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 0) {
-      this.intervalTime = 0;
-      this.sequenceCount += 1;
+    // } else if (this.intervalTime > (5000 * this.intervalTiming) && this.sequenceCount === 11) {
+    //   this.intervalTime = 0;
+    //   this.sequenceCount += 1;
+    // } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 0) {
+    //   this.intervalTime = 0;
+    //   this.sequenceCount += 1;
 
-      let enemies_to_spawn = [];
-      let fourCorners = [
-        [40, 40],
-        [GameScript.DIM_X - 40, 40],
-        [40, GameScript.DIM_Y - 40],
-        [GameScript.DIM_X - 40, GameScript.DIM_Y - 40]
-      ]
-      fourCorners.forEach((corner) => {
-        this.enemyCreatorList["Grunt"](corner)
-      })
+    //   let enemies_to_spawn = [];
+    //   let fourCorners = [
+    //     [40, 40],
+    //     [GameScript.DIM_X - 40, 40],
+    //     [40, GameScript.DIM_Y - 40],
+    //     [GameScript.DIM_X - 40, GameScript.DIM_Y - 40]
+    //   ]
+    //   fourCorners.forEach((corner) => {
+    //     this.enemyCreatorList["Grunt"](corner)
+    //   })
 
-    } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 1) {
-      this.intervalTime = 0;
-      this.sequenceCount += 14;
+    // } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 1) {
+    //   this.intervalTime = 0;
+    //   this.sequenceCount += 14;
 
-      let enemies_to_spawn = [];
-      let arrowWallPositions = []
-      let arrowDirection = Math.PI * 3 / 2 + Math.PI
-      for (let i = 40; i < GameScript.DIM_X; i += 40) {
-        arrowWallPositions.push([i, 50])
-      }
+    //   let enemies_to_spawn = [];
+    //   let arrowWallPositions = []
+    //   let arrowDirection = Math.PI * 3 / 2 + Math.PI
+    //   for (let i = 40; i < GameScript.DIM_X; i += 40) {
+    //     arrowWallPositions.push([i, 50])
+    //   }
 
-      arrowWallPositions.forEach((position) => {
-        this.enemyCreatorList["Arrow"](position, arrowDirection)
-      })
+    //   arrowWallPositions.forEach((position) => {
+    //     this.enemyCreatorList["Arrow"](position, arrowDirection)
+    //   })
 
-    } else if (this.sequenceCount >= 26) {
-      this.sequenceCount = 0;
-      if (!(this.intervalTiming < 0.5)) {
-        this.intervalTiming *= 0.9;
-      }
-      this.hugeSequenceTime += 1;
-    }
+    // } else if (this.sequenceCount >= 26) {
+    //   this.sequenceCount = 0;
+    //   if (!(this.intervalTiming < 0.5)) {
+    //     this.intervalTiming *= 0.9;
+    //   }
+    //   this.hugeSequenceTime += 1;
+    // }
 
 
 
@@ -2520,6 +2535,8 @@ GameScript.spawnListList = [
 /*! no static exports found */
 /***/ (function(module, exports) {
 
+
+
 class GameView {
   constructor(engine, ctx, canvasEl) {
     this.ctx = ctx;
@@ -2528,24 +2545,48 @@ class GameView {
     this.canvasEl = canvasEl;
   }
 
+  bindKeyboardKeys(){
+    window.addEventListener('keydown', this.doKeyEvent(true), true);
+    window.addEventListener('keyup', this.doKeyEvent(false), true);
+  }
+
+  updateMovementDirection(move, down){
+    this.engine.gameScript.ship.updateLeftControlStickInput(move, down);
+  }
+
+  /*
+    if true, change movement direction to the direction
+    if false, remove movement direction if it's the 
+    same as the current movement direction
+  */
+
+  doKeyEvent(down) {
+    return (e) => {
+      let unitVector = GameView.MOVES[e.key]
+      if (unitVector) {
+        this.updateMovementDirection(unitVector, down)
+      }
+    }
+  }
+
   bindKeyHandlers() {
     const engine = this.engine
-    Object.keys(GameView.MOREMOVES).forEach((k) => {
-      const move = GameView.MOREMOVES[k];
-      // debugger
-      key(k, () => {
-        this.engine.gameScript.ship.updateLeftControlStickInput(move);
-      });
-    });
+    // Object.keys(GameView.MOVES).forEach((k) => {
+    //   const move = GameView.MOVES[k];
+    //   // debugger
+    //   key(k, () => {
+    //     this.engine.gameScript.ship.updateLeftControlStickInput(move);
+    //   });
+    // });
 
-    key("m", () => {
-      engine.muted = !engine.muted;
-      if (engine.muted) {
-        this.theme.pause();
-      } else {
-        this.theme.play();
-      }
-    })
+    // key("m", () => {
+    //   engine.muted = !engine.muted;
+    //   if (engine.muted) {
+    //     this.theme.pause();
+    //   } else {
+    //     this.theme.play();
+    //   }
+    // })
 
     window.addEventListener('mousemove', (e) => {
       const x = {x: e.layerX};
@@ -2559,13 +2600,13 @@ class GameView {
   }
 
   start() {
-    this.bindKeyHandlers();
     this.lastTime = 0;
+    this.bindKeyHandlers();
     window.addEventListener('click', (e) => {
       this.theme = new Audio("GEOWars/sounds/Geometry_OST.mp3");
       this.theme.id = "OST";
-
-      // this.game.ships[0].start();
+      this.theme.volume = 1;
+      this.bindKeyboardKeys()
       requestAnimationFrame(this.animate.bind(this));
     });
   }
@@ -2579,14 +2620,20 @@ class GameView {
   }
 }
 
-GameView.MOVES = {
-  w: [0, -1],
-  a: [-1, 0],
-  s: [0, 1],
-  d: [1, 0],
-};
+const KEYMAP = {
+  87: "W",
+  82: "R",
+  90: "Z",
+  88: "X",
+  67: "C",
+  70: "F",
+  83: "S",
+  69: "E",
+  65: "D",
+  68: "A",
+}
 
-GameView.MOREMOVES = {
+GameView.MOVES = {
   c: [0.70710678118, 0.70710678118],
   x: [0,1],
   z: [-0.70710678118, 0.70710678118],
@@ -2596,7 +2643,7 @@ GameView.MOREMOVES = {
   e: [0,-1],
   r: [0.70710678118, -0.70710678118],
   f: [1,0],
-  d: [1,0]
+  d: [1,0],
 }
 
 module.exports = GameView;

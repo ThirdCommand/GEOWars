@@ -15,7 +15,7 @@ class Ship extends GameObject {
     this.radius = 5
     this.addCollider("General", this, this.radius)
     this.addLineSprite(new ShipSprite(this.transform))
-    this.maxSpeed = 10;
+    this.maxSpeed = 2.5;
     this.mousePos = [0,0];
     this.fireAngle = 0;
     this.bulletSound = new Sound("GEOWars/sounds/Fire_normal.wav", 0.2);
@@ -25,7 +25,7 @@ class Ship extends GameObject {
     this.powerLevel = 1;
     this.bulletNumber = 0;
     this.speed
-    this.shipEngineAcceleration = 0.5;
+    this.shipEngineAcceleration = 1;
   }
   
   update(deltaTime){
@@ -54,16 +54,20 @@ class Ship extends GameObject {
 
   updateMousePos(mousePos){
     this.setFireAngle(mousePos)
-    
+
   }
 
   updateRightControlStickInput(){
 
   }
 
-  updateLeftControlStickInput(unitVector) {
-    this.controlsDirection = unitVector
-    // console.log(this.controlsDirection);
+  updateLeftControlStickInput(unitVector, down = true) {
+    // accelerates to V = [0,0] when not pressed
+    if (down) {
+      this.controlsDirection = unitVector
+    } else if (this.controlsDirection[0] === unitVector[0] && this.controlsDirection[1] === unitVector[1]) {
+      this.controlsDirection = [0,0]
+    }
   }
 
   wallGraze() {
@@ -74,16 +78,27 @@ class Ship extends GameObject {
     let maxSpeed = this.maxSpeed
 
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    
+  }
+
+  enginePowerDirection(){
+    let dVx = this.transform.vel[0] - this.controlsDirection[0]
+    let dVy = this.transform.vel[1] - this.controlsDirection[1]
+    if((dVx + dVy) < 0.5){
+      return Math.atan2(dVy,dVx)
+    } else {
+      return false
+    }
   }
 
   movementMechanics(timeDelta){
     if (this.checkInputDirectionSpeed() < this.maxSpeed) {
       // console.log("Slower than maxspeed");
-      
       const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-      this.transform.acc[0] += this.shipEngineAcceleration * this.controlsDirection[0]
-      this.transform.acc[1] += this.shipEngineAcceleration * this.controlsDirection[1]
+      let enginePowerDirection = this.enginePowerDirection();
+      if (enginePowerDirection){
+        this.transform.acc[0] += this.shipEngineAcceleration * Math.cos(enginePowerDirection)
+        this.transform.acc[1] += this.shipEngineAcceleration * Math.sin(enginePowerDirection)
+      }
       this.transform.angle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
     } else {
       // console.log("Faster than maxspeed");
@@ -92,7 +107,6 @@ class Ship extends GameObject {
   }
 
   checkInputDirectionSpeed(){
-
     //calculate input direction speed
     let movementDirection = Math.atan2(this.transform.vel[1], this.transform.vel[0])
     let controlsAngle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
