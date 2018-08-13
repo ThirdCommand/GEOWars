@@ -1,9 +1,4 @@
-// const Bullet = require("./game_objects/bullet");
-// const Particle = require("./particles/particle");
-// const EnemySpawn = require("./particles/enemy_spawn");
-// const ParticleExplosion = require("./particles/particle_explosion");
-// const BulletWallExplosion = require("./particles/bullet_wall_explosion");
-// const SingularityExplosion = require("./particles/singularity_explosion");
+
 const Ship = require("./game_objects/ship/ship");
 const BoxBox = require("./game_objects/enemies/BoxBox/boxbox");
 const Pinwheel = require("./game_objects/enemies/Pinwheel/pinwheel");

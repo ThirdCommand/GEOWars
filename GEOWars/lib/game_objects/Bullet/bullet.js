@@ -8,7 +8,6 @@ class Bullet extends GameObject {
   constructor(engine, pos, vel, bulletNumber) {
     super(engine);
     this.ID = bulletNumber
-
     this.transform.pos[0] = pos[0]
     this.transform.pos[1] = pos[1]
     this.transform.vel[0] = vel[0]

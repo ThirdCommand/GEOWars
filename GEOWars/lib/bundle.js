@@ -709,7 +709,6 @@ class Bullet extends GameObject {
   constructor(engine, pos, vel, bulletNumber) {
     super(engine);
     this.ID = bulletNumber
-
     this.transform.pos[0] = pos[0]
     this.transform.pos[1] = pos[1]
     this.transform.vel[0] = vel[0]
@@ -2243,12 +2242,7 @@ module.exports = ShipSprite;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-// const Bullet = require("./game_objects/bullet");
-// const Particle = require("./particles/particle");
-// const EnemySpawn = require("./particles/enemy_spawn");
-// const ParticleExplosion = require("./particles/particle_explosion");
-// const BulletWallExplosion = require("./particles/bullet_wall_explosion");
-// const SingularityExplosion = require("./particles/singularity_explosion");
+
 const Ship = __webpack_require__(/*! ./game_objects/ship/ship */ "./lib/game_objects/ship/ship.js");
 const BoxBox = __webpack_require__(/*! ./game_objects/enemies/BoxBox/boxbox */ "./lib/game_objects/enemies/BoxBox/boxbox.js");
 const Pinwheel = __webpack_require__(/*! ./game_objects/enemies/Pinwheel/pinwheel */ "./lib/game_objects/enemies/Pinwheel/pinwheel.js");
