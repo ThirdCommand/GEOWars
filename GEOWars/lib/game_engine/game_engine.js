@@ -23,6 +23,9 @@ class GameEngine {
   }
 
   tick(delta) {
+    if(delta > 125){
+      delta = 125
+    }
     this.checkCollisions()
     this.movePhysicsComponents(delta)
     this.updateGameObjects(delta)

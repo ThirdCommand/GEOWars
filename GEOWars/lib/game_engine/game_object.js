@@ -71,7 +71,7 @@ class GameObject {
     // overwritten by child class for update scripts
   }
 
-  onCollision(objectType){
+  onCollision(collider, type) {
     // overwritten by child class for handler
   }
 

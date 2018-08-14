@@ -190,6 +190,9 @@ class GameEngine {
   }
 
   tick(delta) {
+    if(delta > 125){
+      delta = 125
+    }
     this.checkCollisions()
     this.movePhysicsComponents(delta)
     this.updateGameObjects(delta)
@@ -461,7 +464,7 @@ class GameObject {
     // overwritten by child class for update scripts
   }
 
-  onCollision(objectType){
+  onCollision(collider, type) {
     // overwritten by child class for handler
   }
 
@@ -2042,8 +2045,9 @@ class Ship extends GameObject {
     this.addPhysicsComponent()
     this.addMousePosListener()
     this.addLeftControlStickListener()
-    this.radius = 5
+    this.radius = 10
     this.addCollider("General", this, this.radius)
+    this.addCollider("ShipDeath", this, this.radius, ["BoxBox", "Singularity", "Weaver", "Grunt", "Arrow", "Pinwheel"], ["General"])
     this.addLineSprite(new ShipSprite(this.transform))
     this.maxSpeed = 2.5;
     this.mousePos = [0,0];
@@ -2055,7 +2059,7 @@ class Ship extends GameObject {
     this.powerLevel = 1;
     this.bulletNumber = 0;
     this.speed
-    this.shipEngineAcceleration = 0.2;
+    this.shipEngineAcceleration = 0.125;
   }
   
   update(deltaTime){
@@ -2134,21 +2138,16 @@ class Ship extends GameObject {
     this.gameEngine.gameScript.wallGraze(this.transform, this.radius)
   }
 
-  // moveInControllerDirection(timeDelta){
-  //   let maxSpeed = this.maxSpeed
-
-  //   const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-  // }
-
-  // enginePowerDirection(){
-  //   let dVx = this.transform.vel[0] - this.controlsDirection[0]
-  //   let dVy = this.transform.vel[1] - this.controlsDirection[1]
-  //   if((dVx + dVy) < 0.5){
-  //     return Math.atan2(dVy,dVx)
-  //   } else {
-  //     return false
-  //   }
-  // }
+  onCollision(collider, type) {
+    if (type === "ShipDeath") {
+      // let hitObjectTransform = collider.gameObject.transform
+      // let pos = hitObjectTransform.absolutePosition()
+      // let vel = hitObjectTransform.absoluteVelocity()
+      // let explosion = new ParticleExplosion(this.gameEngine, pos, vel)
+      // collider.gameObject.remove()
+      console.log("DEAD")
+    }
+  }
 
   setFireAngle(mousePos) {
     
@@ -2652,6 +2651,43 @@ class GameView {
       this.engine.updateMousePos(mousePos)
       // ship.setFireAngle(mousePos); add to game script event listener thing
     });
+
+    function preventDefault(e) {
+      e = e || window.event;
+      if (e.preventDefault)
+        e.preventDefault();
+      e.returnValue = false;
+    }
+
+    function preventDefaultForScrollKeys(e) {
+      if (keys[e.keyCode]) {
+        preventDefault(e);
+        return false;
+      }
+    }
+
+    function disableScroll() {
+      if (window.addEventListener) // older FF
+        window.addEventListener('DOMMouseScroll', preventDefault, false);
+      window.onwheel = preventDefault; // modern standard
+      window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
+      window.ontouchmove = preventDefault; // mobile
+      document.onkeydown = preventDefaultForScrollKeys;
+    }
+
+
+    if (window.addEventListener) // older FF
+      window.addEventListener('DOMMouseScroll', preventDefault, false);
+    window.onwheel = preventDefault; // modern standard
+    window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
+    window.ontouchmove = preventDefault; // mobile
+    document.onkeydown = preventDefaultForScrollKeys;
+
+
+    // window.onwheel = preventDefault
+    // window.addEventListener('mousewheel', (e) => {
+    //   e.preventDefault
+    // });
     
     // key("space", () => { ship.fireBullet(); });
   }

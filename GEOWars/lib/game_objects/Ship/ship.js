@@ -12,8 +12,9 @@ class Ship extends GameObject {
     this.addPhysicsComponent()
     this.addMousePosListener()
     this.addLeftControlStickListener()
-    this.radius = 5
+    this.radius = 10
     this.addCollider("General", this, this.radius)
+    this.addCollider("ShipDeath", this, this.radius, ["BoxBox", "Singularity", "Weaver", "Grunt", "Arrow", "Pinwheel"], ["General"])
     this.addLineSprite(new ShipSprite(this.transform))
     this.maxSpeed = 2.5;
     this.mousePos = [0,0];
@@ -25,7 +26,7 @@ class Ship extends GameObject {
     this.powerLevel = 1;
     this.bulletNumber = 0;
     this.speed
-    this.shipEngineAcceleration = 0.2;
+    this.shipEngineAcceleration = 0.125;
   }
   
   update(deltaTime){
@@ -104,21 +105,16 @@ class Ship extends GameObject {
     this.gameEngine.gameScript.wallGraze(this.transform, this.radius)
   }
 
-  // moveInControllerDirection(timeDelta){
-  //   let maxSpeed = this.maxSpeed
-
-  //   const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-  // }
-
-  // enginePowerDirection(){
-  //   let dVx = this.transform.vel[0] - this.controlsDirection[0]
-  //   let dVy = this.transform.vel[1] - this.controlsDirection[1]
-  //   if((dVx + dVy) < 0.5){
-  //     return Math.atan2(dVy,dVx)
-  //   } else {
-  //     return false
-  //   }
-  // }
+  onCollision(collider, type) {
+    if (type === "ShipDeath") {
+      // let hitObjectTransform = collider.gameObject.transform
+      // let pos = hitObjectTransform.absolutePosition()
+      // let vel = hitObjectTransform.absoluteVelocity()
+      // let explosion = new ParticleExplosion(this.gameEngine, pos, vel)
+      // collider.gameObject.remove()
+      console.log("DEAD")
+    }
+  }
 
   setFireAngle(mousePos) {
     
