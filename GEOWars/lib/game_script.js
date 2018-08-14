@@ -60,7 +60,7 @@ class GameScript {
     let pos = this.randomPosition();
     // let enemyCreators = Object.values(this.enemyCreatorList)
     // enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos);
-    this.enemyCreatorList["Weaver"]([500,500])
+    this.enemyCreatorList["Weaver"](pos)
   }
 
   // spawnEnemies(spawnList) {

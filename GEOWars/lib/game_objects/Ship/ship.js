@@ -91,7 +91,6 @@ class Ship extends GameObject {
   }
 
   updateLeftControlStickInput(unitVector, down = true) {
-    console.log(down);
     
     // accelerates to V = [0,0] when not pressed
     if (down) {

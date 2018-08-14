@@ -20,6 +20,7 @@ class Weaver extends GameObject {
     this.playSound(this.spawnSound)
     this.addLineSprite(new WeaverSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
+    this.exists = false;
   }
 
   exist() {
@@ -28,6 +29,7 @@ class Weaver extends GameObject {
     this.addCollider("BulletDodge", this, this.weaverCloseHitBox, ["Bullet"], ["General"])
     // now it will move
     this.addPhysicsComponent()
+    this.exists = true;
   }
 
   onCollision(collider, type){
@@ -59,23 +61,25 @@ class Weaver extends GameObject {
   }
 
   update(timeDelta){
-    let speed = 2
-    const rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    this.angle = (this.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
-    
-    if (!this.directionInfluenced) {
-      this.chase(timeDelta)
-    } else {
-      direction = this.influenceDirection();
-      this.transform.pos[0] += speed * Math.cos(direction) * velocityScale
-      this.transform.pos[1] += speed * Math.sin(direction) * velocityScale
-    }
-
-    this.directionInfluenced = false;
-
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
-      this.gameEngine.gameScript.bounce(this.transform) 
+    if(this.exists){
+      let speed = 2
+      const rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+      const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+      this.transform.angle = (this.transform.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
+      
+      if (!this.directionInfluenced) {
+        this.chase(timeDelta)
+      } else {
+        let direction = this.influenceDirection();
+        this.transform.pos[0] += speed * Math.cos(direction) * velocityScale
+        this.transform.pos[1] += speed * Math.sin(direction) * velocityScale
+      }
+  
+      this.directionInfluenced = false;
+  
+      if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
+        this.gameEngine.gameScript.bounce(this.transform) 
+      }
     }
     
   }

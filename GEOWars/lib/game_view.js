@@ -24,9 +24,7 @@ class GameView {
   */
 
   doKeyEvent(down) {
-    console.log(down);
     return (e) => {
-      console.log(e);
       let unitVector = GameView.MOVES[e.key]
       if (unitVector) {
         this.updateMovementDirection(unitVector, down)
