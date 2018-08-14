@@ -18,7 +18,7 @@ class Ship extends GameObject {
     this.maxSpeed = 2.5;
     this.mousePos = [0,0];
     this.fireAngle = 0;
-    this.bulletSound = new Sound("sounds/Fire_normal.wav", 0.2);
+    this.bulletSound = new Sound("GEOWars/sounds/Fire_normal.wav", 0.2);
     this.bulletTimeCheck = 0;
     this.bulletInterval = 120;
     this.controlsDirection = [0,0];

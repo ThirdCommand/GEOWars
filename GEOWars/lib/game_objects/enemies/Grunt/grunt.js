@@ -13,7 +13,7 @@ class Grunt extends GameObject {
     this.stretchDirection = -1;
     this.shipTransform = shipTransform
     this.radius = 5;
-    this.spawnSound = new Sound("sounds/Enemy_spawn_blue.wav", 0.5);
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
     this.playSound(this.spawnSound)
     this.addLineSprite(new GruntSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))

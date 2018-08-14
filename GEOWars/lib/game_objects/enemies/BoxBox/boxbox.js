@@ -8,7 +8,7 @@ const BoxBoxSprite = require("./boxbox_sprite")
 class BoxBox extends GameObject {
   constructor(engine, pos) {
     super(engine)
-    this.spawnSound = new Sound("sounds/Enemy_spawn_blue.wav", 0.5);
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
     this.transform.pos = pos
     this.radius = 3
     // this.addPhysicsComponent()

@@ -12,7 +12,7 @@ const Sound = require("./game_engine/sound")
 
 class GameScript {
   constructor(engine) {
-    this.theme = new Sound("sounds/Geometry_OST.mp3", 1)
+    this.theme = new Sound("GEOWars/sounds/Geometry_OST.mp3", 1)
     this.DIM_X = 1000;
     this.DIM_Y = 600;
     this.BG_COLOR = "#000000";

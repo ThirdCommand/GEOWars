@@ -17,7 +17,7 @@ class ParticleExplosion extends GameObject{
     ]
     this.color = this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
     this.particleNum = 80;
-    let explosionSound = new Sound("sounds/Enemy_explode.wav", 0.2)
+    let explosionSound = new Sound("GEOWars/sounds/Enemy_explode.wav", 0.2)
     this.playSound(explosionSound)
     this.createExplosionParticles()
   }

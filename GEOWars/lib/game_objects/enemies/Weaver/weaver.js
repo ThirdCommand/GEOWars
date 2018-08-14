@@ -16,7 +16,7 @@ class Weaver extends GameObject {
     this.weaverCloseHitBox = 35;
     this.directionInfluenced = false;
     this.influencers = [];
-    this.spawnSound = new Sound("sounds/Enemy_spawn_green.wav", 0.5);
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_green.wav", 0.5);
     this.playSound(this.spawnSound)
     this.addLineSprite(new WeaverSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))

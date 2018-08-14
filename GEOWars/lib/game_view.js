@@ -6,6 +6,7 @@ class GameView {
     this.engine = engine;
     // this.ship = this.game.addShip(); belongs in game script
     this.canvasEl = canvasEl;
+    this.initialUnmute = true;
   }
 
   bindKeyboardKeys(){
@@ -25,9 +26,19 @@ class GameView {
 
   doKeyEvent(down) {
     return (e) => {
+      if (e.key === "m" && this.initialUnmute) {
+        this.initialUnmute = false
+        this.engine.gameScript.theme.play()
+      }
+
       if(e.key === "m" && down){
         this.engine.toggleMute()
-        this.engine.gameScript.theme.play()
+        if (this.engine.muted){
+          this.engine.gameScript.theme.mute()
+        } else{
+          this.engine.gameScript.theme.unmute()
+        }
+        
       }
 
       let unitVector = GameView.MOVES[e.key]
