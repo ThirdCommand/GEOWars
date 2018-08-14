@@ -15,7 +15,7 @@ class Singularity extends GameObject {
     this.radius = 15
 
     // this.id = options.id
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
+    this.spawnSound = new Sound("sounds/Enemy_spawn_red.wav", 1);
     this.playSound(this.spawnSound)
 
     this.increasing = true

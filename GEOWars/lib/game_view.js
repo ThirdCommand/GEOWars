@@ -25,6 +25,11 @@ class GameView {
 
   doKeyEvent(down) {
     return (e) => {
+      if(e.key === "m" && down){
+        this.engine.toggleMute()
+        this.engine.gameScript.theme.play()
+      }
+
       let unitVector = GameView.MOVES[e.key]
       if (unitVector) {
         this.updateMovementDirection(unitVector, down)

@@ -12,7 +12,7 @@ class Pinwheel extends GameObject {
     let speed = 1;
     this.transform.pos = pos
     this.transform.vel = Util.randomVec(speed);
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
+    this.spawnSound = new Sound("sounds/Enemy_spawn_blue.wav", 0.5);
     this.playSound(this.spawnSound)
     this.addLineSprite(new PinwheelSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))

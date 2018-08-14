@@ -286,6 +286,10 @@ class GameEngine {
     })
   }
 
+  toggleMute(){
+    this.muted = !this.muted
+  }
+
   playSounds(){
     Object.values(this.soundsToPlay).forEach((sound) => {
       sound.play();
@@ -716,7 +720,7 @@ class Bullet extends GameObject {
     this.length = 12;
     this.radius = this.length / 4;
     this.wrap = false
-    this.wallhit = new Sound("GEOWars/sounds/bullet_hitwall.wav", 1)
+    this.wallhit = new Sound("sounds/bullet_hitwall.wav", 1)
     this.addExplosionCollider()
     this.addPhysicsComponent()
     this.addLineSprite(new BulletSprite(this.transform))
@@ -838,7 +842,7 @@ class Arrow extends GameObject {
     this.speed = 3;
     this.transform.vel = Util.vectorCartisian(this.transform.angle, this.speed);
     
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_purple.wav", 0.5);
+    this.spawnSound = new Sound("sounds/Enemy_spawn_purple.wav", 0.5);
     this.playSound(this.spawnSound)
     this.addLineSprite(new ArrowSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
@@ -954,7 +958,7 @@ const BoxBoxSprite = __webpack_require__(/*! ./boxbox_sprite */ "./lib/game_obje
 class BoxBox extends GameObject {
   constructor(engine, pos) {
     super(engine)
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
+    this.spawnSound = new Sound("sounds/Enemy_spawn_blue.wav", 0.5);
     this.transform.pos = pos
     this.radius = 3
     // this.addPhysicsComponent()
@@ -1079,7 +1083,7 @@ class Grunt extends GameObject {
     this.stretchDirection = -1;
     this.shipTransform = shipTransform
     this.radius = 5;
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
+    this.spawnSound = new Sound("sounds/Enemy_spawn_blue.wav", 0.5);
     this.playSound(this.spawnSound)
     this.addLineSprite(new GruntSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
@@ -1232,7 +1236,7 @@ class Pinwheel extends GameObject {
     let speed = 1;
     this.transform.pos = pos
     this.transform.vel = Util.randomVec(speed);
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
+    this.spawnSound = new Sound("sounds/Enemy_spawn_blue.wav", 0.5);
     this.playSound(this.spawnSound)
     this.addLineSprite(new PinwheelSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
@@ -1372,7 +1376,7 @@ class Singularity extends GameObject {
     this.radius = 15
 
     // this.id = options.id
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
+    this.spawnSound = new Sound("sounds/Enemy_spawn_red.wav", 1);
     this.playSound(this.spawnSound)
 
     this.increasing = true
@@ -1550,7 +1554,7 @@ class Weaver extends GameObject {
     this.weaverCloseHitBox = 35;
     this.directionInfluenced = false;
     this.influencers = [];
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_green.wav", 0.5);
+    this.spawnSound = new Sound("sounds/Enemy_spawn_green.wav", 0.5);
     this.playSound(this.spawnSound)
     this.addLineSprite(new WeaverSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
@@ -1862,7 +1866,7 @@ class BulletWallExplosion extends GameObject{
     ]
     this.color = this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
     this.particleNum = 20;
-    let bulletWallHit = new Sound("GEOWars/sounds/bullet_hitwall.wav", 0.2)
+    let bulletWallHit = new Sound("sounds/bullet_hitwall.wav", 0.1)
     this.playSound(bulletWallHit)
     this.createParticles()
   }
@@ -1955,7 +1959,7 @@ class ParticleExplosion extends GameObject{
     ]
     this.color = this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
     this.particleNum = 80;
-    let explosionSound = new Sound("GEOWars/sounds/Enemy_explode.wav", 0.5)
+    let explosionSound = new Sound("sounds/Enemy_explode.wav", 0.2)
     this.playSound(explosionSound)
     this.createExplosionParticles()
   }
@@ -2011,7 +2015,7 @@ class Ship extends GameObject {
     this.maxSpeed = 2.5;
     this.mousePos = [0,0];
     this.fireAngle = 0;
-    this.bulletSound = new Sound("GEOWars/sounds/Fire_normal.wav", 0.2);
+    this.bulletSound = new Sound("sounds/Fire_normal.wav", 0.2);
     this.bulletTimeCheck = 0;
     this.bulletInterval = 120;
     this.controlsDirection = [0,0];
@@ -2264,7 +2268,7 @@ const Sound = __webpack_require__(/*! ./game_engine/sound */ "./lib/game_engine/
 
 class GameScript {
   constructor(engine) {
-    this.theme = new Sound("GEOWars/sounds/Geometry_OST.mp3", 1)
+    this.theme = new Sound("sounds/Geometry_OST.mp3", 1)
     this.DIM_X = 1000;
     this.DIM_Y = 600;
     this.BG_COLOR = "#000000";
@@ -2566,6 +2570,11 @@ class GameView {
 
   doKeyEvent(down) {
     return (e) => {
+      if(e.key === "m" && down){
+        this.engine.toggleMute()
+        this.engine.gameScript.theme.play()
+      }
+
       let unitVector = GameView.MOVES[e.key]
       if (unitVector) {
         this.updateMovementDirection(unitVector, down)
