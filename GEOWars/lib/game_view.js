@@ -82,12 +82,12 @@ class GameView {
       e.returnValue = false;
     }
 
-    function preventDefaultForScrollKeys(e) {
-      if (keys[e.keyCode]) {
-        preventDefault(e);
-        return false;
-      }
-    }
+    // function preventDefaultForScrollKeys(e) {
+    //   if (keys[e.keyCode]) {
+    //     preventDefault(e);
+    //     return false;
+    //   }
+    // }
 
     function disableScroll() {
       if (window.addEventListener) // older FF
@@ -95,7 +95,7 @@ class GameView {
       window.onwheel = preventDefault; // modern standard
       window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
       window.ontouchmove = preventDefault; // mobile
-      document.onkeydown = preventDefaultForScrollKeys;
+      // document.onkeydown = preventDefaultForScrollKeys;
     }
 
 
@@ -104,7 +104,7 @@ class GameView {
     window.onwheel = preventDefault; // modern standard
     window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
     window.ontouchmove = preventDefault; // mobile
-    document.onkeydown = preventDefaultForScrollKeys;
+    // document.onkeydown = preventDefaultForScrollKeys;
 
 
     // window.onwheel = preventDefault
