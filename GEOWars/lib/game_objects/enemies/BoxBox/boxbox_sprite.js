@@ -1,46 +1,22 @@
-const GameObject = require("../../game_object")
-const Bullet = require("../bullet")
-const Ship = require("../ship")
-const Singularity = require("./singularity")
-const Sound = require("../../sound")
-const Util = require("../../util")
-class BoxBox extends GameObject {
-  constructor(options) {
-    super(options)
-    this.pos = options.pos || options.game.randomPosition();
-    this.vel = [0,0]
-    this.acc = [0,0];
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
+const LineSprite = require("../../../game_engine/line_sprite")
+class BoxBoxSprite extends LineSprite{
+  constructor(transform, spawningScale = 1) {
+    super(transform)
+    this.spawningScale = spawningScale
   }
 
-  move(timeDelta) {
-    // let speed = 1.5;
-   
-    
-    const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    this.pos[0] += this.vel[0] * timeScale + this.acc[0] * (timeScale * timeScale) / 2;
-    this.pos[1] += this.vel[1] * timeScale + this.acc[1] * (timeScale * timeScale) / 2;
-    this.vel[0] += this.acc[0] * timeScale;
-    this.vel[1] += this.acc[1] * timeScale;
+  draw(ctx) {
 
-    if (this.game.isOutOfBounds(this.pos)) {
-      Util.bounce(this, [1000, 600]) // HARD CODED
-    }
-  }
-
-  draw(ctx, spawningScale) {
-    this.acc = [0, 0];
-    spawningScale = spawningScale || 1;
-    let pos = this.pos
+    let spawningScale = this.spawningScale || 1;
+    let pos = this.transform.absolutePosition()
     let boxsize = 10 * spawningScale;
 
-    
     // ctx.strokeStyle = "#F173BA";
 
     let r = 230;
     let g = 30;
     let b = 30;
-    
+
     let blurFactor = 0.5
     ctx.save();
     ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
@@ -79,25 +55,8 @@ class BoxBox extends GameObject {
 
   }
 
-  collideWith(otherObject) {
-    if (otherObject instanceof Ship) {
-      otherObject.relocate();
-      return true;
-    } else if (otherObject instanceof Bullet || otherObject instanceof Singularity) {
-      
-      this.remove();
-      otherObject.remove();
-      return true;
-    }
 
-    return false;
-  }
 
 }
 
-BoxBox.BOX_SIZE = 10;
-BoxBox.COLOR = "#f00745"
-
-module.exports = BoxBox;
-
-const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+module.exports = BoxBoxSprite;
