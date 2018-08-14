@@ -78,10 +78,14 @@ class Weaver extends GameObject {
       this.directionInfluenced = false;
   
       if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
-        this.gameEngine.gameScript.bounce(this.transform) 
+        this.wallGraze()
       }
     }
     
+  }
+
+  wallGraze() {
+    this.gameEngine.gameScript.wallGraze(this.transform, this.radius)
   }
 
   chase(timeDelta) {

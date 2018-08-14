@@ -1025,50 +1025,61 @@ class BoxBoxSprite extends LineSprite{
 
     let spawningScale = this.spawningScale || 1;
     let pos = this.transform.absolutePosition()
-    let boxsize = 10 * spawningScale;
+    let boxSize = 10 * spawningScale;
 
     // ctx.strokeStyle = "#F173BA";
 
-    let r = 230;
-    let g = 30;
-    let b = 30;
-
-    let blurFactor = 0.5
+    let r = 210;
+    let g = 75;
+    let b = 75;
     ctx.save();
+    ctx.beginPath();
+    ctx.translate(pos[0], pos[1]);
+    let blurFactor = 0.5
     ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
-    ctx.shadowBlur = 10
+    ctx.shadowBlur = 10 * blurFactor;
     ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
-    ctx.restore();
-    ctx.lineWidth = 2;
-
-    // drawRect()
-
-    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
-    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
-    // ctx.stroke();
-    // ctx.lineWidth = 6 // * blurFactor;
-    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
-    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
-    // ctx.stroke();
-    // ctx.lineWidth = 4.5 // * blurFactor;
-    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
-    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
-    // ctx.stroke();
-    // ctx.lineWidth = 3 // * blurFactor;
-    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
-    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
-    // ctx.stroke();
-    // ctx.strokeStyle = 'rgb(255, 255, 255)';
-    // ctx.lineWidth = 1.5 // * blurFactor;
-    // ctx.rect(pos[0] - (6 / 8 * boxsize), pos[1] - (2 / 8 * boxsize), boxsize, boxsize);
-    // ctx.rect(pos[0] - (2 / 8 * boxsize), pos[1] - (6 / 8 * boxsize), boxsize, boxsize);
-    // ctx.stroke();
-
+    ctx.lineWidth = 7.5 * blurFactor
+    this.drawBox1(ctx, boxSize)
+    this.drawBox2(ctx, boxSize)
+    ctx.lineWidth = 6 * blurFactor;
+    this.drawBox1(ctx, boxSize)
+    this.drawBox2(ctx, boxSize)
+    ctx.lineWidth = 4.5;
+    this.drawBox1(ctx, boxSize)
+    this.drawBox2(ctx, boxSize)
+    ctx.lineWidth = 3;
+    this.drawBox1(ctx, boxSize)
+    this.drawBox2(ctx, boxSize)
+    ctx.strokeStyle = 'rgb(255, 255, 255)';
+    ctx.lineWidth = 1.5;
+    this.drawBox1(ctx, boxSize)
+    this.drawBox2(ctx, boxSize)
     ctx.restore();
   }
 
-  drawRect(ctx, boxsize) {
+  drawBox1(ctx, boxSize) {
+    let w = boxSize
+    let slideFactor = 1.125
+    ctx.beginPath();
+    ctx.moveTo(w  / 4, -w  / 4);
+    ctx.lineTo(w  / 4, (3 * w)  / 4);
+    ctx.lineTo((-3 * w ) / 4, (3 * w ) / 4);
+    ctx.lineTo((-3 * w ) / 4, -w  / 4)
+    ctx.closePath();
+    ctx.stroke();
+  }
 
+  drawBox2(ctx, boxSize) {
+    let w = boxSize
+    let slideFactor = 1.5
+    ctx.beginPath();
+    ctx.moveTo(-w  / 4, w  / 4);
+    ctx.lineTo(-w  / 4, (-3 * w ) / 4);
+    ctx.lineTo((3 * w ) / 4, (-3 * w ) / 4);
+    ctx.lineTo((3 * w ) / 4, w  / 4)
+    ctx.closePath();
+    ctx.stroke();
   }
 
 
@@ -1634,10 +1645,14 @@ class Weaver extends GameObject {
       this.directionInfluenced = false;
   
       if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
-        this.gameEngine.gameScript.bounce(this.transform) 
+        this.wallGraze()
       }
     }
     
+  }
+
+  wallGraze() {
+    this.gameEngine.gameScript.wallGraze(this.transform, this.radius)
   }
 
   chase(timeDelta) {
@@ -2334,7 +2349,7 @@ class GameScript {
     let pos = this.randomPosition();
     let enemyCreators = Object.values(this.enemyCreatorList)
     enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos);
-    // this.enemyCreatorList["Weaver"](pos)
+    // this.enemyCreatorList["BoxBox"](pos)
   }
 
   // spawnEnemies(spawnList) {
