@@ -59,14 +59,13 @@ class Weaver extends GameObject {
   }
 
   update(timeDelta){
-
     let speed = 2
     const rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     this.angle = (this.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
     
     if (!this.directionInfluenced) {
-      this.chase()
+      this.chase(timeDelta)
     } else {
       direction = this.influenceDirection();
       this.transform.pos[0] += speed * Math.cos(direction) * velocityScale

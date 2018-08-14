@@ -24,7 +24,9 @@ class GameView {
   */
 
   doKeyEvent(down) {
+    console.log(down);
     return (e) => {
+      console.log(e);
       let unitVector = GameView.MOVES[e.key]
       if (unitVector) {
         this.updateMovementDirection(unitVector, down)
@@ -66,9 +68,9 @@ class GameView {
     this.lastTime = 0;
     this.bindKeyHandlers();
     window.addEventListener('click', (e) => {
-      this.theme = new Audio("GEOWars/sounds/Geometry_OST.mp3");
-      this.theme.id = "OST";
-      this.theme.volume = 1;
+      // this.theme = new Audio("GEOWars/sounds/Geometry_OST.mp3");
+      // this.theme.id = "OST";
+      // this.theme.volume = 1;
       this.bindKeyboardKeys()
       requestAnimationFrame(this.animate.bind(this));
     });

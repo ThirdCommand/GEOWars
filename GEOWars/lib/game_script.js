@@ -12,6 +12,7 @@ const Sound = require("./game_engine/sound")
 
 class GameScript {
   constructor(engine) {
+    this.theme = new Sound("GEOWars/sounds/Geometry_OST.mp3", 1)
     this.DIM_X = 1000;
     this.DIM_Y = 600;
     this.BG_COLOR = "#000000";
@@ -22,8 +23,6 @@ class GameScript {
     this.enemyCreatorList = this.createEnemyCreatorList()
     // this.deathSound = new Audio("GEOWars/sounds/Enemy_explode.wav")
     // this.deathSound.volume = 0.5;
-    // this.bulletWallhit = new Audio("GEOWars/sounds/bullet_hitwall.wav")
-    // this.bulletWallhit.volume = 0.25;
     
     this.intervalTiming = 1;
     this.intervalTime = 0;
@@ -59,9 +58,9 @@ class GameScript {
 
   randomSpawnEnemy(enemy) {
     let pos = this.randomPosition();
-    let enemyCreators = Object.values(this.enemyCreatorList)
-    enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos);
-    // this.enemyCreatorList["Singularity"](pos, Math.PI)
+    // let enemyCreators = Object.values(this.enemyCreatorList)
+    // enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos);
+    this.enemyCreatorList["Weaver"]([500,500])
   }
 
   // spawnEnemies(spawnList) {
@@ -84,14 +83,14 @@ class GameScript {
   spawnSequence(delta) {
     this.intervalTime += delta;
     
-    // if (this.intervalTime > 2000) {
-    //   this.randomSpawnEnemy();
-    //   this.intervalTime = 0
-    //   if (this.firstArrowAdded) {
-    //     this.arrowAdded = true
-    //   }
-    //   this.firstArrowAdded = true 
-    // }
+    if (this.intervalTime > 2000) {
+      this.randomSpawnEnemy();
+      this.intervalTime = 0
+      if (this.firstArrowAdded) {
+        this.arrowAdded = true
+      }
+      this.firstArrowAdded = true 
+    }
 
     // this.gameTime += delta;
     // if (this.intervalTime > (500 * this.intervalTiming) && this.sequenceCount < 10) {
@@ -207,20 +206,22 @@ class GameScript {
   wallGraze(transform, radius = 0){
     let max = [this.DIM_X - radius, this.DIM_Y - radius]
     let pos = transform.absolutePosition()
-    if (pos[0] <= radius || pos[0] >= max[0]) {
-      if (transform.vel[0] < 0 && transform.pos[0] <= radius){
-        transform.vel[0] = 0;
-      } else if (transform.vel[0] > 0 && transform.pos[0] >= max[0]){
-        transform.vel[0] = 0;
-      }
+    let vel = transform.absoluteVelocity()
+
+    // X bounds, left right
+    if (pos[0] <= radius && vel[0] < 0){
+      transform.vel[0] = 0.1;
+    } else if (pos[0] >= max[0] && vel[0] > 0){
+      transform.vel[0] = -0.1;
     }
-    if (pos[1] <= radius || pos[1] >= max[1]) {
-      if (transform.vel[1] < 0 && transform.pos[1] <= radius) {
-        transform.vel[1] = 0;
-      } else if (transform.vel[1] > 0 && transform.pos[1] >= max[0]) {
-        transform.vel[1] = 0;
-      }
+
+    // Y bounds, top bottom
+    if(pos[1] <= radius && vel[1] < 0) {
+      transform.vel[1] = 0.1
+    } else if (pos[1] >= max[1] && vel[1] > 0){
+      transform.vel[1] = -0.1
     }
+
   }
 
   redirect(transform) {

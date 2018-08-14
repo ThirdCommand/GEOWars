@@ -25,11 +25,10 @@ class Ship extends GameObject {
     this.powerLevel = 1;
     this.bulletNumber = 0;
     this.speed
-    this.shipEngineAcceleration = 1;
+    this.shipEngineAcceleration = 0.2;
   }
   
   update(deltaTime){
-    
     this.bulletTimeCheck += deltaTime
     if (this.bulletTimeCheck >= this.bulletInterval ) {
       this.bulletNumber += 1
@@ -37,10 +36,10 @@ class Ship extends GameObject {
       this.fireBullet();
     } 
 
-    
-    this.moveInControllerDirection(deltaTime)
+    // this.moveInControllerDirection(deltaTime)
 
     if (this.isOutOfBounds()) {
+      // debugger
       this.wallGraze();
     } else {
       this.movementMechanics(deltaTime)
@@ -48,8 +47,38 @@ class Ship extends GameObject {
     // if ship is out of x bounds, maintain y speed, keep x at edge value
   }
 
+  // 
+
+  movementMechanics(deltaTime) {
+    // get dV
+    //    mV => max speed in the direction of the controller
+    //    Vo => current velocity
+    //    dV~ =  mV - Vo
+    // if dv~ > 0.2 (or something)
+    //    a = ma~ 
+    let movementAngle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
+    let Vo = this.transform.absoluteVelocity()
+    this.transform.angle = movementAngle
+    
+    let mV = []
+
+    if (this.controlsDirection[0] === 0 && this.controlsDirection[1] === 0){
+      mV = [0,0]
+    } else {
+      mV = [this.maxSpeed * Math.cos(movementAngle), this.maxSpeed * Math.sin(movementAngle)]
+    }
+
+    let dV = [mV[0] - Vo[0], mV[1] - Vo[1]]
+    let alpha = Math.atan2(dV[1], dV[0])
+
+    this.transform.acc[0] += this.shipEngineAcceleration * Math.cos(alpha)
+    this.transform.acc[1] += this.shipEngineAcceleration * Math.sin(alpha)
+    
+    
+  }
+
   isOutOfBounds(){
-    return this.gameEngine.gameScript.isOutOfBounds(this.transform.pos, this.radius)
+    return this.gameEngine.gameScript.isOutOfBounds(this.transform.pos, this.radius * 2)
   }
 
   updateMousePos(mousePos){
@@ -62,58 +91,35 @@ class Ship extends GameObject {
   }
 
   updateLeftControlStickInput(unitVector, down = true) {
+    console.log(down);
+    
     // accelerates to V = [0,0] when not pressed
     if (down) {
       this.controlsDirection = unitVector
     } else if (this.controlsDirection[0] === unitVector[0] && this.controlsDirection[1] === unitVector[1]) {
       this.controlsDirection = [0,0]
     }
-  }
+  } 
 
   wallGraze() {
     this.gameEngine.gameScript.wallGraze(this.transform, this.radius)
   }
 
-  moveInControllerDirection(timeDelta){
-    let maxSpeed = this.maxSpeed
+  // moveInControllerDirection(timeDelta){
+  //   let maxSpeed = this.maxSpeed
 
-    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-  }
+  //   const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+  // }
 
-  enginePowerDirection(){
-    let dVx = this.transform.vel[0] - this.controlsDirection[0]
-    let dVy = this.transform.vel[1] - this.controlsDirection[1]
-    if((dVx + dVy) < 0.5){
-      return Math.atan2(dVy,dVx)
-    } else {
-      return false
-    }
-  }
-
-  movementMechanics(timeDelta){
-    if (this.checkInputDirectionSpeed() < this.maxSpeed) {
-      // console.log("Slower than maxspeed");
-      const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-      let enginePowerDirection = this.enginePowerDirection();
-      if (enginePowerDirection){
-        this.transform.acc[0] += this.shipEngineAcceleration * Math.cos(enginePowerDirection)
-        this.transform.acc[1] += this.shipEngineAcceleration * Math.sin(enginePowerDirection)
-      }
-      this.transform.angle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
-    } else {
-      // console.log("Faster than maxspeed");
-      
-    }
-  }
-
-  checkInputDirectionSpeed(){
-    //calculate input direction speed
-    let movementDirection = Math.atan2(this.transform.vel[1], this.transform.vel[0])
-    let controlsAngle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
-    let relativeAngle =  controlsAngle - movementDirection
-    let currentSpeed = Math.sqrt((this.transform.vel[1] * this.transform.vel[1] + this.transform.vel[0] * this.transform.vel[1]))
-    return currentSpeed * Math.cos(relativeAngle)
-  }
+  // enginePowerDirection(){
+  //   let dVx = this.transform.vel[0] - this.controlsDirection[0]
+  //   let dVy = this.transform.vel[1] - this.controlsDirection[1]
+  //   if((dVx + dVy) < 0.5){
+  //     return Math.atan2(dVy,dVx)
+  //   } else {
+  //     return false
+  //   }
+  // }
 
   setFireAngle(mousePos) {
     
