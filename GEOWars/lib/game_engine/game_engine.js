@@ -119,6 +119,10 @@ class GameEngine {
     })
   }
 
+  toggleMute(){
+    this.muted = !this.muted
+  }
+
   playSounds(){
     Object.values(this.soundsToPlay).forEach((sound) => {
       sound.play();

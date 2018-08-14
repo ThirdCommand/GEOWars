@@ -13,7 +13,7 @@ class Arrow extends GameObject {
     this.speed = 3;
     this.transform.vel = Util.vectorCartisian(this.transform.angle, this.speed);
     
-    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_purple.wav", 0.5);
+    this.spawnSound = new Sound("sounds/Enemy_spawn_purple.wav", 0.5);
     this.playSound(this.spawnSound)
     this.addLineSprite(new ArrowSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))

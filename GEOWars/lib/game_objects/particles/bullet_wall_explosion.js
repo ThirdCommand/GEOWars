@@ -18,7 +18,7 @@ class BulletWallExplosion extends GameObject{
     ]
     this.color = this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
     this.particleNum = 20;
-    let bulletWallHit = new Sound("GEOWars/sounds/bullet_hitwall.wav", 0.2)
+    let bulletWallHit = new Sound("sounds/bullet_hitwall.wav", 0.1)
     this.playSound(bulletWallHit)
     this.createParticles()
   }
