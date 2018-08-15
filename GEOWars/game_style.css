@@ -17,6 +17,7 @@
 }
 
 .gameCanvas {
+  position: relative;
   font-size: 20;
   background-size: cover;
   background-image: url(./start_background.png);

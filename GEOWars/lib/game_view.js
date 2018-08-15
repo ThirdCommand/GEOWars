@@ -47,7 +47,7 @@ class GameView {
 
       let unitVector = GameView.MOVES[e.key]
       if (unitVector) {
-        this.updateMovementDirection(unitVector, down)
+        this.updateMovementDirection(e.key, down)
       }
     }
   }
@@ -164,15 +164,9 @@ const KEYMAP = {
 }
 
 GameView.MOVES = {
-  c: [0.70710678118, 0.70710678118],
-  x: [0,1],
-  z: [-0.70710678118, 0.70710678118],
+  s: [0,1],
   a: [-1,0],
-  s: [-1,0],
-  w: [-0.70710678118, -0.70710678118],
-  e: [0,-1],
-  r: [0.70710678118, -0.70710678118],
-  f: [1,0],
+  w: [0,-1],
   d: [1,0],
 }
 

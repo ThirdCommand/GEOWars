@@ -2077,6 +2077,8 @@ class Ship extends GameObject {
     this.bulletNumber = 0;
     this.speed
     this.shipEngineAcceleration = 0.125;
+
+    this.keysPressed = []
   }
   
   update(deltaTime){
@@ -2099,6 +2101,13 @@ class Ship extends GameObject {
   }
 
   // 
+  calcControlsDirection(){
+    this.controlsDirection = [0,0]
+    this.keysPressed.forEach((key) => {
+      this.controlsDirection[0] += Ship.MOVES[key][0]
+      this.controlsDirection[1] += Ship.MOVES[key][1]
+    })
+  }
 
   movementMechanics(deltaTime) {
     // get dV
@@ -2107,6 +2116,7 @@ class Ship extends GameObject {
     //    dV~ =  mV - Vo
     // if dv~ > 0.2 (or something)
     //    a = ma~ 
+    let controlsDirection = this.calcControlsDirection()
     let movementAngle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
     let Vo = this.transform.absoluteVelocity()
     this.transform.angle = movementAngle
@@ -2141,13 +2151,25 @@ class Ship extends GameObject {
 
   }
 
-  updateLeftControlStickInput(unitVector, down = true) {
+  updateLeftControlStickInput(key, down = true) {
     
     // accelerates to V = [0,0] when not pressed
     if (down) {
-      this.controlsDirection = unitVector
-    } else if (this.controlsDirection[0] === unitVector[0] && this.controlsDirection[1] === unitVector[1]) {
-      this.controlsDirection = [0,0]
+      if(!this.keysPressed.includes(key)){
+        this.keysPressed.push(key)
+        console.log(this.keysPressed);
+      }
+      
+      // this.controlsDirection[0] += unitVector[0]
+      // this.controlsDirection[1] += unitVector[1]
+    } else { 
+       if (this.keysPressed.includes(key)) {
+         this.keysPressed.splice(this.keysPressed.indexOf(key), 1)
+         console.log(this.keysPressed);
+       }
+      
+      // this.controlsDirection[0] -= unitVector[0]
+      // this.controlsDirection[1] -= initVector[1]
     }
   } 
 
@@ -2221,7 +2243,12 @@ class Ship extends GameObject {
 module.exports = Ship;
 const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
-
+Ship.MOVES = {
+  s: [0, 1],
+  a: [-1, 0],
+  w: [0, -1],
+  d: [1, 0],
+}
 
 /***/ }),
 
@@ -2649,7 +2676,7 @@ class GameView {
 
       let unitVector = GameView.MOVES[e.key]
       if (unitVector) {
-        this.updateMovementDirection(unitVector, down)
+        this.updateMovementDirection(e.key, down)
       }
     }
   }
@@ -2766,15 +2793,9 @@ const KEYMAP = {
 }
 
 GameView.MOVES = {
-  c: [0.70710678118, 0.70710678118],
-  x: [0,1],
-  z: [-0.70710678118, 0.70710678118],
+  s: [0,1],
   a: [-1,0],
-  s: [-1,0],
-  w: [-0.70710678118, -0.70710678118],
-  e: [0,-1],
-  r: [0.70710678118, -0.70710678118],
-  f: [1,0],
+  w: [0,-1],
   d: [1,0],
 }
 
