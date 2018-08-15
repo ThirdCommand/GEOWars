@@ -18,13 +18,69 @@
     <div class="footer">
       Mute/Unmute With M
     </div>
-    <div class="footer">
-      Avoid Enemy Shapes
+    
+
+    
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+
+      <!-- Modal content -->
+      <div class="modal-content">
+        <span class="close">&times;</span>
+
+        <div class="modalText">
+          Control Direction With Keys Circle: WERFCXZA
+        </div>
+        <div class="modalText">
+          Control Firing With Cursor
+        </div>
+        <div class="modalText">
+          Mute/Unmute With M
+        </div>
+        <!-- <div class="modalText">
+          Avoid Enemy Shapes
+        </div> -->
+
+      </div>
+
     </div>
+
+
+
+  <script>
+    // Get the modal
+    var modal = document.getElementById('myModal');
+
+    // Get the button that opens the modal
+    // var btn = document.getElementById("myBtn");
+
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks the button, open the modal 
+    // btn.onclick = function () {
+    //   modal.style.display = "block";
+    // }
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function () {
+      modal.style.display = "none";
+      window.modelClosed = true
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function (event) {
+      if (event.target == modal) {
+        window.modelClosed = true
+        modal.style.display = "none";
+      }
+    }
+  </script>
+
     
       <!-- <div id="statsPanel"></div> -->
     <link rel="stylesheet" type="text/css" media="screen" href="GEOWars/game_style.css" />  
-    <script type="application/javascript" src="GEOWars/vendor/keymaster.js"></script>
+    <!-- <script type="application/javascript" src="GEOWars/vendor/keymaster.js"></script> -->
     <script type="application/javascript" src="GEOWars/lib/bundle.js"></script>
   </body>
 </html>

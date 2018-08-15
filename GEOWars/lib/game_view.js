@@ -7,6 +7,10 @@ class GameView {
     // this.ship = this.game.addShip(); belongs in game script
     this.canvasEl = canvasEl;
     this.initialUnmute = true;
+    this.gameStarted = false;
+    this.modelClosed = false;
+    this.bindKeyboardKeys = this.bindKeyboardKeys.bind(this)
+    this.animate = this.animate.bind(this)
   }
 
   bindKeyboardKeys(){
@@ -82,12 +86,6 @@ class GameView {
       e.returnValue = false;
     }
 
-    // function preventDefaultForScrollKeys(e) {
-    //   if (keys[e.keyCode]) {
-    //     preventDefault(e);
-    //     return false;
-    //   }
-    // }
 
     function disableScroll() {
       if (window.addEventListener) // older FF
@@ -104,27 +102,43 @@ class GameView {
     window.onwheel = preventDefault; // modern standard
     window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
     window.ontouchmove = preventDefault; // mobile
-    // document.onkeydown = preventDefaultForScrollKeys;
-
-
-    // window.onwheel = preventDefault
-    // window.addEventListener('mousewheel', (e) => {
-    //   e.preventDefault
-    // });
-    
-    // key("space", () => { ship.fireBullet(); });
+   
   }
 
   start() {
     this.lastTime = 0;
     this.bindKeyHandlers();
-    window.addEventListener('click', (e) => {
-      // this.theme = new Audio("GEOWars/sounds/Geometry_OST.mp3");
-      // this.theme.id = "OST";
-      // this.theme.volume = 1;
-      this.bindKeyboardKeys()
-      requestAnimationFrame(this.animate.bind(this));
-    });
+
+     // Get the modal
+     var modal = document.getElementById('myModal');
+
+     // Get the button that opens the modal
+     // var btn = document.getElementById("myBtn");
+
+     // Get the <span> element that closes the modal
+     var xclose = document.getElementsByClassName("close")[0];
+
+
+     // When the user clicks on <span> (x), close the modal
+     xclose.onclick = (e) => {
+       e.stopPropagation()
+       modal.style.display = "none";
+       this.modelClosed = true
+     }
+
+     // When the user clicks anywhere outside of the modal, close it
+    //  window.addEventListener('click', (e) => {
+     window.onclick = (event) => {
+       if (this.modelClosed && !this.gameStarted) {
+         this.gameStarted = true
+         this.bindKeyboardKeys()
+         requestAnimationFrame(this.animate);
+       }
+       if (event.target == modal) {
+         this.modelClosed = true
+         modal.style.display = "none";
+       }
+     }
   }
   
   animate(time) {

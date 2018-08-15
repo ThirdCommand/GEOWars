@@ -20,9 +20,13 @@ class GameEngine {
     this.leftControlStickListeners = [];
     this.gameScript = new GameScript(this);
     this.toRemoveQueue = []
+    this.paused = false;
   }
 
   tick(delta) {
+    if(this.paused){
+      return
+    }
     if(delta > 125){
       delta = 125
     }
@@ -33,6 +37,20 @@ class GameEngine {
     this.renderLineSprites(this.ctx)
     this.updateGameScript(delta)
     this.playSounds()
+  }
+
+  pause(){
+    this.paused = true
+    this.gameScript.onPause()
+  }
+
+  unPause(){
+    this.paused = false
+    this.gameScript.onUnPause()
+  }
+
+  togglePause(){
+    this.paused ? this.unPause() : this.pause()
   }
 
   clearCanvas(){

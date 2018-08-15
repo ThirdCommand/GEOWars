@@ -39,6 +39,14 @@ class GameScript {
 
   }
 
+  onPause(){
+
+  }
+
+  onUnPause(){
+
+  }
+
   randomArrowDirection() {
     let angles = [0, Math.PI / 2, Math.PI, Math.PI * 3 / 2]
     return angles[Math.floor(Math.random() * angles.length) % angles.length]

@@ -3,7 +3,6 @@ const Sound = require("../../game_engine/sound")
 const BulletWallExplosion = require("../particles/bullet_wall_explosion")
 const BulletSprite = require("./bullet_sprite")
 const ParticleExplosion = require("../particles/particle_explosion")
-
 class Bullet extends GameObject {
   constructor(engine, pos, vel, bulletNumber) {
     super(engine);

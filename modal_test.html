@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    /* The Modal (background) */
+    
+    
+    .title{
+      height: 10px;
+      padding: 30px;
+      color: #3cff0b;
+      font-size: 70px;
+      text-shadow: 0 0 5px #fff,
+      0 0 5px #fff,
+      0 0 7px #3cff0b,
+      0 0 9px #3cff0b;
+    
+    }
+
+    .gameArea{
+      background: black;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .gameCanvas{
+      font-size: 20;
+      background-size: cover;
+      background-image: url(./start_background.png);
+      border: 3px solid #4286f4;
+      box-shadow: 0 0 5px #fff,
+      0 0 10px #fff,
+      0 0 20px #4286f4,
+      0 0 30px #4286f4;
+      /* 0 0 40px #4286f4; */
+      /* 0 0 55px #ff0080, */
+      /* 0 0 75px #ff0080; */
+    }
+
+    .modalText{
+      font-family: sans-serif;
+      /* width: 80%; */
+      padding-top: 50px;
+      font-size: 30px;
+      color: rgba(215, 246, 160, 0.6);
+      text-shadow: 0 0 5px rgb(119, 119, 119),
+      0 0 5px rgb(111, 111, 111),
+      0 0 7px rgba(215, 246, 160, 0.6),
+      0 0 9px rgba(215, 246, 160, 0.6);
+    }
+
+
+    .modal {
+      display: block;
+      /* Hidden by default */
+      position: fixed;
+      /* Stay in place */
+      z-index: 1;
+      /* Sit on top */
+      padding-top: 100px;
+      /* Location of the box */
+      left: 0;
+      top: 0;
+      width: 100%;
+      /* Full width */
+      height: 100%;
+      /* Full height */
+      overflow: auto;
+      /* Enable scroll if needed */
+      background-color: rgb(0, 0, 0);
+      /* Fallback color */
+      background-color: rgba(0, 0, 0, 0.4);
+      /* Black w/ opacity */
+      
+    }
+
+    /* Modal Content */
+
+    .modal-content {
+      background-color: rgb(0, 0, 0);
+      border: 3px solid #4286f4;
+      box-shadow: 0 0 5px #fff,
+      0 0 10px #fff,
+      0 0 20px #4286f4,
+      0 0 30px #4286f4;
+      margin: auto;
+      padding: 20px;
+      width: 60%;
+      display: flex;
+      flex-direction: column; 
+      align-items: center;
+      /* border: 1px solid #fefefe; */
+      
+    }
+
+    /* The Close Button */
+
+    .close {
+      color: #aaaaaa;
+      float: right;
+      font-size: 40px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: #000;
+      text-decoration: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Modal Example</h2>
+
+  <!-- Trigger/Open The Modal -->
+  <button id="myBtn">Open Modal</button>
+
+  <!-- The Modal -->
+  <div id="myModal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+      <span class="close">&times;</span>
+
+      <div class="modalText">
+        Control Direction With Keys Circle: WERFCXZA 
+      </div>
+      <div class="modalText">
+        Control Firing With Cursor
+      </div>
+      <div class="modalText">
+        Mute/Unmute With M
+      </div>
+      <div class="modalText">
+        Avoid Enemy Shapes
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // Get the modal
+    var modal = document.getElementById('myModal');
+
+    // Get the button that opens the modal
+    // var btn = document.getElementById("myBtn");
+
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks the button, open the modal 
+    // btn.onclick = function () {
+    //   modal.style.display = "block";
+    // }
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function () {
+      modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function (event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
+  </script>
+
+</body>
+
+</html>
