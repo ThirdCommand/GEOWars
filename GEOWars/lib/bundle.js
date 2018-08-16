@@ -2266,13 +2266,14 @@ class SingularityParticles extends GameObject {
   }
 
   addSingularityParticle(){
-    const L = 50
+    const L = 70
     const length = 0
+    const baseSpeed = 3
 
     const distanceVarienceDelta = 5
     const colorVarienceDelta = 10
     const angleVarienceDelta = Math.PI / 4
-    const speedVarienceDelta = 0.2
+    const speedVarienceDelta = 2
 
     let distanceVarience = distanceVarienceDelta * Math.random() - distanceVarienceDelta / 2
     let colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2
@@ -2282,7 +2283,7 @@ class SingularityParticles extends GameObject {
     let r = L + distanceVarience
     let theta = Math.random() * 2 * Math.PI
     let alpha = theta + Math.PI / 2 +  angleVarience
-    let speed = 1.5 + speedVarience
+    let speed = baseSpeed + speedVarience
 
     let pos = [r * Math.cos(theta) + this.transform.pos[0], r * Math.sin(theta) + this.transform.pos[1]]
     let vel = [speed * Math.cos(alpha) + this.transform.vel[0], speed * Math.sin(alpha) + this.transform.vel[1]]
@@ -2292,7 +2293,7 @@ class SingularityParticles extends GameObject {
   }
 
   changeCurrentColor(){
-    this.currentColor.h += 0.0009
+    this.currentColor.h += 1 / 2
     this.currentColor.h = this.currentColor.h % 360
   }
 
