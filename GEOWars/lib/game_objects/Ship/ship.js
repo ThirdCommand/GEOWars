@@ -42,7 +42,6 @@ class Ship extends GameObject {
     // this.moveInControllerDirection(deltaTime)
 
     if (this.isOutOfBounds()) {
-      // debugger
       this.wallGraze();
     } else {
       this.movementMechanics(deltaTime)

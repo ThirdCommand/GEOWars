@@ -4,7 +4,7 @@ const Util = require("../../../game_engine/util")
 
 const EnemySpawn = require("../../particles/enemy_spawn")
 const SingularitySprite = require("./singularity_sprite")
-
+const SingularityParticles = require("../../particles/singularity_particles")
 class Singularity extends GameObject {
   constructor(engine, pos) {
     super(engine)
@@ -21,18 +21,19 @@ class Singularity extends GameObject {
     this.increasing = true
     this.addLineSprite(new SingularitySprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
-
+    
     this.lineSprite.throbbingScale = 1
   }
 
   exist() {
     // leaving off subscriptions means that things will subscribe to it
     this.addCollider("General", this, this.radius)
-    this.addCollider("GravityWell", this, this.gravityWellSize, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver", "Particle"], ["General"])
+    this.addCollider("GravityWell", this, this.gravityWellSize, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver", "Particle", "SingularityParticle"],  ["General"])
     // this.addCollider("GravityAbsorb", this, this.radius, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver"], ["General"])
     // now it will move
     this.addPhysicsComponent()
     this.lineSprite.spawned = true
+    this.addChildGameObject(new SingularityParticles(this.gameEngine, this.transform))
   }
 
   onCollision(collider, type){

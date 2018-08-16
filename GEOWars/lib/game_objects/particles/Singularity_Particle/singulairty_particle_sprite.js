@@ -1,15 +1,13 @@
 const LineSprite = require("../../../game_engine/line_sprite")
 
-class ParticleSprite extends LineSprite {
-  constructor(transform, color, hue) {
+class SingularityParticleSprite extends LineSprite {
+  constructor(transform, color) {
     super(transform)
-    // this.spawningScale = spawningScale
     this.rectLength = 15;
     this.rectWidth = 2;
     this.color = color
-    this.hue = hue
   }
-
+ 
   draw(ctx) {
     let pos = this.transform.absolutePosition();
     let vel = this.transform.absoluteVelocity();
@@ -23,7 +21,7 @@ class ParticleSprite extends LineSprite {
     ctx.rotate(movementDirection + 2 * Math.PI);
 
     ctx.beginPath();
-    ctx.strokeStyle = `${this.color},${this.hue})`;
+    ctx.strokeStyle = this.color.evaluateColor();
     ctx.lineWidth = w;
 
     ctx.moveTo(0, 0); //1
@@ -35,4 +33,4 @@ class ParticleSprite extends LineSprite {
   }
 }
 
-module.exports = ParticleSprite;
+module.exports = SingularityParticleSprite;

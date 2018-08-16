@@ -80,7 +80,7 @@ class GameObject {
   // ... I think
   remove() {
     this.childObjects.forEach((obj) => {
-      this.gameEngine.remove(obj)
+      obj.remove()
     })
     if(this.parentObject){
       this.parentObject.childObjects.splice(this.parentObject.childObjects.indexOf(this), 1)

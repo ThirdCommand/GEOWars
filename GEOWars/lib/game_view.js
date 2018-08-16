@@ -56,7 +56,6 @@ class GameView {
     const engine = this.engine
     // Object.keys(GameView.MOVES).forEach((k) => {
     //   const move = GameView.MOVES[k];
-    //   // debugger
     //   key(k, () => {
     //     this.engine.gameScript.ship.updateLeftControlStickInput(move);
     //   });

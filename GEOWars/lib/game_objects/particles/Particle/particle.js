@@ -43,9 +43,10 @@ class Particle extends GameObject{
   };
 
   update(deltaTime){
-    this.rectLength -= 0.25;
-    this.hue -= 0.01;
-    if (this.hue < 0.1 || this.rectLength < 0.25 || ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1])) < 0.25)) {
+    this.lineSprite.rectLength -= 0.1;
+    this.lineSprite.hue -= 0.01;
+    if (this.lineSprite.hue < 0.06 || this.lineSprite.rectLength < 0.25 || ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1])) < 0.15)) {
+      
       this.remove();
     }
     // acc is influenced by singularities, then changed to usual acc

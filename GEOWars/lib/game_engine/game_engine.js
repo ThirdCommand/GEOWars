@@ -2,9 +2,9 @@ const GameScript = require("../game_script");
 // const GameObject = require("./game_boject");
 // const LineRenderer = require("./line_renderer");
 // const PhysicsComponent = require("./physics_component")
-const Sound = require("./sound")
+// const Sound = require("./sound")
 // const Transform = require("./transform")
-const Util = require("./util")
+// const Util = require("./util")
 
 class GameEngine {
   constructor(ctx) {
@@ -125,7 +125,6 @@ class GameEngine {
         subscriber.subscribedColliderTypes.forEach((colliderType) => {
           colliders[subscription][colliderType] = colliders[subscription][colliderType] || []
           colliders[subscription][colliderType].forEach((subscribedCollider) => {
-            // debugger
             subscriber.collisionCheck(subscribedCollider)
           })
         })
