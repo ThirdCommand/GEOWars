@@ -2083,7 +2083,7 @@ class BulletWallExplosion extends GameObject{
     super(engine)
     this.transform.pos[0] = pos[0]
     this.transform.pos[1] = pos[1]
-    let startingH = (this.gameEngine.gameScript.explosionColorWheel + Math.random() * 60) % 360
+    let startingH = (this.gameEngine.gameScript.explosionColorWheel + 180 + Math.random() * 60) % 360
     let opacity = Math.random() * 0.35 + 0.6
     this.currentColor = new Color({
       "hsla": [startingH, 100, 50, opacity]
