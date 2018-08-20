@@ -83,12 +83,10 @@ class Ship extends GameObject {
 
     this.transform.acc[0] += this.shipEngineAcceleration * Math.cos(alpha)
     this.transform.acc[1] += this.shipEngineAcceleration * Math.sin(alpha)
-    
-    
   }
 
   isOutOfBounds(){
-    return this.gameEngine.gameScript.isOutOfBounds(this.transform.pos, this.radius * 2)
+    return this.gameEngine.gameScript.isOutOfBounds(this.transform.pos, this.radius)
   }
 
   updateMousePos(mousePos){
@@ -121,7 +119,7 @@ class Ship extends GameObject {
   } 
 
   wallGraze() {
-    this.gameEngine.gameScript.wallGraze(this.transform, this.radius)
+    this.gameEngine.gameScript.wallGraze(this.transform, this.radius * 2)
   }
 
   onCollision(collider, type) {

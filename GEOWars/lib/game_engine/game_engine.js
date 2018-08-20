@@ -24,6 +24,7 @@ class GameEngine {
   }
 
   tick(delta) {
+    // debugger
     if(this.paused){
       return
     }

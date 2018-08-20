@@ -48,7 +48,7 @@ class Singularity extends GameObject {
   
 
   update(deltaTime) {
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
       this.wallGraze()
     }
 

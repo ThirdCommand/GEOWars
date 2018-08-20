@@ -45,6 +45,10 @@ class GameScript {
     this.explosionColorWheel = this.explosionColorWheel % 360
   }
 
+  Death(){
+
+  }
+
   onPause(){
 
   }
@@ -192,9 +196,18 @@ class GameScript {
     return new Ship(this.engine, [500, 500])
   }
 
-  isOutOfBounds(pos) {
-    return (pos[0] < 0) || (pos[1] < 0) ||
-      (pos[0] > GameScript.DIM_X) || (pos[1] > GameScript.DIM_Y);
+  isOutOfBounds(pos, radius) {
+    let max = [GameScript.DIM_X - radius, GameScript.DIM_Y - radius]
+    if (radius) {
+      return(
+        (pos[0] <= radius || pos[0] >= max[0]) || 
+        (pos[1] <= radius || pos[1] >= max[1]) 
+      )
+    } else {
+      return (pos[0] < 0) || (pos[1] < 0) ||
+        (pos[0] > GameScript.DIM_X) || (pos[1] > GameScript.DIM_Y);
+    }
+    
   }
 
   updateShipFireAngle() {

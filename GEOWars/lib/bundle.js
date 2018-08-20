@@ -271,6 +271,7 @@ class GameEngine {
   }
 
   tick(delta) {
+    // debugger
     if(this.paused){
       return
     }
@@ -636,7 +637,7 @@ class PhysicsComponent {
     this.transform.pos[1] += this.transform.vel[1] * timeScale + this.transform.acc[1] * (timeScale * timeScale) / 2;
     this.transform.vel[0] += this.transform.acc[0] * timeScale;
     this.transform.vel[1] += this.transform.acc[1] * timeScale;
-
+    
     this.transform.acc = [0, 0];
 
   }
@@ -1077,7 +1078,7 @@ class BoxBox extends GameObject {
     super(engine)
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
     this.transform.pos = pos
-    this.radius = 3
+    this.radius = 10
     // this.addPhysicsComponent()
     this.addLineSprite(new BoxBoxSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
@@ -1096,7 +1097,7 @@ class BoxBox extends GameObject {
   }
 
   update(delta){
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius * 2)) {
       this.wallGraze() 
     }
   }
@@ -1253,7 +1254,7 @@ class Grunt extends GameObject {
       this.lineSprite.stretchScale_W = this.lineSprite.stretchScale_W + -this.stretchDirection * cycleSpeed * cycleSpeedScale;
       this.lineSprite.stretchScale_L = this.lineSprite.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
 
-      if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
+      if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
         this.wallGraze()
       }
     }
@@ -1381,8 +1382,7 @@ class Pinwheel extends GameObject {
   update(deltaTime){
     let rotationSpeedScale = deltaTime / NORMAL_FRAME_TIME_DELTA;
     this.transform.angle = (this.transform.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
-
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
       this.gameEngine.gameScript.bounce(this.transform, this.radius) // HARD CODED
     }
   }
@@ -1537,7 +1537,7 @@ class Singularity extends GameObject {
   
 
   update(deltaTime) {
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
       this.wallGraze()
     }
 
@@ -1744,7 +1744,7 @@ class Weaver extends GameObject {
   
       this.directionInfluenced = false;
   
-      if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
+      if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
         this.wallGraze()
       }
     }
@@ -2405,12 +2405,10 @@ class Ship extends GameObject {
 
     this.transform.acc[0] += this.shipEngineAcceleration * Math.cos(alpha)
     this.transform.acc[1] += this.shipEngineAcceleration * Math.sin(alpha)
-    
-    
   }
 
   isOutOfBounds(){
-    return this.gameEngine.gameScript.isOutOfBounds(this.transform.pos, this.radius * 2)
+    return this.gameEngine.gameScript.isOutOfBounds(this.transform.pos, this.radius)
   }
 
   updateMousePos(mousePos){
@@ -2443,7 +2441,7 @@ class Ship extends GameObject {
   } 
 
   wallGraze() {
-    this.gameEngine.gameScript.wallGraze(this.transform, this.radius)
+    this.gameEngine.gameScript.wallGraze(this.transform, this.radius * 2)
   }
 
   onCollision(collider, type) {
@@ -2646,6 +2644,10 @@ class GameScript {
     this.explosionColorWheel = this.explosionColorWheel % 360
   }
 
+  Death(){
+
+  }
+
   onPause(){
 
   }
@@ -2793,9 +2795,18 @@ class GameScript {
     return new Ship(this.engine, [500, 500])
   }
 
-  isOutOfBounds(pos) {
-    return (pos[0] < 0) || (pos[1] < 0) ||
-      (pos[0] > GameScript.DIM_X) || (pos[1] > GameScript.DIM_Y);
+  isOutOfBounds(pos, radius) {
+    let max = [GameScript.DIM_X - radius, GameScript.DIM_Y - radius]
+    if (radius) {
+      return(
+        (pos[0] <= radius || pos[0] >= max[0]) || 
+        (pos[1] <= radius || pos[1] >= max[1]) 
+      )
+    } else {
+      return (pos[0] < 0) || (pos[1] < 0) ||
+        (pos[0] > GameScript.DIM_X) || (pos[1] > GameScript.DIM_Y);
+    }
+    
   }
 
   updateShipFireAngle() {

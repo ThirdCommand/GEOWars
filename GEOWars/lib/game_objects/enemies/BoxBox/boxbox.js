@@ -10,7 +10,7 @@ class BoxBox extends GameObject {
     super(engine)
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
     this.transform.pos = pos
-    this.radius = 3
+    this.radius = 10
     // this.addPhysicsComponent()
     this.addLineSprite(new BoxBoxSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
@@ -29,7 +29,7 @@ class BoxBox extends GameObject {
   }
 
   update(delta){
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius * 2)) {
       this.wallGraze() 
     }
   }

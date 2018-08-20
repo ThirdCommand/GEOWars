@@ -55,7 +55,7 @@ class Grunt extends GameObject {
       this.lineSprite.stretchScale_W = this.lineSprite.stretchScale_W + -this.stretchDirection * cycleSpeed * cycleSpeedScale;
       this.lineSprite.stretchScale_L = this.lineSprite.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
 
-      if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
+      if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
         this.wallGraze()
       }
     }

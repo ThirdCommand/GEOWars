@@ -29,8 +29,7 @@ class Pinwheel extends GameObject {
   update(deltaTime){
     let rotationSpeedScale = deltaTime / NORMAL_FRAME_TIME_DELTA;
     this.transform.angle = (this.transform.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)
-
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
       this.gameEngine.gameScript.bounce(this.transform, this.radius) // HARD CODED
     }
   }

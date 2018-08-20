@@ -77,7 +77,7 @@ class Weaver extends GameObject {
   
       this.directionInfluenced = false;
   
-      if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition())) {
+      if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
         this.wallGraze()
       }
     }
