@@ -1,4 +1,5 @@
 const LineSprite = require("../../../game_engine/line_sprite")
+const ParticleSprite = require("../Particle/particle_sprite")
 
 class SingularityParticleSprite extends LineSprite {
   constructor(transform, color) {

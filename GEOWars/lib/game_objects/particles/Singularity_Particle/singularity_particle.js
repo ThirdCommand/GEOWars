@@ -11,29 +11,22 @@ const SingularityParticleSprite = require("./singulairty_particle_sprite")
 
 const Util = require("../../../game_engine/util")
 const GameObject = require("../../../game_engine/game_object")
+const Particle = require("../Particle/particle")
 
-
-class SingularityParticle extends GameObject {
+class SingularityParticle extends Particle {
   constructor(engine, pos, vel, color) {
-    super(engine)
+    super(engine, pos, 0, color)
 
-    this.transform.pos[0] = pos[0]
-    this.transform.pos[1] = pos[1]
     this.transform.vel[0] = vel[0]
     this.transform.vel[1] = vel[1]
 
     this.color = color;
-
-    this.addLineSprite(new SingularityParticleSprite(this.transform, this.color, this.hue))
-    this.addPhysicsComponent()
-    this.addCollider("General", this, 3)
-
   }
 
   update(deltaTime) {
     this.lineSprite.rectLength -= 0.25;
-    this.lineSprite.hue -= 0.1;
-    if (this.lineSprite.hue < 0.06 || this.lineSprite.rectLength < 0.25) {
+    this.lineSprite.color.a -= 0.01;
+    if (this.lineSprite.color.a < 0.06 || this.lineSprite.rectLength < 0.25) {
       this.parentObject.currentParticleCount -= 1;
       this.remove();
     }

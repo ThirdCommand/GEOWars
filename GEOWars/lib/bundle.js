@@ -1879,21 +1879,20 @@ const GameObject = __webpack_require__(/*! ../../../game_engine/game_object */ "
 
 
 class Particle extends GameObject{
-  constructor(engine, pos, initialSpeed, colors) {
+  constructor(engine, pos, initialSpeed, color) {
     super(engine)
 
     this.transform.pos[0] = pos[0]
     this.transform.pos[1] = pos[1]
 
-    this.color = colors[Math.floor(colors.length * Math.random())];
+    this.color = color
     this.movementAngle = Math.random() * Math.PI * 2;
     this.transform.vel = Util.vectorCartisian(this.movementAngle, initialSpeed)
+    
     this.explosionDeceleration = 0.1; // in the direction the particle is moving
     this.transform.acc = [-this.explosionDeceleration * Math.cos(this.movementAngle), -this.explosionDeceleration * Math.sin(this.movementAngle)]
-    this.opacity = Math.random() * 0.5 + 0.5;
-    this.hue = Math.random() * 0.3 + 0.6;
 
-    this.addLineSprite(new ParticleSprite(this.transform, this.color, this.hue))
+    this.addLineSprite(new ParticleSprite(this.transform, this.color))
     this.addPhysicsComponent()
     this.addCollider("General", this, 3)
 
@@ -1909,7 +1908,7 @@ class Particle extends GameObject{
 
   update(deltaTime){
     this.lineSprite.rectLength -= 0.1;
-    this.lineSprite.hue -= 0.01;
+    this.lineSprite.color.a -= 0.01;
     if (this.lineSprite.hue < 0.06 || this.lineSprite.rectLength < 0.25 || ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1])) < 0.15)) {
       
       this.remove();
@@ -1935,13 +1934,11 @@ module.exports = Particle;
 const LineSprite = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./lib/game_engine/line_sprite.js")
 
 class ParticleSprite extends LineSprite {
-  constructor(transform, color, hue) {
+  constructor(transform, color) {
     super(transform)
-    // this.spawningScale = spawningScale
     this.rectLength = 15;
     this.rectWidth = 2;
     this.color = color
-    this.hue = hue
   }
 
   draw(ctx) {
@@ -1957,7 +1954,7 @@ class ParticleSprite extends LineSprite {
     ctx.rotate(movementDirection + 2 * Math.PI);
 
     ctx.beginPath();
-    ctx.strokeStyle = `${this.color},${this.hue})`;
+    ctx.strokeStyle = this.color.evaluateColor();
     ctx.lineWidth = w;
 
     ctx.moveTo(0, 0); //1
@@ -1981,6 +1978,7 @@ module.exports = ParticleSprite;
 /***/ (function(module, exports, __webpack_require__) {
 
 const LineSprite = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./lib/game_engine/line_sprite.js")
+const ParticleSprite = __webpack_require__(/*! ../Particle/particle_sprite */ "./lib/game_objects/particles/Particle/particle_sprite.js")
 
 class SingularityParticleSprite extends LineSprite {
   constructor(transform, color) {
@@ -2039,29 +2037,22 @@ const SingularityParticleSprite = __webpack_require__(/*! ./singulairty_particle
 
 const Util = __webpack_require__(/*! ../../../game_engine/util */ "./lib/game_engine/util.js")
 const GameObject = __webpack_require__(/*! ../../../game_engine/game_object */ "./lib/game_engine/game_object.js")
+const Particle = __webpack_require__(/*! ../Particle/particle */ "./lib/game_objects/particles/Particle/particle.js")
 
-
-class SingularityParticle extends GameObject {
+class SingularityParticle extends Particle {
   constructor(engine, pos, vel, color) {
-    super(engine)
+    super(engine, pos, 0, color)
 
-    this.transform.pos[0] = pos[0]
-    this.transform.pos[1] = pos[1]
     this.transform.vel[0] = vel[0]
     this.transform.vel[1] = vel[1]
 
     this.color = color;
-
-    this.addLineSprite(new SingularityParticleSprite(this.transform, this.color, this.hue))
-    this.addPhysicsComponent()
-    this.addCollider("General", this, 3)
-
   }
 
   update(deltaTime) {
     this.lineSprite.rectLength -= 0.25;
-    this.lineSprite.hue -= 0.1;
-    if (this.lineSprite.hue < 0.06 || this.lineSprite.rectLength < 0.25) {
+    this.lineSprite.color.a -= 0.01;
+    if (this.lineSprite.color.a < 0.06 || this.lineSprite.rectLength < 0.25) {
       this.parentObject.currentParticleCount -= 1;
       this.remove();
     }
@@ -2086,22 +2077,17 @@ module.exports = SingularityParticle;
 const Particle = __webpack_require__(/*! ./Particle/particle */ "./lib/game_objects/particles/Particle/particle.js")
 const GameObject = __webpack_require__(/*! ../../game_engine/game_object */ "./lib/game_engine/game_object.js")
 const Sound = __webpack_require__(/*! ../../game_engine/sound */ "./lib/game_engine/sound.js")
-
-const speeds = [1, 2, 3, 4];
-
+const Color = __webpack_require__(/*! ../../game_engine/color */ "./lib/game_engine/color.js")
 class BulletWallExplosion extends GameObject{
   constructor(engine, pos) {
     super(engine)
     this.transform.pos[0] = pos[0]
     this.transform.pos[1] = pos[1]
-    this.COLORS = [
-      ["rgba(152,245,23", "rgba(126,185,43", "rgba(189,236,122", "rgba(103,124,74"],
-      ["rgba(255,241,44", "rgba(245,236,109", "rgba(165,160,87", "rgba(177,167,28"],
-      ["rgba(18,225,252", "rgba(60,198,216", "rgba(113,223,238", "rgba(149,220,230"],
-      ["rgba(252,87,224", "rgba(204,72,182", "rgba(170,72,154", "rgba(250,137,231"],
-      ["rgba(190,86,250", "rgba(159,96,196", "rgba(87,17,128", "rgba(199,150,228"]
-    ]
-    this.color = this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
+    let startingH = (this.gameEngine.gameScript.explosionColorWheel + Math.random() * 60) % 360
+    let opacity = Math.random() * 0.35 + 0.6
+    this.currentColor = new Color({
+      "hsla": [startingH, 100, 50, opacity]
+    });
     this.particleNum = 20;
     let bulletWallHit = new Sound("GEOWars/sounds/bullet_hitwall.wav", 0.1)
     this.playSound(bulletWallHit)
@@ -2110,8 +2096,14 @@ class BulletWallExplosion extends GameObject{
 
   createParticles(){
     for (var i = 0; i < this.particleNum; i++) {
-      const speed = speeds[Math.floor(Math.random() * speeds.length)]
-      this.addChildGameObject(new Particle(this.gameEngine, this.transform.absolutePosition(), speed, this.color));
+      const colorVarienceDelta = 30
+      const speed = 1 + Math.random() * 3
+      let colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2
+      let color = this.currentColor.dup()
+      color.a = Math.random() * 0.35 + 0.6
+      color.h = (color.h + colorVarience) % 360
+      
+      this.addChildGameObject(new Particle(this.gameEngine, this.transform.absolutePosition(), speed, color));
     }
   }
 
@@ -2181,20 +2173,17 @@ module.exports = EnemySpawn;
 const Particle = __webpack_require__(/*! ./Particle/particle */ "./lib/game_objects/particles/Particle/particle.js")
 const GameObject = __webpack_require__(/*! ../../game_engine/game_object */ "./lib/game_engine/game_object.js")
 const Sound = __webpack_require__(/*! ../../game_engine/sound */ "./lib/game_engine/sound.js")
-
+const Color = __webpack_require__(/*! ../../game_engine/color */ "./lib/game_engine/color.js")
 class ParticleExplosion extends GameObject{
   constructor(engine, pos){
     super(engine)
     this.transform.pos[0] = pos[0]
     this.transform.pos[1] = pos[1]
-    this.COLORS = [
-      ["rgba(152,245,23", "rgba(126,185,43", "rgba(189,236,122", "rgba(103,124,74"],
-      ["rgba(255,241,44", "rgba(245,236,109", "rgba(165,160,87", "rgba(177,167,28"],
-      ["rgba(18,225,252", "rgba(60,198,216", "rgba(113,223,238", "rgba(149,220,230"],
-      ["rgba(252,87,224", "rgba(204,72,182", "rgba(170,72,154", "rgba(250,137,231"],
-      ["rgba(190,86,250", "rgba(159,96,196", "rgba(87,17,128", "rgba(199,150,228"]
-    ]
-    this.color = this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
+    let startingH = (this.gameEngine.gameScript.explosionColorWheel + Math.random() * 60)% 360
+    let opacity = Math.random() * 0.35 + 0.6
+    this.currentColor = new Color({
+      "hsla": [startingH, 100, 50, opacity]
+    });
     this.particleNum = 80;
     let explosionSound = new Sound("GEOWars/sounds/Enemy_explode.wav", 0.2)
     this.playSound(explosionSound)
@@ -2204,14 +2193,19 @@ class ParticleExplosion extends GameObject{
   createExplosionParticles(){
     for (var i = 0; i < this.particleNum; i++) {
       const speed = Math.random() * 3 + 4
-      // const speed = speeds[Math.floor(Math.random() * speeds.length)]
-      // making the position relative to the world instead of explosion
-      this.addChildGameObject(new Particle(this.gameEngine, this.transform.absolutePosition(), speed, this.color));
+
+      const colorVarienceDelta = 30
+      let colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2
+      let color = this.currentColor.dup()
+      color.a = Math.random() * 0.35 + 0.6
+      color.h = (color.h + colorVarience) % 360
+
+      this.addChildGameObject(new Particle(this.gameEngine, this.transform.absolutePosition(), speed, color));
     }
   }
 
   update(){
-    if(this.childObjects.length === 0){
+    if (this.childObjects.length === 0){
       this.remove()
     }
   }
@@ -2243,7 +2237,6 @@ class SingularityParticles extends GameObject {
     this.transform = transform
     let startingH = Math.random() * 360
     let opacity = Math.random() * 0.35 + 0.6
-
     this.frequencyParticleCreation = 10;
     this.particleCreationTime = 0;
     this.currentColor = new Color({
@@ -2270,7 +2263,7 @@ class SingularityParticles extends GameObject {
     const length = 0
     const baseSpeed = 3
 
-    const distanceVarienceDelta = 5
+    const distanceVarienceDelta = 15
     const colorVarienceDelta = 10
     const angleVarienceDelta = Math.PI / 4
     const speedVarienceDelta = 2
@@ -2288,7 +2281,10 @@ class SingularityParticles extends GameObject {
     let pos = [r * Math.cos(theta) + this.transform.pos[0], r * Math.sin(theta) + this.transform.pos[1]]
     let vel = [speed * Math.cos(alpha) + this.transform.vel[0], speed * Math.sin(alpha) + this.transform.vel[1]]
     let color = this.currentColor.dup()
-    color.h = color.h + colorVarience
+
+    color.a = Math.random() * 0.19 + 0.8
+    color.h = (color.h + colorVarience) % 360
+
     this.addChildGameObject(new SingularityParticle(this.gameEngine, pos, vel, color));
   }
 
@@ -2432,7 +2428,6 @@ class Ship extends GameObject {
     if (down) {
       if(!this.keysPressed.includes(key)){
         this.keysPressed.push(key)
-        console.log(this.keysPressed);
       }
       
       // this.controlsDirection[0] += unitVector[0]
@@ -2440,7 +2435,6 @@ class Ship extends GameObject {
     } else { 
        if (this.keysPressed.includes(key)) {
          this.keysPressed.splice(this.keysPressed.indexOf(key), 1)
-         console.log(this.keysPressed);
        }
       
       // this.controlsDirection[0] -= unitVector[0]
@@ -2639,11 +2633,17 @@ class GameScript {
     this.soundsToPlay = {}
 
     this.spawnthing = false;
+    this.explosionColorWheel = 0;
   }
 
   update(deltaTime){
     this.spawnSequence(deltaTime)
+    this.changeExplosionColor()
+  }
 
+  changeExplosionColor(){
+    this.explosionColorWheel += 1 / 2
+    this.explosionColorWheel = this.explosionColorWheel % 360
   }
 
   onPause(){

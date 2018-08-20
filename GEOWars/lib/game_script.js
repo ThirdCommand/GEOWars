@@ -32,11 +32,17 @@ class GameScript {
     this.soundsToPlay = {}
 
     this.spawnthing = false;
+    this.explosionColorWheel = 0;
   }
 
   update(deltaTime){
     this.spawnSequence(deltaTime)
+    this.changeExplosionColor()
+  }
 
+  changeExplosionColor(){
+    this.explosionColorWheel += 1 / 2
+    this.explosionColorWheel = this.explosionColorWheel % 360
   }
 
   onPause(){

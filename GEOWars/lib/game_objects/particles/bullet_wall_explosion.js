@@ -1,22 +1,17 @@
 const Particle = require("./Particle/particle")
 const GameObject = require("../../game_engine/game_object")
 const Sound = require("../../game_engine/sound")
-
-const speeds = [1, 2, 3, 4];
-
+const Color = require("../../game_engine/color")
 class BulletWallExplosion extends GameObject{
   constructor(engine, pos) {
     super(engine)
     this.transform.pos[0] = pos[0]
     this.transform.pos[1] = pos[1]
-    this.COLORS = [
-      ["rgba(152,245,23", "rgba(126,185,43", "rgba(189,236,122", "rgba(103,124,74"],
-      ["rgba(255,241,44", "rgba(245,236,109", "rgba(165,160,87", "rgba(177,167,28"],
-      ["rgba(18,225,252", "rgba(60,198,216", "rgba(113,223,238", "rgba(149,220,230"],
-      ["rgba(252,87,224", "rgba(204,72,182", "rgba(170,72,154", "rgba(250,137,231"],
-      ["rgba(190,86,250", "rgba(159,96,196", "rgba(87,17,128", "rgba(199,150,228"]
-    ]
-    this.color = this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
+    let startingH = (this.gameEngine.gameScript.explosionColorWheel + Math.random() * 60) % 360
+    let opacity = Math.random() * 0.35 + 0.6
+    this.currentColor = new Color({
+      "hsla": [startingH, 100, 50, opacity]
+    });
     this.particleNum = 20;
     let bulletWallHit = new Sound("GEOWars/sounds/bullet_hitwall.wav", 0.1)
     this.playSound(bulletWallHit)
@@ -25,8 +20,14 @@ class BulletWallExplosion extends GameObject{
 
   createParticles(){
     for (var i = 0; i < this.particleNum; i++) {
-      const speed = speeds[Math.floor(Math.random() * speeds.length)]
-      this.addChildGameObject(new Particle(this.gameEngine, this.transform.absolutePosition(), speed, this.color));
+      const colorVarienceDelta = 30
+      const speed = 1 + Math.random() * 3
+      let colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2
+      let color = this.currentColor.dup()
+      color.a = Math.random() * 0.35 + 0.6
+      color.h = (color.h + colorVarience) % 360
+      
+      this.addChildGameObject(new Particle(this.gameEngine, this.transform.absolutePosition(), speed, color));
     }
   }
 

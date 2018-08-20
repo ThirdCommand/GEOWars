@@ -9,7 +9,6 @@ class SingularityParticles extends GameObject {
     this.transform = transform
     let startingH = Math.random() * 360
     let opacity = Math.random() * 0.35 + 0.6
-
     this.frequencyParticleCreation = 10;
     this.particleCreationTime = 0;
     this.currentColor = new Color({
@@ -36,7 +35,7 @@ class SingularityParticles extends GameObject {
     const length = 0
     const baseSpeed = 3
 
-    const distanceVarienceDelta = 5
+    const distanceVarienceDelta = 15
     const colorVarienceDelta = 10
     const angleVarienceDelta = Math.PI / 4
     const speedVarienceDelta = 2
@@ -54,7 +53,10 @@ class SingularityParticles extends GameObject {
     let pos = [r * Math.cos(theta) + this.transform.pos[0], r * Math.sin(theta) + this.transform.pos[1]]
     let vel = [speed * Math.cos(alpha) + this.transform.vel[0], speed * Math.sin(alpha) + this.transform.vel[1]]
     let color = this.currentColor.dup()
-    color.h = color.h + colorVarience
+
+    color.a = Math.random() * 0.19 + 0.8
+    color.h = (color.h + colorVarience) % 360
+
     this.addChildGameObject(new SingularityParticle(this.gameEngine, pos, vel, color));
   }
 

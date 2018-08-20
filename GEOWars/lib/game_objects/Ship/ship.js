@@ -106,7 +106,6 @@ class Ship extends GameObject {
     if (down) {
       if(!this.keysPressed.includes(key)){
         this.keysPressed.push(key)
-        console.log(this.keysPressed);
       }
       
       // this.controlsDirection[0] += unitVector[0]
@@ -114,7 +113,6 @@ class Ship extends GameObject {
     } else { 
        if (this.keysPressed.includes(key)) {
          this.keysPressed.splice(this.keysPressed.indexOf(key), 1)
-         console.log(this.keysPressed);
        }
       
       // this.controlsDirection[0] -= unitVector[0]

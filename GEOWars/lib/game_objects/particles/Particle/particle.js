@@ -14,21 +14,20 @@ const GameObject = require("../../../game_engine/game_object")
 
 
 class Particle extends GameObject{
-  constructor(engine, pos, initialSpeed, colors) {
+  constructor(engine, pos, initialSpeed, color) {
     super(engine)
 
     this.transform.pos[0] = pos[0]
     this.transform.pos[1] = pos[1]
 
-    this.color = colors[Math.floor(colors.length * Math.random())];
+    this.color = color
     this.movementAngle = Math.random() * Math.PI * 2;
     this.transform.vel = Util.vectorCartisian(this.movementAngle, initialSpeed)
+    
     this.explosionDeceleration = 0.1; // in the direction the particle is moving
     this.transform.acc = [-this.explosionDeceleration * Math.cos(this.movementAngle), -this.explosionDeceleration * Math.sin(this.movementAngle)]
-    this.opacity = Math.random() * 0.5 + 0.5;
-    this.hue = Math.random() * 0.3 + 0.6;
 
-    this.addLineSprite(new ParticleSprite(this.transform, this.color, this.hue))
+    this.addLineSprite(new ParticleSprite(this.transform, this.color))
     this.addPhysicsComponent()
     this.addCollider("General", this, 3)
 
@@ -44,7 +43,7 @@ class Particle extends GameObject{
 
   update(deltaTime){
     this.lineSprite.rectLength -= 0.1;
-    this.lineSprite.hue -= 0.01;
+    this.lineSprite.color.a -= 0.01;
     if (this.lineSprite.hue < 0.06 || this.lineSprite.rectLength < 0.25 || ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1])) < 0.15)) {
       
       this.remove();
