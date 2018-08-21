@@ -7,7 +7,7 @@ game visually spicy.  
 
 
 # Game Engine 
-I created a framework for JavaScript programers to create simulations and games for Canvas. Users can add game objects and give them properties such as physics, sprites, colliders and colors. Users can dynamically mutate these properties through life cycle methods and manage their game through the use of a built in game script. 
+I created a framework for JavaScript programmers to create simulations and games for Canvas. Users can add game objects and give them properties such as physics, sprites, colliders and colors. Users can dynamically mutate these properties through life cycle methods and manage their game through the use of a built in game script. 
 
 ## Life Cycle
 * Check Collisions
@@ -66,7 +66,7 @@ class Bullet extends GameObject {
 ```javascript 
 }
 ```
-
+Coming soon: explanations for the other GameObject methods
  
 
 # First Week Goals
