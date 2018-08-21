@@ -26,6 +26,7 @@ To make a game object, extend the class with GameObject. This will provide a ton
 * `#addChildGameObject`
 * `#playSound`
 * `#addMousePosListener`
+* `#remove`
 
 ### addCollider
   Takes in the following parameters  
