@@ -38,6 +38,8 @@ To make a game object, extend the class with GameObject. This will provide a ton
   With these parameters, a user can create a custom collider that can subscribe to specific game objects and specific colliders. An example where this is necessary is with things that try to dodge, like the Weaver in my game. The Weaver tries to dodge bullets when they are within a certain distance, but explodes when in direct contact. The Weaver's "BulletDodge" collider handles dodging the bullets,and the Bullet's "bulletHit" collider handles the direct contact.    
         
   The "BulletDodge" collider is subscribed to the Bullet's "General" collider, and the "bulletHit" collider is subscribed to the Weaver and every other enemy type's "General" collider. I picked the name "General" because it is what a new collider can use to add functionality to every GameObject while only writing the code in one place. 
+
+Bullet Collision Code:
 ```javascript 
 class Bullet extends GameObject {
 ```
@@ -60,6 +62,32 @@ class Bullet extends GameObject {
       let explosion = new ParticleExplosion(this.gameEngine, pos, vel)    
       collider.gameObject.remove()    
     }    
+  }
+```   
+...    
+```javascript 
+}
+```
+
+And the Weaver collision code:
+
+```javascript
+class Weaver extends GameObject {
+```
+...   
+```javascript 
+  addColliders(){
+    this.addCollider("General", this, this.radius)
+    this.addCollider("BulletDodge", this, this.weaverCloseHitBox, ["Bullet"], ["General"])
+  }
+``` 
+...    
+
+```javascript 
+  onCollision(collider, type){
+    if (type === "BulletDodge") {
+      this.acceptBulletDirection(collider.gameObject.transform.pos)
+    }
   }
 ```   
 ...    

@@ -25,7 +25,7 @@ class Weaver extends GameObject {
 
   exist() {
     // leaving off subscriptions means that things will subscribe to it
-    this.addCollider("General", this, 3)
+    this.addCollider("General", this, this.radius)
     this.addCollider("BulletDodge", this, this.weaverCloseHitBox, ["Bullet"], ["General"])
     // now it will move
     this.addPhysicsComponent()
