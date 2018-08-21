@@ -24,7 +24,7 @@ class Bullet extends GameObject {
   addExplosionCollider(){
     let subscribers = ["Grunt", "Pinwheel", "BoxBox", "Arrow", "Singularity", "Weaver"]
     this.addCollider("bulletHit", this, this.radius, subscribers, ["General"])
-    this.addCollider("General", this, 3)
+    this.addCollider("General", this, this.radius)
   }
 
   update(deltaTime){

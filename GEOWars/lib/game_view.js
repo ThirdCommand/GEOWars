@@ -30,6 +30,9 @@ class GameView {
 
   doKeyEvent(down) {
     return (e) => {
+      // if (e.key === "p"){
+      //   this.engine.togglePause()
+      // }
       if (e.key === "m" && this.initialUnmute) {
         this.initialUnmute = false
         this.engine.gameScript.theme.play()

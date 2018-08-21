@@ -848,7 +848,7 @@ class Bullet extends GameObject {
   addExplosionCollider(){
     let subscribers = ["Grunt", "Pinwheel", "BoxBox", "Arrow", "Singularity", "Weaver"]
     this.addCollider("bulletHit", this, this.radius, subscribers, ["General"])
-    this.addCollider("General", this, 3)
+    this.addCollider("General", this, this.radius)
   }
 
   update(deltaTime){
@@ -2945,6 +2945,9 @@ class GameView {
 
   doKeyEvent(down) {
     return (e) => {
+      // if (e.key === "p"){
+      //   this.engine.togglePause()
+      // }
       if (e.key === "m" && this.initialUnmute) {
         this.initialUnmute = false
         this.engine.gameScript.theme.play()

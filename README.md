@@ -5,6 +5,72 @@ shapes appear. The goal is to shoot down as many of these enemies as possible wi
 by an enemy shape. When enemies are shot, they explode with vibrant color particle effects making the 
 game visually spicy.  
 
+
+# Game Engine 
+I created a framework for JavaScript programers to create simulations and games for Canvas. Users can add game objects and give them properties such as physics, sprites, colliders and colors. Users can dynamically mutate these properties through life cycle methods and manage their game through the use of a built in game script. 
+
+## Life Cycle
+* Check Collisions
+* Move physics components
+* Update game objects
+* Render sprites at their new locations
+* Update game script
+* Play Sounds
+
+## Game Object
+To make a game object, extend the class with GameObject. This will provide a ton of built in functionality.
+
+* `#addCollider`
+* `#addPhysicsComponent`
+* `#addLineSprite`
+* `#addChildGameObject`
+* `#playSound`
+* `#addMousePosListener`
+
+### addCollider
+  Takes in the following parameters  
+  String: collider name
+  Reference to GameObject (usually "this")   
+  Double: hitbox radius  
+  Array: names of the GameObjects it can hit  
+  Array: names of the types of colliders it can hit   
+        
+  With these parameters, a user can create a custom collider that can subscribe to specific game objects and specific colliders. An example where this is necessary is with things that try to dodge, like the Weaver in my game. The Weaver tries to dodge bullets when they are within a certain distance, but explodes when in direct contact. The Weaver's "BulletDodge" collider handles dodging the bullets,and the Bullet's "bulletHit" collider handles the direct contact.    
+        
+  The "BulletDodge" collider is subscribed to the Bullet's "General" collider, and the "bulletHit" collider is subscribed to the Weaver and every other enemy type's "General" collider. I picked the name "General" because it is what a new collider can use to add functionality to every GameObject while only writing the code in one place. 
+```javascript 
+class Bullet extends GameObject {
+```
+...   
+```javascript 
+  addBulletColliders(){
+    let subscriptions = ["Grunt", "Pinwheel", "BoxBox", "Arrow", "Singularity", "Weaver"]
+    this.addCollider("bulletHit", this, this.radius, subscriptions, ["General"]) 
+    this.addCollider("General", this, this.radius)
+  }
+``` 
+...    
+
+```javascript 
+  onCollision(collider, type){  
+    if (type === "bulletHit") {  
+      let hitObjectTransform = collider.gameObject.transform    
+      let pos = hitObjectTransform.absolutePosition()     
+      let vel = hitObjectTransform.absoluteVelocity()    
+      let explosion = new ParticleExplosion(this.gameEngine, pos, vel)    
+      collider.gameObject.remove()    
+    }    
+  }
+```   
+...    
+```javascript 
+}
+```
+
+ 
+
+# First Week Goals
+This project was originaly a one week challenge. The planning that went into the first week of work is listed here
 ## Functionality and MVP
 
 
@@ -59,13 +125,14 @@ The next steps will include the addition of more challenging/smarter enemies. Ea
 - [ ] Grunt
 - [ ] Weaver
 
-### Challenge MVPs
+### Challenge Goals
 - [ ] Snake
 - [ ] Singularity
 - [ ] Alien
 - [ ] Grid Warping Effect
 
 # Architecture
+This is the original archetecture before the game engine refactor listed above
 ## Game managment
 game_view.js: listens for user input and commands game.js to reposition and render things. 
 game.js: stores every visible element, commands them to render when asked, detects collisions. 
@@ -77,7 +144,7 @@ moving_object.js: All non particle elements inherit from moving_object for rende
 
 # Technologies
 
-* Vanilla JavaScript for overall structure and game logic
+* JavaScript for overall structure and game logic
 * HTML5 Canvas for DOM manipulation and rendering
 * Web Audio API for sound generation, processing and control
 * Gamepad API to allow for controller use
