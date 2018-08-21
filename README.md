@@ -1,4 +1,6 @@
 # GEOWars
+Enjoy Now! https://secondcommand.github.io/GEOWars/
+
 GEOWars was inspired by games like Galaga, Asteroids, and Geometry Wars. The game can be played 
 with a keyboard or a controller. The player controls a ship moving inside an arena where enemy
 shapes appear. The goal is to shoot down as many of these enemies as possible without getting hit 
@@ -161,7 +163,7 @@ The next steps will include the addition of more challenging/smarter enemies. Ea
 - [ ] Grid Warping Effect
 
 # Architecture
-This is the original archetecture before the game engine refactor listed above
+This is the original archetecture that was proposed before I ported the game over to my game engine
 ## Game managment
 game_view.js: listens for user input and commands game.js to reposition and render things. 
 game.js: stores every visible element, commands them to render when asked, detects collisions. 
