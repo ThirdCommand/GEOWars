@@ -268,6 +268,8 @@ class GameEngine {
     this.gameScript = new GameScript(this);
     this.toRemoveQueue = []
     this.paused = false;
+    this.currentCamera = null;
+    this.zoomScale = 1.30;
   }
 
   tick(delta) {
@@ -303,9 +305,9 @@ class GameEngine {
 
   clearCanvas(){
 
-    this.ctx.clearRect(0, 0, this.gameScript.DIM_X, this.gameScript.DIM_Y);
+    this.ctx.clearRect( -this.gameScript.DIM_X, -this.gameScript.DIM_Y, this.gameScript.DIM_X * this.zoomScale * 4, this.gameScript.DIM_Y * this.zoomScale * 4);
     this.ctx.fillStyle = this.gameScript.BG_COLOR;
-    this.ctx.fillRect(0, 0, this.gameScript.DIM_X, this.gameScript.DIM_Y);
+    this.ctx.fillRect( -this.gameScript.DIM_X, -this.gameScript.DIM_Y, this.gameScript.DIM_X * this.zoomScale * 4, this.gameScript.DIM_Y * this.zoomScale * 4);
   }
 
   addLeftControlStickListener(object){
@@ -399,10 +401,15 @@ class GameEngine {
   }
 
   renderLineSprites(ctx) {
+    // ctx.scale = gameEngine.currentCamera.zoomScale
+    this.ctx.save()
     
+    this.ctx.scale(this.zoomScale, this.zoomScale)
     this.lineSprites.forEach((sprite) => {
       sprite.draw(ctx)
     })
+    this.ctx.restore()
+    // ctx.scale(1,1)
   }
 
   addMouseListener(object){
@@ -597,14 +604,18 @@ module.exports = GameObject;
 
 class LineSprite {
   constructor(transform) {
+    this.transform = transform
     // this.drawFunction = draw
-    this.transform = transform 
+    this.zoomScaling = 1
   }
 
   draw(ctx) {
     pos = this.transform.absolutePosition()
     angle = this.transform.abosluteAngle()
     this.drawFunction(ctx, pos, angle)
+  }
+  drawFunction(ctx,pos,angle){
+    
   }
 }
 
@@ -935,6 +946,98 @@ class BulletSprite extends LineSprite {
   }
 }
 module.exports = BulletSprite
+
+/***/ }),
+
+/***/ "./lib/game_objects/Walls/walls.js":
+/*!*****************************************!*\
+  !*** ./lib/game_objects/Walls/walls.js ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const WallsSprite = __webpack_require__(/*! ./walls_sprite */ "./lib/game_objects/Walls/walls_sprite.js")
+const GameObject = __webpack_require__(/*! ../../game_engine/game_object */ "./lib/game_engine/game_object.js")
+
+class Walls extends GameObject {
+    constructor(engine, gameScript) {
+        super(engine);
+        this.gameScript = gameScript
+        this.transform.pos = [0,0]
+        this.addLineSprite(new WallsSprite(this.transform, this.gameScript.DIM_X, this.gameScript.DIM_Y))
+    }
+
+    update(deltaTime) {
+        
+    }
+}
+
+module.exports = Walls
+
+/***/ }),
+
+/***/ "./lib/game_objects/Walls/walls_sprite.js":
+/*!************************************************!*\
+  !*** ./lib/game_objects/Walls/walls_sprite.js ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const LineSprite = __webpack_require__(/*! ../../game_engine/line_sprite */ "./lib/game_engine/line_sprite.js")
+const Color = __webpack_require__(/*! ../../game_engine/color */ "./lib/game_engine/color.js")
+class WallsSprite extends LineSprite {
+    constructor(transform, DIM_X, DIM_Y) {
+        super(transform)
+        this.width = DIM_X
+        this.height = DIM_Y
+        this.shadowColor = new Color({
+            "hsla": [202, 100, 70, 1]
+        });
+        this.color = new Color({
+            "hsla": [202, 100, 70, 0.2]
+        });
+    }
+
+    draw(ctx) {
+        let w = this.width
+        let h = this.height
+        let pos = this.transform.absolutePosition();
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.translate(pos[0], pos[1]);
+
+        let blurFactor = 0.5
+        ctx.shadowColor = this.shadowColor.evaluateColor();
+        ctx.shadowBlur = 10;
+        ctx.strokeStyle = this.color.evaluateColor();
+        ctx.lineWidth = 7.5 * blurFactor * 2;
+        this.drawWalls(ctx, w, h)
+        ctx.lineWidth = 6 * 2// * blurFactor;
+        this.drawWalls(ctx, w, h)
+        ctx.lineWidth = 4.5 * 2 // * blurFactor;
+        this.drawWalls(ctx, w, h)
+        ctx.lineWidth = 3 * 2// * blurFactor;
+        this.drawWalls(ctx, w, h)
+        ctx.strokeStyle = 'rgb(255, 255, 255)';
+        ctx.lineWidth = 1.5 * 2// * blurFactor;
+        this.drawWalls(ctx, w, h)
+
+        ctx.restore();
+    }
+
+    drawWalls(ctx,w,h){
+        let offset = 6
+        ctx.beginPath
+        ctx.moveTo(-offset, -offset)
+        ctx.lineTo(w + offset, -offset);
+        ctx.lineTo(w + offset, h + offset); //3
+        ctx.lineTo(0 - offset, h + offset);
+        ctx.closePath();
+        ctx.stroke();
+    }
+}
+module.exports = WallsSprite
 
 /***/ }),
 
@@ -1692,7 +1795,7 @@ class Weaver extends GameObject {
 
   exist() {
     // leaving off subscriptions means that things will subscribe to it
-    this.addCollider("General", this, 3)
+    this.addCollider("General", this, this.radius)
     this.addCollider("BulletDodge", this, this.weaverCloseHitBox, ["Bullet"], ["General"])
     // now it will move
     this.addPhysicsComponent()
@@ -1872,6 +1975,10 @@ module.exports = WeaverSprite
 // vel = Util.vectorCartisian(angle, scale)
 //
 // 
+
+// because the particle is drawn the correct way now, 
+// from position out, the particle's center is located 
+// far from the center of the particle
 const ParticleSprite = __webpack_require__(/*! ./particle_sprite */ "./lib/game_objects/particles/Particle/particle_sprite.js")
 
 const Util = __webpack_require__(/*! ../../../game_engine/util */ "./lib/game_engine/util.js")
@@ -1879,38 +1986,49 @@ const GameObject = __webpack_require__(/*! ../../../game_engine/game_object */ "
 
 
 class Particle extends GameObject{
-  constructor(engine, pos, initialSpeed, color) {
+  constructor(engine, pos, initialSpeed, color, wallHit) {
     super(engine)
 
     this.transform.pos[0] = pos[0]
     this.transform.pos[1] = pos[1]
 
     this.color = color
-    this.movementAngle = Math.random() * Math.PI * 2;
+    this.movementAngle = this.createMovementAngle(wallHit)
     this.transform.vel = Util.vectorCartisian(this.movementAngle, initialSpeed)
-    
+    this.radius = 3
     this.explosionDeceleration = 0.1; // in the direction the particle is moving
     this.transform.acc = [-this.explosionDeceleration * Math.cos(this.movementAngle), -this.explosionDeceleration * Math.sin(this.movementAngle)]
 
     this.addLineSprite(new ParticleSprite(this.transform, this.color))
     this.addPhysicsComponent()
-    this.addCollider("General", this, 3)
+    this.addCollider("General", this, this.radius)
 
   }
 
-  rand(max, min, _int) {
-    var max = (max === 0 || max) ? max : 1,
-      min = min || 0,
-      gen = min + (max - min) * Math.random();
-
-    return (_int) ? Math.round(gen) : gen;
-  };
+  createMovementAngle(wallHit) {
+    if (!wallHit){ 
+      return (Math.random() * Math.PI * 2);
+    } else {
+      if (wallHit === "BOTTOM") {
+        return(Math.random() * Math.PI + Math.PI)
+      } else if (wallHit === "RIGHT") {
+        return (Math.random() * Math.PI + Math.PI / 2)
+      } else if (wallHit === "TOP") {
+        return (Math.random() * Math.PI)
+      } else if (wallHit === "LEFT") {
+        return (Math.random() * Math.PI + 3 * Math.PI / 2)
+      }
+    }
+  }
 
   update(deltaTime){
     this.lineSprite.rectLength -= 0.1;
     this.lineSprite.color.a -= 0.01;
     if (this.lineSprite.hue < 0.06 || this.lineSprite.rectLength < 0.25 || ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1])) < 0.15)) {
       
+      this.remove();
+    }
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), -0.5)) {
       this.remove();
     }
     // acc is influenced by singularities, then changed to usual acc
@@ -1949,9 +2067,8 @@ class ParticleSprite extends LineSprite {
     let movementDirection = Math.atan2(vel[0], -vel[1])
 
     ctx.save();
-    ctx.beginPath();
     ctx.translate(pos[0], pos[1]);
-    ctx.rotate(movementDirection + 2 * Math.PI);
+    ctx.rotate(movementDirection - Math.PI);
 
     ctx.beginPath();
     ctx.strokeStyle = this.color.evaluateColor();
@@ -2090,8 +2207,25 @@ class BulletWallExplosion extends GameObject{
     });
     this.particleNum = 20;
     let bulletWallHit = new Sound("GEOWars/sounds/bullet_hitwall.wav", 0.1)
+    this.wallHit = this.whichWall()
     this.playSound(bulletWallHit)
     this.createParticles()
+  }
+
+  whichWall() {
+    let pos = this.transform.pos
+
+    let max = [this.gameEngine.gameScript.DIM_X, this.gameEngine.gameScript.DIM_Y]
+    if (pos[0] <= 0) {
+      return "LEFT"
+    } else if (pos[0] >= max[0]) {
+      return "RIGHT"
+    } else if (pos[1] <= 0) {
+      return "TOP"
+    } else if (pos[1] >= max[1]) {
+      return "BOTTOM"
+    }
+
   }
 
   createParticles(){
@@ -2103,7 +2237,7 @@ class BulletWallExplosion extends GameObject{
       color.a = Math.random() * 0.35 + 0.6
       color.h = (color.h + colorVarience) % 360
       
-      this.addChildGameObject(new Particle(this.gameEngine, this.transform.absolutePosition(), speed, color));
+      this.addChildGameObject(new Particle(this.gameEngine, this.transform.absolutePosition(), speed, color, this.wallHit));
     }
   }
 
@@ -2193,7 +2327,7 @@ class ParticleExplosion extends GameObject{
   createExplosionParticles(){
     for (var i = 0; i < this.particleNum; i++) {
       const speed = Math.random() * 3 + 4
-
+      
       const colorVarienceDelta = 30
       let colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2
       let color = this.currentColor.dup()
@@ -2324,6 +2458,7 @@ const GameObject = __webpack_require__(/*! ../../game_engine/game_object */ "./l
 const Util = __webpack_require__(/*! ../../game_engine/util */ "./lib/game_engine/util.js");
 const Sound = __webpack_require__(/*! ../../game_engine/sound */ "./lib/game_engine/sound.js");
 
+// const Camera = require("../Camera/camera")
 const Bullet = __webpack_require__(/*! ../Bullet/bullet */ "./lib/game_objects/Bullet/bullet.js");
 const ShipSprite = __webpack_require__(/*! ./ship_sprite */ "./lib/game_objects/ship/ship_sprite.js")
 
@@ -2351,6 +2486,7 @@ class Ship extends GameObject {
     this.shipEngineAcceleration = 0.125;
 
     this.keysPressed = []
+    this.zooming = true
   }
   
   update(deltaTime){
@@ -2367,8 +2503,40 @@ class Ship extends GameObject {
       this.wallGraze();
     } else {
       this.movementMechanics(deltaTime)
+      // ship camera stuffs
+      
     }
     // if ship is out of x bounds, maintain y speed, keep x at edge value
+
+    this.updateZoomScale(deltaTime)
+
+    this.gameEngine.ctx.restore()
+    this.gameEngine.ctx.save()
+    let shipXPos = this.transform.pos[0]
+    let shipYPos = this.transform.pos[1]
+    let zoomScale = this.gameEngine.zoomScale
+    let width = this.gameEngine.gameScript.DIM_X
+    let height = this.gameEngine.gameScript.DIM_Y
+
+    this.gameEngine.ctx.translate(
+      -shipXPos * zoomScale + width / 2,
+      -shipYPos * zoomScale + height / 2
+    )
+  }
+
+  updateZoomScale(deltaTime){
+    // take 5 seconds to scale from 1 to 2
+    // if(this.zooming && this.gameEngine.zoomScale > 2){
+    //   this.zooming = false
+    // } else if(!this.zooming && this.gameEngine.zoomScale < 0.5) {
+    //   this.zooming = true
+    // } 
+
+    // if (this.zooming){
+    //   this.gameEngine.zoomScale += deltaTime / 5000
+    // } else {
+    //   this.gameEngine.zoomScale -= deltaTime / (2 * 5000)
+    // }
   }
 
   // 
@@ -2462,8 +2630,17 @@ class Ship extends GameObject {
     } else {
       this.mousePos = mousePos
     }
-    let dy = mousePos[1] - this.transform.pos[1];
-    let dx = mousePos[0] - this.transform.pos[0];
+    let shipXPos = this.transform.pos[0]
+    let shipYPos = this.transform.pos[1]
+    let zoomScale = this.gameEngine.zoomScale
+    let width = this.gameEngine.gameScript.DIM_X
+    let height = this.gameEngine.gameScript.DIM_Y
+
+    let mouseX = mousePos[0] / zoomScale + shipXPos  - width / (2 * zoomScale)
+    let mouseY = mousePos[1] / zoomScale + shipYPos  - height / (2 * zoomScale)
+    // SCALE NUMBER
+    let dy =  mouseY - this.transform.pos[1];
+    let dx =  mouseX - this.transform.pos[0];
     this.fireAngle =  Math.atan2(dy, dx)
   }
 
@@ -2599,12 +2776,14 @@ module.exports = ShipSprite;
 
 
 const Ship = __webpack_require__(/*! ./game_objects/ship/ship */ "./lib/game_objects/ship/ship.js");
+const Walls = __webpack_require__(/*! ./game_objects/Walls/walls */ "./lib/game_objects/Walls/walls.js")
 const BoxBox = __webpack_require__(/*! ./game_objects/enemies/BoxBox/boxbox */ "./lib/game_objects/enemies/BoxBox/boxbox.js");
 const Pinwheel = __webpack_require__(/*! ./game_objects/enemies/Pinwheel/pinwheel */ "./lib/game_objects/enemies/Pinwheel/pinwheel.js");
 const Arrow = __webpack_require__(/*! ./game_objects/enemies/Arrow/arrow */ "./lib/game_objects/enemies/Arrow/arrow.js");
 const Grunt = __webpack_require__(/*! ./game_objects/enemies/Grunt/grunt */ "./lib/game_objects/enemies/Grunt/grunt.js");
 const Weaver = __webpack_require__(/*! ./game_objects/enemies/Weaver/weaver */ "./lib/game_objects/enemies/Weaver/weaver.js");
 const Singularity = __webpack_require__(/*! ./game_objects/enemies/Singularity/singularity */ "./lib/game_objects/enemies/Singularity/singularity.js");
+
 
 const Util = __webpack_require__(/*! ./game_engine/util */ "./lib/game_engine/util.js");
 const Sound = __webpack_require__(/*! ./game_engine/sound */ "./lib/game_engine/sound.js")
@@ -2619,6 +2798,7 @@ class GameScript {
     this.engine = engine
     this.arrowAdded = false
     this.ship = this.createShip();
+    this.walls = this.createWalls();
     this.enemyCreatorList = this.createEnemyCreatorList()
     // this.deathSound = new Audio("GEOWars/sounds/Enemy_explode.wav")
     // this.deathSound.volume = 0.5;
@@ -2691,8 +2871,8 @@ class GameScript {
 
   randomPosition() {
     return [
-      this.DIM_X * Math.random(),
-      this.DIM_Y * Math.random(),
+      this.DIM_X * 0.80 * Math.random(),
+      this.DIM_Y * 0.80 * Math.random(),
       // 500,300
     ];
   }
@@ -2793,6 +2973,10 @@ class GameScript {
 
   createShip() {
     return new Ship(this.engine, [500, 500])
+  }
+
+  createWalls(){
+    return new Walls(this.engine, this)
   }
 
   isOutOfBounds(pos, radius) {
@@ -2917,7 +3101,7 @@ GameScript.spawnListList = [
 
 class GameView {
   constructor(engine, ctx, canvasEl) {
-    this.ctx = ctx;
+    this.ctx = ctx; 
     this.engine = engine;
     // this.ship = this.game.addShip(); belongs in game script
     this.canvasEl = canvasEl;
@@ -3034,7 +3218,6 @@ class GameView {
 
      // Get the <span> element that closes the modal
      var xclose = document.getElementsByClassName("close")[0];
-
 
      // When the user clicks on <span> (x), close the modal
      xclose.onclick = (e) => {

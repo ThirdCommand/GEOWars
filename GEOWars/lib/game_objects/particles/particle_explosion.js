@@ -22,7 +22,7 @@ class ParticleExplosion extends GameObject{
   createExplosionParticles(){
     for (var i = 0; i < this.particleNum; i++) {
       const speed = Math.random() * 3 + 4
-
+      
       const colorVarienceDelta = 30
       let colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2
       let color = this.currentColor.dup()

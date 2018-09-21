@@ -14,8 +14,25 @@ class BulletWallExplosion extends GameObject{
     });
     this.particleNum = 20;
     let bulletWallHit = new Sound("GEOWars/sounds/bullet_hitwall.wav", 0.1)
+    this.wallHit = this.whichWall()
     this.playSound(bulletWallHit)
     this.createParticles()
+  }
+
+  whichWall() {
+    let pos = this.transform.pos
+
+    let max = [this.gameEngine.gameScript.DIM_X, this.gameEngine.gameScript.DIM_Y]
+    if (pos[0] <= 0) {
+      return "LEFT"
+    } else if (pos[0] >= max[0]) {
+      return "RIGHT"
+    } else if (pos[1] <= 0) {
+      return "TOP"
+    } else if (pos[1] >= max[1]) {
+      return "BOTTOM"
+    }
+
   }
 
   createParticles(){
@@ -27,7 +44,7 @@ class BulletWallExplosion extends GameObject{
       color.a = Math.random() * 0.35 + 0.6
       color.h = (color.h + colorVarience) % 360
       
-      this.addChildGameObject(new Particle(this.gameEngine, this.transform.absolutePosition(), speed, color));
+      this.addChildGameObject(new Particle(this.gameEngine, this.transform.absolutePosition(), speed, color, this.wallHit));
     }
   }
 

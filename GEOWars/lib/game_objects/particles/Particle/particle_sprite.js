@@ -16,9 +16,8 @@ class ParticleSprite extends LineSprite {
     let movementDirection = Math.atan2(vel[0], -vel[1])
 
     ctx.save();
-    ctx.beginPath();
     ctx.translate(pos[0], pos[1]);
-    ctx.rotate(movementDirection + 2 * Math.PI);
+    ctx.rotate(movementDirection - Math.PI);
 
     ctx.beginPath();
     ctx.strokeStyle = this.color.evaluateColor();

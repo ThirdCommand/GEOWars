@@ -21,6 +21,8 @@ class GameEngine {
     this.gameScript = new GameScript(this);
     this.toRemoveQueue = []
     this.paused = false;
+    this.currentCamera = null;
+    this.zoomScale = 1.30;
   }
 
   tick(delta) {
@@ -56,9 +58,9 @@ class GameEngine {
 
   clearCanvas(){
 
-    this.ctx.clearRect(0, 0, this.gameScript.DIM_X, this.gameScript.DIM_Y);
+    this.ctx.clearRect( -this.gameScript.DIM_X, -this.gameScript.DIM_Y, this.gameScript.DIM_X * this.zoomScale * 4, this.gameScript.DIM_Y * this.zoomScale * 4);
     this.ctx.fillStyle = this.gameScript.BG_COLOR;
-    this.ctx.fillRect(0, 0, this.gameScript.DIM_X, this.gameScript.DIM_Y);
+    this.ctx.fillRect( -this.gameScript.DIM_X, -this.gameScript.DIM_Y, this.gameScript.DIM_X * this.zoomScale * 4, this.gameScript.DIM_Y * this.zoomScale * 4);
   }
 
   addLeftControlStickListener(object){
@@ -152,10 +154,15 @@ class GameEngine {
   }
 
   renderLineSprites(ctx) {
+    // ctx.scale = gameEngine.currentCamera.zoomScale
+    this.ctx.save()
     
+    this.ctx.scale(this.zoomScale, this.zoomScale)
     this.lineSprites.forEach((sprite) => {
       sprite.draw(ctx)
     })
+    this.ctx.restore()
+    // ctx.scale(1,1)
   }
 
   addMouseListener(object){

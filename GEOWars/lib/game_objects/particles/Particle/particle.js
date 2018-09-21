@@ -7,6 +7,10 @@
 // vel = Util.vectorCartisian(angle, scale)
 //
 // 
+
+// because the particle is drawn the correct way now, 
+// from position out, the particle's center is located 
+// far from the center of the particle
 const ParticleSprite = require("./particle_sprite")
 
 const Util = require("../../../game_engine/util")
@@ -14,38 +18,49 @@ const GameObject = require("../../../game_engine/game_object")
 
 
 class Particle extends GameObject{
-  constructor(engine, pos, initialSpeed, color) {
+  constructor(engine, pos, initialSpeed, color, wallHit) {
     super(engine)
 
     this.transform.pos[0] = pos[0]
     this.transform.pos[1] = pos[1]
 
     this.color = color
-    this.movementAngle = Math.random() * Math.PI * 2;
+    this.movementAngle = this.createMovementAngle(wallHit)
     this.transform.vel = Util.vectorCartisian(this.movementAngle, initialSpeed)
-    
+    this.radius = 3
     this.explosionDeceleration = 0.1; // in the direction the particle is moving
     this.transform.acc = [-this.explosionDeceleration * Math.cos(this.movementAngle), -this.explosionDeceleration * Math.sin(this.movementAngle)]
 
     this.addLineSprite(new ParticleSprite(this.transform, this.color))
     this.addPhysicsComponent()
-    this.addCollider("General", this, 3)
+    this.addCollider("General", this, this.radius)
 
   }
 
-  rand(max, min, _int) {
-    var max = (max === 0 || max) ? max : 1,
-      min = min || 0,
-      gen = min + (max - min) * Math.random();
-
-    return (_int) ? Math.round(gen) : gen;
-  };
+  createMovementAngle(wallHit) {
+    if (!wallHit){ 
+      return (Math.random() * Math.PI * 2);
+    } else {
+      if (wallHit === "BOTTOM") {
+        return(Math.random() * Math.PI + Math.PI)
+      } else if (wallHit === "RIGHT") {
+        return (Math.random() * Math.PI + Math.PI / 2)
+      } else if (wallHit === "TOP") {
+        return (Math.random() * Math.PI)
+      } else if (wallHit === "LEFT") {
+        return (Math.random() * Math.PI + 3 * Math.PI / 2)
+      }
+    }
+  }
 
   update(deltaTime){
     this.lineSprite.rectLength -= 0.1;
     this.lineSprite.color.a -= 0.01;
     if (this.lineSprite.hue < 0.06 || this.lineSprite.rectLength < 0.25 || ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1])) < 0.15)) {
       
+      this.remove();
+    }
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), -0.5)) {
       this.remove();
     }
     // acc is influenced by singularities, then changed to usual acc

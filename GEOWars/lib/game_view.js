@@ -2,7 +2,7 @@
 
 class GameView {
   constructor(engine, ctx, canvasEl) {
-    this.ctx = ctx;
+    this.ctx = ctx; 
     this.engine = engine;
     // this.ship = this.game.addShip(); belongs in game script
     this.canvasEl = canvasEl;
@@ -119,7 +119,6 @@ class GameView {
 
      // Get the <span> element that closes the modal
      var xclose = document.getElementsByClassName("close")[0];
-
 
      // When the user clicks on <span> (x), close the modal
      xclose.onclick = (e) => {

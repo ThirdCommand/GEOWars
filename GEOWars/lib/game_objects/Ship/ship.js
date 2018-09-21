@@ -2,6 +2,7 @@ const GameObject = require("../../game_engine/game_object");
 const Util = require("../../game_engine/util");
 const Sound = require("../../game_engine/sound");
 
+// const Camera = require("../Camera/camera")
 const Bullet = require("../Bullet/bullet");
 const ShipSprite = require("./ship_sprite")
 
@@ -29,6 +30,7 @@ class Ship extends GameObject {
     this.shipEngineAcceleration = 0.125;
 
     this.keysPressed = []
+    this.zooming = true
   }
   
   update(deltaTime){
@@ -45,8 +47,40 @@ class Ship extends GameObject {
       this.wallGraze();
     } else {
       this.movementMechanics(deltaTime)
+      // ship camera stuffs
+      
     }
     // if ship is out of x bounds, maintain y speed, keep x at edge value
+
+    this.updateZoomScale(deltaTime)
+
+    this.gameEngine.ctx.restore()
+    this.gameEngine.ctx.save()
+    let shipXPos = this.transform.pos[0]
+    let shipYPos = this.transform.pos[1]
+    let zoomScale = this.gameEngine.zoomScale
+    let width = this.gameEngine.gameScript.DIM_X
+    let height = this.gameEngine.gameScript.DIM_Y
+
+    this.gameEngine.ctx.translate(
+      -shipXPos * zoomScale + width / 2,
+      -shipYPos * zoomScale + height / 2
+    )
+  }
+
+  updateZoomScale(deltaTime){
+    // take 5 seconds to scale from 1 to 2
+    // if(this.zooming && this.gameEngine.zoomScale > 2){
+    //   this.zooming = false
+    // } else if(!this.zooming && this.gameEngine.zoomScale < 0.5) {
+    //   this.zooming = true
+    // } 
+
+    // if (this.zooming){
+    //   this.gameEngine.zoomScale += deltaTime / 5000
+    // } else {
+    //   this.gameEngine.zoomScale -= deltaTime / (2 * 5000)
+    // }
   }
 
   // 
@@ -140,8 +174,17 @@ class Ship extends GameObject {
     } else {
       this.mousePos = mousePos
     }
-    let dy = mousePos[1] - this.transform.pos[1];
-    let dx = mousePos[0] - this.transform.pos[0];
+    let shipXPos = this.transform.pos[0]
+    let shipYPos = this.transform.pos[1]
+    let zoomScale = this.gameEngine.zoomScale
+    let width = this.gameEngine.gameScript.DIM_X
+    let height = this.gameEngine.gameScript.DIM_Y
+
+    let mouseX = mousePos[0] / zoomScale + shipXPos  - width / (2 * zoomScale)
+    let mouseY = mousePos[1] / zoomScale + shipYPos  - height / (2 * zoomScale)
+    // SCALE NUMBER
+    let dy =  mouseY - this.transform.pos[1];
+    let dx =  mouseX - this.transform.pos[0];
     this.fireAngle =  Math.atan2(dy, dx)
   }
 

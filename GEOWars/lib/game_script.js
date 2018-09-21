@@ -1,11 +1,13 @@
 
 const Ship = require("./game_objects/ship/ship");
+const Walls = require("./game_objects/Walls/walls")
 const BoxBox = require("./game_objects/enemies/BoxBox/boxbox");
 const Pinwheel = require("./game_objects/enemies/Pinwheel/pinwheel");
 const Arrow = require("./game_objects/enemies/Arrow/arrow");
 const Grunt = require("./game_objects/enemies/Grunt/grunt");
 const Weaver = require("./game_objects/enemies/Weaver/weaver");
 const Singularity = require("./game_objects/enemies/Singularity/singularity");
+
 
 const Util = require("./game_engine/util");
 const Sound = require("./game_engine/sound")
@@ -20,6 +22,7 @@ class GameScript {
     this.engine = engine
     this.arrowAdded = false
     this.ship = this.createShip();
+    this.walls = this.createWalls();
     this.enemyCreatorList = this.createEnemyCreatorList()
     // this.deathSound = new Audio("GEOWars/sounds/Enemy_explode.wav")
     // this.deathSound.volume = 0.5;
@@ -92,8 +95,8 @@ class GameScript {
 
   randomPosition() {
     return [
-      this.DIM_X * Math.random(),
-      this.DIM_Y * Math.random(),
+      this.DIM_X * 0.80 * Math.random(),
+      this.DIM_Y * 0.80 * Math.random(),
       // 500,300
     ];
   }
@@ -194,6 +197,10 @@ class GameScript {
 
   createShip() {
     return new Ship(this.engine, [500, 500])
+  }
+
+  createWalls(){
+    return new Walls(this.engine, this)
   }
 
   isOutOfBounds(pos, radius) {
