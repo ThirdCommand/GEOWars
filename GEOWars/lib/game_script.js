@@ -1,6 +1,7 @@
 
 const Ship = require("./game_objects/ship/ship");
 const Walls = require("./game_objects/Walls/walls")
+const Grid = require("./game_objects/particles/Grid/grid")
 const BoxBox = require("./game_objects/enemies/BoxBox/boxbox");
 const Pinwheel = require("./game_objects/enemies/Pinwheel/pinwheel");
 const Arrow = require("./game_objects/enemies/Arrow/arrow");
@@ -23,6 +24,7 @@ class GameScript {
     this.arrowAdded = false
     this.ship = this.createShip();
     this.walls = this.createWalls();
+    this.grid = this.createGrid();
     this.enemyCreatorList = this.createEnemyCreatorList()
     // this.deathSound = new Audio("GEOWars/sounds/Enemy_explode.wav")
     // this.deathSound.volume = 0.5;
@@ -201,6 +203,10 @@ class GameScript {
 
   createWalls(){
     return new Walls(this.engine, this)
+  }
+  
+  createGrid(){
+    return new Grid(this.engine, this)
   }
 
   isOutOfBounds(pos, radius) {

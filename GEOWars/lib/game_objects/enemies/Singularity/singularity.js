@@ -28,7 +28,7 @@ class Singularity extends GameObject {
   exist() {
     // leaving off subscriptions means that things will subscribe to it
     this.addCollider("General", this, this.radius)
-    this.addCollider("GravityWell", this, this.gravityWellSize, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver", "Particle", "SingularityParticle"],  ["General"])
+    this.addCollider("GravityWell", this, this.gravityWellSize, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver", "Particle", "SingularityParticle", "GridPoint"],  ["General"])
     // this.addCollider("GravityAbsorb", this, this.radius, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver"], ["General"])
     // now it will move
     this.addPhysicsComponent()
@@ -83,7 +83,7 @@ class Singularity extends GameObject {
     let unitVector = Util.dir([dx, dy]);
     let r = Math.sqrt(dy * dy + dx * dx);
     if (r > this.gravityWellSize * 7 / 8 || r < this.radius * 2){
-      object.transform.acc = [0,0];
+      // object.transform.acc = [0,0];
     } else {
       let accContribution= [
         unitVector[0] * this.gravityConstant / (r * r),

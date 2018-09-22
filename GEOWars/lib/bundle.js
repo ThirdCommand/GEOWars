@@ -1620,7 +1620,7 @@ class Singularity extends GameObject {
   exist() {
     // leaving off subscriptions means that things will subscribe to it
     this.addCollider("General", this, this.radius)
-    this.addCollider("GravityWell", this, this.gravityWellSize, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver", "Particle", "SingularityParticle"],  ["General"])
+    this.addCollider("GravityWell", this, this.gravityWellSize, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver", "Particle", "SingularityParticle", "GridPoint"],  ["General"])
     // this.addCollider("GravityAbsorb", this, this.radius, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver"], ["General"])
     // now it will move
     this.addPhysicsComponent()
@@ -1675,7 +1675,7 @@ class Singularity extends GameObject {
     let unitVector = Util.dir([dx, dy]);
     let r = Math.sqrt(dy * dy + dx * dx);
     if (r > this.gravityWellSize * 7 / 8 || r < this.radius * 2){
-      object.transform.acc = [0,0];
+      // object.transform.acc = [0,0];
     } else {
       let accContribution= [
         unitVector[0] * this.gravityConstant / (r * r),
@@ -1956,6 +1956,180 @@ class WeaverSprite extends LineSprite {
 }
 
 module.exports = WeaverSprite
+
+/***/ }),
+
+/***/ "./lib/game_objects/particles/Grid/grid.js":
+/*!*************************************************!*\
+  !*** ./lib/game_objects/particles/Grid/grid.js ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Util = __webpack_require__(/*! ../../../game_engine/util */ "./lib/game_engine/util.js")
+const GameObject = __webpack_require__(/*! ../../../game_engine/game_object */ "./lib/game_engine/game_object.js")
+
+const GridSprite = __webpack_require__(/*! ./grid_sprite */ "./lib/game_objects/particles/Grid/grid_sprite.js")
+const GridPoint = __webpack_require__(/*! ./grid_point */ "./lib/game_objects/particles/Grid/grid_point.js")
+
+class Grid extends GameObject {
+    constructor(engine, gameScript) {
+        super(engine)
+
+        this.transform.pos = [0,0]
+
+        this.arenaDimensions = [gameScript.DIM_X, gameScript.DIM_Y]
+        this.elasticity = 0.1; // force provided to pull particle back into place
+        this.dampening = 0.1; // force produced from velocity (allows things to eventuall fall to rest)
+
+        this.gridPoints = this.createGridPoints()
+
+        this.addLineSprite(new GridSprite(this.transform, this.gridPoints))
+        // this.addPhysicsComponent()
+        // this.addCollider("General", this, this.radius)
+    }
+
+    createGridPoints(){
+        let columnCount = 20
+        let rowCount = 12
+        let gridPoints = []
+        let gridRow = []
+        for (let yPosition = 0; yPosition <= this.arenaDimensions[1]; yPosition += this.arenaDimensions[1] / rowCount) {
+            for (let xPosition = 0; xPosition <= this.arenaDimensions[0]; xPosition += this.arenaDimensions[0] / columnCount) {
+                if(
+                   (xPosition === 0 && (yPosition === 0 || yPosition === this.arenaDimensions[1])) || 
+                   (xPosition == this.arenaDimensions[0] && (yPosition === 0 || yPosition === this.arenaDimensions[1])) 
+                   ){
+                    continue
+                }
+                let position = [xPosition, yPosition]
+                gridRow.push(new GridPoint(this.gameEngine, position))
+            }
+            
+            gridPoints.push(gridRow.slice())
+            gridRow = []
+        }
+        return gridPoints
+    }
+
+    update(deltaTime) {
+
+    }
+
+}
+
+module.exports = Grid;
+
+/***/ }),
+
+/***/ "./lib/game_objects/particles/Grid/grid_point.js":
+/*!*******************************************************!*\
+  !*** ./lib/game_objects/particles/Grid/grid_point.js ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+const Util = __webpack_require__(/*! ../../../game_engine/util */ "./lib/game_engine/util.js")
+const GameObject = __webpack_require__(/*! ../../../game_engine/game_object */ "./lib/game_engine/game_object.js")
+
+class GridPoint extends GameObject {
+    constructor(engine, pos) {
+        super(engine)
+        this.origionalPosition = []
+        this.origionalPosition[0] = pos[0]
+        this.origionalPosition[1] = pos[1]
+        this.transform.pos = pos
+        this.radius = 2
+        this.elasticity = -0.01; // force provided to pull particle back into place
+        this.dampening = -0.05; // force produced from velocity (allows things to eventuall fall to rest)
+
+        this.addPhysicsComponent()
+        this.addCollider("General", this, this.radius)
+    }
+
+    update(deltaTime) {
+        this.transform.acc[0] += this.transform.vel[0] * this.dampening + (this.transform.pos[0] - this.origionalPosition[0]) * this.elasticity
+        this.transform.acc[1] += this.transform.vel[1] * this.dampening + (this.transform.pos[1] - this.origionalPosition[1]) * this.elasticity
+    }
+
+}
+
+module.exports = GridPoint;
+
+/***/ }),
+
+/***/ "./lib/game_objects/particles/Grid/grid_sprite.js":
+/*!********************************************************!*\
+  !*** ./lib/game_objects/particles/Grid/grid_sprite.js ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const LineSprite = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./lib/game_engine/line_sprite.js")
+const Color = __webpack_require__(/*! ../../../game_engine/color */ "./lib/game_engine/color.js")
+
+class GridSprite extends LineSprite {
+    constructor(transform, gridPoints) {
+        super(transform)
+        this.gridPoints = gridPoints
+
+        this.color = new Color({
+            "hsla": [202, 100, 70, 0.2]
+        });
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.strokeStyle = this.color.evaluateColor();
+        ctx.lineWidth = 1
+        this.drawRows(ctx)
+        this.drawColumns(ctx)
+        ctx.restore();
+    }
+
+    drawRows(ctx) {
+        let gridPoints = this.gridPoints
+
+        for (let i = 1; i < gridPoints.length - 1; i++) {
+            ctx.beginPath()
+            let firstPosition = gridPoints[i][0].transform.pos
+            ctx.moveTo(firstPosition[0], firstPosition[1])
+            for (let j = 1; j < gridPoints[i].length; j++) {
+                let nextPosition = gridPoints[i][j].transform.pos;
+                ctx.lineTo(nextPosition[0], nextPosition[1])
+            }
+
+            ctx.stroke()
+        }
+    }
+
+    drawColumns(ctx) {
+        let gridPoints = this.gridPoints
+        ctx.beginPath()
+
+        for (let j = 1; j < gridPoints[1].length - 1; j++) {
+            ctx.beginPath()
+            for (let i = 0; i < gridPoints.length; i++) {
+                let nextPosition = []
+                if( i === 0 || i === 0) {
+                    nextPosition = gridPoints[i][j - 1].transform.pos
+                    ctx.moveTo(nextPosition[0], nextPosition[1])
+                } else {
+                    if ( i === gridPoints.length - 1) {
+                        nextPosition = gridPoints[i][j - 1].transform.pos
+                    } else {
+                        nextPosition = gridPoints[i][j].transform.pos
+                    }
+                    ctx.lineTo(nextPosition[0], nextPosition[1])
+                }
+
+            }
+            ctx.stroke()
+        }
+    }
+}
+module.exports = GridSprite
 
 /***/ }),
 
@@ -2333,7 +2507,7 @@ class ParticleExplosion extends GameObject{
       let color = this.currentColor.dup()
       color.a = Math.random() * 0.35 + 0.6
       color.h = (color.h + colorVarience) % 360
-
+      
       this.addChildGameObject(new Particle(this.gameEngine, this.transform.absolutePosition(), speed, color));
     }
   }
@@ -2777,6 +2951,7 @@ module.exports = ShipSprite;
 
 const Ship = __webpack_require__(/*! ./game_objects/ship/ship */ "./lib/game_objects/ship/ship.js");
 const Walls = __webpack_require__(/*! ./game_objects/Walls/walls */ "./lib/game_objects/Walls/walls.js")
+const Grid = __webpack_require__(/*! ./game_objects/particles/Grid/grid */ "./lib/game_objects/particles/Grid/grid.js")
 const BoxBox = __webpack_require__(/*! ./game_objects/enemies/BoxBox/boxbox */ "./lib/game_objects/enemies/BoxBox/boxbox.js");
 const Pinwheel = __webpack_require__(/*! ./game_objects/enemies/Pinwheel/pinwheel */ "./lib/game_objects/enemies/Pinwheel/pinwheel.js");
 const Arrow = __webpack_require__(/*! ./game_objects/enemies/Arrow/arrow */ "./lib/game_objects/enemies/Arrow/arrow.js");
@@ -2799,6 +2974,7 @@ class GameScript {
     this.arrowAdded = false
     this.ship = this.createShip();
     this.walls = this.createWalls();
+    this.grid = this.createGrid();
     this.enemyCreatorList = this.createEnemyCreatorList()
     // this.deathSound = new Audio("GEOWars/sounds/Enemy_explode.wav")
     // this.deathSound.volume = 0.5;
@@ -2977,6 +3153,10 @@ class GameScript {
 
   createWalls(){
     return new Walls(this.engine, this)
+  }
+  
+  createGrid(){
+    return new Grid(this.engine, this)
   }
 
   isOutOfBounds(pos, radius) {
