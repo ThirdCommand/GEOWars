@@ -20,6 +20,7 @@ class GameScript {
     this.DIM_Y = 600;
     this.BG_COLOR = "#000000";
     this.gameTime = 0;
+    this.score = 0;
     this.engine = engine
     this.arrowAdded = false
     this.ship = this.createShip();
@@ -35,6 +36,7 @@ class GameScript {
     this.sequenceCount = 0;
     this.lives = 3;
     this.soundsToPlay = {}
+    this.scoreMultiplier = 1
 
     this.spawnthing = false;
     this.explosionColorWheel = 0;
@@ -48,6 +50,13 @@ class GameScript {
   changeExplosionColor(){
     this.explosionColorWheel += 1 / 2
     this.explosionColorWheel = this.explosionColorWheel % 360
+  }
+
+  tallyScore(gameObject){
+    this.score += gameObject.points * this.scoreMultiplier
+    if (this.score){
+      
+    }
   }
 
   Death(){

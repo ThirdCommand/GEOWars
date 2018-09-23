@@ -10,8 +10,8 @@ class GridPoint extends GameObject {
         this.origionalPosition[1] = pos[1]
         this.transform.pos = pos
         this.radius = 2
-        this.elasticity = -0.01; // force provided to pull particle back into place
-        this.dampening = -0.05; // force produced from velocity (allows things to eventuall fall to rest)
+        this.elasticity = -0.0035; // force provided to pull particle back into place
+        this.dampening = -0.04; // force produced from velocity (allows things to eventuall fall to rest)
 
         this.addPhysicsComponent()
         this.addCollider("General", this, this.radius)

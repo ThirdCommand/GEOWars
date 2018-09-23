@@ -44,8 +44,11 @@ class Bullet extends GameObject {
       let pos = hitObjectTransform.absolutePosition() 
       let vel = hitObjectTransform.absoluteVelocity()
       let explosion = new ParticleExplosion(this.gameEngine, pos, vel)
+      this.gameEngine.gameScript.tallyScore(collider.gameObject)
       collider.gameObject.remove()
+        
     }
+    
   }
   
   // move(timeDelta) {

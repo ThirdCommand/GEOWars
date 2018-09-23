@@ -10,7 +10,8 @@ class Pinwheel extends GameObject {
     super(engine)
     this.rotation_speed = 0.05;
     let speed = 1;
-    this.transform.pos = pos
+    this.points = 20;
+    this.transform.pos = pos;
     this.transform.vel = Util.randomVec(speed);
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
     this.playSound(this.spawnSound)

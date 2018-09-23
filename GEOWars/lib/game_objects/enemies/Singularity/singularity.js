@@ -13,6 +13,7 @@ class Singularity extends GameObject {
     this.gravityWellSize = 500;
     this.gravityConstant = 1000 * 0.5;
     this.radius = 15
+    this.points = 100
 
     // this.id = options.id
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);

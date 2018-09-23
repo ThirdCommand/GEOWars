@@ -14,7 +14,7 @@ class GridSprite extends LineSprite {
     draw(ctx) {
         ctx.save();
         ctx.strokeStyle = this.color.evaluateColor();
-        ctx.lineWidth = 1
+        ctx.lineWidth = 3
         this.drawRows(ctx)
         this.drawColumns(ctx)
         ctx.restore();

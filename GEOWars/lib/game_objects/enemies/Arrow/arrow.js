@@ -11,6 +11,7 @@ class Arrow extends GameObject {
     this.transform.pos = pos;
     this.transform.angle = angle;
     this.speed = 3;
+    this.points = 50
     this.transform.vel = Util.vectorCartisian(this.transform.angle, this.speed);
     
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_purple.wav", 0.5);

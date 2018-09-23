@@ -879,8 +879,11 @@ class Bullet extends GameObject {
       let pos = hitObjectTransform.absolutePosition() 
       let vel = hitObjectTransform.absoluteVelocity()
       let explosion = new ParticleExplosion(this.gameEngine, pos, vel)
+      this.gameEngine.gameScript.tallyScore(collider.gameObject)
       collider.gameObject.remove()
+        
     }
+    
   }
   
   // move(timeDelta) {
@@ -1061,6 +1064,7 @@ class Arrow extends GameObject {
     this.transform.pos = pos;
     this.transform.angle = angle;
     this.speed = 3;
+    this.points = 50
     this.transform.vel = Util.vectorCartisian(this.transform.angle, this.speed);
     
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_purple.wav", 0.5);
@@ -1182,6 +1186,7 @@ class BoxBox extends GameObject {
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
     this.transform.pos = pos
     this.radius = 10
+    this.points = 20
     // this.addPhysicsComponent()
     this.addLineSprite(new BoxBoxSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
@@ -1315,6 +1320,7 @@ class Grunt extends GameObject {
     this.stretchDirection = -1;
     this.shipTransform = shipTransform
     this.radius = 5;
+    this.points = 70
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
     this.playSound(this.spawnSound)
     this.addLineSprite(new GruntSprite(this.transform))
@@ -1466,7 +1472,8 @@ class Pinwheel extends GameObject {
     super(engine)
     this.rotation_speed = 0.05;
     let speed = 1;
-    this.transform.pos = pos
+    this.points = 20;
+    this.transform.pos = pos;
     this.transform.vel = Util.randomVec(speed);
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
     this.playSound(this.spawnSound)
@@ -1605,6 +1612,7 @@ class Singularity extends GameObject {
     this.gravityWellSize = 500;
     this.gravityConstant = 1000 * 0.5;
     this.radius = 15
+    this.points = 100
 
     // this.id = options.id
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
@@ -1781,9 +1789,11 @@ class Weaver extends GameObject {
     this.rotation_speed = 0.075;
     this.transform.pos[0] = pos[0]
     this.transform.pos[1] = pos[0]
-    this.speed = 2;
-    this.shipTransform = shipTransform
+    this.speed = 5;
+    this.points = 80;
+    this.radius = 5;
     this.weaverCloseHitBox = 35;
+    this.shipTransform = shipTransform
     this.directionInfluenced = false;
     this.influencers = [];
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_green.wav", 0.5);
@@ -1791,6 +1801,7 @@ class Weaver extends GameObject {
     this.addLineSprite(new WeaverSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
     this.exists = false;
+    
   }
 
   exist() {
@@ -2041,8 +2052,8 @@ class GridPoint extends GameObject {
         this.origionalPosition[1] = pos[1]
         this.transform.pos = pos
         this.radius = 2
-        this.elasticity = -0.01; // force provided to pull particle back into place
-        this.dampening = -0.05; // force produced from velocity (allows things to eventuall fall to rest)
+        this.elasticity = -0.0035; // force provided to pull particle back into place
+        this.dampening = -0.04; // force produced from velocity (allows things to eventuall fall to rest)
 
         this.addPhysicsComponent()
         this.addCollider("General", this, this.radius)
@@ -2082,7 +2093,7 @@ class GridSprite extends LineSprite {
     draw(ctx) {
         ctx.save();
         ctx.strokeStyle = this.color.evaluateColor();
-        ctx.lineWidth = 1
+        ctx.lineWidth = 3
         this.drawRows(ctx)
         this.drawColumns(ctx)
         ctx.restore();
@@ -2970,6 +2981,7 @@ class GameScript {
     this.DIM_Y = 600;
     this.BG_COLOR = "#000000";
     this.gameTime = 0;
+    this.score = 0;
     this.engine = engine
     this.arrowAdded = false
     this.ship = this.createShip();
@@ -2985,6 +2997,7 @@ class GameScript {
     this.sequenceCount = 0;
     this.lives = 3;
     this.soundsToPlay = {}
+    this.scoreMultiplier = 1
 
     this.spawnthing = false;
     this.explosionColorWheel = 0;
@@ -2998,6 +3011,13 @@ class GameScript {
   changeExplosionColor(){
     this.explosionColorWheel += 1 / 2
     this.explosionColorWheel = this.explosionColorWheel % 360
+  }
+
+  tallyScore(gameObject){
+    this.score += gameObject.points * this.scoreMultiplier
+    if (this.score){
+      
+    }
   }
 
   Death(){

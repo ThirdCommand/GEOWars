@@ -11,9 +11,11 @@ class Weaver extends GameObject {
     this.rotation_speed = 0.075;
     this.transform.pos[0] = pos[0]
     this.transform.pos[1] = pos[0]
-    this.speed = 2;
-    this.shipTransform = shipTransform
+    this.speed = 3;
+    this.points = 80;
+    this.radius = 5;
     this.weaverCloseHitBox = 35;
+    this.shipTransform = shipTransform
     this.directionInfluenced = false;
     this.influencers = [];
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_green.wav", 0.5);
@@ -21,6 +23,7 @@ class Weaver extends GameObject {
     this.addLineSprite(new WeaverSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
     this.exists = false;
+    
   }
 
   exist() {
@@ -62,7 +65,7 @@ class Weaver extends GameObject {
 
   update(timeDelta){
     if(this.exists){
-      let speed = 2
+      let speed = this.speed
       const rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
       const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
       this.transform.angle = (this.transform.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2)

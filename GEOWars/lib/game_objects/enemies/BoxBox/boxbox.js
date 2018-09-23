@@ -11,6 +11,7 @@ class BoxBox extends GameObject {
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
     this.transform.pos = pos
     this.radius = 10
+    this.points = 20
     // this.addPhysicsComponent()
     this.addLineSprite(new BoxBoxSprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
