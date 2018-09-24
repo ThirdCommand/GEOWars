@@ -1,6 +1,6 @@
-
 const Ship = require("./game_objects/ship/ship");
 const Walls = require("./game_objects/Walls/walls")
+const Overlay = require("./game_objects/Overlay/overlay")
 const Grid = require("./game_objects/particles/Grid/grid")
 const BoxBox = require("./game_objects/enemies/BoxBox/boxbox");
 const Pinwheel = require("./game_objects/enemies/Pinwheel/pinwheel");
@@ -8,7 +8,8 @@ const Arrow = require("./game_objects/enemies/Arrow/arrow");
 const Grunt = require("./game_objects/enemies/Grunt/grunt");
 const Weaver = require("./game_objects/enemies/Weaver/weaver");
 const Singularity = require("./game_objects/enemies/Singularity/singularity");
-
+const ParticleExplosion = require("./game_objects/particles/particle_explosion")
+const ShipExplosion = require("./game_objects/particles/ship_explosion")
 
 const Util = require("./game_engine/util");
 const Sound = require("./game_engine/sound")
@@ -26,7 +27,13 @@ class GameScript {
     this.ship = this.createShip();
     this.walls = this.createWalls();
     this.grid = this.createGrid();
+    this.overlay = this.createOverlay();
     this.enemyCreatorList = this.createEnemyCreatorList()
+    this.aliveEnemies = [];
+
+    this.deathPausedTime = 0;
+    this.deathPaused = true;
+    this.deathPauseTime = 2500;
     // this.deathSound = new Audio("GEOWars/sounds/Enemy_explode.wav")
     // this.deathSound.volume = 0.5;
     
@@ -43,6 +50,9 @@ class GameScript {
   }
 
   update(deltaTime){
+    if (this.lives === 0) {
+      this.gameOver()
+    }
     this.spawnSequence(deltaTime)
     this.changeExplosionColor()
   }
@@ -55,11 +65,42 @@ class GameScript {
   tallyScore(gameObject){
     this.score += gameObject.points * this.scoreMultiplier
     if (this.score){
-      
+
     }
   }
 
-  Death(){
+  death() { 
+    this.lives -= 1
+    this.explodeEverything()
+    this.deathPaused = true
+  }
+
+  gameOver() {
+    // end the game here
+  }
+
+  explodeEverything(){
+    let removeList = []
+    let typesToRemove = ["Grunt", "Pinwheel", "BoxBox", "Arrow", "Singularity", "Weaver"]
+    this.engine.gameObjects.forEach((object) => {
+      if (object.constructor.name === "Ship") {
+        let objectTransform = object.transform
+        let pos = objectTransform.absolutePosition()
+        let explosion = new ShipExplosion(this.engine, pos, [0,0])
+      } else if (object.constructor.name === "Bullet") {
+        removeList.push(object)
+      }
+      else if (typesToRemove.includes(object.constructor.name)) {
+        let objectTransform = object.transform
+        let pos = objectTransform.absolutePosition()
+        let vel = objectTransform.absoluteVelocity()
+        let explosion = new ParticleExplosion(this.engine, pos, vel)
+        removeList.push(object)
+      }
+    })
+    removeList.forEach((removeThis) => {
+      removeThis.remove()
+    })
 
   }
 
@@ -91,7 +132,7 @@ class GameScript {
   randomSpawnEnemy(enemy) {
     let pos = this.randomPosition();
     let enemyCreators = Object.values(this.enemyCreatorList)
-    enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos);
+    this.aliveEnemies.push(enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos));
     // this.enemyCreatorList["BoxBox"](pos)
   }
 
@@ -113,8 +154,16 @@ class GameScript {
   }
 
   spawnSequence(delta) {
-    this.intervalTime += delta;
-    
+
+    if (this.deathPaused) {
+      this.deathPausedTime += delta
+      if (this.deathPausedTime > this.deathPauseTime){
+        this.deathPausedTime = 0
+        this.deathPaused = false
+      }
+    } else {
+      this.intervalTime += delta;
+    }
     // if (this.intervalTime > 2000) {
     //   this.randomSpawnEnemy();
     //   this.intervalTime = 0
@@ -207,7 +256,7 @@ class GameScript {
   }
 
   createShip() {
-    return new Ship(this.engine, [500, 500])
+    return new Ship(this.engine, [500, 500], this)
   }
 
   createWalls(){
@@ -216,6 +265,10 @@ class GameScript {
   
   createGrid(){
     return new Grid(this.engine, this)
+  }
+
+  createOverlay(){
+    return new Overlay(this.engine, this, this.ship.transform)
   }
 
   isOutOfBounds(pos, radius) {

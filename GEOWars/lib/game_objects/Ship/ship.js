@@ -7,7 +7,7 @@ const Bullet = require("../Bullet/bullet");
 const ShipSprite = require("./ship_sprite")
 
 class Ship extends GameObject {
-  constructor(engine, pos) { 
+  constructor(engine, pos, gameScript) { 
     super(engine);
     this.transform.pos = pos
     this.addPhysicsComponent()
@@ -26,20 +26,63 @@ class Ship extends GameObject {
     this.controlsDirection = [0,0];
     this.powerLevel = 1;
     this.bulletNumber = 0;
+    this.controlsPointing = true;
     this.speed
     this.shipEngineAcceleration = 0.125;
 
     this.keysPressed = []
     this.zooming = true
+
+    this.spawning = true
+    this.spawningTime = 0;
+    this.flashingTime = 0;
+    this.flashTime = 1000 / 8
+    this.flashing = true;
+    this.flashIntervalTime = 0;
+    this.flashInterval = 250 - 1000 / 8
+    this.spawnTime = 2500
+    this.lineSprite.flashHide = true;
+    // 1/8 of a second flash every half second
   }
   
   update(deltaTime){
     this.bulletTimeCheck += deltaTime
-    if (this.bulletTimeCheck >= this.bulletInterval ) {
-      this.bulletNumber += 1
+    
+    if (this.bulletTimeCheck >= this.bulletInterval && !this.spawning && this.controlsPointing) {
+      this.bulletNumber += 1;
       this.bulletTimeCheck = 0;
       this.fireBullet();
     } 
+
+    if (this.spawning){
+
+      this.spawningTime += deltaTime
+      if (this.flashing) {
+        this.flashingTime += deltaTime
+        if (this.flashingTime > this.flashTime) {
+          this.flashingTime = 0
+          this.flashing = false
+          this.lineSprite.flashHide = false
+        } 
+      } else {
+        this.flashIntervalTime += deltaTime
+        if (this.flashIntervalTime > this.flashInterval) {
+          this.flashIntervalTime = 0
+          this.flashing = true
+          this.lineSprite.flashHide = true;
+        } 
+      }
+
+      if (this.spawningTime > this.spawnTime) {
+        this.spawning = false
+        this.flashing = false
+        this.lineSprite.flashHide = false
+        this.spawningTime = 0;
+        this.flashIntervalTime = 0;
+        this.flashingTime = 0;
+      }
+      
+    }
 
     // this.moveInControllerDirection(deltaTime)
 
@@ -67,6 +110,8 @@ class Ship extends GameObject {
       -shipYPos * zoomScale + height / 2
     )
   }
+  
+  
 
   updateZoomScale(deltaTime){
     // take 5 seconds to scale from 1 to 2
@@ -158,13 +203,15 @@ class Ship extends GameObject {
 
   onCollision(collider, type) {
     if (type === "ShipDeath") {
-      // let hitObjectTransform = collider.gameObject.transform
-      // let pos = hitObjectTransform.absolutePosition()
-      // let vel = hitObjectTransform.absoluteVelocity()
-      // let explosion = new ParticleExplosion(this.gameEngine, pos, vel)
-      // collider.gameObject.remove()
-      console.log("DEAD")
+  
+      this.gameEngine.gameScript.death()
+      this.deathflash()
     }
+  }
+
+  deathflash() {
+    this.spawning = true;
+    this.flashing = true;
   }
 
   setFireAngle(mousePos) {

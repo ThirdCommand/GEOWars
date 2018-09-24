@@ -4,43 +4,49 @@ class ShipSprite extends LineSprite {
   constructor(transform, spawningScale = 1) {
     super(transform)
     this.spawningScale = spawningScale
+    this.flashHide = false
   }
 
   draw(ctx) {
-    let pos = this.transform.absolutePosition()
-    let shipWidth = 10
-    let vel = this.transform.absoluteVelocity()
-    // let movementDirection = Math.atan2(vel[0], -vel[1])
-    ctx.save();
-    ctx.beginPath();
-    ctx.translate(pos[0], pos[1]);
-    ctx.rotate(this.transform.angle + Math.PI / 4);
-    ctx.translate(-shipWidth / 2, shipWidth / 2);
+    if (this.flashHide) {
+      
+    } else {
+      let pos = this.transform.absolutePosition()
+      let shipWidth = 10
+      let vel = this.transform.absoluteVelocity()
+      // let movementDirection = Math.atan2(vel[0], -vel[1])
+      ctx.save();
+      ctx.beginPath();
+      ctx.translate(pos[0], pos[1]);
+      ctx.rotate(this.transform.angle + Math.PI / 4);
+      ctx.translate(-shipWidth / 2, shipWidth / 2);
 
-    ctx.strokeStyle = "#ffffff";
-    let r = 255;
-    let g = 255;
-    let b = 255;
+      ctx.strokeStyle = "#ffffff";
+      let r = 255;
+      let g = 255;
+      let b = 255;
 
-    let blurFactor = 0.5
-    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
-    ctx.shadowBlur = 10 * blurFactor * blurFactor
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
-    ctx.lineWidth = 7.5 * blurFactor * blurFactor
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
-    this.drawShip(ctx, shipWidth)
-    ctx.lineWidth = 6 * blurFactor
-    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
-    this.drawShip(ctx, shipWidth)
-    ctx.lineWidth = 4.5;
-    this.drawShip(ctx, shipWidth)
-    ctx.lineWidth = 3;
-    this.drawShip(ctx, shipWidth)
-    ctx.strokeStyle = 'rgb(255, 255, 255)';
-    ctx.lineWidth = 1.5;
-    this.drawShip(ctx, shipWidth)
+      let blurFactor = 0.5
+      ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+      ctx.shadowBlur = 10 * blurFactor * blurFactor
+      ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
+      ctx.lineWidth = 7.5 * blurFactor * blurFactor
+      ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
+      this.drawShip(ctx, shipWidth)
+      ctx.lineWidth = 6 * blurFactor
+      ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.1)";
+      this.drawShip(ctx, shipWidth)
+      ctx.lineWidth = 4.5;
+      this.drawShip(ctx, shipWidth)
+      ctx.lineWidth = 3;
+      this.drawShip(ctx, shipWidth)
+      ctx.strokeStyle = 'rgb(255, 255, 255)';
+      ctx.lineWidth = 1.5;
+      this.drawShip(ctx, shipWidth)
 
-    ctx.restore();
+      ctx.restore();
+    }
+    
   }
 
   drawShip(ctx, shipWidth) {
