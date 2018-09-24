@@ -10,9 +10,9 @@ class ShipExplosion extends GameObject {
         let startingH = (this.gameEngine.gameScript.explosionColorWheel + Math.random() * 60) % 360
         let opacity = Math.random() * 0.35 + 0.6
         this.currentColor = new Color({
-            "hsla": [0, 0, 100, opacity]
+            "hsla": [startingH, 100, 50, opacity]
         });
-        this.particleNum = 80;
+        this.particleNum = 400;
         let explosionSound = new Sound("GEOWars/sounds/Enemy_explode.wav", 0.2)
         this.playSound(explosionSound)
         this.createExplosionParticles()
@@ -20,7 +20,7 @@ class ShipExplosion extends GameObject {
 
     createExplosionParticles() {
         for (var i = 0; i < this.particleNum; i++) {
-            const speed = Math.random() * 6 + 4
+            const speed = Math.random() * 10 + 4
 
             const colorVarienceDelta = 30
             let colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2

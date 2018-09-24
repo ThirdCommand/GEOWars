@@ -73,6 +73,7 @@ class GameScript {
     this.lives -= 1
     this.explodeEverything()
     this.deathPaused = true
+    this.grid.Playerdies(this.ship.transform.absolutePosition())
   }
 
   gameOver() {

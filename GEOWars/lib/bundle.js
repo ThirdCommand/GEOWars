@@ -2071,6 +2071,35 @@ class Grid extends GameObject {
         // this.addCollider("General", this, this.radius)
     }
 
+    Playerdies(location) {
+        this.gridPoints.forEach((row) => {
+            row.forEach((gridPoint) => {
+                this.deathPerterb(gridPoint, location)
+            })
+        })
+    }
+
+    deathPerterb(gridPoint, location){
+        // pulls inward upon death. 1/r^2
+        const pullConstant = 1250;
+
+        let pos = location
+        let objectPos = gridPoint.transform.absolutePosition()
+        let dy = pos[1] - objectPos[1];
+        let dx = pos[0] - objectPos[0];
+        let unitVector = Util.dir([dx, dy]);
+        let r = Math.sqrt(dy * dy + dx * dx);
+        if ( r < 20 ) {
+        } else {
+            let velContribution = [
+                unitVector[0] * pullConstant / (r ),
+                unitVector[1] * pullConstant / (r )
+            ]
+            gridPoint.transform.vel[0] = velContribution[0];
+            gridPoint.transform.vel[1] = velContribution[1];
+        }
+    }
+
     createGridPoints(){
         let columnCount = 20
         let rowCount = 12
@@ -2628,9 +2657,9 @@ class ShipExplosion extends GameObject {
         let startingH = (this.gameEngine.gameScript.explosionColorWheel + Math.random() * 60) % 360
         let opacity = Math.random() * 0.35 + 0.6
         this.currentColor = new Color({
-            "hsla": [0, 0, 100, opacity]
+            "hsla": [startingH, 100, 50, opacity]
         });
-        this.particleNum = 80;
+        this.particleNum = 400;
         let explosionSound = new Sound("GEOWars/sounds/Enemy_explode.wav", 0.2)
         this.playSound(explosionSound)
         this.createExplosionParticles()
@@ -2638,7 +2667,7 @@ class ShipExplosion extends GameObject {
 
     createExplosionParticles() {
         for (var i = 0; i < this.particleNum; i++) {
-            const speed = Math.random() * 6 + 4
+            const speed = Math.random() * 10 + 4
 
             const colorVarienceDelta = 30
             let colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2
@@ -3215,6 +3244,7 @@ class GameScript {
     this.lives -= 1
     this.explodeEverything()
     this.deathPaused = true
+    this.grid.Playerdies(this.ship.transform.absolutePosition())
   }
 
   gameOver() {
