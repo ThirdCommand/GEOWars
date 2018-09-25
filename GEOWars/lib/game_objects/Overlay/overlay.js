@@ -7,7 +7,7 @@ class Overlay extends GameObject {
         this.gameScript = gameScript
         this.shipTransform = shipTransform
         this.transform.pos = [0, 0]
-        this.addLineSprite(new OverlaySprite(this.shipTransform, this.gameScript.DIM_X, this.gameScript.DIM_Y))
+        this.addLineSprite(new OverlaySprite(this.shipTransform, this.gameScript.DIM_X, this.gameScript.DIM_Y, this.gameEngine))
     }
 
     update(deltaTime) {

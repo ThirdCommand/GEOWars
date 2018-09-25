@@ -113,21 +113,25 @@ class Ship extends GameObject {
     )
   }
   
-  
+  findSmallestDistanceToAWall(){
+    let pos = this.transform.pos
+    let leftDistance = pos[0] - 0
+    let rightDistance = this.gameEngine.gameScript.DIM_X - pos[0]
+    let upDistance = pos[1] - 0
+    let downDistance = this.gameEngine.gameScript.DIM_Y - pos[1]
+    let distances = [leftDistance, rightDistance, upDistance, downDistance]
+    return Math.min.apply(null, distances) 
+  }
 
   updateZoomScale(){
-    // take 5 seconds to scale from 1 to 2
-    // if(this.zooming && this.gameEngine.zoomScale > 2){
-    //   this.zooming = false
-    // } else if(!this.zooming && this.gameEngine.zoomScale < 0.5) {
-    //   this.zooming = true
-    // } 
-
-    // if (this.zooming){
-    //   this.gameEngine.zoomScale += deltaTime / 5000
-    // } else {
-    //   this.gameEngine.zoomScale -= deltaTime / (2 * 5000)
-    // }
+    let distanceToZoomChange = 100
+    let smallestZoomScale = 0.75 // of the origional zoomscale
+    let smallest = this.findSmallestDistanceToAWall()
+    if (smallest < distanceToZoomChange) {
+      this.gameEngine.zoomScale = this.gameEngine.defaultZoomScale * (smallest / distanceToZoomChange * (1 - smallestZoomScale) + smallestZoomScale)
+    } else {
+      this.gameEngine.zoomScale = this.gameEngine.defaultZoomScale
+    }
   }
 
   // 

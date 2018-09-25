@@ -270,6 +270,7 @@ class GameEngine {
     this.toRemoveQueue = []
     this.paused = false;
     this.currentCamera = null;
+    this.defaultZoomScale = 1.30;
     this.zoomScale = 1.30;
     this.setupController()
     window.engine = this
@@ -1020,7 +1021,7 @@ class Overlay extends GameObject {
         this.gameScript = gameScript
         this.shipTransform = shipTransform
         this.transform.pos = [0, 0]
-        this.addLineSprite(new OverlaySprite(this.shipTransform, this.gameScript.DIM_X, this.gameScript.DIM_Y))
+        this.addLineSprite(new OverlaySprite(this.shipTransform, this.gameScript.DIM_X, this.gameScript.DIM_Y, this.gameEngine))
     }
 
     update(deltaTime) {
@@ -1043,8 +1044,9 @@ module.exports = Overlay
 const LineSprite = __webpack_require__(/*! ../../game_engine/line_sprite */ "./lib/game_engine/line_sprite.js")
 const Color = __webpack_require__(/*! ../../game_engine/color */ "./lib/game_engine/color.js")
 class OverlaySprite extends LineSprite {
-    constructor(transform, DIM_X, DIM_Y) {
+    constructor(transform, DIM_X, DIM_Y, gameEngine) {
         super(transform)
+        this.gameEngine = gameEngine
         this.transform = transform
         this.width = DIM_X
         this.height = DIM_Y
@@ -1062,12 +1064,12 @@ class OverlaySprite extends LineSprite {
 
     draw(ctx) {
         ctx.save()
-        // debugger
-        ctx.translate(-350, -170)
-        ctx.font = this.fontSize + "px " + this.fontStyle;
+        ctx.scale(1 / this.gameEngine.zoomScale, 1 / this.gameEngine.zoomScale)
+        let zoomFactor = this.gameEngine.zoomScale / this.gameEngine.defaultZoomScale
+        ctx.font = this.fontSize * 1.3 + "px " + this.fontStyle;
         ctx.fillStyle = this.color.evaluateColor();
 
-        ctx.fillText("Score: " + this.score + "      " + "Lives: " + this.lives, this.transform.pos[0], this.transform.pos[1]);
+        ctx.fillText("Score: " + this.score + "      " + "Lives: " + this.lives, (this.transform.pos[0] - 350 / zoomFactor) * this.gameEngine.zoomScale, (this.transform.pos[1] - 150 / zoomFactor )* this.gameEngine.zoomScale);
         ctx.restore()
     }
 }
@@ -2962,21 +2964,25 @@ class Ship extends GameObject {
     )
   }
   
-  
+  findSmallestDistanceToAWall(){
+    let pos = this.transform.pos
+    let leftDistance = pos[0] - 0
+    let rightDistance = this.gameEngine.gameScript.DIM_X - pos[0]
+    let upDistance = pos[1] - 0
+    let downDistance = this.gameEngine.gameScript.DIM_Y - pos[1]
+    let distances = [leftDistance, rightDistance, upDistance, downDistance]
+    return Math.min.apply(null, distances) 
+  }
 
   updateZoomScale(){
-    // take 5 seconds to scale from 1 to 2
-    // if(this.zooming && this.gameEngine.zoomScale > 2){
-    //   this.zooming = false
-    // } else if(!this.zooming && this.gameEngine.zoomScale < 0.5) {
-    //   this.zooming = true
-    // } 
-
-    // if (this.zooming){
-    //   this.gameEngine.zoomScale += deltaTime / 5000
-    // } else {
-    //   this.gameEngine.zoomScale -= deltaTime / (2 * 5000)
-    // }
+    let distanceToZoomChange = 100
+    let smallestZoomScale = 0.75 // of the origional zoomscale
+    let smallest = this.findSmallestDistanceToAWall()
+    if (smallest < distanceToZoomChange) {
+      this.gameEngine.zoomScale = this.gameEngine.defaultZoomScale * (smallest / distanceToZoomChange * (1 - smallestZoomScale) + smallestZoomScale)
+    } else {
+      this.gameEngine.zoomScale = this.gameEngine.defaultZoomScale
+    }
   }
 
   // 
@@ -3028,7 +3034,6 @@ class Ship extends GameObject {
   }
 
   updateRightControlStickInput(vector) {
-    console.log(vector)
     if (Math.abs(vector[0]) + Math.abs(vector[1]) > 0.10) {
       this.dontShoot = false
       this.fireAngle = Math.atan2(vector[1], vector[0])
@@ -3265,7 +3270,7 @@ class GameScript {
     this.score = 0;
     this.engine = engine
     this.arrowAdded = false
-    this.startPosition = [500,500]
+    this.startPosition = [500,300]
     this.ship = this.createShip();
     this.walls = this.createWalls();
     this.grid = this.createGrid();

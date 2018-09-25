@@ -24,7 +24,7 @@ class GameScript {
     this.score = 0;
     this.engine = engine
     this.arrowAdded = false
-    this.startPosition = [500,500]
+    this.startPosition = [500,300]
     this.ship = this.createShip();
     this.walls = this.createWalls();
     this.grid = this.createGrid();

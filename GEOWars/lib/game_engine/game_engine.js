@@ -23,6 +23,7 @@ class GameEngine {
     this.toRemoveQueue = []
     this.paused = false;
     this.currentCamera = null;
+    this.defaultZoomScale = 1.30;
     this.zoomScale = 1.30;
     this.setupController()
     window.engine = this
