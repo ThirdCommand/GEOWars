@@ -107,6 +107,10 @@ class GameView {
    
   }
 
+  end(){
+    var endModal = document.getElementById('endModal')
+  }
+
   start() {
     this.lastTime = 0;
     this.bindKeyHandlers();

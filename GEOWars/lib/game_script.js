@@ -24,6 +24,7 @@ class GameScript {
     this.score = 0;
     this.engine = engine
     this.arrowAdded = false
+    this.startPosition = [500,500]
     this.ship = this.createShip();
     this.walls = this.createWalls();
     this.grid = this.createGrid();
@@ -65,15 +66,39 @@ class GameScript {
   tallyScore(gameObject){
     this.score += gameObject.points * this.scoreMultiplier
     if (this.score){
-
     }
+  }
+
+  resetGame(){
+    this.desplayEndScore = this.score
+    this.score = 0
+    this.lives = 3
+    this.ship.transform.pos = this.startPosition
+    this.sequenceCount = 0
+
+    this.intervalTiming = 1;
+    this.intervalTime = 0;
+    this.hugeSequenceTime = 0;
+    this.lives = 3;
+    this.scoreMultiplier = 1
+    this.spawnthing = false;
+    this.engine.paused = true;
+    var modal = document.getElementById('endModal');
+    modal.style.display = "block";
+    var scoreDisplay = document.getElementById('score');
+    scoreDisplay.innerHTML = `score: ${this.desplayEndScore}`;
   }
 
   death() { 
     this.lives -= 1
+
     this.explodeEverything()
     this.deathPaused = true
     this.grid.Playerdies(this.ship.transform.absolutePosition())
+    if(this.lives === 0){
+      this.resetGame()
+    }
+
   }
 
   gameOver() {
@@ -257,7 +282,7 @@ class GameScript {
   }
 
   createShip() {
-    return new Ship(this.engine, [500, 500], this)
+    return new Ship(this.engine, this.startPosition, this)
   }
 
   createWalls(){
