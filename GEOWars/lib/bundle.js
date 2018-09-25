@@ -854,6 +854,8 @@ class Bullet extends GameObject {
     this.addPhysicsComponent()
     this.addLineSprite(new BulletSprite(this.transform))
     this.exploded = false;
+    this.lifeTime = 6000;
+    this.aliveTime = 0;
   }
 
   addExplosionCollider(){
@@ -863,7 +865,10 @@ class Bullet extends GameObject {
   }
 
   update(deltaTime){
-    
+    this.aliveTime += deltaTime 
+    if(this.aliveTime > this.lifeTime){
+      this.remove();
+    }
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition()) && !this.exploded) {
       this.exploded = true
       new BulletWallExplosion(this.gameEngine, this.transform.pos)
