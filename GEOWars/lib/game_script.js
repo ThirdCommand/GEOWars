@@ -77,7 +77,7 @@ class GameScript {
     this.ship.transform.pos = this.startPosition
     this.sequenceCount = 0
     this.deathPauseTime = 2500;
-
+    
     this.intervalTiming = 1;
     this.intervalTime = 0;
     this.hugeSequenceTime = 0;
@@ -102,6 +102,9 @@ class GameScript {
       e.stopPropagation()
       modal.style.display = "none";
       this.engine.paused = false;
+      if (!this.engine.muted) {
+        this.engine.gameScript.theme.play()
+      }
     }
 
     // When the user clicks anywhere outside of the modal, close it
@@ -109,7 +112,11 @@ class GameScript {
     window.onclick = (event) => {
       if (event.target == modal) {
         this.engine.paused = false;
+        if (!this.engine.muted) {
+          this.engine.gameScript.theme.play()
+        }
         modal.style.display = "none";
+        
       }
     }
 
@@ -124,6 +131,13 @@ class GameScript {
     
     this.grid.Playerdies(this.ship.transform.absolutePosition())
     if(this.lives === 0){
+      try {
+        this.theme.pause()
+
+      } catch(err) {
+
+      }
+
       window.setTimeout(this.resetGame.bind(this), 2000)
     }
 
