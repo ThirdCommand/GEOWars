@@ -265,11 +265,29 @@ class GameEngine {
     this.muted = true;
     this.mouseListeners = [];
     this.leftControlStickListeners = [];
+    this.rightControlStickListeners = [];
     this.gameScript = new GameScript(this);
     this.toRemoveQueue = []
     this.paused = false;
     this.currentCamera = null;
     this.zoomScale = 1.30;
+    this.setupController()
+    window.engine = this
+  }
+
+  setupController(){
+     window.addEventListener("gamepadconnected", function (e) {
+       window.controller = e.gamepad
+       window.engine.controller = e.gamepad
+       // Gamepad connected
+       console.log("Gamepad connected", e.gamepad);
+     });
+
+     window.addEventListener("gamepaddisconnected", function (e) {
+       // Gamepad disconnected
+       window.engine.controller = null
+       console.log("Gamepad disconnected", e.gamepad);
+     });
   }
 
   tick(delta) {
@@ -285,6 +303,7 @@ class GameEngine {
     this.updateGameObjects(delta)
     this.clearCanvas()
     this.renderLineSprites(this.ctx)
+    this.updateControlListeners()
     this.updateGameScript(delta)
     this.playSounds()
   }
@@ -314,9 +333,19 @@ class GameEngine {
     this.leftControlStickListeners.push(object)
   }
 
+  addRightControlStickListener(object){
+    this.rightControlStickListeners.push(object)
+  }
+
   updateLeftControlStickListeners(unitVector){
-    this.leftControllStickListeners.forEach((listener) => {
+    this.leftControlStickListeners.forEach((listener) => {
       listener.updateLeftControlStickInput(unitVector)
+    })
+  }
+
+  updateRightControlStickListeners(unitVector){
+    this.rightControlStickListeners.forEach((listener) => {
+      listener.updateRightControlStickInput(unitVector)
     })
   }
 
@@ -324,6 +353,16 @@ class GameEngine {
     this.mouseListeners.forEach((object) => {
       object.updateMousePos(mousePos)
     })
+  }
+
+  updateControlListeners(){
+    navigator.getGamepads()
+    if(this.controller) {
+      let leftAxis = [window.controller.axes[0], window.controller.axes[1]]
+      let rightAxis = [window.controller.axes[2], window.controller.axes[3]]
+      this.updateLeftControlStickListeners(leftAxis)
+      this.updateRightControlStickListeners(rightAxis)
+    }
   }
 
   movePhysicsComponents(delta) {
@@ -533,6 +572,14 @@ class GameObject {
 
   addLeftControlStickListener() {
     this.gameEngine.addLeftControlStickListener(this)
+  }
+
+  addRightControlStickListener() {
+    this.gameEngine.addRightControlStickListener(this)
+  }
+
+  updateRightControlStickInput(direction){
+
   }
 
   updateLeftControlStickInput(direction){
@@ -2815,6 +2862,7 @@ class Ship extends GameObject {
     this.addPhysicsComponent()
     this.addMousePosListener()
     this.addLeftControlStickListener()
+    this.addRightControlStickListener()
     this.radius = 10
     this.addCollider("General", this, this.radius)
     this.addCollider("ShipDeath", this, this.radius, ["BoxBox", "Singularity", "Weaver", "Grunt", "Arrow", "Pinwheel"], ["General"])
@@ -2831,6 +2879,7 @@ class Ship extends GameObject {
     this.controlsPointing = true;
     this.speed
     this.shipEngineAcceleration = 0.125;
+    this.dontShoot = false
 
     this.keysPressed = []
     this.zooming = true
@@ -2849,8 +2898,8 @@ class Ship extends GameObject {
   
   update(deltaTime){
     this.bulletTimeCheck += deltaTime
-    
-    if (this.bulletTimeCheck >= this.bulletInterval && !this.spawning && this.controlsPointing) {
+
+    if (this.bulletTimeCheck >= this.bulletInterval && !this.spawning && this.controlsPointing && !this.dontShoot) {
       this.bulletNumber += 1;
       this.bulletTimeCheck = 0;
       this.fireBullet();
@@ -2897,7 +2946,7 @@ class Ship extends GameObject {
     }
     // if ship is out of x bounds, maintain y speed, keep x at edge value
 
-    this.updateZoomScale(deltaTime)
+    this.updateZoomScale()
 
     this.gameEngine.ctx.restore()
     this.gameEngine.ctx.save()
@@ -2915,7 +2964,7 @@ class Ship extends GameObject {
   
   
 
-  updateZoomScale(deltaTime){
+  updateZoomScale(){
     // take 5 seconds to scale from 1 to 2
     // if(this.zooming && this.gameEngine.zoomScale > 2){
     //   this.zooming = false
@@ -2932,6 +2981,7 @@ class Ship extends GameObject {
 
   // 
   calcControlsDirection(){
+    
     this.controlsDirection = [0,0]
     this.keysPressed.forEach((key) => {
       this.controlsDirection[0] += Ship.MOVES[key][0]
@@ -2946,7 +2996,9 @@ class Ship extends GameObject {
     //    dV~ =  mV - Vo
     // if dv~ > 0.2 (or something)
     //    a = ma~ 
-    let controlsDirection = this.calcControlsDirection()
+    if (this.keysPressed.length > 0) {
+      this.calcControlsDirection()
+    }
     let movementAngle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
     let Vo = this.transform.absoluteVelocity()
     this.transform.angle = movementAngle
@@ -2975,28 +3027,42 @@ class Ship extends GameObject {
 
   }
 
-  updateRightControlStickInput(){
-
+  updateRightControlStickInput(vector) {
+    console.log(vector)
+    if (Math.abs(vector[0]) + Math.abs(vector[1]) > 0.10) {
+      this.dontShoot = false
+      this.fireAngle = Math.atan2(vector[1], vector[0])
+    } else {
+      this.dontShoot = true
+    }
   }
 
   updateLeftControlStickInput(key, down = true) {
-    
-    // accelerates to V = [0,0] when not pressed
-    if (down) {
-      if(!this.keysPressed.includes(key)){
-        this.keysPressed.push(key)
+    if(typeof key === "string"){
+      // accelerates to V = [0,0] when not pressed
+      if (down) {
+        if (!this.keysPressed.includes(key)) {
+          this.keysPressed.push(key)
+        }
+
+        // this.controlsDirection[0] += unitVector[0]
+        // this.controlsDirection[1] += unitVector[1]
+      } else {
+        if (this.keysPressed.includes(key)) {
+          this.keysPressed.splice(this.keysPressed.indexOf(key), 1)
+        }
+
+        // this.controlsDirection[0] -= unitVector[0]
+        // this.controlsDirection[1] -= initVector[1]
       }
-      
-      // this.controlsDirection[0] += unitVector[0]
-      // this.controlsDirection[1] += unitVector[1]
-    } else { 
-       if (this.keysPressed.includes(key)) {
-         this.keysPressed.splice(this.keysPressed.indexOf(key), 1)
-       }
-      
-      // this.controlsDirection[0] -= unitVector[0]
-      // this.controlsDirection[1] -= initVector[1]
+    } else {
+      if (Math.abs(key[0]) + Math.abs(key[1]) > 0.10) {
+        this.controlsDirection = key
+      } else {
+        this.controlsDirection = [0,0]
+      }
     }
+    
   } 
 
   wallGraze() {
@@ -3245,11 +3311,13 @@ class GameScript {
   }
 
   resetGame(){
+    this.deathPaused = true
     this.desplayEndScore = this.score
     this.score = 0
     this.lives = 3
     this.ship.transform.pos = this.startPosition
     this.sequenceCount = 0
+    this.deathPauseTime = 2500;
 
     this.intervalTiming = 1;
     this.intervalTime = 0;
@@ -3262,16 +3330,42 @@ class GameScript {
     modal.style.display = "block";
     var scoreDisplay = document.getElementById('score');
     scoreDisplay.innerHTML = `score: ${this.desplayEndScore}`;
+
+
+    // Get the button that opens the modal
+    // var btn = document.getElementById("myBtn");
+
+    // Get the <span> element that closes the modal
+    var xclose = document.getElementsByClassName("endClose")[0];
+
+    // When the user clicks on <span> (x), close the modal
+    xclose.onclick = (e) => {
+      e.stopPropagation()
+      modal.style.display = "none";
+      this.engine.paused = false;
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    //  window.addEventListener('click', (e) => {
+    window.onclick = (event) => {
+      if (event.target == modal) {
+        this.engine.paused = false;
+        modal.style.display = "none";
+      }
+    }
+
+
   }
 
   death() { 
     this.lives -= 1
-
-    this.explodeEverything()
     this.deathPaused = true
+    this.explodeEverything()
+    this.deathPauseTime = 4000;
+    
     this.grid.Playerdies(this.ship.transform.absolutePosition())
     if(this.lives === 0){
-      this.resetGame()
+      window.setTimeout(this.resetGame.bind(this), 2000)
     }
 
   }
@@ -3689,6 +3783,10 @@ class GameView {
       // window.ontouchmove = preventDefault; // mobile
       // document.onkeydown = preventDefaultForScrollKeys;
     }
+
+   
+
+    
 
 
     if (window.addEventListener) // older FF

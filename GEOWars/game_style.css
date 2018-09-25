@@ -117,9 +117,22 @@
   font-size: 40px;
   font-weight: bold;
 }
+.endClose {
+  color: #aaaaaa;
+  float: right;
+  font-size: 40px;
+  font-weight: bold;
+}
 
 .close:hover,
 .close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.endClose:hover,
+.endClose:focus {
   color: #000;
   text-decoration: none;
   cursor: pointer;

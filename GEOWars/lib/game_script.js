@@ -70,11 +70,13 @@ class GameScript {
   }
 
   resetGame(){
+    this.deathPaused = true
     this.desplayEndScore = this.score
     this.score = 0
     this.lives = 3
     this.ship.transform.pos = this.startPosition
     this.sequenceCount = 0
+    this.deathPauseTime = 2500;
 
     this.intervalTiming = 1;
     this.intervalTime = 0;
@@ -87,16 +89,42 @@ class GameScript {
     modal.style.display = "block";
     var scoreDisplay = document.getElementById('score');
     scoreDisplay.innerHTML = `score: ${this.desplayEndScore}`;
+
+
+    // Get the button that opens the modal
+    // var btn = document.getElementById("myBtn");
+
+    // Get the <span> element that closes the modal
+    var xclose = document.getElementsByClassName("endClose")[0];
+
+    // When the user clicks on <span> (x), close the modal
+    xclose.onclick = (e) => {
+      e.stopPropagation()
+      modal.style.display = "none";
+      this.engine.paused = false;
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    //  window.addEventListener('click', (e) => {
+    window.onclick = (event) => {
+      if (event.target == modal) {
+        this.engine.paused = false;
+        modal.style.display = "none";
+      }
+    }
+
+
   }
 
   death() { 
     this.lives -= 1
-
-    this.explodeEverything()
     this.deathPaused = true
+    this.explodeEverything()
+    this.deathPauseTime = 4000;
+    
     this.grid.Playerdies(this.ship.transform.absolutePosition())
     if(this.lives === 0){
-      this.resetGame()
+      window.setTimeout(this.resetGame.bind(this), 2000)
     }
 
   }

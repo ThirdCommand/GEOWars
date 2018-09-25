@@ -18,11 +18,29 @@ class GameEngine {
     this.muted = true;
     this.mouseListeners = [];
     this.leftControlStickListeners = [];
+    this.rightControlStickListeners = [];
     this.gameScript = new GameScript(this);
     this.toRemoveQueue = []
     this.paused = false;
     this.currentCamera = null;
     this.zoomScale = 1.30;
+    this.setupController()
+    window.engine = this
+  }
+
+  setupController(){
+     window.addEventListener("gamepadconnected", function (e) {
+       window.controller = e.gamepad
+       window.engine.controller = e.gamepad
+       // Gamepad connected
+       console.log("Gamepad connected", e.gamepad);
+     });
+
+     window.addEventListener("gamepaddisconnected", function (e) {
+       // Gamepad disconnected
+       window.engine.controller = null
+       console.log("Gamepad disconnected", e.gamepad);
+     });
   }
 
   tick(delta) {
@@ -38,6 +56,7 @@ class GameEngine {
     this.updateGameObjects(delta)
     this.clearCanvas()
     this.renderLineSprites(this.ctx)
+    this.updateControlListeners()
     this.updateGameScript(delta)
     this.playSounds()
   }
@@ -67,9 +86,19 @@ class GameEngine {
     this.leftControlStickListeners.push(object)
   }
 
+  addRightControlStickListener(object){
+    this.rightControlStickListeners.push(object)
+  }
+
   updateLeftControlStickListeners(unitVector){
-    this.leftControllStickListeners.forEach((listener) => {
+    this.leftControlStickListeners.forEach((listener) => {
       listener.updateLeftControlStickInput(unitVector)
+    })
+  }
+
+  updateRightControlStickListeners(unitVector){
+    this.rightControlStickListeners.forEach((listener) => {
+      listener.updateRightControlStickInput(unitVector)
     })
   }
 
@@ -77,6 +106,16 @@ class GameEngine {
     this.mouseListeners.forEach((object) => {
       object.updateMousePos(mousePos)
     })
+  }
+
+  updateControlListeners(){
+    navigator.getGamepads()
+    if(this.controller) {
+      let leftAxis = [window.controller.axes[0], window.controller.axes[1]]
+      let rightAxis = [window.controller.axes[2], window.controller.axes[3]]
+      this.updateLeftControlStickListeners(leftAxis)
+      this.updateRightControlStickListeners(rightAxis)
+    }
   }
 
   movePhysicsComponents(delta) {

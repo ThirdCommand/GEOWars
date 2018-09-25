@@ -37,6 +37,14 @@ class GameObject {
     this.gameEngine.addLeftControlStickListener(this)
   }
 
+  addRightControlStickListener() {
+    this.gameEngine.addRightControlStickListener(this)
+  }
+
+  updateRightControlStickInput(direction){
+
+  }
+
   updateLeftControlStickInput(direction){
 
   }

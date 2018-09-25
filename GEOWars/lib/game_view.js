@@ -98,6 +98,10 @@ class GameView {
       // document.onkeydown = preventDefaultForScrollKeys;
     }
 
+   
+
+    
+
 
     if (window.addEventListener) // older FF
       window.addEventListener('DOMMouseScroll', preventDefault, false);

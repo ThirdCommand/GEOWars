@@ -13,6 +13,7 @@ class Ship extends GameObject {
     this.addPhysicsComponent()
     this.addMousePosListener()
     this.addLeftControlStickListener()
+    this.addRightControlStickListener()
     this.radius = 10
     this.addCollider("General", this, this.radius)
     this.addCollider("ShipDeath", this, this.radius, ["BoxBox", "Singularity", "Weaver", "Grunt", "Arrow", "Pinwheel"], ["General"])
@@ -29,6 +30,7 @@ class Ship extends GameObject {
     this.controlsPointing = true;
     this.speed
     this.shipEngineAcceleration = 0.125;
+    this.dontShoot = false
 
     this.keysPressed = []
     this.zooming = true
@@ -47,8 +49,8 @@ class Ship extends GameObject {
   
   update(deltaTime){
     this.bulletTimeCheck += deltaTime
-    
-    if (this.bulletTimeCheck >= this.bulletInterval && !this.spawning && this.controlsPointing) {
+
+    if (this.bulletTimeCheck >= this.bulletInterval && !this.spawning && this.controlsPointing && !this.dontShoot) {
       this.bulletNumber += 1;
       this.bulletTimeCheck = 0;
       this.fireBullet();
@@ -95,7 +97,7 @@ class Ship extends GameObject {
     }
     // if ship is out of x bounds, maintain y speed, keep x at edge value
 
-    this.updateZoomScale(deltaTime)
+    this.updateZoomScale()
 
     this.gameEngine.ctx.restore()
     this.gameEngine.ctx.save()
@@ -113,7 +115,7 @@ class Ship extends GameObject {
   
   
 
-  updateZoomScale(deltaTime){
+  updateZoomScale(){
     // take 5 seconds to scale from 1 to 2
     // if(this.zooming && this.gameEngine.zoomScale > 2){
     //   this.zooming = false
@@ -130,6 +132,7 @@ class Ship extends GameObject {
 
   // 
   calcControlsDirection(){
+    
     this.controlsDirection = [0,0]
     this.keysPressed.forEach((key) => {
       this.controlsDirection[0] += Ship.MOVES[key][0]
@@ -144,7 +147,9 @@ class Ship extends GameObject {
     //    dV~ =  mV - Vo
     // if dv~ > 0.2 (or something)
     //    a = ma~ 
-    let controlsDirection = this.calcControlsDirection()
+    if (this.keysPressed.length > 0) {
+      this.calcControlsDirection()
+    }
     let movementAngle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
     let Vo = this.transform.absoluteVelocity()
     this.transform.angle = movementAngle
@@ -173,28 +178,41 @@ class Ship extends GameObject {
 
   }
 
-  updateRightControlStickInput(){
-
+  updateRightControlStickInput(vector) {
+    if (Math.abs(vector[0]) + Math.abs(vector[1]) > 0.10) {
+      this.dontShoot = false
+      this.fireAngle = Math.atan2(vector[1], vector[0])
+    } else {
+      this.dontShoot = true
+    }
   }
 
   updateLeftControlStickInput(key, down = true) {
-    
-    // accelerates to V = [0,0] when not pressed
-    if (down) {
-      if(!this.keysPressed.includes(key)){
-        this.keysPressed.push(key)
+    if(typeof key === "string"){
+      // accelerates to V = [0,0] when not pressed
+      if (down) {
+        if (!this.keysPressed.includes(key)) {
+          this.keysPressed.push(key)
+        }
+
+        // this.controlsDirection[0] += unitVector[0]
+        // this.controlsDirection[1] += unitVector[1]
+      } else {
+        if (this.keysPressed.includes(key)) {
+          this.keysPressed.splice(this.keysPressed.indexOf(key), 1)
+        }
+
+        // this.controlsDirection[0] -= unitVector[0]
+        // this.controlsDirection[1] -= initVector[1]
       }
-      
-      // this.controlsDirection[0] += unitVector[0]
-      // this.controlsDirection[1] += unitVector[1]
-    } else { 
-       if (this.keysPressed.includes(key)) {
-         this.keysPressed.splice(this.keysPressed.indexOf(key), 1)
-       }
-      
-      // this.controlsDirection[0] -= unitVector[0]
-      // this.controlsDirection[1] -= initVector[1]
+    } else {
+      if (Math.abs(key[0]) + Math.abs(key[1]) > 0.10) {
+        this.controlsDirection = key
+      } else {
+        this.controlsDirection = [0,0]
+      }
     }
+    
   } 
 
   wallGraze() {
