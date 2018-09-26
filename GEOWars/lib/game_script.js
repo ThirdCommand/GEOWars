@@ -92,7 +92,7 @@ class GameScript {
     this.ship.transform.pos = this.startPosition
     this.sequenceCount = 0
     this.deathPauseTime = 2500;
-    
+    this.ship.powerLevel = 1;
     this.intervalTiming = 1;
     this.intervalTime = 0;
     this.hugeSequenceTime = 0;

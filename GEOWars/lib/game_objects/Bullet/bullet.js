@@ -19,7 +19,7 @@ class Bullet extends GameObject {
     this.addPhysicsComponent()
     this.addLineSprite(new BulletSprite(this.transform))
     this.exploded = false;
-    this.lifeTime = 6000;
+    this.lifeTime = 4000;
     this.aliveTime = 0;
   }
 
@@ -51,6 +51,7 @@ class Bullet extends GameObject {
       let explosion = new ParticleExplosion(this.gameEngine, pos, vel)
       this.gameEngine.gameScript.tallyScore(collider.gameObject)
       collider.gameObject.remove()
+      this.remove()
         
     }
     

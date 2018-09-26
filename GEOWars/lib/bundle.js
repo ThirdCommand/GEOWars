@@ -946,7 +946,7 @@ class Bullet extends GameObject {
     this.addPhysicsComponent()
     this.addLineSprite(new BulletSprite(this.transform))
     this.exploded = false;
-    this.lifeTime = 6000;
+    this.lifeTime = 4000;
     this.aliveTime = 0;
   }
 
@@ -978,6 +978,7 @@ class Bullet extends GameObject {
       let explosion = new ParticleExplosion(this.gameEngine, pos, vel)
       this.gameEngine.gameScript.tallyScore(collider.gameObject)
       collider.gameObject.remove()
+      this.remove()
         
     }
     
@@ -3382,7 +3383,7 @@ class GameScript {
     this.ship.transform.pos = this.startPosition
     this.sequenceCount = 0
     this.deathPauseTime = 2500;
-    
+    this.ship.powerLevel = 1;
     this.intervalTiming = 1;
     this.intervalTime = 0;
     this.hugeSequenceTime = 0;
