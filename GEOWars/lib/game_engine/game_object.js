@@ -41,6 +41,14 @@ class GameObject {
     this.gameEngine.addRightControlStickListener(this)
   }
 
+  addxButtonListener(){
+    this.gameEngine.addxButtonListener(this)
+  }
+  
+  addStartButtonListener() {
+    this.gameEngine.addStartButtonListener(this)
+  }
+
   updateRightControlStickInput(direction){
 
   }
@@ -48,6 +56,16 @@ class GameObject {
   updateLeftControlStickInput(direction){
 
   }
+
+  updatexButtonListener(){
+
+  }
+
+  updateStartButtonListener() {
+
+  }
+
+  
 
   updateMousePos(mousePos){
 

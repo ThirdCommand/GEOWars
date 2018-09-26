@@ -30,8 +30,9 @@ class GameScript {
     this.grid = this.createGrid();
     this.overlay = this.createOverlay();
     this.enemyCreatorList = this.createEnemyCreatorList()
+    this.engine.addxButtonListener(this)
     this.aliveEnemies = [];
-
+    this.sequenceTypes = this.addSequenceTypes()
     this.deathPausedTime = 0;
     this.deathPaused = true;
     this.deathPauseTime = 2500;
@@ -50,10 +51,24 @@ class GameScript {
     this.explosionColorWheel = 0;
   }
 
-  update(deltaTime){
-    if (this.lives === 0) {
-      this.gameOver()
+  updatexButtonListener(xButton){
+    if(xButton[0]){
+
+      if(this.engine.paused){
+        var modal = document.getElementById('endModal');
+
+
+        modal.style.display = "none";
+        this.engine.paused = false;
+        if (!this.engine.muted) {
+          this.engine.gameScript.theme.play()
+        }
+      }
     }
+  }
+
+  update(deltaTime){
+
     this.spawnSequence(deltaTime)
     this.changeExplosionColor()
   }
@@ -106,6 +121,8 @@ class GameScript {
         this.engine.gameScript.theme.play()
       }
     }
+
+    
 
     // When the user clicks anywhere outside of the modal, close it
     //  window.addEventListener('click', (e) => {
@@ -197,26 +214,71 @@ class GameScript {
     };
   }
 
+
+
   randomSpawnEnemy(enemy) {
     let pos = this.randomPosition();
     let enemyCreators = Object.values(this.enemyCreatorList)
-    this.aliveEnemies.push(enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos));
+    enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos);
     // this.enemyCreatorList["BoxBox"](pos)
   }
 
-  // spawnEnemies(spawnList) {
-  //   if (this.enemies.length < 50) {
-  //     spawnList.forEach((enemy) => {
-  //       let spawn = new EnemySpawn(enemy, this)
-  //       this.add(spawn)
-  //     })
-  //   }
-  // }
+  addSequenceTypes() {
+    return {
+      EasyGroups: () => {
+        let randomPositions = []
+        for (let i = 0; i < 5; i++) {
+          let pos = this.randomPosition();
+          randomPositions.push(pos)
+        }
+        randomPositions.forEach((pos) => {
+          let possibleSpawns = ["BoxBox", "Pinwheel", "Singularity"]
+          this.enemyCreatorList[possibleSpawns[Math.floor(Math.random() * possibleSpawns.length) % possibleSpawns.length]](pos)
+        })
+      },
+      EasyGroupsArrows: () => {
+        let randomPositions = []
+        for (let i = 0; i < 5; i++) {
+          let pos = this.randomPosition();
+          randomPositions.push(pos)
+        }
+        randomPositions.forEach((pos) => {
+          let possibleSpawns = ["BoxBox", "Pinwheel", "Arrow", "Singularity"]
+          this.enemyCreatorList[possibleSpawns[Math.floor(Math.random() * possibleSpawns.length) % possibleSpawns.length]](pos)
+        })
+      },
+      ArrowsAttack: () => {
+        let somePositions = [[200,300], [1000, 300], [600, 100]]
+        let pos = somePositions[Math.floor(Math.random() * somePositions.length) % somePositions.length]
+        for (let i = 0; i < 5; i++) {
+          pos[1] += i * 80
+          this.enemyCreatorList["Arrow"](pos)
+        }
+      },
+      GruntGroups: () => {
+        let randomPos = this.randomPosition();
+        for (let i = 0; i < 3; i++) {
+          for (let j = 0; j < 3; j++) {
+              this.enemyCreatorList["Grunt"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
+          }
+        }
+      },
+      GreenGroups: () => {
+        let randomPos = this.randomPosition();
+        for (let i = 0; i < 3; i++) {
+          for (let j = 0; j < 3; j++) {
+            this.enemyCreatorList["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
+          }
+        }
+      }
+
+    }
+  }
 
   randomPosition() {
     return [
-      this.DIM_X * 0.80 * Math.random(),
-      this.DIM_Y * 0.80 * Math.random(),
+      this.DIM_X * 0.70 * Math.random(),
+      this.DIM_Y * 0.70 * Math.random(),
       // 500,300
     ];
   }
@@ -242,45 +304,58 @@ class GameScript {
     // }
 
     this.gameTime += delta;
-    if (this.intervalTime > (500 * this.intervalTiming) && this.sequenceCount < 10) {
+    if(this.sequenceCount === 1) {
+      this.enemyCreatorList["Singularity"]([700,300])
+      this.sequenceCount += 1
+    }
+    if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount < 5) {
       this.intervalTime = 0;
-      this.randomSpawnEnemy();
+      this.sequenceTypes["EasyGroups"]()
+      // this.randomSpawnEnemy();
       this.sequenceCount += 1
 
-    } 
-    else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 0) {
-      this.intervalTime = 0
-      this.sequenceCount += 1
-      let enemies_to_spawn = []
-      let randomPos = this.randomPosition();
-      for (let i = 0; i < 2; i++) {
-        for (let j = 0; j < 2; j++) {
-          enemies_to_spawn.push(
-            this.enemyCreatorList["BoxBox"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
-          )
-        }
-      }
+    } else if ( this.sequenceCount === 5 && this.intervalTime > 5000 ) {
 
-    } else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 1) {
-      this.intervalTime = 0
       this.sequenceCount += 1
-      let enemies_to_spawn = []
-      let randomPos = this.randomPosition();
-      for (let i = 0; i < 2; i++) {
-        for (let j = 0; j < 2; j++) {
-          this.enemyCreatorList["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
-        }
-      }
-
-    } else if (this.intervalTime > (5000 * this.intervalTiming) && this.sequenceCount === 11) {
+    } else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount > 5 && this.sequenceCount < 10) {
+      this.sequenceCount += 1
       this.intervalTime = 0;
+      this.sequenceTypes["EasyGroupsArrows"]()
+    } else if (this.sequenceCount === 10 && this.intervalTime > 5000) {
+      this.sequenceCount += 1
+    } else if (this.intervalTime > (1500 * this.intervalTiming) && this.sequenceCount > 10 && this.sequenceCount < 15) {
       this.sequenceCount += 1;
-    } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 0) {
+      this.intervalTime = 0;
+      this.sequenceTypes["GruntGroups"]()
+    } else if (this.sequenceCount === 15 && this.intervalTime > 2000) {
+      this.sequenceCount += 1
+    } else if (this.intervalTime > (2000 * this.intervalTiming) && this.sequenceCount > 15 && this.sequenceCount < 20) {
+      this.sequenceCount += 1;
+      this.intervalTime = 0;
+      this.sequenceTypes["GreenGroups"]()
+    } else if (this.sequenceCount === 20 && this.intervalTime > 3000) {
+      this.sequenceCount += 1
+    } 
+    // else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 1) {
+    //   this.intervalTime = 0
+    //   this.sequenceCount += 1
+    //   let enemies_to_spawn = []
+    //   let randomPos = this.randomPosition();
+    //   for (let i = 0; i < 2; i++) {
+    //     for (let j = 0; j < 2; j++) {
+    //       this.enemyCreatorList["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
+    //     }
+    //   }
+
+    // } else if (this.intervalTime > (5000 * this.intervalTiming) && this.sequenceCount === 11) {
+    //   this.intervalTime = 0;
+    //   this.sequenceCount += 1;
+    //}
+     else if (this.intervalTime > 375 && this.sequenceCount > 20 && this.sequenceCount < 30 && this.hugeSequenceTime % 2 === 0) {
       this.ship.powerLevel = 2
       this.intervalTime = 0;
       this.sequenceCount += 1;
 
-      let enemies_to_spawn = [];
       let fourCorners = [
         [40, 40],
         [GameScript.DIM_X - 40, 40],
@@ -290,10 +365,9 @@ class GameScript {
       fourCorners.forEach((corner) => {
         this.enemyCreatorList["Grunt"](corner)
       })
-
-    } else if (this.intervalTime > 250 && this.sequenceCount < (11 + 15) && (this.sequenceCount > 11) && this.hugeSequenceTime % 2 === 1) {
+    } else if (this.intervalTime > 375 && this.sequenceCount > 20 && this.sequenceCount < 30 && this.hugeSequenceTime % 2 === 1) {
       this.intervalTime = 0;
-      this.sequenceCount += 14;
+      this.sequenceCount += 10;
 
       let enemies_to_spawn = [];
       let arrowWallPositions = []
@@ -306,13 +380,14 @@ class GameScript {
         this.enemyCreatorList["Arrow"](position, arrowDirection)
       })
 
-    } else if (this.sequenceCount >= 26) {
+    } else if  (this.sequenceCount >= 30) {
       this.sequenceCount = 0;
       if (!(this.intervalTiming < 0.5)) {
         this.intervalTiming *= 0.9;
       }
       this.hugeSequenceTime += 1;
     }
+  
 
 
 

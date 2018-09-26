@@ -19,6 +19,8 @@ class GameEngine {
     this.mouseListeners = [];
     this.leftControlStickListeners = [];
     this.rightControlStickListeners = [];
+    this.xButtonListeners = [];
+    this.startButtonListeners = [];
     this.gameScript = new GameScript(this);
     this.toRemoveQueue = []
     this.paused = false;
@@ -47,6 +49,7 @@ class GameEngine {
   tick(delta) {
     // debugger
     if(this.paused){
+      this.updateControlListeners()
       return
     }
     if(delta > 125){
@@ -91,6 +94,13 @@ class GameEngine {
     this.rightControlStickListeners.push(object)
   }
 
+  addxButtonListener(object){
+    this.xButtonListeners.push(object)
+  }
+
+  addStartButtonListener(object) {
+    this.startButtonListeners.push(object)
+  }
   updateLeftControlStickListeners(unitVector){
     this.leftControlStickListeners.forEach((listener) => {
       listener.updateLeftControlStickInput(unitVector)
@@ -100,6 +110,18 @@ class GameEngine {
   updateRightControlStickListeners(unitVector){
     this.rightControlStickListeners.forEach((listener) => {
       listener.updateRightControlStickInput(unitVector)
+    })
+  }
+
+  updatexButtonListeners(xButton){
+    this.xButtonListeners.forEach((listener) => {
+      listener.updatexButtonListener(xButton)
+    })
+  }
+
+  updateStartButtonListeners(startButton){
+    this.startButtonListeners.forEach((listener) => {
+      listener.updateStartButtonListener(startButton)
     })
   }
 
@@ -114,8 +136,12 @@ class GameEngine {
     if(this.controller) {
       let leftAxis = [window.controller.axes[0], window.controller.axes[1]]
       let rightAxis = [window.controller.axes[2], window.controller.axes[3]]
+      let xButton = [window.controller.buttons[0].pressed]
+      let startButton = [window.controller.buttons[9].pressed]
+      this.updatexButtonListeners(xButton)
       this.updateLeftControlStickListeners(leftAxis)
       this.updateRightControlStickListeners(rightAxis)
+      this.updateStartButtonListeners(startButton)
     }
   }
 
