@@ -16,7 +16,7 @@ class Camera extends GameObject {
   // zooming in and out is possible because of this
   // custom collider
   // contains a list of linesprites to draw
-  // If the object is outside of the 
+  // If the object is outside of the view it doesn't draw
   // 
   
 
