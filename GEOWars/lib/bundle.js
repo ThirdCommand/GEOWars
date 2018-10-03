@@ -440,7 +440,7 @@ class GameEngine {
     subscribers.forEach((subscriber) => {
       if (subscriber.type === "ShipDeath") {
         this.stillCanDie = true
-        console.log("CAN DIE")
+        // console.log("CAN DIE")
       }
       subscriber.subscriptions.forEach((subscription) => {
         colliders[subscription] = colliders[subscription] || {}
@@ -453,7 +453,7 @@ class GameEngine {
       })
     })
     if (!this.stillCanDie) {
-      console.log(this.gameScript.ship.collider)
+      // console.log(this.gameScript.ship.collider)
       this.gameScript.ship.addCollider("General", this.gameScript.ship, this.gameScript.ship.radius)
       this.gameScript.ship.addCollider("ShipDeath", this.gameScript.ship, this.gameScript.ship.radius, ["BoxBox", "Singularity", "Weaver", "Grunt", "Arrow", "Pinwheel"], ["General"])
     }
