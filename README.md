@@ -22,12 +22,14 @@ I created a framework for JavaScript programmers to create simulations and games
 ## Game Object
 To make a game object, extend the class with GameObject. This will provide a ton of built in functionality.
 
-* `#addCollider`
 * `#addPhysicsComponent`
 * `#addLineSprite`
+* `#addCollider`
 * `#addChildGameObject`
 * `#playSound`
 * `#addMousePosListener`
+* `#addLeftControlStickListener`
+* `#addRightControlStickListener`
 * `#remove`
 
 ### addCollider
@@ -35,12 +37,15 @@ To make a game object, extend the class with GameObject. This will provide a ton
   String: collider name
   Reference to GameObject (usually "this")   
   Double: hitbox radius  
-  Array: names of the GameObjects it can hit  
-  Array: names of the types of colliders it can hit   
+  Array: names of the GameObjects it can hit (subscriptions)  
+  Array: names of the types of colliders it can hit
+
         
-  With these parameters, a user can create a custom collider that can subscribe to specific game objects and specific colliders. An example where this is necessary is with things that try to dodge, like the Weaver in my game. The Weaver tries to dodge bullets when they are within a certain distance, but explodes when in direct contact. The Weaver's "BulletDodge" collider handles dodging the bullets,and the Bullet's "bulletHit" collider handles the direct contact.    
+  With these parameters, a user can create a custom collider that can subscribe to specific game objects and their specific colliders. An example where this is necessary is with things that try to dodge, like the Weaver in my game. The Weaver tries to dodge bullets when they are within a certain distance, but explodes when in direct contact. The Weaver's "BulletDodge" collider handles dodging the bullets, and the Bullet's "bulletHit" collider handles the direct contact.    
         
-  The "BulletDodge" collider is subscribed to the Bullet's "General" collider, and the "bulletHit" collider is subscribed to the Weaver and every other enemy type's "General" collider. I picked the name "General" because it is what a new collider can use to add functionality to every GameObject while only writing the code in one place. 
+  The "BulletDodge" collider is subscribed to the Bullet's "General" collider, and the "bulletHit" collider is subscribed to the Weaver and every other enemy type's "General" collider. I picked the name "General" because it is what a new collider type can use to add functionality to every GameObject while only writing the code in one place. 
+
+  When a collision between the game object and an object that it is subscribed to occurs, onCollision will be called on the game object. Two parameters are passed into onCollision: The collider it contacted, and the type of collider that was triggered. The function exists in the parent class GameObject and is waiting to be overwriten. 
 
 Bullet Collision Code:
 ```javascript 
@@ -97,6 +102,132 @@ class Weaver extends GameObject {
 ```javascript 
 }
 ```
+
+### addLineSprite
+A LineSprite contains a transform and a `#draw` function for the user to overwrite. It is where the user puts the commands for the canvas context to draw a GameObject. `#addLineSprite` adds the sprite to the list of sprites to be rendered by the game engine during its rendering stage of the frame cycle. The following is an example of adding a LineSprite to a game object:
+
+```javascript
+const LineSprite = require("../../../game_engine/line_sprite")
+
+class SingularitySprite extends LineSprite {
+  constructor(transform, spawningScale = 1) {
+    super(transform)
+    this.spawningScale = spawningScale
+    this.throbbingScale = 1
+    this.radius = 15;
+    this.spawned = false;
+  }
+
+  draw(ctx) {
+    let spawningScale = this.spawningScale
+    if (this.spawned) {
+      spawningScale = this.throbbingScale
+    }
+
+    ctx.strokeStyle = "#F173BA"
+
+    let r = 95;
+    let g = 45;
+    let b = 73;
+
+    ctx.save();
+    let blurFactor = 0.5
+
+    ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+    ctx.shadowBlur = 10
+    ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+    ctx.lineWidth = 7.5;
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.lineWidth = 6
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.lineWidth = 4.5
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.lineWidth = 3
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.strokeStyle = 'rgb(255, 255, 255)';
+    ctx.lineWidth = 1.5
+    this.drawSingularity(ctx, this.radius * spawningScale);
+    ctx.restore();
+    // ctx.lineWidth = 2;
+    // drawSingularity(ctx, this.radius * spawningScale);
+  }
+
+  drawSingularity(ctx, radius) {
+    ctx.beginPath();
+    let pos = this.transform.absolutePosition()
+    ctx.arc(pos[0], pos[1], radius, 0, 2 * Math.PI, true);
+    ctx.stroke();
+  }
+}
+```
+
+```javascript 
+
+class Singularity extends GameObject {
+  constructor(engine, pos) {
+    super(engine)
+    this.transform.pos = pos;
+```
+...
+```javascript
+    this.addLineSprite(new SingularitySprite(this.transform))
+    this.lineSprite.throbbingScale = 1
+  }
+```
+
+### playSound
+A Sound is another object built into the game engine that allows users to give it a url and a volume. Sound has methods `#play`, `#mute`, `#unmute`, `#pause`, and `#toggleMute`. playSound allows the user to add a sound to the game engine sound queue to be played. Duplicate sounds added during the same frame will not change in volume, as the game engine will only play one of them. Sound's constructor takes in the URL and volume (a bool, zero to one) as parameters.
+
+```javascript 
+
+class Arrow extends GameObject {
+  constructor(engine, pos, angle = Math.PI / 3) {
+    super(engine)
+    this.transform.pos = pos
+```
+...
+```javascript
+   this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_purple.wav", 0.5)
+    this.playSound(this.spawnSound)
+  }
+```
+...
+```javascript
+}
+```
+
+### addPhysicsComponent
+this function creates a new physics component for the game engine to update every frame. The position, velocity, and acceleration are stored in a GameObject's transform. Physics components take in the change in time between frames to update the position and velocity of the GameObject. 
+
+### Controls Event Listeners
+
+* `#addMousePosListener`
+* `#addLeftControlStickListener`
+* `#addRightControlStickListener`
+
+these methods add event listeners for their respective names. These are the only ones I needed for my game so they were the first to be added. the rest of the controller buttons and keyboard input will be added in later versions. 
+
+addMousePosListener will add this GameObject to the list of objects that updateMousePos(pos) will be called on. Add that method to your GameObject and the game engine will provide it with a new positions every frame. The position is relative to the top left corner of the canvas. 
+
+*the mouse position listener is currently hard coded and will not work for users at the moment. 
+
+addLeftControlStickListener => updateLeftControlStickInput
+addRightControlStickListener => updateRightControlStickInput
+
+the joystick positions are described by [x,y] where x and y range from -1 to 1 
+
+### addChildGameObject
+addChildGameObject takes in a new game object and adds it to the game engine. It also adds it to the list of children for the game object it is called inside. 
+currently the only feature supported for addChildGameObject is the remove functionality listed next. 
+
+
+### remove
+remove destroys all properties that were added to the game engine for the object such as its LineSprites, Colliders, all child game objects, and PhysicsComponents.
+
+
+
+
+
 Coming soon: explanations for the other GameObject methods
  
 

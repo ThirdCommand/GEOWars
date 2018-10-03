@@ -786,17 +786,23 @@ class Sound {
     this.sound.play();
   }
   toggleMute(){
-    this.muted ? this.unmute() : this.mute()
+    if(this.sound){
+      this.muted ? this.unmute() : this.mute()
+    }
   }
 
   unmute(){
-    this.muted = false 
-    this.sound.volume = this.volume
+    if(this.sound){
+      this.muted = false 
+      this.sound.volume = this.volume
+    }
   }
 
   mute(){
-    this.muted = true
-    this.sound.volume = 0
+    if(this.sound){
+      this.muted = true
+      this.sound.volume = 0
+    }
   }
 
   pause(){
