@@ -26,7 +26,9 @@ class Sound {
   }
 
   pause(){
-    this.sound.pause()
+    if(this.sound){
+      this.sound.pause()
+    } 
   }
 }
 

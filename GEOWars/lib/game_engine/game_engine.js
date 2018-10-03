@@ -80,7 +80,6 @@ class GameEngine {
   }
 
   clearCanvas(){
-
     this.ctx.clearRect( -this.gameScript.DIM_X, -this.gameScript.DIM_Y, this.gameScript.DIM_X * this.zoomScale * 4, this.gameScript.DIM_Y * this.zoomScale * 4);
     this.ctx.fillStyle = this.gameScript.BG_COLOR;
     this.ctx.fillRect( -this.gameScript.DIM_X, -this.gameScript.DIM_Y, this.gameScript.DIM_X * this.zoomScale * 4, this.gameScript.DIM_Y * this.zoomScale * 4);
@@ -101,6 +100,7 @@ class GameEngine {
   addStartButtonListener(object) {
     this.startButtonListeners.push(object)
   }
+
   updateLeftControlStickListeners(unitVector){
     this.leftControlStickListeners.forEach((listener) => {
       listener.updateLeftControlStickInput(unitVector)
@@ -188,7 +188,13 @@ class GameEngine {
 // }
     let subscribers = this.subscribers
     let colliders = this.colliders
+    this.stillCanDie = false;
+    // console.log(this.subscribers)
     subscribers.forEach((subscriber) => {
+      if (subscriber.type === "ShipDeath") {
+        this.stillCanDie = true
+        console.log("CAN DIE")
+      }
       subscriber.subscriptions.forEach((subscription) => {
         colliders[subscription] = colliders[subscription] || {}
         subscriber.subscribedColliderTypes.forEach((colliderType) => {
@@ -199,6 +205,11 @@ class GameEngine {
         })
       })
     })
+    if (!this.stillCanDie) {
+      console.log(this.gameScript.ship.collider)
+      this.gameScript.ship.addCollider("General", this.gameScript.ship, this.gameScript.ship.radius)
+      this.gameScript.ship.addCollider("ShipDeath", this.gameScript.ship, this.gameScript.ship.radius, ["BoxBox", "Singularity", "Weaver", "Grunt", "Arrow", "Pinwheel"], ["General"])
+    }
   }
 
   updateGameObjects(delta) {
