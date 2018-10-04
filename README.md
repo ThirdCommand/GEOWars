@@ -224,11 +224,45 @@ currently the only feature supported for addChildGameObject is the remove functi
 ### remove
 remove destroys all properties that were added to the game engine for the object such as its LineSprites, Colliders, all child game objects, and PhysicsComponents.
 
+## Color
+Color is a wrapper for adding colors for canvas context drawing. It supports rgb, rgba, hsl, and hsla. The constructor takes in a key value pair, one being a string telling it what color type it is, and the other an array of values for each color property. 
+
+Color will have instance variables for each color property that can be read and changed. To provide the canvas context with color string, use `#evaluateColor`. Examples shown bellow:
+```javascript
+this.shadowColor = new Color({
+  "hsla": [202, 100, 70, 1]
+});
+
+this.shadowColor.s = 50
+ctx.shadowColor = this.shadowColor.evaluateColor()
+```
+## Sound
+A Sound is another object built into the game engine that allows users to give it a url and a volume. Sound has methods `#play`, `#mute`, `#unmute`, `#pause`, and `#toggleMute`. `GameObject#playSound` allows the user to add a sound to the game engine sound queue to be played. Duplicate sounds added during the same frame will not double in volume, as the game engine will only play one of them. Sound's constructor takes in the URL and volume (a bool, zero to one) as parameters:
+
+```javascript 
+
+class Arrow extends GameObject {
+  constructor(engine, pos, angle = Math.PI / 3) {
+    super(engine)
+    this.transform.pos = pos
+```
+...
+```javascript
+   this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_purple.wav", 0.5)
+    this.playSound(this.spawnSound)
+  }
+```
+...
+```javascript
+}
+```
+## Transform
+A transform contains the position velocity and acceleration information about a GameObject. Position, translational velocity and acceleration are stored as [x,y] pairs, whereas angular values are doubles. Instance variables include: pos, vel, acc, angle, aVel, aAcc. Angular acceleration and acc are both set to 0 after the phsyics calculations are complete in order to keep accelerations from persisting when the forces that provide them no longer exist. Forces are currently not implemented but will be added soon. They will be stored as an instance variable of the transform and will be an array in which a force vector can be added. 
 
 
 
 
-Coming soon: explanations for the other GameObject methods
+coming soon: details for Camera, HUD overlay, and other game engine features
  
 
 # First Week Goals

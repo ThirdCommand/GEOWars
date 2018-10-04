@@ -32,7 +32,6 @@ class GameObject {
     this.gameEngine.addMouseListener(this)
   }
 
-
   addLeftControlStickListener() {
     this.gameEngine.addLeftControlStickListener(this)
   }

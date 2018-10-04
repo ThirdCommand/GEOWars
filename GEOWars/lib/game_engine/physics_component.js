@@ -16,8 +16,11 @@ class PhysicsComponent {
     this.transform.pos[1] += this.transform.vel[1] * timeScale + this.transform.acc[1] * (timeScale * timeScale) / 2;
     this.transform.vel[0] += this.transform.acc[0] * timeScale;
     this.transform.vel[1] += this.transform.acc[1] * timeScale;
-    
+    this.transform.angle += this.transform.aVel
+    this.transform.aVel += this.transform.aAcc
+
     this.transform.acc = [0, 0];
+    this.transform.aAcc = 0;
 
   }
 

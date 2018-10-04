@@ -1,8 +1,10 @@
 const Util = require("./util");
 class Transform {
-  constructor(pos = [0,0], vel = [0,0], acc = [0,0], angle = 0, parentTransform = null){
+  constructor(pos = [0,0], vel = [0,0], acc = [0,0], angle = 0, aVel = 0, aAcc = 0, parentTransform = null){
     this.parentTransform = parentTransform
     this.angle = angle
+    this.aVel = aVel
+    this.aAcc = aAcc
     this.pos = pos
     this.vel = vel
     this.acc = acc

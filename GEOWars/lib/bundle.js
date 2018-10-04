@@ -607,7 +607,6 @@ class GameObject {
     this.gameEngine.addMouseListener(this)
   }
 
-
   addLeftControlStickListener() {
     this.gameEngine.addLeftControlStickListener(this)
   }
@@ -751,8 +750,11 @@ class PhysicsComponent {
     this.transform.pos[1] += this.transform.vel[1] * timeScale + this.transform.acc[1] * (timeScale * timeScale) / 2;
     this.transform.vel[0] += this.transform.acc[0] * timeScale;
     this.transform.vel[1] += this.transform.acc[1] * timeScale;
-    
+    this.transform.angle += this.transform.aVel
+    this.transform.aVel += this.transform.aAcc
+
     this.transform.acc = [0, 0];
+    this.transform.aAcc = 0;
 
   }
 
@@ -825,9 +827,11 @@ module.exports = Sound;
 
 const Util = __webpack_require__(/*! ./util */ "./lib/game_engine/util.js");
 class Transform {
-  constructor(pos = [0,0], vel = [0,0], acc = [0,0], angle = 0, parentTransform = null){
+  constructor(pos = [0,0], vel = [0,0], acc = [0,0], angle = 0, aVel = 0, aAcc = 0, parentTransform = null){
     this.parentTransform = parentTransform
     this.angle = angle
+    this.aVel = aVel
+    this.aAcc = aAcc
     this.pos = pos
     this.vel = vel
     this.acc = acc
