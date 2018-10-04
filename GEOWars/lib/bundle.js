@@ -744,7 +744,6 @@ class PhysicsComponent {
     // timeDelta is number of milliseconds since last move
     // if the computer is busy the time delta will be larger
     // in this case the PhysicsObject should move farther in this frame
-    // velocity of object is how far it should move in 1/60th of a second or something
     const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
     this.transform.pos[0] += this.transform.vel[0] * timeScale + this.transform.acc[0] * (timeScale * timeScale) / 2;
     this.transform.pos[1] += this.transform.vel[1] * timeScale + this.transform.acc[1] * (timeScale * timeScale) / 2;
