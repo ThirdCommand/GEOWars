@@ -20,7 +20,63 @@ I created a framework for JavaScript programmers to create simulations and games
 * Play Sounds
 
 ## Game Object
-To make a game object, extend the class with GameObject. This will provide a ton of built in functionality.
+To make a GameObject, extend the class with GameObject. This will provide a ton of built in functionality. To create the GameObject, you must pass a reference to the game engine into into the super. Every frame, all of the GameObjects that were added will be updated by calling the method Update on them. This method can be overwritten by the user in the classes that inherit from GameObject, providing the user a place to write code that they want the GameObject to run every frame.
+
+I utilize update to allow the Grunt enemies to chase after the player, and animate their sprite:
+
+```javascript
+class Grunt extends GameObject {
+  constructor(engine, pos, shipTransform) {
+    super(engine)
+    this.transform.pos = pos
+    this.exists = false;
+    this.stretchDirection = -1;
+    this.shipTransform = shipTransform
+    this.radius = 5;
+    this.points = 70
+    this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
+    this.playSound(this.spawnSound)
+    this.addLineSprite(new GruntSprite(this.transform))
+    this.addChildGameObject(new EnemySpawn(this.gameEngine))
+  }
+```
+...
+```javascript
+  update(timeDelta) {
+    if (this.spawned) {
+      this.chase(timeDelta)
+      let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+      let cycleSpeed = 0.01;
+      if (this.lineSprite.stretchScale_W < 0.7 || this.lineSprite.stretchScale_W > 1) {
+        this.stretchDirection *= -1
+      }
+
+      this.lineSprite.stretchScale_W = this.lineSprite.stretchScale_W + -this.stretchDirection * cycleSpeed * cycleSpeedScale;
+      this.lineSprite.stretchScale_L = this.lineSprite.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
+
+      if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
+        this.wallGraze()
+      }
+    }
+
+    chase(timeDelta) {
+    let speed = 1.5
+    let shipPos = this.shipTransform.absolutePosition();
+    let pos = this.transform.absolutePosition()
+    let dy = shipPos[1] - pos[1];
+    let dx = shipPos[0] - pos[0];
+
+    const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+    let direction = Math.atan2(dy, dx);
+
+    pos[0] += speed * Math.cos(direction) * velocityScale
+    pos[1] += speed * Math.sin(direction) * velocityScale
+  }
+}
+```
+
+
+The class methods that are available to the user when inheriting from GameObject include:
 
 * `#addPhysicsComponent`
 * `#addLineSprite`
