@@ -33,7 +33,7 @@ class Particle extends GameObject{
 
     this.addLineSprite(new ParticleSprite(this.transform, this.color))
     this.addPhysicsComponent()
-    this.addCollider("General", this, this.radius)
+    // this.addCollider("General", this, this.radius)
 
   }
 

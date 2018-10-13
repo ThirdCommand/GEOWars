@@ -1,5 +1,3 @@
-
-
 class GameView {
   constructor(engine, ctx, canvasEl) {
     this.ctx = ctx; 

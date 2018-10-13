@@ -17,6 +17,9 @@ const Sound = require("./game_engine/sound")
 class GameScript {
   constructor(engine) {
     this.theme = new Sound("GEOWars/sounds/Geometry_OST.mp3", 1)
+    this.gameOverSound = new Sound("GEOWars/sounds/Game_over.wav")
+    this.gameStartSound = new Sound("GEOWars/sounds/Game_start.wav")
+    this.shipDeathSound = new Sound("GEOWars/sounds/Ship_explode.wav")
     this.DIM_X = 1000;
     this.DIM_Y = 600;
     this.BG_COLOR = "#000000";
@@ -56,7 +59,6 @@ class GameScript {
 
       if(this.engine.paused){
         var modal = document.getElementById('endModal');
-
 
         modal.style.display = "none";
         this.engine.paused = false;
@@ -119,6 +121,7 @@ class GameScript {
       this.engine.paused = false;
       if (!this.engine.muted) {
         this.engine.gameScript.theme.play()
+        this.engine.gameScript.gameStartSound.play()
       }
     }
 
@@ -131,6 +134,7 @@ class GameScript {
         this.engine.paused = false;
         if (!this.engine.muted) {
           this.engine.gameScript.theme.play()
+          this.engine.gameScript.gameStartSound.play()
         }
         modal.style.display = "none";
         
@@ -141,11 +145,14 @@ class GameScript {
   }
 
   death() { 
+
     this.lives -= 1
     this.deathPaused = true
     this.explodeEverything()
     this.deathPauseTime = 4000;
-    
+    if (!this.engine.muted) {
+      this.engine.gameScript.shipDeathSound.play()
+    }
     this.grid.Playerdies(this.ship.transform.absolutePosition())
     if(this.lives === 0){
       try {
@@ -154,7 +161,10 @@ class GameScript {
       } catch(err) {
 
       }
-
+      if (!this.engine.muted) {
+        this.engine.gameScript.gameOverSound.play()
+      }
+      // this.playSoundthis.gameOverSound
       window.setTimeout(this.resetGame.bind(this), 2000)
     }
 
@@ -399,7 +409,7 @@ class GameScript {
   }
 
   createShip() {
-    return new Ship(this.engine, this.startPosition, this)
+    return new Ship(this.engine, this.startPosition)
   }
 
   createWalls(){

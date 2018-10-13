@@ -1805,7 +1805,7 @@ class Singularity extends GameObject {
     this.gravityConstant = 1000 * 0.5;
     this.radius = 15
     this.points = 100
-
+    this.deathSound = new Sound("GEWars/sounds/Gravity_well_die.wav")
     // this.id = options.id
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
     this.playSound(this.spawnSound)
@@ -1826,6 +1826,10 @@ class Singularity extends GameObject {
     this.addPhysicsComponent()
     this.lineSprite.spawned = true
     this.addChildGameObject(new SingularityParticles(this.gameEngine, this.transform))
+  }
+
+  onDeath(){
+    this.playSound(this.deathSounds.play())
   }
 
   onCollision(collider, type){
@@ -1980,7 +1984,7 @@ class Weaver extends GameObject {
     super(engine)
     this.rotation_speed = 0.075;
     this.transform.pos[0] = pos[0]
-    this.transform.pos[1] = pos[0]
+    this.transform.pos[1] = pos[1]
     this.speed = 3;
     this.points = 80;
     this.radius = 5;
@@ -2407,7 +2411,7 @@ class Particle extends GameObject{
 
     this.addLineSprite(new ParticleSprite(this.transform, this.color))
     this.addPhysicsComponent()
-    this.addCollider("General", this, this.radius)
+    // this.addCollider("General", this, this.radius)
 
   }
 
@@ -2570,6 +2574,7 @@ class SingularityParticle extends Particle {
     this.transform.vel[1] = vel[1]
 
     this.color = color;
+    this.addCollider("General", this, this.radius)
   }
 
   update(deltaTime) {
@@ -3330,6 +3335,9 @@ const Sound = __webpack_require__(/*! ./game_engine/sound */ "./lib/game_engine/
 class GameScript {
   constructor(engine) {
     this.theme = new Sound("GEOWars/sounds/Geometry_OST.mp3", 1)
+    this.gameOverSound = new Sound("GEOWars/sounds/Game_over.wav")
+    this.gameStartSound = new Sound("GEOWars/sounds/Game_start.wav")
+    this.shipDeathSound = new Sound("GEOWars/sounds/Ship_explode.wav")
     this.DIM_X = 1000;
     this.DIM_Y = 600;
     this.BG_COLOR = "#000000";
@@ -3369,7 +3377,6 @@ class GameScript {
 
       if(this.engine.paused){
         var modal = document.getElementById('endModal');
-
 
         modal.style.display = "none";
         this.engine.paused = false;
@@ -3432,6 +3439,7 @@ class GameScript {
       this.engine.paused = false;
       if (!this.engine.muted) {
         this.engine.gameScript.theme.play()
+        this.engine.gameScript.gameStartSound.play()
       }
     }
 
@@ -3444,6 +3452,7 @@ class GameScript {
         this.engine.paused = false;
         if (!this.engine.muted) {
           this.engine.gameScript.theme.play()
+          this.engine.gameScript.gameStartSound.play()
         }
         modal.style.display = "none";
         
@@ -3454,11 +3463,14 @@ class GameScript {
   }
 
   death() { 
+
     this.lives -= 1
     this.deathPaused = true
     this.explodeEverything()
     this.deathPauseTime = 4000;
-    
+    if (!this.engine.muted) {
+      this.engine.gameScript.shipDeathSound.play()
+    }
     this.grid.Playerdies(this.ship.transform.absolutePosition())
     if(this.lives === 0){
       try {
@@ -3467,7 +3479,10 @@ class GameScript {
       } catch(err) {
 
       }
-
+      if (!this.engine.muted) {
+        this.engine.gameScript.gameOverSound.play()
+      }
+      // this.playSoundthis.gameOverSound
       window.setTimeout(this.resetGame.bind(this), 2000)
     }
 
@@ -3712,7 +3727,7 @@ class GameScript {
   }
 
   createShip() {
-    return new Ship(this.engine, this.startPosition, this)
+    return new Ship(this.engine, this.startPosition)
   }
 
   createWalls(){
@@ -3844,8 +3859,6 @@ GameScript.spawnListList = [
   \**************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
-
-
 
 class GameView {
   constructor(engine, ctx, canvasEl) {

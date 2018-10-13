@@ -21,6 +21,7 @@ class SingularityParticle extends Particle {
     this.transform.vel[1] = vel[1]
 
     this.color = color;
+    this.addCollider("General", this, this.radius)
   }
 
   update(deltaTime) {

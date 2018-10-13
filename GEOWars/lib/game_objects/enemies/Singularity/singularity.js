@@ -14,7 +14,7 @@ class Singularity extends GameObject {
     this.gravityConstant = 1000 * 0.5;
     this.radius = 15
     this.points = 100
-
+    this.deathSound = new Sound("GEWars/sounds/Gravity_well_die.wav")
     // this.id = options.id
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
     this.playSound(this.spawnSound)
@@ -35,6 +35,10 @@ class Singularity extends GameObject {
     this.addPhysicsComponent()
     this.lineSprite.spawned = true
     this.addChildGameObject(new SingularityParticles(this.gameEngine, this.transform))
+  }
+
+  onDeath(){
+    this.playSound(this.deathSounds.play())
   }
 
   onCollision(collider, type){

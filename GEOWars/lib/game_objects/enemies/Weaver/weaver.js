@@ -10,7 +10,7 @@ class Weaver extends GameObject {
     super(engine)
     this.rotation_speed = 0.075;
     this.transform.pos[0] = pos[0]
-    this.transform.pos[1] = pos[0]
+    this.transform.pos[1] = pos[1]
     this.speed = 3;
     this.points = 80;
     this.radius = 5;
