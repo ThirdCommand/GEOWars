@@ -2945,6 +2945,7 @@ class Ship extends GameObject {
     this.mousePos = [0,0];
     this.fireAngle = 0;
     this.bulletSound = new Sound("GEOWars/sounds/Fire_normal.wav", 0.2);
+    this.upgradeBulletsSound = new Sound("GEOWars/sounds/Hi_Score_achieved.wav")
     this.bulletTimeCheck = 0;
     this.bulletInterval = 120;
     this.controlsDirection = [0,0];
@@ -3034,6 +3035,13 @@ class Ship extends GameObject {
       -shipXPos * zoomScale + width / 2,
       -shipYPos * zoomScale + height / 2
     )
+  }
+
+  upgradeBullets() {
+    if (this.powerLevel != 2) {
+      this.powerLevel = 2
+      this.playSound(this.upgradeBulletsSound)
+    }
   }
   
   findSmallestDistanceToAWall(){
@@ -3679,10 +3687,10 @@ class GameScript {
     //   this.intervalTime = 0;
     //   this.sequenceCount += 1;
     //}
-     else if (this.intervalTime > 375 && this.sequenceCount > 20 && this.sequenceCount < 30 && this.hugeSequenceTime % 2 === 0) {
-      this.ship.powerLevel = 2
-      this.intervalTime = 0;
-      this.sequenceCount += 1;
+    else if (this.intervalTime > 375 && this.sequenceCount > 20 && this.sequenceCount < 30 && this.hugeSequenceTime % 2 === 0) {
+        this.ship.upgradeBullets()
+        this.intervalTime = 0;
+        this.sequenceCount += 1;
 
       let fourCorners = [
         [40, 40],
@@ -3941,30 +3949,30 @@ class GameView {
       // ship.setFireAngle(mousePos); add to game script event listener thing
     });
 
-    function preventDefault(e) {
-      e = e || window.event;
-      if (e.preventDefault)
-        e.preventDefault();
-      e.returnValue = false;
-    }
+    // function preventDefault(e) {
+    //   e = e || window.event;
+    //   if (e.preventDefault)
+    //     e.preventDefault();
+    //   e.returnValue = false;
+    // }
 
 
-    function disableScroll() {
-      if (window.addEventListener) // older FF
-        window.addEventListener('DOMMouseScroll', preventDefault, false);
-      // window.onwheel = preventDefault; // modern standard
-      // window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
-      // window.ontouchmove = preventDefault; // mobile
-      // document.onkeydown = preventDefaultForScrollKeys;
-    }
+    // function disableScroll() {
+    //   if (window.addEventListener) // older FF
+    //     window.addEventListener('DOMMouseScroll', preventDefault, false);
+    //   // window.onwheel = preventDefault; // modern standard
+    //   // window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
+    //   // window.ontouchmove = preventDefault; // mobile
+    //   // document.onkeydown = preventDefaultForScrollKeys;
+    // }
 
    
 
     
 
 
-    if (window.addEventListener) // older FF
-      window.addEventListener('DOMMouseScroll', preventDefault, false);
+    // if (window.addEventListener) // older FF
+    //   window.addEventListener('DOMMouseScroll', preventDefault, false);
     // window.onwheel = preventDefault; // modern standard
     // window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
     // window.ontouchmove = preventDefault; // mobile

@@ -361,10 +361,10 @@ class GameScript {
     //   this.intervalTime = 0;
     //   this.sequenceCount += 1;
     //}
-     else if (this.intervalTime > 375 && this.sequenceCount > 20 && this.sequenceCount < 30 && this.hugeSequenceTime % 2 === 0) {
-      this.ship.powerLevel = 2
-      this.intervalTime = 0;
-      this.sequenceCount += 1;
+    else if (this.intervalTime > 375 && this.sequenceCount > 20 && this.sequenceCount < 30 && this.hugeSequenceTime % 2 === 0) {
+        this.ship.upgradeBullets()
+        this.intervalTime = 0;
+        this.sequenceCount += 1;
 
       let fourCorners = [
         [40, 40],

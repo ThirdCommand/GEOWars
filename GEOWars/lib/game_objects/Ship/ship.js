@@ -22,6 +22,7 @@ class Ship extends GameObject {
     this.mousePos = [0,0];
     this.fireAngle = 0;
     this.bulletSound = new Sound("GEOWars/sounds/Fire_normal.wav", 0.2);
+    this.upgradeBulletsSound = new Sound("GEOWars/sounds/Hi_Score_achieved.wav")
     this.bulletTimeCheck = 0;
     this.bulletInterval = 120;
     this.controlsDirection = [0,0];
@@ -111,6 +112,13 @@ class Ship extends GameObject {
       -shipXPos * zoomScale + width / 2,
       -shipYPos * zoomScale + height / 2
     )
+  }
+
+  upgradeBullets() {
+    if (this.powerLevel != 2) {
+      this.powerLevel = 2
+      this.playSound(this.upgradeBulletsSound)
+    }
   }
   
   findSmallestDistanceToAWall(){
