@@ -13,6 +13,7 @@ const ShipExplosion = require("./game_objects/particles/ship_explosion")
 
 const Util = require("./game_engine/util");
 const Sound = require("./game_engine/sound")
+const StateMachine = require("./game_engine/state_machine")
 
 class GameScript {
   constructor(engine) {
@@ -36,6 +37,7 @@ class GameScript {
     this.engine.addxButtonListener(this)
     this.aliveEnemies = [];
     this.sequenceTypes = this.addSequenceTypes()
+    this.spawnStateMachine = this.createSpawnStateMachine()
     this.deathPausedTime = 0;
     this.deathPaused = true;
     this.deathPauseTime = 2500;
@@ -54,7 +56,7 @@ class GameScript {
     this.explosionColorWheel = 0;
   }
 
-  updatexButtonListener(xButton){
+  updatexButtonListener(xButton) {
     if(xButton[0]){
 
       if(this.engine.paused){
@@ -69,24 +71,24 @@ class GameScript {
     }
   }
 
-  update(deltaTime){
+  update(deltaTime) {
 
     this.spawnSequence(deltaTime)
     this.changeExplosionColor()
   }
 
-  changeExplosionColor(){
+  changeExplosionColor() {
     this.explosionColorWheel += 1 / 2
     this.explosionColorWheel = this.explosionColorWheel % 360
   }
 
-  tallyScore(gameObject){
+  tallyScore(gameObject) {
     this.score += gameObject.points * this.scoreMultiplier
     if (this.score){
     }
   }
 
-  resetGame(){
+  resetGame() {
     this.deathPaused = true
     this.desplayEndScore = this.score
     this.score = 0
@@ -235,6 +237,9 @@ class GameScript {
 
   addSequenceTypes() {
     return {
+      Singularity: () => {
+        this.enemyCreatorList["Singularity"]([700, 300])
+      },
       EasyGroups: () => {
         let randomPositions = []
         for (let i = 0; i < 5; i++) {
@@ -285,6 +290,16 @@ class GameScript {
     }
   }
 
+  createSpawnStateMachine(){
+    // let events = this.sequenceTypes 
+    // let stateIndex = {i: 0}
+    // // these are the events
+    // // times will be hard coded for each state in the queue
+    // let spawnQueue = []
+    // let singularityState = new StateMachine(this.engine, {stateIndex, event: events.Singularity})
+    // let easyGroupsState = new StateMachine(this.engine, undefined)
+  }
+
   randomPosition() {
     return [
       this.DIM_X * 0.70 * Math.random(),
@@ -318,9 +333,10 @@ class GameScript {
       this.enemyCreatorList["Singularity"]([700,300])
       this.sequenceCount += 1
     }
+                                   // wait time              //parentIndex   // repeat count
     if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount < 5) {
       this.intervalTime = 0;
-      this.sequenceTypes["EasyGroups"]()
+      this.sequenceTypes["EasyGroups"]() // event
       // this.randomSpawnEnemy();
       this.sequenceCount += 1
 
@@ -378,8 +394,6 @@ class GameScript {
     } else if (this.intervalTime > 375 && this.sequenceCount > 20 && this.sequenceCount < 30 && this.hugeSequenceTime % 2 === 1) {
       this.intervalTime = 0;
       this.sequenceCount += 10;
-
-      let enemies_to_spawn = [];
       let arrowWallPositions = []
       let arrowDirection = Math.PI * 3 / 2 + Math.PI
       for (let i = 40; i < GameScript.DIM_X; i += 40) {
@@ -390,7 +404,11 @@ class GameScript {
         this.enemyCreatorList["Arrow"](position, arrowDirection)
       })
 
-    } else if  (this.sequenceCount >= 30) {
+    } 
+              // this is the spawner event. 
+              // it runs through all the child states
+              // for the event to be triggered
+    else if  (this.sequenceCount >= 30) {
       this.sequenceCount = 0;
       if (!(this.intervalTiming < 0.5)) {
         this.intervalTiming *= 0.9;

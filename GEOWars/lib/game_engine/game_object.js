@@ -92,7 +92,7 @@ class GameObject {
     obj.parentObject = this
   }
 
-  update() {
+  update(deltaTime) {
     // overwritten by child class for update scripts
   }
 

@@ -667,7 +667,7 @@ class GameObject {
     obj.parentObject = this
   }
 
-  update() {
+  update(deltaTime) {
     // overwritten by child class for update scripts
   }
 
@@ -814,6 +814,130 @@ class Sound {
 }
 
 module.exports = Sound;
+
+/***/ }),
+
+/***/ "./lib/game_engine/state_machine.js":
+/*!******************************************!*\
+  !*** ./lib/game_engine/state_machine.js ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const GameObject = __webpack_require__(/*! ./game_object */ "./lib/game_engine/game_object.js")
+
+class StateMachine extends GameObject {
+    constructor(engine, {}) {
+        super(engine)
+        this.stateIndex = options.stateIndex || {i: 0 }
+        this.parentState = options.parentState, waitTime = 0, stateQueue = [], event, timesDo = 1, endCondition = true
+        this.stateIndex = stateIndex
+        this.parentIndex = parentIndex
+        this.stateTime = 0
+
+        this.waitTime = waitTime
+        this.stateQueue = stateQueue
+        this.event = event
+        this.timesDo = timesDo
+        this.endCondition = endCondition 
+        // if not null, it will repeat until the condition is met\
+        // but it will meet the repeatcondition first. 
+        // end condition returns a bool. default true
+
+        // there is no "break" condition yet
+
+        this.repeatCount = 1 // do something 3 times. 1 index not 0 index
+
+        // first it waits,
+        // then it runs through state queue
+        // then it runs the event
+        //      state queue and event can be empty, 
+        //        which means the state was just for waiting
+        // then it checks the repeat condition
+
+        // event is something that runs in one frame
+
+    }
+
+    addChilState(state){
+        state.parentIndex = this
+    }
+
+    // state queue is now done
+    onCompletion(){
+        this.event()
+                // 1 index not 0
+        if(this.repeatCount <= this.timesDo){
+            this.stateIndex.i = 0;
+            this.currentTime = 0;
+        } else if(!this.endCondition) {
+            this.stateIndex.i = 0;
+            this.currentTime = 0;
+        } else {
+            this.parentIndex += 1
+            this.remove()
+        }
+    }
+
+    // instances vs inheritance
+    // instance is built from the ground up, 
+    // starting with the lowest level of the sequence
+    // inheritance is built from the top down, 
+    // allowing each custom class to build thier individual statequeues
+    // inheritance gives access to all of the gameobject functions
+    // instances are simpler, everything is fed through the constuctor
+    // User gets to choose?
+
+    // singularity
+    // EasyGroups <-- childState
+        // wait: 2500 * timeScale (user can provide timescale functionality)
+        // event: spawnEasyGroups 
+        // endCondition: x4 // repeats until end condition met
+        // parentIndex
+    // waitState <--childState
+    // EasyGroupsArrows 
+        // wait: 2500 * timeScale (user can provide timescale functionality)
+        // event: spawnEasyGroupsArrows
+        // endCondition: x4 // repeats until end condition met
+    // event
+    // wait
+    // event
+    // 
+
+    event(){
+        this.eventCondition()
+    }
+    //spawner
+        //easy wave
+            //
+
+    updateState(intervalTime){
+        if(this.stateIndex > this.stateQueue.length){
+            this.onCompletion()
+        } else {
+            this.stateTime += intervalTime
+            if(intervalTime > this.waitTime){
+                this.stateQueue[this.stateIndex.i].updateState(intervalTime)
+            }
+        }
+    }
+
+    remove() {
+        this.childObjects.forEach((obj) => {
+            obj.remove()
+        })
+        if (this.parentObject) {
+            this.parentObject.childObjects.splice(this.parentObject.childObjects.indexOf(this), 1)
+        }
+        this.stateQueue.forEach((obj) => {
+            obj.remove()
+        })
+        
+        this.gameEngine.remove(this);
+    }
+
+}
+module.exports = StateMachine;
 
 /***/ }),
 
@@ -3339,6 +3463,7 @@ const ShipExplosion = __webpack_require__(/*! ./game_objects/particles/ship_expl
 
 const Util = __webpack_require__(/*! ./game_engine/util */ "./lib/game_engine/util.js");
 const Sound = __webpack_require__(/*! ./game_engine/sound */ "./lib/game_engine/sound.js")
+const StateMachine = __webpack_require__(/*! ./game_engine/state_machine */ "./lib/game_engine/state_machine.js")
 
 class GameScript {
   constructor(engine) {
@@ -3362,6 +3487,7 @@ class GameScript {
     this.engine.addxButtonListener(this)
     this.aliveEnemies = [];
     this.sequenceTypes = this.addSequenceTypes()
+    this.spawnStateMachine = this.createSpawnStateMachine()
     this.deathPausedTime = 0;
     this.deathPaused = true;
     this.deathPauseTime = 2500;
@@ -3380,7 +3506,7 @@ class GameScript {
     this.explosionColorWheel = 0;
   }
 
-  updatexButtonListener(xButton){
+  updatexButtonListener(xButton) {
     if(xButton[0]){
 
       if(this.engine.paused){
@@ -3395,24 +3521,24 @@ class GameScript {
     }
   }
 
-  update(deltaTime){
+  update(deltaTime) {
 
     this.spawnSequence(deltaTime)
     this.changeExplosionColor()
   }
 
-  changeExplosionColor(){
+  changeExplosionColor() {
     this.explosionColorWheel += 1 / 2
     this.explosionColorWheel = this.explosionColorWheel % 360
   }
 
-  tallyScore(gameObject){
+  tallyScore(gameObject) {
     this.score += gameObject.points * this.scoreMultiplier
     if (this.score){
     }
   }
 
-  resetGame(){
+  resetGame() {
     this.deathPaused = true
     this.desplayEndScore = this.score
     this.score = 0
@@ -3561,6 +3687,9 @@ class GameScript {
 
   addSequenceTypes() {
     return {
+      Singularity: () => {
+        this.enemyCreatorList["Singularity"]([700, 300])
+      },
       EasyGroups: () => {
         let randomPositions = []
         for (let i = 0; i < 5; i++) {
@@ -3611,6 +3740,16 @@ class GameScript {
     }
   }
 
+  createSpawnStateMachine(){
+    // let events = this.sequenceTypes 
+    // let stateIndex = {i: 0}
+    // // these are the events
+    // // times will be hard coded for each state in the queue
+    // let spawnQueue = []
+    // let singularityState = new StateMachine(this.engine, {stateIndex, event: events.Singularity})
+    // let easyGroupsState = new StateMachine(this.engine, undefined)
+  }
+
   randomPosition() {
     return [
       this.DIM_X * 0.70 * Math.random(),
@@ -3644,9 +3783,10 @@ class GameScript {
       this.enemyCreatorList["Singularity"]([700,300])
       this.sequenceCount += 1
     }
+                                   // wait time              //parentIndex   // repeat count
     if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount < 5) {
       this.intervalTime = 0;
-      this.sequenceTypes["EasyGroups"]()
+      this.sequenceTypes["EasyGroups"]() // event
       // this.randomSpawnEnemy();
       this.sequenceCount += 1
 
@@ -3704,8 +3844,6 @@ class GameScript {
     } else if (this.intervalTime > 375 && this.sequenceCount > 20 && this.sequenceCount < 30 && this.hugeSequenceTime % 2 === 1) {
       this.intervalTime = 0;
       this.sequenceCount += 10;
-
-      let enemies_to_spawn = [];
       let arrowWallPositions = []
       let arrowDirection = Math.PI * 3 / 2 + Math.PI
       for (let i = 40; i < GameScript.DIM_X; i += 40) {
@@ -3716,7 +3854,11 @@ class GameScript {
         this.enemyCreatorList["Arrow"](position, arrowDirection)
       })
 
-    } else if  (this.sequenceCount >= 30) {
+    } 
+              // this is the spawner event. 
+              // it runs through all the child states
+              // for the event to be triggered
+    else if  (this.sequenceCount >= 30) {
       this.sequenceCount = 0;
       if (!(this.intervalTiming < 0.5)) {
         this.intervalTiming *= 0.9;
