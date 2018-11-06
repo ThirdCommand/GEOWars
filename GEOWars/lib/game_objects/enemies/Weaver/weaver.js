@@ -14,7 +14,7 @@ class Weaver extends GameObject {
     this.speed = 3;
     this.points = 80;
     this.radius = 5;
-    this.weaverCloseHitBox = 35;
+    this.weaverCloseHitBox = 20;
     this.shipTransform = shipTransform
     this.directionInfluenced = false;
     this.influencers = [];

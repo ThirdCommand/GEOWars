@@ -50,6 +50,9 @@ class GameView {
       if (unitVector) {
         this.updateMovementDirection(e.key, down)
       }
+      if (e.key === "p") {
+        this.engine.updateStartButtonListeners(e.key, down)
+      }
     }
   }
 

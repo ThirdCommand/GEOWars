@@ -121,17 +121,14 @@ class GameScript {
       e.stopPropagation()
       modal.style.display = "none";
       this.engine.paused = false;
+      window.removeEventListener('click', closeModalWithClick, false)
       if (!this.engine.muted) {
         this.engine.gameScript.theme.play()
         this.engine.gameScript.gameStartSound.play()
       }
     }
 
-    
-
-    // When the user clicks anywhere outside of the modal, close it
-    //  window.addEventListener('click', (e) => {
-    window.onclick = (event) => {
+    let closeModalWithClick = (e) => {
       if (event.target == modal) {
         this.engine.paused = false;
         if (!this.engine.muted) {
@@ -139,10 +136,12 @@ class GameScript {
           this.engine.gameScript.gameStartSound.play()
         }
         modal.style.display = "none";
-        
+        window.removeEventListener('click', closeModalWithClick, false)
       }
     }
 
+    // When the user clicks anywhere outside of the modal, close it
+     window.addEventListener('click', closeModalWithClick, false)
 
   }
 
@@ -202,11 +201,16 @@ class GameScript {
   }
 
   onPause(){
-
+    // console.log("onPause")
+     var modal = document.getElementById('pauseModal');
+     modal.style.display = "block";
+    //  console.log(modal)
   }
 
   onUnPause(){
-
+    var modal = document.getElementById('pauseModal');
+    modal.style.display = "none";
+    // console.log(modal)
   }
 
   randomArrowDirection() {

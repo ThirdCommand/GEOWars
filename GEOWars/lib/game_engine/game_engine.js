@@ -27,8 +27,20 @@ class GameEngine {
     this.currentCamera = null;
     this.defaultZoomScale = 1.30;
     this.zoomScale = 1.30;
+    this.graphicQuality = 1;
     this.setupController()
+    this.setupPerformance()
     window.engine = this
+
+  }
+
+  setupPerformance(){
+    this.collisionTime = 0
+    this.physicsCalcTime = 0
+    this.updateTime = 0
+    this.renderTime = 0
+    this.scriptTime = 0
+    this.timePassed = 0
   }
 
   setupController(){
@@ -46,23 +58,71 @@ class GameEngine {
      });
   }
 
+  updateGraphicSetting(delta){
+    if (delta > 50) {
+      // console.log("worst")
+      this.graphicQuality = 3
+    }else if(delta > 25){
+      this.graphicQuality = 2
+    } else {
+      this.graphicQuality = 1
+    }
+  }
+
   tick(delta) {
     // debugger
+    this.updateGraphicSetting(delta)
     if(this.paused){
       this.updateControlListeners()
       return
     }
+    // console.log(delta)
     if(delta > 125){
       delta = 125
     }
+    let beforeCollisionTime = performance.now()
     this.checkCollisions()
+    let beforePhysicsCalcs = performance.now()
+    let collisionTime = beforeCollisionTime - beforePhysicsCalcs
     this.movePhysicsComponents(delta)
+    let beforeUpdate = performance.now()
+    let physicsCalcTime = beforePhysicsCalcs - beforeUpdate
     this.updateGameObjects(delta)
+    let beforeRender = performance.now()
+    let updateTime = beforeUpdate - beforeRender
     this.clearCanvas()
     this.renderLineSprites(this.ctx)
+    let beforeScriptUpdate = performance.now()
+    let renderTime = beforeRender - beforeScriptUpdate
     this.updateControlListeners()
     this.updateGameScript(delta)
+    let scriptTime = beforeScriptUpdate - performance.now()
     this.playSounds()
+
+    this.collectPerformanceData(delta, collisionTime, physicsCalcTime, updateTime, renderTime, scriptTime)
+  }
+
+  collectPerformanceData(delta, collisionTime, physicsCalcTime, updateTime, renderTime, scriptTime) {
+    this.collisionTime += collisionTime
+    this.physicsCalcTime += physicsCalcTime
+    this.updateTime += updateTime
+    this.renderTime += renderTime
+    this.scriptTime += scriptTime
+
+    this.timePassed += delta
+    if (this.timePassed > 1000 * 60) {
+      let totalTime = this.collisionTime + this.physicsCalcTime + this.updateTime + this.renderTime + this.scriptTime
+      let timeData = {
+        "collisionTime": (100 * this.collisionTime / totalTime),
+        "physicsCalcTime": (100 * this.physicsCalcTime / totalTime),
+        "updateTime": (100 * this.updateTime / totalTime),
+        "renderTime": (100 * this.renderTime / totalTime),
+        "scriptTime": (100 * this.scriptTime / totalTime),
+      }
+      console.log(timeData)
+
+      this.setupPerformance()
+    }
   }
 
   pause(){
@@ -76,6 +136,7 @@ class GameEngine {
   }
 
   togglePause(){
+    // console.log("pausetoggle")
     this.paused ? this.unPause() : this.pause()
   }
 
@@ -119,9 +180,10 @@ class GameEngine {
     })
   }
 
-  updateStartButtonListeners(startButton){
+  updateStartButtonListeners(startButton, down){
+    // console.log([startButton, down])
     this.startButtonListeners.forEach((listener) => {
-      listener.updateStartButtonListener(startButton)
+      listener.updateStartButtonListener(startButton, down)
     })
   }
 

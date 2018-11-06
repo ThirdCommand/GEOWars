@@ -15,7 +15,7 @@ class BulletSprite extends LineSprite {
     
     let w = this.length / 2;
     let movementDirection = Math.atan2(vel[0], -vel[1])
-
+    
     ctx.save();
     ctx.beginPath();
     ctx.translate(pos[0], pos[1]);

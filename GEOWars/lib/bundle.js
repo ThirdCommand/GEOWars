@@ -274,8 +274,20 @@ class GameEngine {
     this.currentCamera = null;
     this.defaultZoomScale = 1.30;
     this.zoomScale = 1.30;
+    this.graphicQuality = 1;
     this.setupController()
+    this.setupPerformance()
     window.engine = this
+
+  }
+
+  setupPerformance(){
+    this.collisionTime = 0
+    this.physicsCalcTime = 0
+    this.updateTime = 0
+    this.renderTime = 0
+    this.scriptTime = 0
+    this.timePassed = 0
   }
 
   setupController(){
@@ -293,23 +305,71 @@ class GameEngine {
      });
   }
 
+  updateGraphicSetting(delta){
+    if (delta > 50) {
+      // console.log("worst")
+      this.graphicQuality = 3
+    }else if(delta > 25){
+      this.graphicQuality = 2
+    } else {
+      this.graphicQuality = 1
+    }
+  }
+
   tick(delta) {
     // debugger
+    this.updateGraphicSetting(delta)
     if(this.paused){
       this.updateControlListeners()
       return
     }
+    // console.log(delta)
     if(delta > 125){
       delta = 125
     }
+    let beforeCollisionTime = performance.now()
     this.checkCollisions()
+    let beforePhysicsCalcs = performance.now()
+    let collisionTime = beforeCollisionTime - beforePhysicsCalcs
     this.movePhysicsComponents(delta)
+    let beforeUpdate = performance.now()
+    let physicsCalcTime = beforePhysicsCalcs - beforeUpdate
     this.updateGameObjects(delta)
+    let beforeRender = performance.now()
+    let updateTime = beforeUpdate - beforeRender
     this.clearCanvas()
     this.renderLineSprites(this.ctx)
+    let beforeScriptUpdate = performance.now()
+    let renderTime = beforeRender - beforeScriptUpdate
     this.updateControlListeners()
     this.updateGameScript(delta)
+    let scriptTime = beforeScriptUpdate - performance.now()
     this.playSounds()
+
+    this.collectPerformanceData(delta, collisionTime, physicsCalcTime, updateTime, renderTime, scriptTime)
+  }
+
+  collectPerformanceData(delta, collisionTime, physicsCalcTime, updateTime, renderTime, scriptTime) {
+    this.collisionTime += collisionTime
+    this.physicsCalcTime += physicsCalcTime
+    this.updateTime += updateTime
+    this.renderTime += renderTime
+    this.scriptTime += scriptTime
+
+    this.timePassed += delta
+    if (this.timePassed > 1000 * 60) {
+      let totalTime = this.collisionTime + this.physicsCalcTime + this.updateTime + this.renderTime + this.scriptTime
+      let timeData = {
+        "collisionTime": (100 * this.collisionTime / totalTime),
+        "physicsCalcTime": (100 * this.physicsCalcTime / totalTime),
+        "updateTime": (100 * this.updateTime / totalTime),
+        "renderTime": (100 * this.renderTime / totalTime),
+        "scriptTime": (100 * this.scriptTime / totalTime),
+      }
+      console.log(timeData)
+
+      this.setupPerformance()
+    }
   }
 
   pause(){
@@ -323,6 +383,7 @@ class GameEngine {
   }
 
   togglePause(){
+    // console.log("pausetoggle")
     this.paused ? this.unPause() : this.pause()
   }
 
@@ -366,9 +427,10 @@ class GameEngine {
     })
   }
 
-  updateStartButtonListeners(startButton){
+  updateStartButtonListeners(startButton, down){
+    // console.log([startButton, down])
     this.startButtonListeners.forEach((listener) => {
-      listener.updateStartButtonListener(startButton)
+      listener.updateStartButtonListener(startButton, down)
     })
   }
 
@@ -1172,7 +1234,7 @@ class BulletSprite extends LineSprite {
     
     let w = this.length / 2;
     let movementDirection = Math.atan2(vel[0], -vel[1])
-
+    
     ctx.save();
     ctx.beginPath();
     ctx.translate(pos[0], pos[1]);
@@ -2112,7 +2174,7 @@ class Weaver extends GameObject {
     this.speed = 3;
     this.points = 80;
     this.radius = 5;
-    this.weaverCloseHitBox = 35;
+    this.weaverCloseHitBox = 20;
     this.shipTransform = shipTransform
     this.directionInfluenced = false;
     this.influencers = [];
@@ -2229,7 +2291,9 @@ class WeaverSprite extends LineSprite {
   }
 
   draw(ctx) {
-
+    // drawing this guy is taking waaay too much time.
+    // I took out the blurr factor and it's way better.
+    // doesn't look as nice, but it's a starting point
     let pos = this.transform.absolutePosition();
     let angle = this.transform.absoluteAngle();
     let spawningScale = this.spawningScale
@@ -2244,10 +2308,10 @@ class WeaverSprite extends LineSprite {
     ctx.save();
     ctx.translate(pos[0], pos[1]);
     ctx.rotate(angle);
-
+    
     let blurFactor = 0.5
     ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
-    ctx.shadowBlur = 10 * blurFactor
+    // ctx.shadowBlur = 10 * blurFactor
     ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
     ctx.lineWidth = 7.5
     ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
@@ -2255,10 +2319,10 @@ class WeaverSprite extends LineSprite {
     ctx.lineWidth = 6
     ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.6)";
     this.drawWeaver(ctx, s)
-    ctx.lineWidth = 4.5;
-    this.drawWeaver(ctx, s)
-    ctx.lineWidth = 3;
-    this.drawWeaver(ctx, s)
+    // ctx.lineWidth = 4.5;
+    // this.drawWeaver(ctx, s)
+    // ctx.lineWidth = 3;
+    // this.drawWeaver(ctx, s)
     ctx.strokeStyle = 'rgb(255, 255, 255)';
     ctx.lineWidth = 1.5;
     this.drawWeaver(ctx, s)
@@ -2853,7 +2917,17 @@ class ParticleExplosion extends GameObject{
     this.currentColor = new Color({
       "hsla": [startingH, 100, 50, opacity]
     });
-    this.particleNum = 80;
+    if (engine.graphicQuality === 1) {
+      // console.log("best")
+      this.particleNum = 80;
+    } else if (engine.graphicQuality === 2){
+      // console.log("medium")
+      this.particleNum = 40
+    } else {
+      // console.log("potato")
+      this.particleNum = 20
+    }
+
     let explosionSound = new Sound("GEOWars/sounds/Enemy_explode.wav", 0.2)
     this.playSound(explosionSound)
     this.createExplosionParticles()
@@ -3061,6 +3135,7 @@ class Ship extends GameObject {
     this.addMousePosListener()
     this.addLeftControlStickListener()
     this.addRightControlStickListener()
+    this.addStartButtonListener()
     this.radius = 10
     this.addCollider("General", this, this.radius)
     this.addCollider("ShipDeath", this, this.radius, ["BoxBox", "Singularity", "Weaver", "Grunt", "Arrow", "Pinwheel"], ["General"])
@@ -3081,6 +3156,7 @@ class Ship extends GameObject {
     this.dontShoot = false
 
     this.keysPressed = []
+    this.pauseKeyedUp = true
     this.zooming = true
 
     this.spawning = true
@@ -3234,7 +3310,6 @@ class Ship extends GameObject {
 
   updateMousePos(mousePos){
     this.setFireAngle(mousePos)
-
   }
 
   updateRightControlStickInput(vector) {
@@ -3271,8 +3346,33 @@ class Ship extends GameObject {
         this.controlsDirection = [0,0]
       }
     }
-    
   } 
+ // Refactor into game engine and game script
+  updateStartButtonListener(key, down){
+    if (typeof key === "string"){
+      if(down){
+        if(this.pauseKeyedUp){
+          this.pauseKeyedUp = false
+          if (this.gameEngine.paused && !this.gameEngine.muted) {
+            this.engine.gameScript.theme.play()
+          }
+          this.gameEngine.togglePause()
+        }
+      } else {
+        this.pauseKeyedUp = true
+      }
+    } else if(key[0]) {
+      if (this.pauseKeyedUp){
+        this.pauseKeyedUp = false
+        if (this.gameEngine.paused && !this.gameEngine.muted) {
+          this.engine.gameScript.theme.play()
+        }
+        this.gameEngine.togglePause()
+      }
+    } else {
+      this.pauseKeyedUp = true
+    }
+  }
 
   wallGraze() {
     this.gameEngine.gameScript.wallGraze(this.transform, this.radius * 2)
@@ -3571,17 +3671,14 @@ class GameScript {
       e.stopPropagation()
       modal.style.display = "none";
       this.engine.paused = false;
+      window.removeEventListener('click', closeModalWithClick, false)
       if (!this.engine.muted) {
         this.engine.gameScript.theme.play()
         this.engine.gameScript.gameStartSound.play()
       }
     }
 
-    
-
-    // When the user clicks anywhere outside of the modal, close it
-    //  window.addEventListener('click', (e) => {
-    window.onclick = (event) => {
+    let closeModalWithClick = (e) => {
       if (event.target == modal) {
         this.engine.paused = false;
         if (!this.engine.muted) {
@@ -3589,10 +3686,12 @@ class GameScript {
           this.engine.gameScript.gameStartSound.play()
         }
         modal.style.display = "none";
-        
+        window.removeEventListener('click', closeModalWithClick, false)
       }
     }
 
+    // When the user clicks anywhere outside of the modal, close it
+     window.addEventListener('click', closeModalWithClick, false)
 
   }
 
@@ -3652,11 +3751,16 @@ class GameScript {
   }
 
   onPause(){
-
+    // console.log("onPause")
+     var modal = document.getElementById('pauseModal');
+     modal.style.display = "block";
+    //  console.log(modal)
   }
 
   onUnPause(){
-
+    var modal = document.getElementById('pauseModal');
+    modal.style.display = "none";
+    // console.log(modal)
   }
 
   randomArrowDirection() {
@@ -4061,6 +4165,9 @@ class GameView {
       let unitVector = GameView.MOVES[e.key]
       if (unitVector) {
         this.updateMovementDirection(e.key, down)
+      }
+      if (e.key === "p") {
+        this.engine.updateStartButtonListeners(e.key, down)
       }
     }
   }

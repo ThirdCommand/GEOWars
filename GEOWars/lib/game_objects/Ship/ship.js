@@ -14,6 +14,7 @@ class Ship extends GameObject {
     this.addMousePosListener()
     this.addLeftControlStickListener()
     this.addRightControlStickListener()
+    this.addStartButtonListener()
     this.radius = 10
     this.addCollider("General", this, this.radius)
     this.addCollider("ShipDeath", this, this.radius, ["BoxBox", "Singularity", "Weaver", "Grunt", "Arrow", "Pinwheel"], ["General"])
@@ -34,6 +35,7 @@ class Ship extends GameObject {
     this.dontShoot = false
 
     this.keysPressed = []
+    this.pauseKeyedUp = true
     this.zooming = true
 
     this.spawning = true
@@ -187,7 +189,6 @@ class Ship extends GameObject {
 
   updateMousePos(mousePos){
     this.setFireAngle(mousePos)
-
   }
 
   updateRightControlStickInput(vector) {
@@ -224,8 +225,33 @@ class Ship extends GameObject {
         this.controlsDirection = [0,0]
       }
     }
-    
   } 
+ // Refactor into game engine and game script
+  updateStartButtonListener(key, down){
+    if (typeof key === "string"){
+      if(down){
+        if(this.pauseKeyedUp){
+          this.pauseKeyedUp = false
+          if (this.gameEngine.paused && !this.gameEngine.muted) {
+            this.engine.gameScript.theme.play()
+          }
+          this.gameEngine.togglePause()
+        }
+      } else {
+        this.pauseKeyedUp = true
+      }
+    } else if(key[0]) {
+      if (this.pauseKeyedUp){
+        this.pauseKeyedUp = false
+        if (this.gameEngine.paused && !this.gameEngine.muted) {
+          this.engine.gameScript.theme.play()
+        }
+        this.gameEngine.togglePause()
+      }
+    } else {
+      this.pauseKeyedUp = true
+    }
+  }
 
   wallGraze() {
     this.gameEngine.gameScript.wallGraze(this.transform, this.radius * 2)

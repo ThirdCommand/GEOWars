@@ -7,7 +7,9 @@ class WeaverSprite extends LineSprite {
   }
 
   draw(ctx) {
-
+    // drawing this guy is taking waaay too much time.
+    // I took out the blurr factor and it's way better.
+    // doesn't look as nice, but it's a starting point
     let pos = this.transform.absolutePosition();
     let angle = this.transform.absoluteAngle();
     let spawningScale = this.spawningScale
@@ -22,10 +24,10 @@ class WeaverSprite extends LineSprite {
     ctx.save();
     ctx.translate(pos[0], pos[1]);
     ctx.rotate(angle);
-
+    
     let blurFactor = 0.5
     ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
-    ctx.shadowBlur = 10 * blurFactor
+    // ctx.shadowBlur = 10 * blurFactor
     ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
     ctx.lineWidth = 7.5
     ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
@@ -33,10 +35,10 @@ class WeaverSprite extends LineSprite {
     ctx.lineWidth = 6
     ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.6)";
     this.drawWeaver(ctx, s)
-    ctx.lineWidth = 4.5;
-    this.drawWeaver(ctx, s)
-    ctx.lineWidth = 3;
-    this.drawWeaver(ctx, s)
+    // ctx.lineWidth = 4.5;
+    // this.drawWeaver(ctx, s)
+    // ctx.lineWidth = 3;
+    // this.drawWeaver(ctx, s)
     ctx.strokeStyle = 'rgb(255, 255, 255)';
     ctx.lineWidth = 1.5;
     this.drawWeaver(ctx, s)

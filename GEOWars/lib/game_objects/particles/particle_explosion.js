@@ -13,7 +13,17 @@ class ParticleExplosion extends GameObject{
     this.currentColor = new Color({
       "hsla": [startingH, 100, 50, opacity]
     });
-    this.particleNum = 80;
+    if (engine.graphicQuality === 1) {
+      // console.log("best")
+      this.particleNum = 80;
+    } else if (engine.graphicQuality === 2){
+      // console.log("medium")
+      this.particleNum = 40
+    } else {
+      // console.log("potato")
+      this.particleNum = 20
+    }
+
     let explosionSound = new Sound("GEOWars/sounds/Enemy_explode.wav", 0.2)
     this.playSound(explosionSound)
     this.createExplosionParticles()
