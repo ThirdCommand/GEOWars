@@ -90,8 +90,8 @@ The class methods that are available to the user when inheriting from GameObject
 
 ### addCollider
   Takes in the following parameters  
-  String: collider name
-  Reference to GameObject (usually "this")   
+  String: collider name  
+  Reference to GameObject: (usually "this")   
   Double: hitbox radius  
   Array: names of the GameObjects it can hit (subscriptions)  
   Array: names of the types of colliders it can hit
