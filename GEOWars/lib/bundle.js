@@ -3751,10 +3751,8 @@ class GameScript {
   }
 
   onPause(){
-    // console.log("onPause")
-     var modal = document.getElementById('pauseModal');
-     modal.style.display = "block";
-    //  console.log(modal)
+    var modal = document.getElementById('pauseModal');
+    modal.style.display = "block";
   }
 
   onUnPause(){
