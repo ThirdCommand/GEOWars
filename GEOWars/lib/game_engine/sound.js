@@ -7,9 +7,13 @@ class Sound {
   }
 
   play() {
-    this.sound = new Audio(this.url);
-    this.sound.volume = this.volume;
-    this.sound.play();
+    // if (this.sound) {
+    //   this.sound.play()
+    // } else {
+      this.sound = new Audio(this.url);
+      this.sound.volume = this.volume;
+      this.sound.play();
+    // }
   }
   toggleMute(){
     if(this.sound){
@@ -35,6 +39,11 @@ class Sound {
     if(this.sound){
       this.sound.pause()
     } 
+  }
+  unPause(){
+    if (this.sound) {
+      this.sound.play()
+    }
   }
 }
 

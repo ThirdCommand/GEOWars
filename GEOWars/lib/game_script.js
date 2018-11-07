@@ -201,14 +201,22 @@ class GameScript {
   }
 
   onPause(){
+    try {
+      this.theme.pause()
+    } catch (error) {
+    }
+    
     var modal = document.getElementById('pauseModal');
     modal.style.display = "block";
   }
 
   onUnPause(){
+    try {
+      this.theme.unPause()
+    } catch (error) {}
+    
     var modal = document.getElementById('pauseModal');
     modal.style.display = "none";
-    // console.log(modal)
   }
 
   randomArrowDirection() {

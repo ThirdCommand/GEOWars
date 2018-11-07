@@ -375,6 +375,7 @@ class GameEngine {
   pause(){
     this.paused = true
     this.gameScript.onPause()
+    
   }
 
   unPause(){
@@ -844,9 +845,13 @@ class Sound {
   }
 
   play() {
-    this.sound = new Audio(this.url);
-    this.sound.volume = this.volume;
-    this.sound.play();
+    // if (this.sound) {
+    //   this.sound.play()
+    // } else {
+      this.sound = new Audio(this.url);
+      this.sound.volume = this.volume;
+      this.sound.play();
+    // }
   }
   toggleMute(){
     if(this.sound){
@@ -872,6 +877,11 @@ class Sound {
     if(this.sound){
       this.sound.pause()
     } 
+  }
+  unPause(){
+    if (this.sound) {
+      this.sound.play()
+    }
   }
 }
 
@@ -3354,7 +3364,7 @@ class Ship extends GameObject {
         if(this.pauseKeyedUp){
           this.pauseKeyedUp = false
           if (this.gameEngine.paused && !this.gameEngine.muted) {
-            this.engine.gameScript.theme.play()
+            this.gameEngine.gameScript.theme.play()
           }
           this.gameEngine.togglePause()
         }
@@ -3365,7 +3375,7 @@ class Ship extends GameObject {
       if (this.pauseKeyedUp){
         this.pauseKeyedUp = false
         if (this.gameEngine.paused && !this.gameEngine.muted) {
-          this.engine.gameScript.theme.play()
+          this.gameEngine.gameScript.theme.play()
         }
         this.gameEngine.togglePause()
       }
@@ -3751,14 +3761,22 @@ class GameScript {
   }
 
   onPause(){
+    try {
+      this.theme.pause()
+    } catch (error) {
+    }
+    
     var modal = document.getElementById('pauseModal');
     modal.style.display = "block";
   }
 
   onUnPause(){
+    try {
+      this.theme.unPause()
+    } catch (error) {}
+    
     var modal = document.getElementById('pauseModal');
     modal.style.display = "none";
-    // console.log(modal)
   }
 
   randomArrowDirection() {

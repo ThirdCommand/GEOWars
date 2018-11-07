@@ -128,6 +128,7 @@ class GameEngine {
   pause(){
     this.paused = true
     this.gameScript.onPause()
+    
   }
 
   unPause(){

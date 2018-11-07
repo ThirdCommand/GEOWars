@@ -233,7 +233,7 @@ class Ship extends GameObject {
         if(this.pauseKeyedUp){
           this.pauseKeyedUp = false
           if (this.gameEngine.paused && !this.gameEngine.muted) {
-            this.engine.gameScript.theme.play()
+            this.gameEngine.gameScript.theme.play()
           }
           this.gameEngine.togglePause()
         }
@@ -244,7 +244,7 @@ class Ship extends GameObject {
       if (this.pauseKeyedUp){
         this.pauseKeyedUp = false
         if (this.gameEngine.paused && !this.gameEngine.muted) {
-          this.engine.gameScript.theme.play()
+          this.gameEngine.gameScript.theme.play()
         }
         this.gameEngine.togglePause()
       }
