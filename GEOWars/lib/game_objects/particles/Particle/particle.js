@@ -23,16 +23,15 @@ class Particle extends GameObject{
 
     this.transform.pos[0] = pos[0]
     this.transform.pos[1] = pos[1]
-
     this.color = color
     this.movementAngle = this.createMovementAngle(wallHit)
     this.transform.vel = Util.vectorCartisian(this.movementAngle, initialSpeed)
     this.radius = 3
     this.explosionDeceleration = 0.1; // in the direction the particle is moving
     this.transform.acc = [-this.explosionDeceleration * Math.cos(this.movementAngle), -this.explosionDeceleration * Math.sin(this.movementAngle)]
-
     this.addLineSprite(new ParticleSprite(this.transform, this.color))
     this.addPhysicsComponent()
+    
     // this.addCollider("General", this, this.radius)
 
   }
@@ -52,6 +51,7 @@ class Particle extends GameObject{
       }
     }
   }
+  
 
   update(deltaTime){
     this.lineSprite.rectLength -= 0.1;
@@ -60,12 +60,16 @@ class Particle extends GameObject{
       
       this.remove();
     }
-    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), -0.5)) {
-      this.remove();
-    }
+    this.checkBounds()
     // acc is influenced by singularities, then changed to usual acc
     this.movementAngle = Math.atan2(this.transform.vel[1], this.transform.vel[0])
     this.transform.acc = [-this.explosionDeceleration * Math.cos(this.movementAngle), -this.explosionDeceleration * Math.sin(this.movementAngle)]
+  }
+
+  checkBounds() {
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), -0.5)) {
+      this.remove();
+    }
   }
 
 }

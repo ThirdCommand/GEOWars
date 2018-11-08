@@ -41,10 +41,10 @@ class StateMachine extends GameObject {
     onCompletion(){
         this.event()
                 // 1 index not 0
-        if(this.repeatCount <= this.timesDo){
+        if (this.repeatCount <= this.timesDo){
             this.stateIndex.i = 0;
             this.currentTime = 0;
-        } else if(!this.endCondition) {
+        } else if (!this.endCondition) {
             this.stateIndex.i = 0;
             this.currentTime = 0;
         } else {

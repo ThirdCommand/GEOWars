@@ -22,9 +22,11 @@ class SingularityParticle extends Particle {
 
     this.color = color;
     this.addCollider("General", this, this.radius)
+    this.checkBounds()
   }
 
   update(deltaTime) {
+    
     this.lineSprite.rectLength -= 0.25;
     this.lineSprite.color.a -= 0.01;
     if (this.lineSprite.color.a < 0.06 || this.lineSprite.rectLength < 0.25) {
@@ -34,6 +36,12 @@ class SingularityParticle extends Particle {
     // acc is influenced by singularities, then changed to usual acc
     this.movementAngle = Math.atan2(this.transform.vel[1], this.transform.vel[0])
     this.transform.acc = [0,0]
+    this.checkBounds()
+  }
+  checkBounds() {
+    if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), -0.5)) {
+      this.remove();
+    }
   }
 
 }

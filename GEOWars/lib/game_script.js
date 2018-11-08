@@ -351,7 +351,6 @@ class GameScript {
       this.sequenceCount += 1
 
     } else if ( this.sequenceCount === 5 && this.intervalTime > 5000 ) {
-
       this.sequenceCount += 1
     } else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount > 5 && this.sequenceCount < 10) {
       this.sequenceCount += 1
