@@ -8,6 +8,7 @@ const Arrow = require("./game_objects/enemies/Arrow/arrow");
 const Grunt = require("./game_objects/enemies/Grunt/grunt");
 const Weaver = require("./game_objects/enemies/Weaver/weaver");
 const Singularity = require("./game_objects/enemies/Singularity/singularity");
+const AlienShip = require("./game_objects/enemies/Singularity/alien_ship")
 const ParticleExplosion = require("./game_objects/particles/particle_explosion")
 const ShipExplosion = require("./game_objects/particles/ship_explosion")
 
@@ -177,7 +178,7 @@ class GameScript {
 
   explodeEverything(){
     let removeList = []
-    let typesToRemove = ["Grunt", "Pinwheel", "BoxBox", "Arrow", "Singularity", "Weaver"]
+    let typesToRemove = ["Grunt", "Pinwheel", "BoxBox", "Arrow", "Singularity", "Weaver", "AlienShip"]
     this.engine.gameObjects.forEach((object) => {
       if (object.constructor.name === "Ship") {
         let objectTransform = object.transform
@@ -232,7 +233,8 @@ class GameScript {
       Arrow:       (pos, angle) => (new Arrow(engine, pos, angle)),
       Grunt:       (pos)        => (new Grunt(engine, pos, this.ship.transform)),
       Weaver:      (pos)        => (new Weaver(engine, pos, this.ship.transform)),
-      Singularity: (pos)        => (new Singularity(engine, pos))
+      Singularity: (pos)        => (new Singularity(engine, pos)),
+      AlienShip:   (pos)        => (new AlienShip(engine, pos, [0,0], this.ship.transform)),
     };
   }
 
@@ -257,7 +259,7 @@ class GameScript {
           randomPositions.push(pos)
         }
         randomPositions.forEach((pos) => {
-          let possibleSpawns = ["BoxBox", "Pinwheel", "Singularity"]
+          let possibleSpawns = ["BoxBox", "Pinwheel"] //, "Singularity"]
           this.enemyCreatorList[possibleSpawns[Math.floor(Math.random() * possibleSpawns.length) % possibleSpawns.length]](pos)
         })
       },
@@ -329,15 +331,19 @@ class GameScript {
     } else {
       this.intervalTime += delta;
     }
-    // if (this.intervalTime > 2000) {
-    //   this.randomSpawnEnemy();
-    //   this.intervalTime = 0
-    //   if (this.firstArrowAdded) {
-    //     this.arrowAdded = true
-    //   }
-    //   this.firstArrowAdded = true 
-    // }
 
+
+
+
+    this.testing = false
+    if (this.testing) {
+      if (this.sequenceCount === 0){
+        this.enemyCreatorList["AlienShip"]([500,100])
+        this.sequenceCount += 1
+      }
+    } else {
+      
+    
     this.gameTime += delta;
     if(this.sequenceCount === 1) {
       this.enemyCreatorList["Singularity"]([700,300])
@@ -425,7 +431,7 @@ class GameScript {
       this.hugeSequenceTime += 1;
     }
   
-
+    }
 
 
 

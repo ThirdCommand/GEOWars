@@ -24,7 +24,7 @@ class Bullet extends GameObject {
   }
 
   addExplosionCollider(){
-    let subscribers = ["Grunt", "Pinwheel", "BoxBox", "Arrow", "Singularity", "Weaver"]
+    let subscribers = ["Grunt", "Pinwheel", "BoxBox", "Arrow", "Singularity", "Weaver", "AlienShip"]
     this.addCollider("bulletHit", this, this.radius, subscribers, ["General"])
     this.addCollider("General", this, this.radius)
   }
@@ -45,13 +45,18 @@ class Bullet extends GameObject {
 
   onCollision(collider, type){
     if (type === "bulletHit") {
-      let hitObjectTransform = collider.gameObject.transform
-      let pos = hitObjectTransform.absolutePosition() 
-      let vel = hitObjectTransform.absoluteVelocity()
-      let explosion = new ParticleExplosion(this.gameEngine, pos, vel)
-      this.gameEngine.gameScript.tallyScore(collider.gameObject)
-      collider.gameObject.remove()
-      this.remove()
+      if (collider.objectType === "Singularity") {
+        collider.gameObject.bulletHit()
+        this.remove()
+      } else {
+        let hitObjectTransform = collider.gameObject.transform
+        let pos = hitObjectTransform.absolutePosition() 
+        let vel = hitObjectTransform.absoluteVelocity()
+        let explosion = new ParticleExplosion(this.gameEngine, pos, vel)
+        this.gameEngine.gameScript.tallyScore(collider.gameObject)
+        collider.gameObject.remove()
+        this.remove()
+      }
         
     }
     

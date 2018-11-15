@@ -1169,7 +1169,7 @@ class Bullet extends GameObject {
   }
 
   addExplosionCollider(){
-    let subscribers = ["Grunt", "Pinwheel", "BoxBox", "Arrow", "Singularity", "Weaver"]
+    let subscribers = ["Grunt", "Pinwheel", "BoxBox", "Arrow", "Singularity", "Weaver", "AlienShip"]
     this.addCollider("bulletHit", this, this.radius, subscribers, ["General"])
     this.addCollider("General", this, this.radius)
   }
@@ -1190,13 +1190,18 @@ class Bullet extends GameObject {
 
   onCollision(collider, type){
     if (type === "bulletHit") {
-      let hitObjectTransform = collider.gameObject.transform
-      let pos = hitObjectTransform.absolutePosition() 
-      let vel = hitObjectTransform.absoluteVelocity()
-      let explosion = new ParticleExplosion(this.gameEngine, pos, vel)
-      this.gameEngine.gameScript.tallyScore(collider.gameObject)
-      collider.gameObject.remove()
-      this.remove()
+      if (collider.objectType === "Singularity") {
+        collider.gameObject.bulletHit()
+        this.remove()
+      } else {
+        let hitObjectTransform = collider.gameObject.transform
+        let pos = hitObjectTransform.absolutePosition() 
+        let vel = hitObjectTransform.absoluteVelocity()
+        let explosion = new ParticleExplosion(this.gameEngine, pos, vel)
+        this.gameEngine.gameScript.tallyScore(collider.gameObject)
+        collider.gameObject.remove()
+        this.remove()
+      }
         
     }
     
@@ -1978,6 +1983,151 @@ module.exports = PinwheelSprite;
 
 /***/ }),
 
+/***/ "./lib/game_objects/enemies/Singularity/alien_ship.js":
+/*!************************************************************!*\
+  !*** ./lib/game_objects/enemies/Singularity/alien_ship.js ***!
+  \************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const GameObject = __webpack_require__(/*! ../../../game_engine/game_object */ "./lib/game_engine/game_object.js")
+const Sound = __webpack_require__(/*! ../../../game_engine/sound */ "./lib/game_engine/sound.js")
+const Util = __webpack_require__(/*! ../../../game_engine/util */ "./lib/game_engine/util.js")
+
+const AlienShipSprite = __webpack_require__(/*! ./alien_ship_sprite */ "./lib/game_objects/enemies/Singularity/alien_ship_sprite.js")
+
+class AlienShip extends GameObject {
+    constructor(engine, pos, velocity, shipTransform) {
+        super(engine)
+        this.transform.pos[0] = pos[0]
+        this.transform.pos[1] = pos[1]
+        this.transform.vel[0] = velocity[0]
+        this.transform.vel[1] = velocity[1]
+
+        this.shipTransform = shipTransform
+        this.radius = 4;
+        this.points = 120
+        this.chaseSpeed = 3.5;
+        this.chaseAcceleration = 0.125 / 3
+        this.addLineSprite(new AlienShipSprite(this.transform))
+        this.addCollider("General", this, this.radius)
+        this.addPhysicsComponent()
+    }
+
+    // change to acceleration
+   
+
+    update(timeDelta) {
+        // console.log(this.transform.pos)
+        this.chase()
+
+        if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
+            this.bounce()
+        }
+    }
+
+    bounce() {
+        this.gameEngine.gameScript.bounce(this.transform, this.radius)
+    }
+
+    chase() {
+        // take current velocity
+        // find ideal velocity using max speed, current position, and ship position
+        // get unit vector of current position - ship position
+        // take difference
+        // apply acceleration in that direction
+
+        // get dV
+        //    mV => max speed in the direction it should be moving
+        //    Vo => current velocity
+        //    dV =  mV - Vo
+        //    alpha = dV angle
+
+        let speed = this.chaseSpeed;
+
+        let shipPos = this.shipTransform.absolutePosition();
+        let pos = this.transform.absolutePosition()
+        let deltaPosition = [shipPos[0] - pos[0], shipPos[1] - pos[1]]
+        let chaseDirection = Math.atan2(deltaPosition[1], deltaPosition[0])
+
+        // Math.atan2 was giving me negative numbers.... when it shouldn't
+        if (chaseDirection < 0) {
+            chaseDirection = 2 * Math.PI + chaseDirection
+        }
+        // console.log(chaseDirection / (2 * Math.PI) * 360)
+        let Vm = [speed * Math.cos(chaseDirection), speed * Math.sin(chaseDirection)]
+        let Vo = this.transform.vel
+
+        let dV = [Vm[0] - Vo[0], Vm[1] - Vo[1]]
+        let accelerationDirection = Math.atan2(dV[1], dV[0])
+        this.transform.acc[0] += this.chaseAcceleration * Math.cos(accelerationDirection)
+        this.transform.acc[1] += this.chaseAcceleration * Math.sin(accelerationDirection)
+        // console.log(this.transform.acc)
+    }
+
+}
+
+module.exports = AlienShip;
+
+const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+
+/***/ }),
+
+/***/ "./lib/game_objects/enemies/Singularity/alien_ship_sprite.js":
+/*!*******************************************************************!*\
+  !*** ./lib/game_objects/enemies/Singularity/alien_ship_sprite.js ***!
+  \*******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const LineSprite = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./lib/game_engine/line_sprite.js")
+
+class AlienShipSprite extends LineSprite {
+    constructor(transform) {
+        super(transform)
+        this.radius = 4;
+    }
+
+    draw(ctx) {
+        ctx.strokeStyle = 'rgb(255, 255, 255)'
+        let r = 180;
+        let g = 180;
+        let b = 255;
+
+        ctx.save();
+
+        // ctx.strokeStyle = "#4286f4";
+        // ctx.lineWidth = 4;
+        let blurFactor = 0.5
+
+        ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+        ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+        ctx.lineWidth = 4;
+        this.drawAlienShip(ctx, this.radius);
+        ctx.lineWidth = 3
+        this.drawAlienShip(ctx, this.radius);
+        ctx.lineWidth = 2
+        this.drawAlienShip(ctx, this.radius);
+        ctx.lineWidth = 1
+        this.drawAlienShip(ctx, this.radius);
+        ctx.strokeStyle = 'rgb(255, 255, 255)';
+        ctx.lineWidth = 0.75
+        this.drawAlienShip(ctx, this.radius);
+        ctx.restore();
+    }
+
+    drawAlienShip(ctx, radius) {
+        ctx.beginPath();
+        let pos = this.transform.absolutePosition()
+        ctx.arc(pos[0], pos[1], radius, 0, 2 * Math.PI, true);
+        ctx.stroke();
+    }
+}
+
+module.exports = AlienShipSprite
+
+/***/ }),
+
 /***/ "./lib/game_objects/enemies/Singularity/singularity.js":
 /*!*************************************************************!*\
   !*** ./lib/game_objects/enemies/Singularity/singularity.js ***!
@@ -1989,19 +2139,23 @@ const GameObject = __webpack_require__(/*! ../../../game_engine/game_object */ "
 const Sound = __webpack_require__(/*! ../../../game_engine/sound */ "./lib/game_engine/sound.js")
 const Util = __webpack_require__(/*! ../../../game_engine/util */ "./lib/game_engine/util.js")
 
+const ParticleExplosion = __webpack_require__(/*! ../../particles/particle_explosion */ "./lib/game_objects/particles/particle_explosion.js")
 const EnemySpawn = __webpack_require__(/*! ../../particles/enemy_spawn */ "./lib/game_objects/particles/enemy_spawn.js")
 const SingularitySprite = __webpack_require__(/*! ./singularity_sprite */ "./lib/game_objects/enemies/Singularity/singularity_sprite.js")
 const SingularityParticles = __webpack_require__(/*! ../../particles/singularity_particles */ "./lib/game_objects/particles/singularity_particles.js")
-
+const AlienShip = __webpack_require__(/*! ./alien_ship */ "./lib/game_objects/enemies/Singularity/alien_ship.js")
 class Singularity extends GameObject {
   constructor(engine, pos) {
     super(engine)
     this.transform.pos = pos;
-    this.existTime = 0;
     this.gravityWellSize = 500;
     this.gravityConstant = 1000 * 0.5;
     this.radius = 15
     this.points = 100
+    this.throbbingCycleSpeed = 0.025
+    this.numberAbsorbed = 0;
+    this.alienSpawnAmount = 10;
+    this.alienSpawnSpeed = 1.5;
     this.deathSound = new Sound("GEWars/sounds/Gravity_well_die.wav")
     // this.id = options.id
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
@@ -2010,15 +2164,15 @@ class Singularity extends GameObject {
     this.increasing = true
     this.addLineSprite(new SingularitySprite(this.transform))
     this.addChildGameObject(new EnemySpawn(this.gameEngine))
-    
     this.lineSprite.throbbingScale = 1
+    this.lives = 5
   }
 
   exist() {
     // leaving off subscriptions means that things will subscribe to it
     this.addCollider("General", this, this.radius)
     this.addCollider("GravityWell", this, this.gravityWellSize, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver", "Particle", "SingularityParticle", "GridPoint"],  ["General"])
-    // this.addCollider("GravityAbsorb", this, this.radius, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver"], ["General"])
+    this.addCollider("Absorb", this, this.radius, ["Grunt", "Pinwheel", "BoxBox", "Arrow", "Weaver"],  ["General"])
     // now it will move
     this.addPhysicsComponent()
     this.lineSprite.spawned = true
@@ -2032,6 +2186,29 @@ class Singularity extends GameObject {
   onCollision(collider, type){
     if (type === "GravityWell"){
       this.influenceAcceleration(collider.gameObject)
+    } else if (type === "Absorb") {
+      let hitObjectTransform = collider.gameObject.transform
+      let pos = hitObjectTransform.absolutePosition()
+      let vel = hitObjectTransform.absoluteVelocity()
+      let explosion = new ParticleExplosion(this.gameEngine, pos, vel)
+      collider.gameObject.remove()
+
+      this.throbbingCycleSpeed *= 1.2
+      this.numberAbsorbed += 1
+    }
+  }
+
+  bulletHit(){
+    this.lives -= 1
+    if (this.lives <= 0) {
+      let pos = this.transform.absolutePosition()
+      let vel = this.transform.absoluteVelocity()
+      let explosion = new ParticleExplosion(this.gameEngine, pos, vel)
+      this.gameEngine.gameScript.tallyScore(this)
+      this.remove()
+    } else {
+      this.throbbingCycleSpeed /= 1.2
+      this.numberAbsorbed -= 1
     }
   }
 
@@ -2041,18 +2218,21 @@ class Singularity extends GameObject {
   
 
   update(deltaTime) {
+
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
       this.wallGraze()
     }
 
     this.throb(deltaTime)
+    if (this.numberAbsorbed >= 4) {
+      this.openGate()
+    }
   }
 
   throb(timeDelta) {
-    this.existTime += timeDelta;
 
     let cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-    let cycleSpeed = 0.025;
+    let cycleSpeed = this.throbbingCycleSpeed;
     // increase scale until 1.2, decrease until 0.8
 
     if (this.increasing) {
@@ -2086,6 +2266,17 @@ class Singularity extends GameObject {
       object.transform.acc[1] += accContribution[1];
     }
   }
+
+  openGate(){
+    for (let i = 0; i < this.alienSpawnAmount; i++) {
+      let angle = Math.random() * Math.PI * 2
+      let velocity = [this.alienSpawnSpeed * Math.cos(angle), this.alienSpawnSpeed * Math.sin(angle)]
+      new AlienShip(this.gameEngine, this.transform.pos, velocity, this.gameEngine.gameScript.ship.transform)
+    }
+    this.remove()
+
+  }
+
 }
 
 module.exports = Singularity;
@@ -2132,7 +2323,6 @@ class SingularitySprite extends LineSprite {
     let blurFactor = 0.5
 
     ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
-    ctx.shadowBlur = 10
     ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
     ctx.lineWidth = 7.5;
     this.drawSingularity(ctx, this.radius * spawningScale);
@@ -3161,7 +3351,7 @@ class Ship extends GameObject {
     this.addStartButtonListener()
     this.radius = 10
     this.addCollider("General", this, this.radius)
-    this.addCollider("ShipDeath", this, this.radius, ["BoxBox", "Singularity", "Weaver", "Grunt", "Arrow", "Pinwheel"], ["General"])
+    this.addCollider("ShipDeath", this, this.radius, ["BoxBox", "Singularity", "Weaver", "Grunt", "Arrow", "Pinwheel", "AlienShip"], ["General"])
     this.addLineSprite(new ShipSprite(this.transform))
     this.maxSpeed = 2.5;
     this.mousePos = [0,0];
@@ -3583,6 +3773,7 @@ const Arrow = __webpack_require__(/*! ./game_objects/enemies/Arrow/arrow */ "./l
 const Grunt = __webpack_require__(/*! ./game_objects/enemies/Grunt/grunt */ "./lib/game_objects/enemies/Grunt/grunt.js");
 const Weaver = __webpack_require__(/*! ./game_objects/enemies/Weaver/weaver */ "./lib/game_objects/enemies/Weaver/weaver.js");
 const Singularity = __webpack_require__(/*! ./game_objects/enemies/Singularity/singularity */ "./lib/game_objects/enemies/Singularity/singularity.js");
+const AlienShip = __webpack_require__(/*! ./game_objects/enemies/Singularity/alien_ship */ "./lib/game_objects/enemies/Singularity/alien_ship.js")
 const ParticleExplosion = __webpack_require__(/*! ./game_objects/particles/particle_explosion */ "./lib/game_objects/particles/particle_explosion.js")
 const ShipExplosion = __webpack_require__(/*! ./game_objects/particles/ship_explosion */ "./lib/game_objects/particles/ship_explosion.js")
 
@@ -3752,7 +3943,7 @@ class GameScript {
 
   explodeEverything(){
     let removeList = []
-    let typesToRemove = ["Grunt", "Pinwheel", "BoxBox", "Arrow", "Singularity", "Weaver"]
+    let typesToRemove = ["Grunt", "Pinwheel", "BoxBox", "Arrow", "Singularity", "Weaver", "AlienShip"]
     this.engine.gameObjects.forEach((object) => {
       if (object.constructor.name === "Ship") {
         let objectTransform = object.transform
@@ -3807,7 +3998,8 @@ class GameScript {
       Arrow:       (pos, angle) => (new Arrow(engine, pos, angle)),
       Grunt:       (pos)        => (new Grunt(engine, pos, this.ship.transform)),
       Weaver:      (pos)        => (new Weaver(engine, pos, this.ship.transform)),
-      Singularity: (pos)        => (new Singularity(engine, pos))
+      Singularity: (pos)        => (new Singularity(engine, pos)),
+      AlienShip:   (pos)        => (new AlienShip(engine, pos, [0,0], this.ship.transform)),
     };
   }
 
@@ -3832,7 +4024,7 @@ class GameScript {
           randomPositions.push(pos)
         }
         randomPositions.forEach((pos) => {
-          let possibleSpawns = ["BoxBox", "Pinwheel", "Singularity"]
+          let possibleSpawns = ["BoxBox", "Pinwheel"] //, "Singularity"]
           this.enemyCreatorList[possibleSpawns[Math.floor(Math.random() * possibleSpawns.length) % possibleSpawns.length]](pos)
         })
       },
@@ -3904,15 +4096,19 @@ class GameScript {
     } else {
       this.intervalTime += delta;
     }
-    // if (this.intervalTime > 2000) {
-    //   this.randomSpawnEnemy();
-    //   this.intervalTime = 0
-    //   if (this.firstArrowAdded) {
-    //     this.arrowAdded = true
-    //   }
-    //   this.firstArrowAdded = true 
-    // }
 
+
+
+
+    this.testing = false
+    if (this.testing) {
+      if (this.sequenceCount === 0){
+        this.enemyCreatorList["AlienShip"]([500,100])
+        this.sequenceCount += 1
+      }
+    } else {
+      
+    
     this.gameTime += delta;
     if(this.sequenceCount === 1) {
       this.enemyCreatorList["Singularity"]([700,300])
@@ -4000,7 +4196,7 @@ class GameScript {
       this.hugeSequenceTime += 1;
     }
   
-
+    }
 
 
 

@@ -17,7 +17,7 @@ class Ship extends GameObject {
     this.addStartButtonListener()
     this.radius = 10
     this.addCollider("General", this, this.radius)
-    this.addCollider("ShipDeath", this, this.radius, ["BoxBox", "Singularity", "Weaver", "Grunt", "Arrow", "Pinwheel"], ["General"])
+    this.addCollider("ShipDeath", this, this.radius, ["BoxBox", "Singularity", "Weaver", "Grunt", "Arrow", "Pinwheel", "AlienShip"], ["General"])
     this.addLineSprite(new ShipSprite(this.transform))
     this.maxSpeed = 2.5;
     this.mousePos = [0,0];

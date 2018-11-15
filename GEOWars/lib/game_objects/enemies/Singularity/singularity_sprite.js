@@ -29,7 +29,6 @@ class SingularitySprite extends LineSprite {
     let blurFactor = 0.5
 
     ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
-    ctx.shadowBlur = 10
     ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
     ctx.lineWidth = 7.5;
     this.drawSingularity(ctx, this.radius * spawningScale);
