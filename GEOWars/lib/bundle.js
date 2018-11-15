@@ -2140,6 +2140,8 @@ const Sound = __webpack_require__(/*! ../../../game_engine/sound */ "./lib/game_
 const Util = __webpack_require__(/*! ../../../game_engine/util */ "./lib/game_engine/util.js")
 
 const ParticleExplosion = __webpack_require__(/*! ../../particles/particle_explosion */ "./lib/game_objects/particles/particle_explosion.js")
+const SingularityHitExplosion = __webpack_require__(/*! ../../particles/singularity_hit_explosion */ "./lib/game_objects/particles/singularity_hit_explosion.js")
+
 const EnemySpawn = __webpack_require__(/*! ../../particles/enemy_spawn */ "./lib/game_objects/particles/enemy_spawn.js")
 const SingularitySprite = __webpack_require__(/*! ./singularity_sprite */ "./lib/game_objects/enemies/Singularity/singularity_sprite.js")
 const SingularityParticles = __webpack_require__(/*! ../../particles/singularity_particles */ "./lib/game_objects/particles/singularity_particles.js")
@@ -2156,7 +2158,9 @@ class Singularity extends GameObject {
     this.numberAbsorbed = 0;
     this.alienSpawnAmount = 10;
     this.alienSpawnSpeed = 1.5;
-    this.deathSound = new Sound("GEWars/sounds/Gravity_well_die.wav")
+    this.deathSound = new Sound("GEOWars/sounds/Gravity_well_die.wav")
+    this.gravityWellHitSound = new Sound("GEOWars/sounds/Gravity_well_hit.wav", 0.5)
+    this.openGateSound = new Sound("GEOWars/sounds/Gravity_well_explode.wav")
     // this.id = options.id
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
     this.playSound(this.spawnSound)
@@ -2179,10 +2183,6 @@ class Singularity extends GameObject {
     this.addChildGameObject(new SingularityParticles(this.gameEngine, this.transform))
   }
 
-  onDeath(){
-    this.playSound(this.deathSounds.play())
-  }
-
   onCollision(collider, type){
     if (type === "GravityWell"){
       this.influenceAcceleration(collider.gameObject)
@@ -2200,13 +2200,16 @@ class Singularity extends GameObject {
 
   bulletHit(){
     this.lives -= 1
+    let pos = this.transform.absolutePosition()
+    let vel = this.transform.absoluteVelocity()
     if (this.lives <= 0) {
-      let pos = this.transform.absolutePosition()
-      let vel = this.transform.absoluteVelocity()
       let explosion = new ParticleExplosion(this.gameEngine, pos, vel)
       this.gameEngine.gameScript.tallyScore(this)
+      this.playSound(this.deathSound)
       this.remove()
     } else {
+      let explosion = new SingularityHitExplosion(this.gameEngine, pos, vel)
+      this.playSound(this.gravityWellHitSound)
       this.throbbingCycleSpeed /= 1.2
       this.numberAbsorbed -= 1
     }
@@ -2222,11 +2225,18 @@ class Singularity extends GameObject {
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
       this.wallGraze()
     }
+    if (this.numberAbsorbed === 3) {
+      this.soundAlarm(deltaTime)
+    }
 
     this.throb(deltaTime)
     if (this.numberAbsorbed >= 4) {
       this.openGate()
     }
+  }
+
+  soundAlarm(deltaTime){
+
   }
 
   throb(timeDelta) {
@@ -2268,6 +2278,7 @@ class Singularity extends GameObject {
   }
 
   openGate(){
+    this.playSound(this.openGateSound)
     for (let i = 0; i < this.alienSpawnAmount; i++) {
       let angle = Math.random() * Math.PI * 2
       let velocity = [this.alienSpawnSpeed * Math.cos(angle), this.alienSpawnSpeed * Math.sin(angle)]
@@ -3228,6 +3239,73 @@ class ShipExplosion extends GameObject {
 
 
 module.exports = ShipExplosion;
+
+/***/ }),
+
+/***/ "./lib/game_objects/particles/singularity_hit_explosion.js":
+/*!*****************************************************************!*\
+  !*** ./lib/game_objects/particles/singularity_hit_explosion.js ***!
+  \*****************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Particle = __webpack_require__(/*! ./Particle/particle */ "./lib/game_objects/particles/Particle/particle.js")
+const GameObject = __webpack_require__(/*! ../../game_engine/game_object */ "./lib/game_engine/game_object.js")
+const Sound = __webpack_require__(/*! ../../game_engine/sound */ "./lib/game_engine/sound.js")
+const Color = __webpack_require__(/*! ../../game_engine/color */ "./lib/game_engine/color.js")
+class SingularityHitExplosion extends GameObject {
+    constructor(engine, pos) {
+        super(engine)
+        this.transform.pos[0] = pos[0]
+        this.transform.pos[1] = pos[1]
+        let startingH = (this.gameEngine.gameScript.explosionColorWheel + Math.random() * 60 + 180) % 360
+        let opacity = Math.random() * 0.35 + 0.3
+        this.currentColor = new Color({
+            "hsla": [startingH, 100, 50, opacity]
+        });
+        if (engine.graphicQuality === 1) {
+            // console.log("best")
+            this.particleNum = 50;
+        } else if (engine.graphicQuality === 2) {
+            // console.log("medium")
+            this.particleNum = 30
+        } else {
+            // console.log("potato")
+            this.particleNum = 15
+        }
+        // find singularity hit sound
+        let explosionSound = new Sound("GEOWars/sounds/Enemy_explode.wav", 0.2)
+        this.playSound(explosionSound)
+        this.createExplosionParticles()
+    }
+
+    createExplosionParticles() {
+        for (var i = 0; i < this.particleNum; i++) {
+            // adjust speed
+            const speed = Math.random() * 3 + 2.5
+
+            const colorVarienceDelta = 30
+            let colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2
+            let color = this.currentColor.dup()
+            color.a = Math.random() * 0.35 + 0.6
+            color.h = (color.h + colorVarience) % 360
+
+            this.addChildGameObject(new Particle(this.gameEngine, this.transform.absolutePosition(), speed, color));
+        }
+    }
+
+    update() {
+        if (this.childObjects.length === 0) {
+            this.remove()
+        }
+    }
+    // ANIMATION = requestAnimationFrame(drawScene);
+}
+
+
+
+
+module.exports = SingularityHitExplosion;
 
 /***/ }),
 

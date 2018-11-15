@@ -3,6 +3,8 @@ const Sound = require("../../../game_engine/sound")
 const Util = require("../../../game_engine/util")
 
 const ParticleExplosion = require("../../particles/particle_explosion")
+const SingularityHitExplosion = require("../../particles/singularity_hit_explosion")
+
 const EnemySpawn = require("../../particles/enemy_spawn")
 const SingularitySprite = require("./singularity_sprite")
 const SingularityParticles = require("../../particles/singularity_particles")
@@ -19,7 +21,9 @@ class Singularity extends GameObject {
     this.numberAbsorbed = 0;
     this.alienSpawnAmount = 10;
     this.alienSpawnSpeed = 1.5;
-    this.deathSound = new Sound("GEWars/sounds/Gravity_well_die.wav")
+    this.deathSound = new Sound("GEOWars/sounds/Gravity_well_die.wav")
+    this.gravityWellHitSound = new Sound("GEOWars/sounds/Gravity_well_hit.wav", 0.5)
+    this.openGateSound = new Sound("GEOWars/sounds/Gravity_well_explode.wav")
     // this.id = options.id
     this.spawnSound = new Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
     this.playSound(this.spawnSound)
@@ -42,10 +46,6 @@ class Singularity extends GameObject {
     this.addChildGameObject(new SingularityParticles(this.gameEngine, this.transform))
   }
 
-  onDeath(){
-    this.playSound(this.deathSounds.play())
-  }
-
   onCollision(collider, type){
     if (type === "GravityWell"){
       this.influenceAcceleration(collider.gameObject)
@@ -63,13 +63,16 @@ class Singularity extends GameObject {
 
   bulletHit(){
     this.lives -= 1
+    let pos = this.transform.absolutePosition()
+    let vel = this.transform.absoluteVelocity()
     if (this.lives <= 0) {
-      let pos = this.transform.absolutePosition()
-      let vel = this.transform.absoluteVelocity()
       let explosion = new ParticleExplosion(this.gameEngine, pos, vel)
       this.gameEngine.gameScript.tallyScore(this)
+      this.playSound(this.deathSound)
       this.remove()
     } else {
+      let explosion = new SingularityHitExplosion(this.gameEngine, pos, vel)
+      this.playSound(this.gravityWellHitSound)
       this.throbbingCycleSpeed /= 1.2
       this.numberAbsorbed -= 1
     }
@@ -85,11 +88,18 @@ class Singularity extends GameObject {
     if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
       this.wallGraze()
     }
+    if (this.numberAbsorbed === 3) {
+      this.soundAlarm(deltaTime)
+    }
 
     this.throb(deltaTime)
     if (this.numberAbsorbed >= 4) {
       this.openGate()
     }
+  }
+
+  soundAlarm(deltaTime){
+
   }
 
   throb(timeDelta) {
@@ -131,6 +141,7 @@ class Singularity extends GameObject {
   }
 
   openGate(){
+    this.playSound(this.openGateSound)
     for (let i = 0; i < this.alienSpawnAmount; i++) {
       let angle = Math.random() * Math.PI * 2
       let velocity = [this.alienSpawnSpeed * Math.cos(angle), this.alienSpawnSpeed * Math.sin(angle)]
