@@ -375,7 +375,7 @@ class GameEngine {
   pause(){
     this.paused = true
     this.gameScript.onPause()
-    
+
   }
 
   unPause(){
@@ -1505,7 +1505,7 @@ class ArrowSprite extends LineSprite {
     let l = shipLength;
     let w = shipWidth;
     let movementDirection = Math.atan2(this.transform.vel[0], -this.transform.vel[1])
-
+    
     let r = 255;
     let g = 255;
     let b = 50;
@@ -1992,6 +1992,7 @@ const Util = __webpack_require__(/*! ../../../game_engine/util */ "./lib/game_en
 const EnemySpawn = __webpack_require__(/*! ../../particles/enemy_spawn */ "./lib/game_objects/particles/enemy_spawn.js")
 const SingularitySprite = __webpack_require__(/*! ./singularity_sprite */ "./lib/game_objects/enemies/Singularity/singularity_sprite.js")
 const SingularityParticles = __webpack_require__(/*! ../../particles/singularity_particles */ "./lib/game_objects/particles/singularity_particles.js")
+
 class Singularity extends GameObject {
   constructor(engine, pos) {
     super(engine)
@@ -3190,6 +3191,7 @@ class Ship extends GameObject {
     this.flashInterval = 250 - 1000 / 8
     this.spawnTime = 2500
     this.lineSprite.flashHide = true;
+    this.controllerInUse = false;
     // 1/8 of a second flash every half second
   }
   
@@ -3304,19 +3306,19 @@ class Ship extends GameObject {
     //    dV~ =  mV - Vo
     // if dv~ > 0.2 (or something)
     //    a = ma~ 
-    if (this.keysPressed.length > 0) {
+    if (!this.controllerInUse) {
       this.calcControlsDirection()
     }
+
     let movementAngle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
     let Vo = this.transform.absoluteVelocity()
-    this.transform.angle = movementAngle
-    
     let mV = []
 
-    if (this.controlsDirection[0] === 0 && this.controlsDirection[1] === 0){
-      mV = [0,0]
+    if(this.controlsDirection[0] == 0 && this.controlsDirection[1] == 0){
+      mV = [0, 0]
     } else {
       mV = [this.maxSpeed * Math.cos(movementAngle), this.maxSpeed * Math.sin(movementAngle)]
+      this.transform.angle = movementAngle
     }
 
     let dV = [mV[0] - Vo[0], mV[1] - Vo[1]]
@@ -3362,6 +3364,7 @@ class Ship extends GameObject {
         // this.controlsDirection[1] -= initVector[1]
       }
     } else {
+      this.controllerInUse = true
       if (Math.abs(key[0]) + Math.abs(key[1]) > 0.10) {
         this.controlsDirection = key
       } else {

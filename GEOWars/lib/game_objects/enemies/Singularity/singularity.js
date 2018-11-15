@@ -5,6 +5,7 @@ const Util = require("../../../game_engine/util")
 const EnemySpawn = require("../../particles/enemy_spawn")
 const SingularitySprite = require("./singularity_sprite")
 const SingularityParticles = require("../../particles/singularity_particles")
+
 class Singularity extends GameObject {
   constructor(engine, pos) {
     super(engine)

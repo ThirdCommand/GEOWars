@@ -47,6 +47,7 @@ class Ship extends GameObject {
     this.flashInterval = 250 - 1000 / 8
     this.spawnTime = 2500
     this.lineSprite.flashHide = true;
+    this.controllerInUse = false;
     // 1/8 of a second flash every half second
   }
   
@@ -161,19 +162,19 @@ class Ship extends GameObject {
     //    dV~ =  mV - Vo
     // if dv~ > 0.2 (or something)
     //    a = ma~ 
-    if (this.keysPressed.length > 0) {
+    if (!this.controllerInUse) {
       this.calcControlsDirection()
     }
+
     let movementAngle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0])
     let Vo = this.transform.absoluteVelocity()
-    this.transform.angle = movementAngle
-    
     let mV = []
 
-    if (this.controlsDirection[0] === 0 && this.controlsDirection[1] === 0){
-      mV = [0,0]
+    if(this.controlsDirection[0] == 0 && this.controlsDirection[1] == 0){
+      mV = [0, 0]
     } else {
       mV = [this.maxSpeed * Math.cos(movementAngle), this.maxSpeed * Math.sin(movementAngle)]
+      this.transform.angle = movementAngle
     }
 
     let dV = [mV[0] - Vo[0], mV[1] - Vo[1]]
@@ -219,6 +220,7 @@ class Ship extends GameObject {
         // this.controlsDirection[1] -= initVector[1]
       }
     } else {
+      this.controllerInUse = true
       if (Math.abs(key[0]) + Math.abs(key[1]) > 0.10) {
         this.controlsDirection = key
       } else {
