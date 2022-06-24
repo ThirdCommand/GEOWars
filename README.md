@@ -1,5 +1,5 @@
 # GEOWars
-Enjoy Now! https://secondcommand.github.io/GEOWars/
+Enjoy Now! https://thirdcommand.github.io/GEOWars/
 
 GEOWars was inspired by games like Galaga, Asteroids, and Geometry Wars. The game can be played 
 with a keyboard or a controller. The player controls a ship moving inside an arena where enemy
