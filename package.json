@@ -8,13 +8,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SecondCommand/GEOWars.git"
+    "url": "git+https://github.com/ThirdCommand/GEOWars.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/SecondCommand/GEOWars/issues"
+    "url": "https://github.com/ThirdCommand/GEOWars/issues"
   },
-  "homepage": "https://github.com/SecondCommand/GEOWars#readme"
+  "homepage": "https://github.com/ThirdCommand/GEOWars#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
+  }
 }
