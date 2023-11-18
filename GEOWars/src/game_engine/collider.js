@@ -10,43 +10,50 @@
 // collider { gameObject gameObject, "subscriptions" ["name", "name"] }
 // colliders {"BoxBox" [collider, collider]}
 
-const Util = require("./util")
+import { Util } from "./util";
 
-class Collider {
-  constructor(type, gameObject, radius = 5, subscriptions, subscribedColliderTypes) {
-    this.objectType = gameObject.constructor.name
-    this.type = type
-    this.subscriptions = subscriptions
-    this.subscribedColliderTypes = subscribedColliderTypes
-    this.radius = radius
-    this.gameObject = gameObject
-  }
-  // wondering if collision should cascade up the parent objects
-  // nope not yet anyway
-
-  collisionCheck(otherCollider) {
-    const centerDist = Util.dist(this.gameObject.transform.pos, otherCollider.gameObject.transform.pos)
-    if (centerDist < (this.radius + otherCollider.radius)){
-      this.gameObject.onCollision(otherCollider, this.type)
+export class Collider {
+    constructor(
+        type,
+        gameObject,
+        radius = 5,
+        subscriptions,
+        subscribedColliderTypes
+    ) {
+        this.objectType = gameObject.constructor.name;
+        this.type = type;
+        this.subscriptions = subscriptions;
+        this.subscribedColliderTypes = subscribedColliderTypes;
+        this.radius = radius;
+        this.gameObject = gameObject;
     }
-  } 
-}
+    // wondering if collision should cascade up the parent objects
+    // nope not yet anyway
 
-module.exports = Collider;
+    collisionCheck(otherCollider) {
+        const centerDist = Util.dist(
+            this.gameObject.transform.pos,
+            otherCollider.gameObject.transform.pos
+        );
+        if (centerDist < this.radius + otherCollider.radius) {
+            this.gameObject.onCollision(otherCollider, this.type);
+        }
+    }
+}
 
 // on
 
 // When you add new things that effect other things
 // like a new type of bullet, singularity effect, etc
 // you just have to add that functionality to the bullet
-// add the things it effects as things 
+// add the things it effects as things
 // the collider subscribes to
 // this way you don't have to edit every object type
 // that is effected
 
 // singularity has two colliders
-// outer one for gravity effects 
+// outer one for gravity effects
 // inner one for actual hits
 // it's subscribed to everything
-// on collision it changes that object properties either 
+// on collision it changes that object properties either
 // directly or with a object method... preferably

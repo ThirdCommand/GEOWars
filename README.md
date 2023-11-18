@@ -163,7 +163,7 @@ class Weaver extends GameObject {
 A LineSprite contains a transform and a `#draw` function for the user to overwrite. It is where the user puts the commands for the canvas context to draw a GameObject. `#addLineSprite` adds the sprite to the list of sprites to be rendered by the game engine during its rendering stage of the frame cycle. The following is an example of adding a LineSprite to a game object:
 
 ```javascript
-const LineSprite = require("../../../game_engine/line_sprite")
+import {LineSprite} from "../../../game_engine/line_sprite";
 
 class SingularitySprite extends LineSprite {
   constructor(transform, spawningScale = 1) {

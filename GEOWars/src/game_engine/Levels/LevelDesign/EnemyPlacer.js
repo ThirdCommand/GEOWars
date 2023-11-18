@@ -7,25 +7,24 @@
 // load spawn event
 // save spawn event
 // create spawn event
-const GameObject = require("../../../game_engine/game_object");
+import { GameObject } from "../../../game_engine/game_object";
 
-const PlacingAnimation = require("./PlacingAnimation")
-const BoxBoxSprite = require("../../../game_objects/enemies/BoxBox/boxbox_sprite")
-const ArrowSprite = require("../../../game_objects/enemies/Arrow/arrow_sprite")
-const GruntSprite = require("../../../game_objects/enemies/Grunt/grunt_sprite")
-const PinwheelSprite = require("../../../game_objects/enemies/Pinwheel/pinwheel_sprite")
-const WeaverSprite = require("../../../game_objects/enemies/Weaver/weaver_sprite")
-const SingularitySprite = require("../../../game_objects/enemies/Singularity/singularity_sprite")
-
+import { PlacingAnimation } from "./PlacingAnimation";
+import { BoxBoxSprite } from "../../../game_objects/enemies/BoxBox/boxbox_sprite";
+import { ArrowSprite } from "../../../game_objects/enemies/Arrow/arrow_sprite";
+import { GruntSprite } from "../../../game_objects/enemies/Grunt/grunt_sprite";
+import { PinwheelSprite } from "../../../game_objects/enemies/Pinwheel/pinwheel_sprite";
+import { WeaverSprite } from "../../../game_objects/enemies/Weaver/weaver_sprite";
+import { SingularitySprite } from "../../../game_objects/enemies/Singularity/singularity_sprite";
 
 const spriteMap = {
     BoxBox: (transform) => new BoxBoxSprite(transform),
-    Arrow: (transform) =>  new ArrowSprite(transform),
+    Arrow: (transform) => new ArrowSprite(transform),
     Grunt: (transform) => new GruntSprite(transform),
     Pinwheel: (transform) => new PinwheelSprite(transform),
     Weaver: (transform) => new WeaverSprite(transform),
-    Singularity: (transform) => new SingularitySprite(transform)
-}
+    Singularity: (transform) => new SingularitySprite(transform),
+};
 
 // if trying to spawn multiple things on top of each other, I should only grab the first placer that is found in the click colission
 const getClickRadius = {
@@ -35,9 +34,9 @@ const getClickRadius = {
     Pinwheel: 10,
     Weaver: 10,
     Singularity: 10,
-}
+};
 
-class EnemyPlacer extends GameObject {
+export class EnemyPlacer extends GameObject {
     constructor(engine, type, levelDesigner) {
         super(engine);
         this.addLineSprite(spriteMap[type](this.transform));
@@ -46,29 +45,24 @@ class EnemyPlacer extends GameObject {
         this.levelDesigner = levelDesigner;
         this.clickRadius = getClickRadius[type];
         this.type = type;
-        // collider should be added after placed
+    // collider should be added after placed
     }
 
     place() {
         this.addCollider("General", this, this.clickRadius);
-        const spawn = {type: this.type, location: this.transform.pos}
-        this.levelDesigner.addSpawnToEvent()
+        const spawn = { type: this.type, location: this.transform.pos };
+        this.levelDesigner.addSpawnToEvent();
         this.removeMousePosListener();
     }
 
-
     followMouse() {
-        this.addMousePosListener()
-        this.addChildGameObject(new PlacingAnimation(this.gameEngine))
+        this.addMousePosListener();
+        this.addChildGameObject(new PlacingAnimation(this.gameEngine));
     }
-
 
     updateMousePos(mousePos) {
         this.transform.pos[0] = mousePos[0];
         this.transform.pos[1] = mousePos[1];
     }
-
-
 }
 
-module.exports = EnemyPlacer;

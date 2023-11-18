@@ -53,3 +53,5 @@ enemy selector
   - type location to change it maybe
 
 need to lower the grav effect on the ship... it's a little extreme at the moment. maybe it should have less acceleration effect on it?
+
+I'm using nodist for version management... no memory of setting this up

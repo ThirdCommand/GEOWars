@@ -46,9 +46,9 @@ const game = {
             __typename: 'Scene'
         }
     ]
-}
+};
 
-class GameSequenceDisplay {
+export class GameSequenceDisplay {
     constructor(engine) {
         this.engine = engine;
         this.displaySequence = [];
@@ -57,7 +57,7 @@ class GameSequenceDisplay {
 
 }
 
-class GameSequence{
+export class GameSequence{
     constructor (engine, flatOES) {
         this.engine = engine;
         this.sequenceIdx = 0;
@@ -83,16 +83,16 @@ class GameSequence{
     }
 }
 
-class Scene {
+export class Scene {
     constructor(gameSequence, name) {
         this.name = name;
     }
 }
 
 // loop, wait, 
-class Operation {
+export class Operation {
     constructor(gameSequence, {type,waitTime,loop}) {
-        this.gameSequence = gameSequence
+        this.gameSequence = gameSequence;
         this.type = type;
         this.waitTime = waitTime;
         this.time = 0;
@@ -106,7 +106,7 @@ class Operation {
                 sequenceIndexToLoopTo: sequenceIndexToLoopTo,
                 repeatTimes: repeatTimes
             }
-        }
+        };
     }
 
     update(dT) {
@@ -127,14 +127,14 @@ class Operation {
     }
 
     resetStartingValues() {
-        this.type = this.startingValues.type
+        this.type = this.startingValues.type;
         this.time = 0,
         this.waitTime = this.startingValues.waitTime,
         this.loop =  {
             loopIdx: this.startingValues.loop.loopIdx,
             sequenceIndexToLoopTo: this.startingValues.sequenceIndexToLoopTo,
             repeatTimes: this.startingValues.repeatTimes
-        }
+        };
     }
 
     endOperation() {
@@ -144,10 +144,10 @@ class Operation {
 }
 
 
-class Event {
+export class Event {
     constructor(gameSequence, spawns) {
-        this.gameSequence = gameSequence
-        this.spawns = spawns // this is different than the single spawn thing I have in the mock data
+        this.gameSequence = gameSequence;
+        this.spawns = spawns; // this is different than the single spawn thing I have in the mock data
     }
 
     update(dT) {
@@ -158,7 +158,7 @@ class Event {
     spawnEverything() {
         this.spawns.forEach((spawn) => {
             spawn.spawnEvent();
-        })
+        });
     }
     endEvent() {
         this.gameSequence.nextSequence();
@@ -166,10 +166,10 @@ class Event {
 }
 
 // a single enemy, and location
-class Spawn { 
+export class Spawn { 
     constructor(gameEngine, spawn) { // spawn: {type, location: [x,y]} 
         this.spawn = spawn;
-        this.gameEngine = gameEngine
+        this.gameEngine = gameEngine;
     }
 
     randomPosition() {
@@ -194,7 +194,7 @@ class Spawn {
             if(this.spawn.location === 'RANDOM') {
                 location = randomPosition();
             }
-            this.gameEngine.enemyCreatorList[mobToSpawn](location)
+            this.gameEngine.enemyCreatorList[mobToSpawn](location);
         }
     }
 
@@ -203,7 +203,6 @@ class Spawn {
     }
 }
 
-module.exports = {Spawn,Event,Operation,Scene,GameSequence, GameSequenceDisplay};
 
 
 // MOB randomly picked from chosen list
