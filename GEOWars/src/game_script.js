@@ -11,6 +11,7 @@ import { Singularity } from "./game_objects/enemies/Singularity/singularity";
 import { AlienShip } from "./game_objects/enemies/Singularity/alien_ship";
 import { ParticleExplosion } from "./game_objects/particles/particle_explosion";
 import { ShipExplosion } from "./game_objects/particles/ship_explosion";
+import {Star} from "./game_objects/particles/star";
 
 import { Util } from "./game_engine/util";
 import { Sound } from "./game_engine/sound";
@@ -30,7 +31,9 @@ export class GameScript {
         this.engine = engine;
         this.arrowAdded = false;
         this.startPosition = [500, 300];
+        this.initialCameraZPos = -1000;
         this.ship = this.createShip();
+        this.createStars();
         this.walls = this.createWalls();
         this.grid = this.createGrid();
         this.overlay = this.createOverlay();
@@ -55,6 +58,18 @@ export class GameScript {
 
         this.spawnthing = false;
         this.explosionColorWheel = 0;
+    }
+
+    createStars() {
+        console.log(this.ship);
+        const runoffFactor = 1.5;
+        for(let i = 0; i < 400; i++) {
+            const X = (runoffFactor * Math.random() - runoffFactor/2) * this.DIM_X; // based on zoom scale and eventually camera position
+            const Y = (runoffFactor * Math.random() - runoffFactor/2) * this.DIM_Y;
+            // const Z = -this.initialCameraZPos * 0.25 + -this.initialCameraZPos * 2 * Math.random();
+            const Z = -this.initialCameraZPos * (0.5 + 0.75 * Math.random());
+            new Star(this.engine, [X, Y, Z], this.ship.cameraTransform);
+        }
     }
 
     updatexButtonListener(xButton) {
@@ -479,7 +494,7 @@ export class GameScript {
     }
 
     createShip() {
-        return new Ship(this.engine, this.startPosition);
+        return new Ship(this.engine, this.startPosition, this.initialCameraZPos);
     }
 
     createWalls() {

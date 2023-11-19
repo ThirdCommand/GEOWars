@@ -2,11 +2,14 @@ import { GameObject } from "../../game_engine/game_object";
 import { Sound } from "../../game_engine/sound";
 import { ShipSprite } from "./ship_sprite";
 import { Bullet } from "../Bullet/bullet";
+import { Transform } from "../../game_engine/transform";
 
 export class Ship extends GameObject {
-    constructor(engine, pos, gameScript) { 
+    constructor(engine, pos, initialCameraZPos) { 
         super(engine);
         this.transform.pos = pos;
+        this.cameraTransform = new Transform();
+        this.cameraTransform.pos = [pos[0], pos[1], initialCameraZPos];
         this.addPhysicsComponent();
         this.addMousePosListener();
         this.addLeftControlStickListener();
@@ -72,6 +75,7 @@ export class Ship extends GameObject {
         }
         this.bulletTimeCheck += deltaTime;
 
+        // game state stuff that doesn't belong in the ship #gamestate
         if (this.bulletTimeCheck >= this.bulletInterval && !this.spawning && this.controlsPointing && !this.dontShoot) {
             this.bulletNumber += 1;
             this.bulletTimeCheck = 0;
@@ -114,13 +118,13 @@ export class Ship extends GameObject {
             this.wallGraze();
         } else {
             this.movementMechanics(deltaTime);
-            // ship camera stuffs
       
         }
         // if ship is out of x bounds, maintain y speed, keep x at edge value
 
         this.updateZoomScale();
 
+        // stuff that belongs in camera #camera
         this.gameEngine.ctx.restore();
         this.gameEngine.ctx.save();
         const shipXPos = this.transform.pos[0];
@@ -128,6 +132,10 @@ export class Ship extends GameObject {
         const zoomScale = this.gameEngine.zoomScale;
         const width = this.gameEngine.gameScript.DIM_X;
         const height = this.gameEngine.gameScript.DIM_Y;
+
+        this.cameraTransform.pos[0] = shipXPos;
+        this.cameraTransform.pos[1] = shipYPos;
+        // this.cameraTransform.pos[2] = based on zoomScale
 
         this.gameEngine.ctx.translate(
             -shipXPos * zoomScale + width / 2,
@@ -161,6 +169,8 @@ export class Ship extends GameObject {
         } else {
             this.gameEngine.zoomScale = this.gameEngine.defaultZoomScale;
         }
+
+        // this should also update the camera's Z position
     }
 
     // 

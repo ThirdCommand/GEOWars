@@ -1,7 +1,3 @@
-import { Util } from "./util";
-
-import { Transform } from "./transform";
-import { Collider } from "./collider";
 import { GameObject } from "./game_object";
 
 export class Camera extends GameObject {

@@ -349,9 +349,10 @@ export class GameEngine {
     }
 
     renderLineSprites(ctx) {
-    // ctx.scale = gameEngine.currentCamera.zoomScale
+        // ctx.scale = gameEngine.currentCamera.zoomScale
         this.ctx.save();
 
+        // this belongs in the camera #camera
         this.ctx.scale(this.zoomScale, this.zoomScale);
         this.lineSprites.forEach((sprite) => {
             sprite.draw(ctx);

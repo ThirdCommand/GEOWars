@@ -55,8 +55,8 @@ export class Particle extends GameObject{
   
 
     update(deltaTime){
-        this.lineSprite.rectLength -= 0.1;
-        this.lineSprite.color.a -= 0.01;
+        this.lineSprite.rectLength -= 0.01 * deltaTime;
+        this.lineSprite.color.a -= 0.001 * deltaTime;
         if (this.lineSprite.hue < 0.06 || this.lineSprite.rectLength < 0.25 || ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1])) < 0.15)) {
       
             this.remove();

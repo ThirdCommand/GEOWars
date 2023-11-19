@@ -1,6 +1,7 @@
 export class Transform {
     constructor(
-        pos = [0, 0],
+        cameraTransform = null,
+        pos = [0, 0, 0],
         vel = [0, 0],
         acc = [0, 0],
         angle = 0,
@@ -8,6 +9,7 @@ export class Transform {
         aAcc = 0,
         parentTransform = null
     ) {
+        this.cameraTransform = cameraTransform;
         this.parentTransform = parentTransform;
         this.angle = angle;
         this.aVel = aVel;
@@ -15,6 +17,18 @@ export class Transform {
         this.pos = pos;
         this.vel = vel;
         this.acc = acc;
+    }
+
+    // object will have a render position projected on to the field based on where the camera is and the object's position (z)
+
+    getRenderPosition() {
+        // takes in the camera position and the object's position
+        // returns the render position (position projected on to the field)
+        
+        //Yp = -Zc(Ys - Yc)/(-Zc + Zs)
+        //Xp = -Zc(Xs - Xc)/(-Zc + Zs)
+
+
     }
 
     // call up the tree of parent transforms until null
@@ -29,12 +43,44 @@ export class Transform {
 
     absolutePosition() {
         let absPos = [];
+       
         if (this.parentTransform == null) {
-            absPos = this.pos;
+            if (this.cameraTransform) {
+                const Xc = this.cameraTransform.pos[0];
+                const Yc = this.cameraTransform.pos[1];
+                const Zc = this.cameraTransform.pos[2];
+                const Xs = this.pos[0];
+                const Ys = this.pos[1];
+                const Zs = this.pos[2];
+                // this only works for things behind, not in front of the field
+                // const Xp = (-Zc * (Xs - Xc)) / (-Zc + Zs);
+                // const Yp = (-Zc * (Ys - Yc)) / (-Zc + Zs);'
+                const Yp = Yc + (Ys-Yc)/(Zs-Zc) * (0 - Zc);
+                const Xp = Xc + (Xs-Xc)/(Zs-Zc) * (0 - Zc);
+                absPos = [Xp, Yp];
+            } else {
+                absPos = [this.pos[0], this.pos[1]];
+            }
+            
+
             return absPos;
         } else {
             return this.vectorAdd(this.pos, this.parentTransform.absolutePosition());
         }
+    }
+
+    absoluteLength(length, relativePosition = [0,0,0]) {
+        // doesn't care about line orientation
+        // center of the line is current position, or adjusted by relative position
+        // assuming camera is on top of the line
+        const linePosition = this.vectorAdd(relativePosition, this.pos);
+        const Zc = this.cameraTransform.pos[2];
+        const pointOne = length / 2;
+        const pointTwo = -length / 2;
+        const Zs = linePosition[2];
+        const absPointOne = (pointOne)/(Zs-Zc) * (0 - Zc);
+        const absPointTwo = (pointTwo)/(Zs-Zc) * (0 - Zc);
+        return absPointOne - absPointTwo;
     }
 
     absoluteVelocity() {
@@ -61,7 +107,9 @@ export class Transform {
     }
 
     vectorAdd(vector1, vector2) {
-        return [vector1[0] + vector1[0], vector1[1] + vector2[1]];
+        return vector1.length === 3 && vector2.length === 3 ? 
+            [vector1[0] + vector1[0], vector1[1] + vector2[1], vector1[2] + vector2[2]] : 
+            [vector1[0] + vector1[0], vector1[1] + vector2[1]];
     }
 
     angleAdd(angle1, angle2) {

@@ -1166,9 +1166,10 @@ class GameEngine {
     }
 
     renderLineSprites(ctx) {
-    // ctx.scale = gameEngine.currentCamera.zoomScale
+        // ctx.scale = gameEngine.currentCamera.zoomScale
         this.ctx.save();
 
+        // this belongs in the camera #camera
         this.ctx.scale(this.zoomScale, this.zoomScale);
         this.lineSprites.forEach((sprite) => {
             sprite.draw(ctx);
@@ -1426,13 +1427,15 @@ class LineSprite {
         // this.drawFunction = draw
         this.zoomScaling = 1;
     }
-
+    // abstract functions
     draw(ctx) {
         const pos = this.transform.absolutePosition();
         const angle = this.transform.abosluteAngle();
         this.drawFunction(ctx, pos, angle);
     }
-    drawFunction(ctx, pos, angle) {}
+    drawFunction(ctx, pos, angle) {
+
+    }
 }
 
 
@@ -1686,7 +1689,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 class Transform {
     constructor(
-        pos = [0, 0],
+        cameraTransform = null,
+        pos = [0, 0, 0],
         vel = [0, 0],
         acc = [0, 0],
         angle = 0,
@@ -1694,6 +1698,7 @@ class Transform {
         aAcc = 0,
         parentTransform = null
     ) {
+        this.cameraTransform = cameraTransform;
         this.parentTransform = parentTransform;
         this.angle = angle;
         this.aVel = aVel;
@@ -1701,6 +1706,18 @@ class Transform {
         this.pos = pos;
         this.vel = vel;
         this.acc = acc;
+    }
+
+    // object will have a render position projected on to the field based on where the camera is and the object's position (z)
+
+    getRenderPosition() {
+        // takes in the camera position and the object's position
+        // returns the render position (position projected on to the field)
+        
+        //Yp = -Zc(Ys - Yc)/(-Zc + Zs)
+        //Xp = -Zc(Xs - Xc)/(-Zc + Zs)
+
+
     }
 
     // call up the tree of parent transforms until null
@@ -1715,12 +1732,44 @@ class Transform {
 
     absolutePosition() {
         let absPos = [];
+       
         if (this.parentTransform == null) {
-            absPos = this.pos;
+            if (this.cameraTransform) {
+                const Xc = this.cameraTransform.pos[0];
+                const Yc = this.cameraTransform.pos[1];
+                const Zc = this.cameraTransform.pos[2];
+                const Xs = this.pos[0];
+                const Ys = this.pos[1];
+                const Zs = this.pos[2];
+                // this only works for things behind, not in front of the field
+                // const Xp = (-Zc * (Xs - Xc)) / (-Zc + Zs);
+                // const Yp = (-Zc * (Ys - Yc)) / (-Zc + Zs);'
+                const Yp = Yc + (Ys-Yc)/(Zs-Zc) * (0 - Zc);
+                const Xp = Xc + (Xs-Xc)/(Zs-Zc) * (0 - Zc);
+                absPos = [Xp, Yp];
+            } else {
+                absPos = [this.pos[0], this.pos[1]];
+            }
+            
+
             return absPos;
         } else {
             return this.vectorAdd(this.pos, this.parentTransform.absolutePosition());
         }
+    }
+
+    absoluteLength(length, relativePosition = [0,0,0]) {
+        // doesn't care about line orientation
+        // center of the line is current position, or adjusted by relative position
+        // assuming camera is on top of the line
+        const linePosition = this.vectorAdd(relativePosition, this.pos);
+        const Zc = this.cameraTransform.pos[2];
+        const pointOne = length / 2;
+        const pointTwo = -length / 2;
+        const Zs = linePosition[2];
+        const absPointOne = (pointOne)/(Zs-Zc) * (0 - Zc);
+        const absPointTwo = (pointTwo)/(Zs-Zc) * (0 - Zc);
+        return absPointOne - absPointTwo;
     }
 
     absoluteVelocity() {
@@ -1747,7 +1796,9 @@ class Transform {
     }
 
     vectorAdd(vector1, vector2) {
-        return [vector1[0] + vector1[0], vector1[1] + vector2[1]];
+        return vector1.length === 3 && vector2.length === 3 ? 
+            [vector1[0] + vector1[0], vector1[1] + vector2[1], vector1[2] + vector2[2]] : 
+            [vector1[0] + vector1[0], vector1[1] + vector2[1]];
     }
 
     angleAdd(angle1, angle2) {
@@ -2440,11 +2491,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   BoxBox: () => (/* binding */ BoxBox)
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/util */ "./GEOWars/src/game_engine/util.js");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
-/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./GEOWars/src/game_objects/particles/enemy_spawn.js");
-/* harmony import */ var _boxbox_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./boxbox_sprite */ "./GEOWars/src/game_objects/enemies/BoxBox/boxbox_sprite.js");
-
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
+/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./GEOWars/src/game_objects/particles/enemy_spawn.js");
+/* harmony import */ var _boxbox_sprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./boxbox_sprite */ "./GEOWars/src/game_objects/enemies/BoxBox/boxbox_sprite.js");
 
 
 
@@ -2452,31 +2501,31 @@ __webpack_require__.r(__webpack_exports__);
 
 class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
     constructor(engine, pos) {
-        super(engine)
-        this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
-        this.transform.pos = pos
-        this.radius = 10
-        this.points = 20
+        super(engine);
+        this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
+        this.transform.pos = pos;
+        this.radius = 10;
+        this.points = 20;
         // this.addPhysicsComponent()
-        this.addLineSprite(new _boxbox_sprite__WEBPACK_IMPORTED_MODULE_4__.BoxBoxSprite(this.transform))
-        this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__.EnemySpawn(this.gameEngine))
-        this.playSound(this.spawnSound)
+        this.addLineSprite(new _boxbox_sprite__WEBPACK_IMPORTED_MODULE_3__.BoxBoxSprite(this.transform));
+        this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_2__.EnemySpawn(this.gameEngine));
+        this.playSound(this.spawnSound);
     }
 
     exist() {
     // leaving off subscriptions means that things will subscribe to it
-        this.addCollider("General", this, this.radius)
+        this.addCollider("General", this, this.radius);
         // now it will move
-        this.addPhysicsComponent()
+        this.addPhysicsComponent();
     }
  
     wallGraze(){
-        this.gameEngine.gameScript.wallGraze(this.transform, this.radius)
+        this.gameEngine.gameScript.wallGraze(this.transform, this.radius);
     }
 
     update(delta){
         if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius * 2)) {
-            this.wallGraze() 
+            this.wallGraze(); 
         }
     }
 }
@@ -2579,58 +2628,56 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
 /* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./GEOWars/src/game_engine/util.js");
-/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./GEOWars/src/game_objects/particles/enemy_spawn.js");
-/* harmony import */ var _grunt_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./grunt_sprite */ "./GEOWars/src/game_objects/enemies/Grunt/grunt_sprite.js");
-
+/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./GEOWars/src/game_objects/particles/enemy_spawn.js");
+/* harmony import */ var _grunt_sprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./grunt_sprite */ "./GEOWars/src/game_objects/enemies/Grunt/grunt_sprite.js");
 
 
 
 
 class Grunt extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
     constructor(engine, pos, shipTransform) {
-        super(engine)
-        this.transform.pos = pos
+        super(engine);
+        this.transform.pos = pos;
         this.exists = false;
         this.stretchDirection = -1;
-        this.shipTransform = shipTransform
+        this.shipTransform = shipTransform;
         this.radius = 5;
-        this.points = 70
+        this.points = 70;
         this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
-        this.playSound(this.spawnSound)
-        this.addLineSprite(new _grunt_sprite__WEBPACK_IMPORTED_MODULE_4__.GruntSprite(this.transform))
-        this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__.EnemySpawn(this.gameEngine))
+        this.playSound(this.spawnSound);
+        this.addLineSprite(new _grunt_sprite__WEBPACK_IMPORTED_MODULE_3__.GruntSprite(this.transform));
+        this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_2__.EnemySpawn(this.gameEngine));
     }
 
     exist() {
         this.exists = true;
         // leaving off subscriptions means that things will subscribe to it
-        this.addCollider("General", this, this.radius)
+        this.addCollider("General", this, this.radius);
         // now it will move
-        this.addPhysicsComponent()
+        this.addPhysicsComponent();
     }
 
     // ADDING MOVEMENT MECHANICS FOR GRUNT
 
     chase(timeDelta) {
-        const speed = 1.5
-        const shipPos = this.shipTransform.absolutePosition();
-        const pos = this.transform.absolutePosition()
+        const speed = 1.5;
+        const shipPos = this.shipTransform.pos;
+        const pos = this.transform.pos;
         const dy = shipPos[1] - pos[1];
         const dx = shipPos[0] - pos[0];
 
         const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
         const direction = Math.atan2(dy, dx);
 
-        pos[0] += speed * Math.cos(direction) * velocityScale
-        pos[1] += speed * Math.sin(direction) * velocityScale
+        this.transform.pos[0] += speed * Math.cos(direction) * velocityScale;
+        this.transform.pos[1] += speed * Math.sin(direction) * velocityScale;
     }
 
     animate(timeDelta) {
         const cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
         const cycleSpeed = 0.01;
         if (this.lineSprite.stretchScale_W < 0.7 || this.lineSprite.stretchScale_W > 1) {
-            this.stretchDirection *= -1
+            this.stretchDirection *= -1;
         }
 
         this.lineSprite.stretchScale_W = this.lineSprite.stretchScale_W + -this.stretchDirection * cycleSpeed * cycleSpeedScale;
@@ -2640,17 +2687,17 @@ class Grunt extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameOb
 
     update(timeDelta) {
         if (this.exists) {
-            this.chase(timeDelta)
+            this.chase(timeDelta);
             this.animate(timeDelta);
       
             if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
-                this.wallGraze()
+                this.wallGraze();
             }
         }
     }
 
     wallGraze() {
-        this.gameEngine.gameScript.wallGraze(this.transform, this.radius)
+        this.gameEngine.gameScript.wallGraze(this.transform, this.radius);
     }
 
   
@@ -3778,8 +3825,8 @@ class Particle extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_2__.Gam
   
 
     update(deltaTime){
-        this.lineSprite.rectLength -= 0.1;
-        this.lineSprite.color.a -= 0.01;
+        this.lineSprite.rectLength -= 0.01 * deltaTime;
+        this.lineSprite.color.a -= 0.001 * deltaTime;
         if (this.lineSprite.hue < 0.06 || this.lineSprite.rectLength < 0.25 || ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1])) < 0.15)) {
       
             this.remove();
@@ -4325,6 +4372,62 @@ class SingularityParticles extends _game_engine_game_object__WEBPACK_IMPORTED_MO
 
 /***/ }),
 
+/***/ "./GEOWars/src/game_objects/particles/star.js":
+/*!****************************************************!*\
+  !*** ./GEOWars/src/game_objects/particles/star.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Star: () => (/* binding */ Star),
+/* harmony export */   StarSprite: () => (/* binding */ StarSprite)
+/* harmony export */ });
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./GEOWars/src/game_engine/line_sprite.js");
+
+
+
+class Star extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
+    constructor(engine, pos = [0,0,0], cameraTransform) {
+        super(engine);
+        this.transform.pos[0] = pos[0];
+        this.transform.pos[1] = pos[1];
+        this.transform.pos[2] = pos[2];
+        this.transform.cameraTransform = cameraTransform;
+        this.addLineSprite(new StarSprite(this.transform));
+    }
+}
+
+class StarSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite {
+    constructor(transform) {
+        super(transform);
+        this.radius = Math.random() * 2 + 0.25; // 1 - 3
+    }
+    draw(ctx) {
+        const pos = this.transform.absolutePosition();
+        const radius = this.transform.absoluteLength(this.radius);
+        const r = 255;
+        const g = 255;
+        const b = 255;
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+        ctx.strokeStyle = "rgb(255, 255, 255)";
+        ctx.fillStyle = "rgb(255, 255, 255)";
+        this.drawStar(ctx, radius, pos);
+        ctx.restore();
+    }
+    drawStar(ctx, radius, pos) {
+        const r = radius;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(pos[0], pos[1], r, 0, 2 * Math.PI, true);
+        ctx.fill();
+    }
+}
+
+/***/ }),
+
 /***/ "./GEOWars/src/game_objects/ship/ship.js":
 /*!***********************************************!*\
   !*** ./GEOWars/src/game_objects/ship/ship.js ***!
@@ -4339,15 +4442,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
 /* harmony import */ var _ship_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ship_sprite */ "./GEOWars/src/game_objects/ship/ship_sprite.js");
 /* harmony import */ var _Bullet_bullet__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Bullet/bullet */ "./GEOWars/src/game_objects/Bullet/bullet.js");
+/* harmony import */ var _game_engine_transform__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_engine/transform */ "./GEOWars/src/game_engine/transform.js");
+
 
 
 
 
 
 class Ship extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
-    constructor(engine, pos, gameScript) { 
+    constructor(engine, pos, initialCameraZPos) { 
         super(engine);
         this.transform.pos = pos;
+        this.cameraTransform = new _game_engine_transform__WEBPACK_IMPORTED_MODULE_4__.Transform();
+        this.cameraTransform.pos = [pos[0], pos[1], initialCameraZPos];
         this.addPhysicsComponent();
         this.addMousePosListener();
         this.addLeftControlStickListener();
@@ -4413,6 +4520,7 @@ class Ship extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
         }
         this.bulletTimeCheck += deltaTime;
 
+        // game state stuff that doesn't belong in the ship #gamestate
         if (this.bulletTimeCheck >= this.bulletInterval && !this.spawning && this.controlsPointing && !this.dontShoot) {
             this.bulletNumber += 1;
             this.bulletTimeCheck = 0;
@@ -4455,13 +4563,13 @@ class Ship extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
             this.wallGraze();
         } else {
             this.movementMechanics(deltaTime);
-            // ship camera stuffs
       
         }
         // if ship is out of x bounds, maintain y speed, keep x at edge value
 
         this.updateZoomScale();
 
+        // stuff that belongs in camera #camera
         this.gameEngine.ctx.restore();
         this.gameEngine.ctx.save();
         const shipXPos = this.transform.pos[0];
@@ -4469,6 +4577,10 @@ class Ship extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
         const zoomScale = this.gameEngine.zoomScale;
         const width = this.gameEngine.gameScript.DIM_X;
         const height = this.gameEngine.gameScript.DIM_Y;
+
+        this.cameraTransform.pos[0] = shipXPos;
+        this.cameraTransform.pos[1] = shipYPos;
+        // this.cameraTransform.pos[2] = based on zoomScale
 
         this.gameEngine.ctx.translate(
             -shipXPos * zoomScale + width / 2,
@@ -4502,6 +4614,8 @@ class Ship extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
         } else {
             this.gameEngine.zoomScale = this.gameEngine.defaultZoomScale;
         }
+
+        // this should also update the camera's Z position
     }
 
     // 
@@ -4805,9 +4919,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/alien_ship */ "./GEOWars/src/game_objects/enemies/Singularity/alien_ship.js");
 /* harmony import */ var _game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./game_objects/particles/particle_explosion */ "./GEOWars/src/game_objects/particles/particle_explosion.js");
 /* harmony import */ var _game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./game_objects/particles/ship_explosion */ "./GEOWars/src/game_objects/particles/ship_explosion.js");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./game_engine/util */ "./GEOWars/src/game_engine/util.js");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
-/* harmony import */ var _game_engine_state_machine__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./game_engine/state_machine */ "./GEOWars/src/game_engine/state_machine.js");
+/* harmony import */ var _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./game_objects/particles/star */ "./GEOWars/src/game_objects/particles/star.js");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./game_engine/util */ "./GEOWars/src/game_engine/util.js");
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
+/* harmony import */ var _game_engine_state_machine__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./game_engine/state_machine */ "./GEOWars/src/game_engine/state_machine.js");
+
 
 
 
@@ -4828,10 +4944,10 @@ __webpack_require__.r(__webpack_exports__);
 
 class GameScript {
     constructor(engine) {
-        this.theme = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_14__.Sound("GEOWars/sounds/Geometry_OST.mp3", 1);
-        this.gameOverSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_14__.Sound("GEOWars/sounds/Game_over.wav");
-        this.gameStartSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_14__.Sound("GEOWars/sounds/Game_start.wav");
-        this.shipDeathSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_14__.Sound("GEOWars/sounds/Ship_explode.wav");
+        this.theme = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_15__.Sound("GEOWars/sounds/Geometry_OST.mp3", 1);
+        this.gameOverSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_15__.Sound("GEOWars/sounds/Game_over.wav");
+        this.gameStartSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_15__.Sound("GEOWars/sounds/Game_start.wav");
+        this.shipDeathSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_15__.Sound("GEOWars/sounds/Ship_explode.wav");
         this.DIM_X = 1000;
         this.DIM_Y = 600;
         this.BG_COLOR = "#000000";
@@ -4840,7 +4956,9 @@ class GameScript {
         this.engine = engine;
         this.arrowAdded = false;
         this.startPosition = [500, 300];
+        this.initialCameraZPos = -1000;
         this.ship = this.createShip();
+        this.createStars();
         this.walls = this.createWalls();
         this.grid = this.createGrid();
         this.overlay = this.createOverlay();
@@ -4865,6 +4983,18 @@ class GameScript {
 
         this.spawnthing = false;
         this.explosionColorWheel = 0;
+    }
+
+    createStars() {
+        console.log(this.ship);
+        const runoffFactor = 1.5;
+        for(let i = 0; i < 400; i++) {
+            const X = (runoffFactor * Math.random() - runoffFactor/2) * this.DIM_X; // based on zoom scale and eventually camera position
+            const Y = (runoffFactor * Math.random() - runoffFactor/2) * this.DIM_Y;
+            // const Z = -this.initialCameraZPos * 0.25 + -this.initialCameraZPos * 2 * Math.random();
+            const Z = -this.initialCameraZPos * (0.5 + 0.75 * Math.random());
+            new _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_13__.Star(this.engine, [X, Y, Z], this.ship.cameraTransform);
+        }
     }
 
     updatexButtonListener(xButton) {
@@ -5289,7 +5419,7 @@ class GameScript {
     }
 
     createShip() {
-        return new _game_objects_ship_ship__WEBPACK_IMPORTED_MODULE_0__.Ship(this.engine, this.startPosition);
+        return new _game_objects_ship_ship__WEBPACK_IMPORTED_MODULE_0__.Ship(this.engine, this.startPosition, this.initialCameraZPos);
     }
 
     createWalls() {
