@@ -4,7 +4,7 @@
 
 // random movement angle created
 // initial speed (scale)
-// vel = Util.vectorCartisian(angle, scale)
+// vel = Util.vectorCartesian(angle, scale)
 //
 
 import {Particle} from "../Particle/particle";

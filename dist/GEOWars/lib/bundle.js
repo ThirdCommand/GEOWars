@@ -1461,18 +1461,18 @@ class PhysicsComponent {
     // if the computer is busy the time delta will be larger
     // in this case the PhysicsObject should move farther in this frame
         const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-        this.transform.pos[0] +=
-      this.transform.vel[0] * timeScale +
-      (this.transform.acc[0] * (timeScale * timeScale)) / 2;
-        this.transform.pos[1] +=
-      this.transform.vel[1] * timeScale +
-      (this.transform.acc[1] * (timeScale * timeScale)) / 2;
+        this.transform.pos[0] += this.transform.vel[0] * timeScale + (this.transform.acc[0] * (timeScale * timeScale)) / 2;
+        this.transform.pos[1] += this.transform.vel[1] * timeScale + (this.transform.acc[1] * (timeScale * timeScale)) / 2;
+        this.transform.pos[2] += this.transform.vel[2] * timeScale + (this.transform.acc[2] * (timeScale * timeScale)) / 2;
+        
         this.transform.vel[0] += this.transform.acc[0] * timeScale;
         this.transform.vel[1] += this.transform.acc[1] * timeScale;
+        this.transform.vel[2] += this.transform.acc[2] * timeScale;
+
         this.transform.angle += this.transform.aVel;
         this.transform.aVel += this.transform.aAcc;
 
-        this.transform.acc = [0, 0];
+        this.transform.acc = [0, 0, 0];
         this.transform.aAcc = 0;
     }
 }
@@ -1691,8 +1691,8 @@ class Transform {
     constructor(
         cameraTransform = null,
         pos = [0, 0, 0],
-        vel = [0, 0],
-        acc = [0, 0],
+        vel = [0, 0, 0],
+        acc = [0, 0, 0],
         angle = 0,
         aVel = 0,
         aAcc = 0,
@@ -1825,11 +1825,13 @@ const Util = {
         const norm = Util.norm(vec);
         return Util.scale(vec, 1 / norm);
     },
-    vectorCartisian(angle,scale){
-
+    vectorCartesian(angle,scale){
         let vector = [];
         vector = [scale * Math.cos(angle), scale * Math.sin(angle)];
         return vector;
+    },
+    vector3Cartesian(angle,scale){ // angle is [plane, out of plane]
+        return [scale * Math.cos(angle[0]) * Math.cos(angle[1]), scale * Math.sin(angle[0]) * Math.cos(angle[1]), scale * Math.sin(angle[1])];
     },
     // Find distance between two points.
     dist(pos1, pos2) {
@@ -2219,7 +2221,7 @@ class Arrow extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameOb
         this.transform.angle = angle;
         this.speed = 3;
         this.points = 50;
-        this.transform.vel = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.Util.vectorCartisian(this.transform.angle, this.speed);
+        this.transform.vel = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.Util.vectorCartesian(this.transform.angle, this.speed);
         this.radius = 6;
         this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("GEOWars/sounds/Enemy_spawn_purple.wav", 0.5);
         this.playSound(this.spawnSound);
@@ -3774,7 +3776,7 @@ __webpack_require__.r(__webpack_exports__);
 
 // random movement angle created
 // initial speed (scale)
-// vel = Util.vectorCartisian(angle, scale)
+// vel = Util.vectorCartesian(angle, scale)
 //
 // 
 
@@ -3791,34 +3793,33 @@ __webpack_require__.r(__webpack_exports__);
 class Particle extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_2__.GameObject{
     constructor(engine, pos, initialSpeed, color, wallHit) {
         super(engine);
-
         this.transform.pos[0] = pos[0];
         this.transform.pos[1] = pos[1];
+        this.transform.pos[2] = pos[2];
         this.color = color;
-        this.movementAngle = this.createMovementAngle(wallHit);
-        this.transform.vel = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.Util.vectorCartisian(this.movementAngle, initialSpeed);
+        this.movementAngle = this.createMovementAngle(wallHit); // [plane, out of plane]
+        this.transform.vel = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.Util.vector3Cartesian(this.movementAngle, initialSpeed);
         this.radius = 3;
         this.explosionDeceleration = 0.1; // in the direction the particle is moving
-        this.transform.acc = [-this.explosionDeceleration * Math.cos(this.movementAngle), -this.explosionDeceleration * Math.sin(this.movementAngle)];
+        this.transform.acc = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.Util.vector3Cartesian(this.movementAngle, -this.explosionDeceleration);
         this.addLineSprite(new _particle_sprite__WEBPACK_IMPORTED_MODULE_0__.ParticleSprite(this.transform, this.color));
         this.addPhysicsComponent();
-    
         // this.addCollider("General", this, this.radius)
-
     }
 
     createMovementAngle(wallHit) {
         if (!wallHit){ 
-            return (Math.random() * Math.PI * 2);
+            return [(Math.random() * Math.PI * 2), Math.random() * Math.PI * 2];
         } else {
             if (wallHit === "BOTTOM") {
-                return(Math.random() * Math.PI + Math.PI);
+                // need to give second angle still
+                return [Math.random() * Math.PI + Math.PI, 0];
             } else if (wallHit === "RIGHT") {
-                return (Math.random() * Math.PI + Math.PI / 2);
+                return [Math.random() * Math.PI + Math.PI / 2, 0];
             } else if (wallHit === "TOP") {
-                return (Math.random() * Math.PI);
+                return [Math.random() * Math.PI, 0];
             } else if (wallHit === "LEFT") {
-                return (Math.random() * Math.PI + 3 * Math.PI / 2);
+                return [Math.random() * Math.PI + 3 * Math.PI / 2, 0];
             }
         }
     }
@@ -3912,7 +3913,7 @@ __webpack_require__.r(__webpack_exports__);
 
 // random movement angle created
 // initial speed (scale)
-// vel = Util.vectorCartisian(angle, scale)
+// vel = Util.vectorCartesian(angle, scale)
 //
 
 
@@ -4014,8 +4015,12 @@ class BulletWallExplosion extends _game_engine_game_object__WEBPACK_IMPORTED_MOD
             const color = this.currentColor.dup();
             color.a = Math.random() * 0.35 + 0.6;
             color.h = (color.h + colorVarience) % 360;
+
+            const x = this.transform.absolutePosition()[0];
+            const y = this.transform.absolutePosition()[1];
+            const z = 0;
       
-            this.addChildGameObject(new _Particle_particle__WEBPACK_IMPORTED_MODULE_0__.Particle(this.gameEngine, this.transform.absolutePosition(), speed, color, this.wallHit));
+            this.addChildGameObject(new _Particle_particle__WEBPACK_IMPORTED_MODULE_0__.Particle(this.gameEngine, [x,y,z], speed, color, this.wallHit));
         }
     }
 
@@ -4130,8 +4135,11 @@ class ParticleExplosion extends _game_engine_game_object__WEBPACK_IMPORTED_MODUL
             const color = this.currentColor.dup();
             color.a = Math.random() * 0.35 + 0.6;
             color.h = (color.h + colorVarience) % 360;
-      
-            this.addChildGameObject(new _Particle_particle__WEBPACK_IMPORTED_MODULE_0__.Particle(this.gameEngine, this.transform.absolutePosition(), speed, color));
+            
+            const x = this.transform.absolutePosition()[0];
+            const y = this.transform.absolutePosition()[1];
+            const z = 0;
+            this.addChildGameObject(new _Particle_particle__WEBPACK_IMPORTED_MODULE_0__.Particle(this.gameEngine, [x,y,z], speed, color));
         }
     }
 
@@ -4396,6 +4404,7 @@ class Star extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
         this.transform.pos[2] = pos[2];
         this.transform.cameraTransform = cameraTransform;
         this.addLineSprite(new StarSprite(this.transform));
+        // add random good colors
     }
 }
 
@@ -4955,7 +4964,7 @@ class GameScript {
         this.score = 0;
         this.engine = engine;
         this.arrowAdded = false;
-        this.startPosition = [500, 300];
+        this.startPosition = [500, 300, 0];
         this.initialCameraZPos = -1000;
         this.ship = this.createShip();
         this.createStars();

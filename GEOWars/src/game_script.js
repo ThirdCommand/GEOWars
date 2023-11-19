@@ -30,7 +30,7 @@ export class GameScript {
         this.score = 0;
         this.engine = engine;
         this.arrowAdded = false;
-        this.startPosition = [500, 300];
+        this.startPosition = [500, 300, 0];
         this.initialCameraZPos = -1000;
         this.ship = this.createShip();
         this.createStars();

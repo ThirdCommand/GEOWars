@@ -4,7 +4,7 @@
 
 // random movement angle created
 // initial speed (scale)
-// vel = Util.vectorCartisian(angle, scale)
+// vel = Util.vectorCartesian(angle, scale)
 //
 // 
 
@@ -21,34 +21,33 @@ import { GameObject } from "../../../game_engine/game_object";
 export class Particle extends GameObject{
     constructor(engine, pos, initialSpeed, color, wallHit) {
         super(engine);
-
         this.transform.pos[0] = pos[0];
         this.transform.pos[1] = pos[1];
+        this.transform.pos[2] = pos[2];
         this.color = color;
-        this.movementAngle = this.createMovementAngle(wallHit);
-        this.transform.vel = Util.vectorCartisian(this.movementAngle, initialSpeed);
+        this.movementAngle = this.createMovementAngle(wallHit); // [plane, out of plane]
+        this.transform.vel = Util.vector3Cartesian(this.movementAngle, initialSpeed);
         this.radius = 3;
         this.explosionDeceleration = 0.1; // in the direction the particle is moving
-        this.transform.acc = [-this.explosionDeceleration * Math.cos(this.movementAngle), -this.explosionDeceleration * Math.sin(this.movementAngle)];
+        this.transform.acc = Util.vector3Cartesian(this.movementAngle, -this.explosionDeceleration);
         this.addLineSprite(new ParticleSprite(this.transform, this.color));
         this.addPhysicsComponent();
-    
         // this.addCollider("General", this, this.radius)
-
     }
 
     createMovementAngle(wallHit) {
         if (!wallHit){ 
-            return (Math.random() * Math.PI * 2);
+            return [(Math.random() * Math.PI * 2), Math.random() * Math.PI * 2];
         } else {
             if (wallHit === "BOTTOM") {
-                return(Math.random() * Math.PI + Math.PI);
+                // need to give second angle still
+                return [Math.random() * Math.PI + Math.PI, 0];
             } else if (wallHit === "RIGHT") {
-                return (Math.random() * Math.PI + Math.PI / 2);
+                return [Math.random() * Math.PI + Math.PI / 2, 0];
             } else if (wallHit === "TOP") {
-                return (Math.random() * Math.PI);
+                return [Math.random() * Math.PI, 0];
             } else if (wallHit === "LEFT") {
-                return (Math.random() * Math.PI + 3 * Math.PI / 2);
+                return [Math.random() * Math.PI + 3 * Math.PI / 2, 0];
             }
         }
     }

@@ -4,11 +4,13 @@ export const Util = {
         const norm = Util.norm(vec);
         return Util.scale(vec, 1 / norm);
     },
-    vectorCartisian(angle,scale){
-
+    vectorCartesian(angle,scale){
         let vector = [];
         vector = [scale * Math.cos(angle), scale * Math.sin(angle)];
         return vector;
+    },
+    vector3Cartesian(angle,scale){ // angle is [plane, out of plane]
+        return [scale * Math.cos(angle[0]) * Math.cos(angle[1]), scale * Math.sin(angle[0]) * Math.cos(angle[1]), scale * Math.sin(angle[1])];
     },
     // Find distance between two points.
     dist(pos1, pos2) {

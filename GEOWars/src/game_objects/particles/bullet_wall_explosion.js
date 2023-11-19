@@ -45,8 +45,12 @@ export class BulletWallExplosion extends GameObject{
             const color = this.currentColor.dup();
             color.a = Math.random() * 0.35 + 0.6;
             color.h = (color.h + colorVarience) % 360;
+
+            const x = this.transform.absolutePosition()[0];
+            const y = this.transform.absolutePosition()[1];
+            const z = 0;
       
-            this.addChildGameObject(new Particle(this.gameEngine, this.transform.absolutePosition(), speed, color, this.wallHit));
+            this.addChildGameObject(new Particle(this.gameEngine, [x,y,z], speed, color, this.wallHit));
         }
     }
 

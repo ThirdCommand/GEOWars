@@ -2,8 +2,8 @@ export class Transform {
     constructor(
         cameraTransform = null,
         pos = [0, 0, 0],
-        vel = [0, 0],
-        acc = [0, 0],
+        vel = [0, 0, 0],
+        acc = [0, 0, 0],
         angle = 0,
         aVel = 0,
         aAcc = 0,

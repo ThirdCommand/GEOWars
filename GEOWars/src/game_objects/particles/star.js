@@ -9,6 +9,7 @@ export class Star extends GameObject {
         this.transform.pos[2] = pos[2];
         this.transform.cameraTransform = cameraTransform;
         this.addLineSprite(new StarSprite(this.transform));
+        // add random good colors
     }
 }
 
