@@ -8,6 +8,7 @@ export class ParticleExplosion extends GameObject{
         super(engine);
         this.transform.pos[0] = pos[0];
         this.transform.pos[1] = pos[1];
+        this.cameraTransform = engine.gameScript.ship.cameraTransform;
         const startingH = (this.gameEngine.gameScript.explosionColorWheel + Math.random() * 60)% 360;
         const opacity = Math.random() * 0.35 + 0.6;
         this.currentColor = new Color({
@@ -38,7 +39,7 @@ export class ParticleExplosion extends GameObject{
             const color = this.currentColor.dup();
             color.a = Math.random() * 0.35 + 0.6;
             color.h = (color.h + colorVarience) % 360;
-            
+
             const x = this.transform.absolutePosition()[0];
             const y = this.transform.absolutePosition()[1];
             const z = 0;

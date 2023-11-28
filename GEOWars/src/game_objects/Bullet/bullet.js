@@ -65,7 +65,7 @@ export class Bullet extends GameObject {
                 const hitObjectTransform = collider.gameObject.transform;
                 const pos = hitObjectTransform.absolutePosition();
                 const vel = hitObjectTransform.absoluteVelocity();
-                const explosion = new ParticleExplosion(this.gameEngine, pos, vel);
+                const explosion = new ParticleExplosion(this.gameEngine, pos);
                 this.gameEngine.gameScript.tallyScore(collider.gameObject);
                 collider.gameObject.remove();
                 this.remove();

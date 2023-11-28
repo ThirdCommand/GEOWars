@@ -24,8 +24,10 @@ export class Particle extends GameObject{
         this.transform.pos[0] = pos[0];
         this.transform.pos[1] = pos[1];
         this.transform.pos[2] = pos[2];
+        this.transform.cameraTransform = engine.gameScript.ship.cameraTransform;
         this.color = color;
         this.movementAngle = this.createMovementAngle(wallHit); // [plane, out of plane]
+        this.transform.movementAngle = this.movementAngle;
         this.transform.vel = Util.vector3Cartesian(this.movementAngle, initialSpeed);
         this.radius = 3;
         this.explosionDeceleration = 0.1; // in the direction the particle is moving
@@ -37,17 +39,17 @@ export class Particle extends GameObject{
 
     createMovementAngle(wallHit) {
         if (!wallHit){ 
-            return [(Math.random() * Math.PI * 2), Math.random() * Math.PI * 2];
+            return [(Math.random() * Math.PI * 2), Math.random() * Math.PI/2];
         } else {
             if (wallHit === "BOTTOM") {
                 // need to give second angle still
-                return [Math.random() * Math.PI + Math.PI, 0];
+                return [Math.random() * Math.PI + Math.PI, Math.random() * Math.PI * 2];
             } else if (wallHit === "RIGHT") {
-                return [Math.random() * Math.PI + Math.PI / 2, 0];
+                return [Math.random() * Math.PI + Math.PI / 2, Math.random() * Math.PI * 2];
             } else if (wallHit === "TOP") {
-                return [Math.random() * Math.PI, 0];
+                return [Math.random() * Math.PI, Math.random() * Math.PI * 2];
             } else if (wallHit === "LEFT") {
-                return [Math.random() * Math.PI + 3 * Math.PI / 2, 0];
+                return [Math.random() * Math.PI + 3 * Math.PI / 2, Math.random() * Math.PI * 2];
             }
         }
     }
@@ -56,14 +58,13 @@ export class Particle extends GameObject{
     update(deltaTime){
         this.lineSprite.rectLength -= 0.01 * deltaTime;
         this.lineSprite.color.a -= 0.001 * deltaTime;
-        if (this.lineSprite.hue < 0.06 || this.lineSprite.rectLength < 0.25 || ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1])) < 0.15)) {
-      
+        if (this.lineSprite.hue < 0.06 || this.lineSprite.rectLength < 0.25 || ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1]) + Math.abs(this.transform.vel[2])) < 0.15)) {
             this.remove();
         }
         this.checkBounds();
         // acc is influenced by singularities, then changed to usual acc
-        this.movementAngle = Math.atan2(this.transform.vel[1], this.transform.vel[0]);
-        this.transform.acc = [-this.explosionDeceleration * Math.cos(this.movementAngle), -this.explosionDeceleration * Math.sin(this.movementAngle)];
+        this.movementAngle = [Math.atan2(this.transform.vel[1], this.transform.vel[0]), Math.atan2(this.transform.vel[2], Math.sqrt(this.transform.vel[0] ** 2 + this.transform.vel[1] ** 2)/this.transform.vel[2])];
+        this.transform.acc = Util.vector3Cartesian(this.movementAngle, -this.explosionDeceleration);
     }
 
     checkBounds() {

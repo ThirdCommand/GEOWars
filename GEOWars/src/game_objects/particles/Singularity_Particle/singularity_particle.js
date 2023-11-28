@@ -15,6 +15,7 @@ export class SingularityParticle extends Particle {
 
         this.transform.vel[0] = vel[0];
         this.transform.vel[1] = vel[1];
+        this.transform.vel[2] = 0;
 
         this.color = color;
         this.addCollider("General", this, this.radius);
@@ -31,7 +32,7 @@ export class SingularityParticle extends Particle {
         }
         // acc is influenced by singularities, then changed to usual acc
         this.movementAngle = Math.atan2(this.transform.vel[1], this.transform.vel[0]);
-        this.transform.acc = [0,0];
+        this.transform.acc = [0,0,0];
         this.checkBounds();
     }
     checkBounds() {

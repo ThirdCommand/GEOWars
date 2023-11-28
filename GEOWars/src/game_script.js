@@ -204,7 +204,7 @@ export class GameScript {
                 const objectTransform = object.transform;
                 const pos = objectTransform.absolutePosition();
                 const vel = objectTransform.absoluteVelocity();
-                new ParticleExplosion(this.engine, pos, vel);
+                new ParticleExplosion(this.engine, pos);
                 removeList.push(object);
             }
         });

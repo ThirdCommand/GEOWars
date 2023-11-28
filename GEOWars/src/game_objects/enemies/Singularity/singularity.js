@@ -51,7 +51,7 @@ export class Singularity extends GameObject {
             const hitObjectTransform = collider.gameObject.transform;
             const pos = hitObjectTransform.absolutePosition();
             const vel = hitObjectTransform.absoluteVelocity();
-            const explosion = new ParticleExplosion(this.gameEngine, pos, vel);
+            const explosion = new ParticleExplosion(this.gameEngine, pos);
             collider.gameObject.remove();
 
             this.throbbingCycleSpeed *= 1.2;
@@ -64,12 +64,12 @@ export class Singularity extends GameObject {
         const pos = this.transform.absolutePosition();
         const vel = this.transform.absoluteVelocity();
         if (this.lives <= 0) {
-            const explosion = new ParticleExplosion(this.gameEngine, pos, vel);
+            const explosion = new ParticleExplosion(this.gameEngine, pos);
             this.gameEngine.gameScript.tallyScore(this);
             this.playSound(this.deathSound);
             this.remove();
         } else {
-            const explosion = new SingularityHitExplosion(this.gameEngine, pos, vel);
+            const explosion = new SingularityHitExplosion(this.gameEngine, pos);
             this.playSound(this.gravityWellHitSound);
             this.throbbingCycleSpeed /= 1.2;
             this.numberAbsorbed -= 1;

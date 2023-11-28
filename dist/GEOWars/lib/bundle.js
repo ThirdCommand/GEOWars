@@ -1797,8 +1797,8 @@ class Transform {
 
     vectorAdd(vector1, vector2) {
         return vector1.length === 3 && vector2.length === 3 ? 
-            [vector1[0] + vector1[0], vector1[1] + vector2[1], vector1[2] + vector2[2]] : 
-            [vector1[0] + vector1[0], vector1[1] + vector2[1]];
+            [vector1[0] + vector2[0], vector1[1] + vector2[1], vector1[2] + vector2[2]] : 
+            [vector1[0] + vector2[0], vector1[1] + vector2[1]];
     }
 
     angleAdd(angle1, angle2) {
@@ -1832,6 +1832,9 @@ const Util = {
     },
     vector3Cartesian(angle,scale){ // angle is [plane, out of plane]
         return [scale * Math.cos(angle[0]) * Math.cos(angle[1]), scale * Math.sin(angle[0]) * Math.cos(angle[1]), scale * Math.sin(angle[1])];
+    },
+    vector3Add(vec1, vec2){
+        return [vec1[0] + vec2[0], vec1[1] + vec2[1], vec1[2] + vec2[2]];
     },
     // Find distance between two points.
     dist(pos1, pos2) {
@@ -1942,7 +1945,7 @@ class Bullet extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
                 const hitObjectTransform = collider.gameObject.transform;
                 const pos = hitObjectTransform.absolutePosition();
                 const vel = hitObjectTransform.absoluteVelocity();
-                const explosion = new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_4__.ParticleExplosion(this.gameEngine, pos, vel);
+                const explosion = new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_4__.ParticleExplosion(this.gameEngine, pos);
                 this.gameEngine.gameScript.tallyScore(collider.gameObject);
                 collider.gameObject.remove();
                 this.remove();
@@ -3154,7 +3157,7 @@ class Singularity extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.
             const hitObjectTransform = collider.gameObject.transform;
             const pos = hitObjectTransform.absolutePosition();
             const vel = hitObjectTransform.absoluteVelocity();
-            const explosion = new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_3__.ParticleExplosion(this.gameEngine, pos, vel);
+            const explosion = new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_3__.ParticleExplosion(this.gameEngine, pos);
             collider.gameObject.remove();
 
             this.throbbingCycleSpeed *= 1.2;
@@ -3167,12 +3170,12 @@ class Singularity extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.
         const pos = this.transform.absolutePosition();
         const vel = this.transform.absoluteVelocity();
         if (this.lives <= 0) {
-            const explosion = new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_3__.ParticleExplosion(this.gameEngine, pos, vel);
+            const explosion = new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_3__.ParticleExplosion(this.gameEngine, pos);
             this.gameEngine.gameScript.tallyScore(this);
             this.playSound(this.deathSound);
             this.remove();
         } else {
-            const explosion = new _particles_singularity_hit_explosion__WEBPACK_IMPORTED_MODULE_4__.SingularityHitExplosion(this.gameEngine, pos, vel);
+            const explosion = new _particles_singularity_hit_explosion__WEBPACK_IMPORTED_MODULE_4__.SingularityHitExplosion(this.gameEngine, pos);
             this.playSound(this.gravityWellHitSound);
             this.throbbingCycleSpeed /= 1.2;
             this.numberAbsorbed -= 1;
@@ -3796,8 +3799,10 @@ class Particle extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_2__.Gam
         this.transform.pos[0] = pos[0];
         this.transform.pos[1] = pos[1];
         this.transform.pos[2] = pos[2];
+        this.transform.cameraTransform = engine.gameScript.ship.cameraTransform;
         this.color = color;
         this.movementAngle = this.createMovementAngle(wallHit); // [plane, out of plane]
+        this.transform.movementAngle = this.movementAngle;
         this.transform.vel = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.Util.vector3Cartesian(this.movementAngle, initialSpeed);
         this.radius = 3;
         this.explosionDeceleration = 0.1; // in the direction the particle is moving
@@ -3809,17 +3814,17 @@ class Particle extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_2__.Gam
 
     createMovementAngle(wallHit) {
         if (!wallHit){ 
-            return [(Math.random() * Math.PI * 2), Math.random() * Math.PI * 2];
+            return [(Math.random() * Math.PI * 2), Math.random() * Math.PI/2];
         } else {
             if (wallHit === "BOTTOM") {
                 // need to give second angle still
-                return [Math.random() * Math.PI + Math.PI, 0];
+                return [Math.random() * Math.PI + Math.PI, Math.random() * Math.PI * 2];
             } else if (wallHit === "RIGHT") {
-                return [Math.random() * Math.PI + Math.PI / 2, 0];
+                return [Math.random() * Math.PI + Math.PI / 2, Math.random() * Math.PI * 2];
             } else if (wallHit === "TOP") {
-                return [Math.random() * Math.PI, 0];
+                return [Math.random() * Math.PI, Math.random() * Math.PI * 2];
             } else if (wallHit === "LEFT") {
-                return [Math.random() * Math.PI + 3 * Math.PI / 2, 0];
+                return [Math.random() * Math.PI + 3 * Math.PI / 2, Math.random() * Math.PI * 2];
             }
         }
     }
@@ -3828,14 +3833,13 @@ class Particle extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_2__.Gam
     update(deltaTime){
         this.lineSprite.rectLength -= 0.01 * deltaTime;
         this.lineSprite.color.a -= 0.001 * deltaTime;
-        if (this.lineSprite.hue < 0.06 || this.lineSprite.rectLength < 0.25 || ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1])) < 0.15)) {
-      
+        if (this.lineSprite.hue < 0.06 || this.lineSprite.rectLength < 0.25 || ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1]) + Math.abs(this.transform.vel[2])) < 0.15)) {
             this.remove();
         }
         this.checkBounds();
         // acc is influenced by singularities, then changed to usual acc
-        this.movementAngle = Math.atan2(this.transform.vel[1], this.transform.vel[0]);
-        this.transform.acc = [-this.explosionDeceleration * Math.cos(this.movementAngle), -this.explosionDeceleration * Math.sin(this.movementAngle)];
+        this.movementAngle = [Math.atan2(this.transform.vel[1], this.transform.vel[0]), Math.atan2(this.transform.vel[2], Math.sqrt(this.transform.vel[0] ** 2 + this.transform.vel[1] ** 2)/this.transform.vel[2])];
+        this.transform.acc = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.Util.vector3Cartesian(this.movementAngle, -this.explosionDeceleration);
     }
 
     checkBounds() {
@@ -3859,6 +3863,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   ParticleSprite: () => (/* binding */ ParticleSprite)
 /* harmony export */ });
 /* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./GEOWars/src/game_engine/line_sprite.js");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/util */ "./GEOWars/src/game_engine/util.js");
+
 
 
 class ParticleSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.LineSprite {
@@ -3869,7 +3875,7 @@ class ParticleSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0
         this.color = color;
     }
 
-    draw(ctx) {
+    drawTwoDimensionNoParallax(ctx) {
         const pos = this.transform.absolutePosition();
         const vel = this.transform.absoluteVelocity();
         const l = this.rectLength;
@@ -3885,10 +3891,53 @@ class ParticleSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0
         ctx.lineWidth = w;
 
         ctx.moveTo(0, 0); //1
-        ctx.lineTo(0, l); //2
+        ctx.lineTo(0, l * Math.cos(this.transform.movementAngle[1])); //2
 
         ctx.closePath();
         ctx.stroke();
+        ctx.restore();
+    }
+
+    draw(ctx) {
+        // const pos = this.transform.absolutePosition();
+        // const vel = this.transform.absoluteVelocity();
+        const l = this.rectLength;
+        const w = this.transform.absoluteLength(this.rectWidth);
+        // const movementDirection = Math.atan2(vel[0], -vel[1]);
+
+        // calculate x, y, z of second point of line
+        // use same calc, then add to current pos to get second point
+        const point2Position = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.Util.vector3Add(this.transform.pos, _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.Util.vector3Cartesian(this.transform.movementAngle, l));
+
+        const Xc = this.transform.cameraTransform.pos[0];
+        const Yc = this.transform.cameraTransform.pos[1];
+        const Zc = this.transform.cameraTransform.pos[2];
+        const X1 = this.transform.pos[0];
+        const Y1 = this.transform.pos[1];
+        const Z1 = this.transform.pos[2];
+
+        const X2 = point2Position[0];
+        const Y2 = point2Position[1];
+        const Z2 = point2Position[2];
+
+        const Yp1 = Yc + (Y1-Yc)/(Z1-Zc) * (0 - Zc);
+        const Xp1 = Xc + (X1-Xc)/(Z1-Zc) * (0 - Zc);
+
+        const Yp2 = Yc + (Y2-Yc)/(Z2-Zc) * (0 - Zc);
+        const Xp2 = Xc + (X2-Xc)/(Z2-Zc) * (0 - Zc);
+
+        
+
+        ctx.save();
+
+        ctx.beginPath();
+        ctx.strokeStyle = this.color.evaluateColor();
+        ctx.lineWidth = w;
+
+        ctx.moveTo(Xp1, Yp1); //1
+        ctx.lineTo(Xp2, Yp2); //2
+        ctx.stroke();
+
         ctx.restore();
     }
 }
@@ -3924,6 +3973,7 @@ class SingularityParticle extends _Particle_particle__WEBPACK_IMPORTED_MODULE_0_
 
         this.transform.vel[0] = vel[0];
         this.transform.vel[1] = vel[1];
+        this.transform.vel[2] = 0;
 
         this.color = color;
         this.addCollider("General", this, this.radius);
@@ -3940,7 +3990,7 @@ class SingularityParticle extends _Particle_particle__WEBPACK_IMPORTED_MODULE_0_
         }
         // acc is influenced by singularities, then changed to usual acc
         this.movementAngle = Math.atan2(this.transform.vel[1], this.transform.vel[0]);
-        this.transform.acc = [0,0];
+        this.transform.acc = [0,0,0];
         this.checkBounds();
     }
     checkBounds() {
@@ -4105,6 +4155,7 @@ class ParticleExplosion extends _game_engine_game_object__WEBPACK_IMPORTED_MODUL
         super(engine);
         this.transform.pos[0] = pos[0];
         this.transform.pos[1] = pos[1];
+        this.cameraTransform = engine.gameScript.ship.cameraTransform;
         const startingH = (this.gameEngine.gameScript.explosionColorWheel + Math.random() * 60)% 360;
         const opacity = Math.random() * 0.35 + 0.6;
         this.currentColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_3__.Color({
@@ -4135,7 +4186,7 @@ class ParticleExplosion extends _game_engine_game_object__WEBPACK_IMPORTED_MODUL
             const color = this.currentColor.dup();
             color.a = Math.random() * 0.35 + 0.6;
             color.h = (color.h + colorVarience) % 360;
-            
+
             const x = this.transform.absolutePosition()[0];
             const y = this.transform.absolutePosition()[1];
             const z = 0;
@@ -4473,7 +4524,7 @@ class Ship extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
         this.addCollider("General", this, this.radius);
         this.addCollider("ShipDeath", this, this.radius, ["BoxBox", "Singularity", "Weaver", "Grunt", "Arrow", "Pinwheel", "AlienShip"], ["General"]);
         this.addLineSprite(new _ship_sprite__WEBPACK_IMPORTED_MODULE_2__.ShipSprite(this.transform));
-        this.maxSpeed = 2.5;
+        this.maxSpeed = 7.5; // 2.5
         this.mousePos = [0,0];
         this.fireAngle = 0;
         this.bulletSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("GEOWars/sounds/Fire_normal.wav", 0.2);
@@ -4485,7 +4536,7 @@ class Ship extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
         this.bulletNumber = 0;
         this.controlsPointing = true;
         this.speed;
-        this.shipEngineAcceleration = 0.125;
+        this.shipEngineAcceleration = 0.5; // 0.125
         this.dontShoot = false;
 
         this.keysPressed = [];
@@ -5138,7 +5189,7 @@ class GameScript {
                 const objectTransform = object.transform;
                 const pos = objectTransform.absolutePosition();
                 const vel = objectTransform.absoluteVelocity();
-                new _game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_11__.ParticleExplosion(this.engine, pos, vel);
+                new _game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_11__.ParticleExplosion(this.engine, pos);
                 removeList.push(object);
             }
         });

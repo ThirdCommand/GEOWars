@@ -12,6 +12,9 @@ export const Util = {
     vector3Cartesian(angle,scale){ // angle is [plane, out of plane]
         return [scale * Math.cos(angle[0]) * Math.cos(angle[1]), scale * Math.sin(angle[0]) * Math.cos(angle[1]), scale * Math.sin(angle[1])];
     },
+    vector3Add(vec1, vec2){
+        return [vec1[0] + vec2[0], vec1[1] + vec2[1], vec1[2] + vec2[2]];
+    },
     // Find distance between two points.
     dist(pos1, pos2) {
         return Math.sqrt(

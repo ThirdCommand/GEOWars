@@ -108,8 +108,8 @@ export class Transform {
 
     vectorAdd(vector1, vector2) {
         return vector1.length === 3 && vector2.length === 3 ? 
-            [vector1[0] + vector1[0], vector1[1] + vector2[1], vector1[2] + vector2[2]] : 
-            [vector1[0] + vector1[0], vector1[1] + vector2[1]];
+            [vector1[0] + vector2[0], vector1[1] + vector2[1], vector1[2] + vector2[2]] : 
+            [vector1[0] + vector2[0], vector1[1] + vector2[1]];
     }
 
     angleAdd(angle1, angle2) {

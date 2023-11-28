@@ -19,7 +19,7 @@ export class Ship extends GameObject {
         this.addCollider("General", this, this.radius);
         this.addCollider("ShipDeath", this, this.radius, ["BoxBox", "Singularity", "Weaver", "Grunt", "Arrow", "Pinwheel", "AlienShip"], ["General"]);
         this.addLineSprite(new ShipSprite(this.transform));
-        this.maxSpeed = 2.5;
+        this.maxSpeed = 7.5; // 2.5
         this.mousePos = [0,0];
         this.fireAngle = 0;
         this.bulletSound = new Sound("GEOWars/sounds/Fire_normal.wav", 0.2);
@@ -31,7 +31,7 @@ export class Ship extends GameObject {
         this.bulletNumber = 0;
         this.controlsPointing = true;
         this.speed;
-        this.shipEngineAcceleration = 0.125;
+        this.shipEngineAcceleration = 0.5; // 0.125
         this.dontShoot = false;
 
         this.keysPressed = [];
