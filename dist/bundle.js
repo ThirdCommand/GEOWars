@@ -4770,10 +4770,8 @@ class Ship extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
     }
 
     upgradeBullets() {
-        if (this.powerLevel != 2) {
-            this.powerLevel = 2;
-            this.playSound(this.upgradeBulletsSound);
-        }
+        this.powerLevel += 2;
+        this.playSound(this.upgradeBulletsSound);
     }
   
     findSmallestDistanceToAWall(){

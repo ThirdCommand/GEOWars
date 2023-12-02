@@ -145,10 +145,8 @@ export class Ship extends GameObject {
     }
 
     upgradeBullets() {
-        if (this.powerLevel != 2) {
-            this.powerLevel = 2;
-            this.playSound(this.upgradeBulletsSound);
-        }
+        this.powerLevel += 2;
+        this.playSound(this.upgradeBulletsSound);
     }
   
     findSmallestDistanceToAWall(){
