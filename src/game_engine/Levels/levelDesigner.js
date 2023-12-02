@@ -1,7 +1,7 @@
 import { Walls } from "../../game_objects/Walls/walls";
 import { Overlay } from "../../game_objects/Overlay/overlay";
 import { Grid } from "../../game_objects/particles/Grid/grid";
-import { EnemyPlacer } from "../Levels/LevelDesign/EnemyPlacer";
+import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
 import { GameScript } from "../../game_script";
 import { Transform } from "../transform";
 

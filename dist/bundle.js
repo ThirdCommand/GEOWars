@@ -2,23 +2,23 @@
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./GEOWars/src/AnimationView.js":
-/*!**************************************!*\
-  !*** ./GEOWars/src/AnimationView.js ***!
-  \**************************************/
+/***/ "./src/AnimationView.js":
+/*!******************************!*\
+  !*** ./src/AnimationView.js ***!
+  \******************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   AnimationView: () => (/* binding */ AnimationView)
 /* harmony export */ });
-/* harmony import */ var _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_objects/enemies/BoxBox/boxbox */ "./GEOWars/src/game_objects/enemies/BoxBox/boxbox.js");
-/* harmony import */ var _game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_objects/enemies/Pinwheel/pinwheel */ "./GEOWars/src/game_objects/enemies/Pinwheel/pinwheel.js");
-/* harmony import */ var _game_objects_enemies_Arrow_arrow__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game_objects/enemies/Arrow/arrow */ "./GEOWars/src/game_objects/enemies/Arrow/arrow.js");
-/* harmony import */ var _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./game_objects/enemies/Grunt/grunt */ "./GEOWars/src/game_objects/enemies/Grunt/grunt.js");
-/* harmony import */ var _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./game_objects/enemies/Weaver/weaver */ "./GEOWars/src/game_objects/enemies/Weaver/weaver.js");
-/* harmony import */ var _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/singularity */ "./GEOWars/src/game_objects/enemies/Singularity/singularity.js");
-/* harmony import */ var _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/alien_ship */ "./GEOWars/src/game_objects/enemies/Singularity/alien_ship.js");
+/* harmony import */ var _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_objects/enemies/BoxBox/boxbox */ "./src/game_objects/enemies/BoxBox/boxbox.js");
+/* harmony import */ var _game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_objects/enemies/Pinwheel/pinwheel */ "./src/game_objects/enemies/Pinwheel/pinwheel.js");
+/* harmony import */ var _game_objects_enemies_Arrow_arrow__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game_objects/enemies/Arrow/arrow */ "./src/game_objects/enemies/Arrow/arrow.js");
+/* harmony import */ var _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./game_objects/enemies/Grunt/grunt */ "./src/game_objects/enemies/Grunt/grunt.js");
+/* harmony import */ var _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./game_objects/enemies/Weaver/weaver */ "./src/game_objects/enemies/Weaver/weaver.js");
+/* harmony import */ var _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/singularity */ "./src/game_objects/enemies/Singularity/singularity.js");
+/* harmony import */ var _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/alien_ship */ "./src/game_objects/enemies/Singularity/alien_ship.js");
 
 
 
@@ -130,24 +130,24 @@ class AnimationView {
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_engine/Levels/LevelDesign/EnemyPlacer.js":
-/*!*******************************************************************!*\
-  !*** ./GEOWars/src/game_engine/Levels/LevelDesign/EnemyPlacer.js ***!
-  \*******************************************************************/
+/***/ "./src/game_engine/Levels/LevelDesign/EnemyPlacer.js":
+/*!***********************************************************!*\
+  !*** ./src/game_engine/Levels/LevelDesign/EnemyPlacer.js ***!
+  \***********************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   EnemyPlacer: () => (/* binding */ EnemyPlacer)
 /* harmony export */ });
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
-/* harmony import */ var _PlacingAnimation__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./PlacingAnimation */ "./GEOWars/src/game_engine/Levels/LevelDesign/PlacingAnimation.js");
-/* harmony import */ var _game_objects_enemies_BoxBox_boxbox_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_objects/enemies/BoxBox/boxbox_sprite */ "./GEOWars/src/game_objects/enemies/BoxBox/boxbox_sprite.js");
-/* harmony import */ var _game_objects_enemies_Arrow_arrow_sprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../game_objects/enemies/Arrow/arrow_sprite */ "./GEOWars/src/game_objects/enemies/Arrow/arrow_sprite.js");
-/* harmony import */ var _game_objects_enemies_Grunt_grunt_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../game_objects/enemies/Grunt/grunt_sprite */ "./GEOWars/src/game_objects/enemies/Grunt/grunt_sprite.js");
-/* harmony import */ var _game_objects_enemies_Pinwheel_pinwheel_sprite__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../game_objects/enemies/Pinwheel/pinwheel_sprite */ "./GEOWars/src/game_objects/enemies/Pinwheel/pinwheel_sprite.js");
-/* harmony import */ var _game_objects_enemies_Weaver_weaver_sprite__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../game_objects/enemies/Weaver/weaver_sprite */ "./GEOWars/src/game_objects/enemies/Weaver/weaver_sprite.js");
-/* harmony import */ var _game_objects_enemies_Singularity_singularity_sprite__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../game_objects/enemies/Singularity/singularity_sprite */ "./GEOWars/src/game_objects/enemies/Singularity/singularity_sprite.js");
+/* harmony import */ var _game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _PlacingAnimation__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./PlacingAnimation */ "./src/game_engine/Levels/LevelDesign/PlacingAnimation.js");
+/* harmony import */ var _game_objects_enemies_BoxBox_boxbox_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_objects/enemies/BoxBox/boxbox_sprite */ "./src/game_objects/enemies/BoxBox/boxbox_sprite.js");
+/* harmony import */ var _game_objects_enemies_Arrow_arrow_sprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../game_objects/enemies/Arrow/arrow_sprite */ "./src/game_objects/enemies/Arrow/arrow_sprite.js");
+/* harmony import */ var _game_objects_enemies_Grunt_grunt_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../game_objects/enemies/Grunt/grunt_sprite */ "./src/game_objects/enemies/Grunt/grunt_sprite.js");
+/* harmony import */ var _game_objects_enemies_Pinwheel_pinwheel_sprite__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../game_objects/enemies/Pinwheel/pinwheel_sprite */ "./src/game_objects/enemies/Pinwheel/pinwheel_sprite.js");
+/* harmony import */ var _game_objects_enemies_Weaver_weaver_sprite__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../game_objects/enemies/Weaver/weaver_sprite */ "./src/game_objects/enemies/Weaver/weaver_sprite.js");
+/* harmony import */ var _game_objects_enemies_Singularity_singularity_sprite__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../game_objects/enemies/Singularity/singularity_sprite */ "./src/game_objects/enemies/Singularity/singularity_sprite.js");
 // while placing, could do spawning animation over mouse position
 // once placed, draw it at the placed location
 // store the location
@@ -186,7 +186,7 @@ const getClickRadius = {
     Singularity: 10,
 };
 
-class EnemyPlacer extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
+class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
     constructor(engine, type, levelDesigner) {
         super(engine);
         this.addLineSprite(spriteMap[type](this.transform));
@@ -220,20 +220,20 @@ class EnemyPlacer extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_engine/Levels/LevelDesign/PlacingAnimation.js":
-/*!************************************************************************!*\
-  !*** ./GEOWars/src/game_engine/Levels/LevelDesign/PlacingAnimation.js ***!
-  \************************************************************************/
+/***/ "./src/game_engine/Levels/LevelDesign/PlacingAnimation.js":
+/*!****************************************************************!*\
+  !*** ./src/game_engine/Levels/LevelDesign/PlacingAnimation.js ***!
+  \****************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   PlacingAnimation: () => (/* binding */ PlacingAnimation)
 /* harmony export */ });
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
+/* harmony import */ var _game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_object */ "./src/game_engine/game_object.js");
 
 
-class PlacingAnimation extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
+class PlacingAnimation extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
     constructor(engine) {
         super(engine);
         this.initialSpawningScale = 1.5;
@@ -269,23 +269,23 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_engine/Levels/levelDesigner.js":
-/*!*********************************************************!*\
-  !*** ./GEOWars/src/game_engine/Levels/levelDesigner.js ***!
-  \*********************************************************/
+/***/ "./src/game_engine/Levels/levelDesigner.js":
+/*!*************************************************!*\
+  !*** ./src/game_engine/Levels/levelDesigner.js ***!
+  \*************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   LevelDesigner: () => (/* binding */ LevelDesigner)
 /* harmony export */ });
-/* harmony import */ var _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_objects/Walls/walls */ "./GEOWars/src/game_objects/Walls/walls.js");
-/* harmony import */ var _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_objects/Overlay/overlay */ "./GEOWars/src/game_objects/Overlay/overlay.js");
-/* harmony import */ var _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_objects/particles/Grid/grid */ "./GEOWars/src/game_objects/particles/Grid/grid.js");
-/* harmony import */ var _Levels_LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Levels/LevelDesign/EnemyPlacer */ "./GEOWars/src/game_engine/Levels/LevelDesign/EnemyPlacer.js");
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_script */ "./GEOWars/src/game_script.js");
-/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../transform */ "./GEOWars/src/game_engine/transform.js");
-/* harmony import */ var _scene__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./scene */ "./GEOWars/src/game_engine/Levels/scene.js");
+/* harmony import */ var _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_objects/Walls/walls */ "./src/game_objects/Walls/walls.js");
+/* harmony import */ var _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_objects/Overlay/overlay */ "./src/game_objects/Overlay/overlay.js");
+/* harmony import */ var _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_objects/particles/Grid/grid */ "./src/game_objects/particles/Grid/grid.js");
+/* harmony import */ var _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./LevelDesign/EnemyPlacer */ "./src/game_engine/Levels/LevelDesign/EnemyPlacer.js");
+/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.js");
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.js");
+/* harmony import */ var _scene__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./scene */ "./src/game_engine/Levels/scene.js");
 
 
 
@@ -378,7 +378,7 @@ class LevelDesigner {
     }
 
     addEnemy(type) {
-        new _Levels_LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.engine, type, this);
+        new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.engine, type, this);
     }
 
     addSpawnToEvent(spawn) {
@@ -424,10 +424,10 @@ class LevelDesigner {
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_engine/Levels/scene.js":
-/*!*************************************************!*\
-  !*** ./GEOWars/src/game_engine/Levels/scene.js ***!
-  \*************************************************/
+/***/ "./src/game_engine/Levels/scene.js":
+/*!*****************************************!*\
+  !*** ./src/game_engine/Levels/scene.js ***!
+  \*****************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -651,17 +651,17 @@ class Spawn {
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_engine/collider.js":
-/*!*********************************************!*\
-  !*** ./GEOWars/src/game_engine/collider.js ***!
-  \*********************************************/
+/***/ "./src/game_engine/collider.js":
+/*!*************************************!*\
+  !*** ./src/game_engine/collider.js ***!
+  \*************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Collider: () => (/* binding */ Collider)
 /* harmony export */ });
-/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./util */ "./GEOWars/src/game_engine/util.js");
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./util */ "./src/game_engine/util.js");
 // engine takes in collider with gameobject type as string
 // this way subscriptions can be done via string names
 // enemy is subscribed to bullets..
@@ -725,10 +725,10 @@ class Collider {
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_engine/color.js":
-/*!******************************************!*\
-  !*** ./GEOWars/src/game_engine/color.js ***!
-  \******************************************/
+/***/ "./src/game_engine/color.js":
+/*!**********************************!*\
+  !*** ./src/game_engine/color.js ***!
+  \**********************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -806,17 +806,17 @@ Color.COLOR_TYPES = ["rgb", "rgba", "hsl", "hsla"];
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_engine/game_engine.js":
-/*!************************************************!*\
-  !*** ./GEOWars/src/game_engine/game_engine.js ***!
-  \************************************************/
+/***/ "./src/game_engine/game_engine.js":
+/*!****************************************!*\
+  !*** ./src/game_engine/game_engine.js ***!
+  \****************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   GameEngine: () => (/* binding */ GameEngine)
 /* harmony export */ });
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../game_script */ "./GEOWars/src/game_script.js");
+/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../game_script */ "./src/game_script.js");
 
 
 class GameEngine {
@@ -1263,22 +1263,22 @@ class GameEngine {
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_engine/game_object.js":
-/*!************************************************!*\
-  !*** ./GEOWars/src/game_engine/game_object.js ***!
-  \************************************************/
+/***/ "./src/game_engine/game_object.js":
+/*!****************************************!*\
+  !*** ./src/game_engine/game_object.js ***!
+  \****************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   GameObject: () => (/* binding */ GameObject)
 /* harmony export */ });
-/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./util */ "./GEOWars/src/game_engine/util.js");
-/* harmony import */ var _sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./sound */ "./GEOWars/src/game_engine/sound.js");
-/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./transform */ "./GEOWars/src/game_engine/transform.js");
-/* harmony import */ var _physics_component__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./physics_component */ "./GEOWars/src/game_engine/physics_component.js");
-/* harmony import */ var _line_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./line_sprite */ "./GEOWars/src/game_engine/line_sprite.js");
-/* harmony import */ var _collider__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./collider */ "./GEOWars/src/game_engine/collider.js");
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./util */ "./src/game_engine/util.js");
+/* harmony import */ var _sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./sound */ "./src/game_engine/sound.js");
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./transform */ "./src/game_engine/transform.js");
+/* harmony import */ var _physics_component__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./physics_component */ "./src/game_engine/physics_component.js");
+/* harmony import */ var _line_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./line_sprite */ "./src/game_engine/line_sprite.js");
+/* harmony import */ var _collider__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./collider */ "./src/game_engine/collider.js");
 
 
 
@@ -1413,10 +1413,10 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_engine/line_sprite.js":
-/*!************************************************!*\
-  !*** ./GEOWars/src/game_engine/line_sprite.js ***!
-  \************************************************/
+/***/ "./src/game_engine/line_sprite.js":
+/*!****************************************!*\
+  !*** ./src/game_engine/line_sprite.js ***!
+  \****************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -1443,10 +1443,10 @@ class LineSprite {
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_engine/physics_component.js":
-/*!******************************************************!*\
-  !*** ./GEOWars/src/game_engine/physics_component.js ***!
-  \******************************************************/
+/***/ "./src/game_engine/physics_component.js":
+/*!**********************************************!*\
+  !*** ./src/game_engine/physics_component.js ***!
+  \**********************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -1484,10 +1484,10 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_engine/sound.js":
-/*!******************************************!*\
-  !*** ./GEOWars/src/game_engine/sound.js ***!
-  \******************************************/
+/***/ "./src/game_engine/sound.js":
+/*!**********************************!*\
+  !*** ./src/game_engine/sound.js ***!
+  \**********************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -1546,17 +1546,17 @@ class Sound {
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_engine/state_machine.js":
-/*!**************************************************!*\
-  !*** ./GEOWars/src/game_engine/state_machine.js ***!
-  \**************************************************/
+/***/ "./src/game_engine/state_machine.js":
+/*!******************************************!*\
+  !*** ./src/game_engine/state_machine.js ***!
+  \******************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   StateMachine: () => (/* binding */ StateMachine)
 /* harmony export */ });
-/* harmony import */ var _game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_object */ "./GEOWars/src/game_engine/game_object.js");
+/* harmony import */ var _game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_object */ "./src/game_engine/game_object.js");
 
 
 class StateMachine extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
@@ -1679,10 +1679,10 @@ class StateMachine extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject 
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_engine/transform.js":
-/*!**********************************************!*\
-  !*** ./GEOWars/src/game_engine/transform.js ***!
-  \**********************************************/
+/***/ "./src/game_engine/transform.js":
+/*!**************************************!*\
+  !*** ./src/game_engine/transform.js ***!
+  \**************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -1809,10 +1809,10 @@ class Transform {
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_engine/util.js":
-/*!*****************************************!*\
-  !*** ./GEOWars/src/game_engine/util.js ***!
-  \*****************************************/
+/***/ "./src/game_engine/util.js":
+/*!*********************************!*\
+  !*** ./src/game_engine/util.js ***!
+  \*********************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -1883,21 +1883,21 @@ const Util = {
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/Bullet/bullet.js":
-/*!***************************************************!*\
-  !*** ./GEOWars/src/game_objects/Bullet/bullet.js ***!
-  \***************************************************/
+/***/ "./src/game_objects/Bullet/bullet.js":
+/*!*******************************************!*\
+  !*** ./src/game_objects/Bullet/bullet.js ***!
+  \*******************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Bullet: () => (/* binding */ Bullet)
 /* harmony export */ });
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
-/* harmony import */ var _particles_bullet_wall_explosion__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../particles/bullet_wall_explosion */ "./GEOWars/src/game_objects/particles/bullet_wall_explosion.js");
-/* harmony import */ var _bullet_sprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./bullet_sprite */ "./GEOWars/src/game_objects/Bullet/bullet_sprite.js");
-/* harmony import */ var _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../particles/particle_explosion */ "./GEOWars/src/game_objects/particles/particle_explosion.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/sound */ "./src/game_engine/sound.js");
+/* harmony import */ var _particles_bullet_wall_explosion__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../particles/bullet_wall_explosion */ "./src/game_objects/particles/bullet_wall_explosion.js");
+/* harmony import */ var _bullet_sprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./bullet_sprite */ "./src/game_objects/Bullet/bullet_sprite.js");
+/* harmony import */ var _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.js");
 
 
 
@@ -1986,17 +1986,17 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/Bullet/bullet_sprite.js":
-/*!**********************************************************!*\
-  !*** ./GEOWars/src/game_objects/Bullet/bullet_sprite.js ***!
-  \**********************************************************/
+/***/ "./src/game_objects/Bullet/bullet_sprite.js":
+/*!**************************************************!*\
+  !*** ./src/game_objects/Bullet/bullet_sprite.js ***!
+  \**************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   BulletSprite: () => (/* binding */ BulletSprite)
 /* harmony export */ });
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./GEOWars/src/game_engine/line_sprite.js");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.js");
 
 
 class BulletSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.LineSprite {
@@ -2036,18 +2036,18 @@ class BulletSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/Overlay/overlay.js":
-/*!*****************************************************!*\
-  !*** ./GEOWars/src/game_objects/Overlay/overlay.js ***!
-  \*****************************************************/
+/***/ "./src/game_objects/Overlay/overlay.js":
+/*!*********************************************!*\
+  !*** ./src/game_objects/Overlay/overlay.js ***!
+  \*********************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Overlay: () => (/* binding */ Overlay)
 /* harmony export */ });
-/* harmony import */ var _overlay_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./overlay_sprite */ "./GEOWars/src/game_objects/Overlay/overlay_sprite.js");
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
+/* harmony import */ var _overlay_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./overlay_sprite */ "./src/game_objects/Overlay/overlay_sprite.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.js");
 
 
 
@@ -2071,18 +2071,18 @@ class Overlay extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.Game
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/Overlay/overlay_sprite.js":
-/*!************************************************************!*\
-  !*** ./GEOWars/src/game_objects/Overlay/overlay_sprite.js ***!
-  \************************************************************/
+/***/ "./src/game_objects/Overlay/overlay_sprite.js":
+/*!****************************************************!*\
+  !*** ./src/game_objects/Overlay/overlay_sprite.js ***!
+  \****************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   OverlaySprite: () => (/* binding */ OverlaySprite)
 /* harmony export */ });
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./GEOWars/src/game_engine/line_sprite.js");
-/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/color */ "./GEOWars/src/game_engine/color.js");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.js");
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.js");
 
 
 class OverlaySprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.LineSprite {
@@ -2118,18 +2118,18 @@ class OverlaySprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0_
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/Walls/walls.js":
-/*!*************************************************!*\
-  !*** ./GEOWars/src/game_objects/Walls/walls.js ***!
-  \*************************************************/
+/***/ "./src/game_objects/Walls/walls.js":
+/*!*****************************************!*\
+  !*** ./src/game_objects/Walls/walls.js ***!
+  \*****************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Walls: () => (/* binding */ Walls)
 /* harmony export */ });
-/* harmony import */ var _walls_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./walls_sprite */ "./GEOWars/src/game_objects/Walls/walls_sprite.js");
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
+/* harmony import */ var _walls_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./walls_sprite */ "./src/game_objects/Walls/walls_sprite.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.js");
 
 
 
@@ -2148,18 +2148,18 @@ class Walls extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameOb
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/Walls/walls_sprite.js":
-/*!********************************************************!*\
-  !*** ./GEOWars/src/game_objects/Walls/walls_sprite.js ***!
-  \********************************************************/
+/***/ "./src/game_objects/Walls/walls_sprite.js":
+/*!************************************************!*\
+  !*** ./src/game_objects/Walls/walls_sprite.js ***!
+  \************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   WallsSprite: () => (/* binding */ WallsSprite)
 /* harmony export */ });
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./GEOWars/src/game_engine/line_sprite.js");
-/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/color */ "./GEOWars/src/game_engine/color.js");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.js");
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.js");
 
 
 class WallsSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.LineSprite {
@@ -2217,21 +2217,21 @@ class WallsSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/enemies/Arrow/arrow.js":
-/*!*********************************************************!*\
-  !*** ./GEOWars/src/game_objects/enemies/Arrow/arrow.js ***!
-  \*********************************************************/
+/***/ "./src/game_objects/enemies/Arrow/arrow.js":
+/*!*************************************************!*\
+  !*** ./src/game_objects/enemies/Arrow/arrow.js ***!
+  \*************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Arrow: () => (/* binding */ Arrow)
 /* harmony export */ });
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/util */ "./GEOWars/src/game_engine/util.js");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
-/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./GEOWars/src/game_objects/particles/enemy_spawn.js");
-/* harmony import */ var _arrow_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./arrow_sprite */ "./GEOWars/src/game_objects/enemies/Arrow/arrow_sprite.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.js");
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/sound */ "./src/game_engine/sound.js");
+/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.js");
+/* harmony import */ var _arrow_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./arrow_sprite */ "./src/game_objects/enemies/Arrow/arrow_sprite.js");
 
 
 
@@ -2298,17 +2298,17 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/enemies/Arrow/arrow_sprite.js":
-/*!****************************************************************!*\
-  !*** ./GEOWars/src/game_objects/enemies/Arrow/arrow_sprite.js ***!
-  \****************************************************************/
+/***/ "./src/game_objects/enemies/Arrow/arrow_sprite.js":
+/*!********************************************************!*\
+  !*** ./src/game_objects/enemies/Arrow/arrow_sprite.js ***!
+  \********************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   ArrowSprite: () => (/* binding */ ArrowSprite)
 /* harmony export */ });
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./GEOWars/src/game_engine/line_sprite.js");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.js");
 
 class ArrowSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.LineSprite {
     constructor(transform, spawningScale = 1) {
@@ -2506,20 +2506,20 @@ let blurFactor = 0.5
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/enemies/BoxBox/boxbox.js":
-/*!***********************************************************!*\
-  !*** ./GEOWars/src/game_objects/enemies/BoxBox/boxbox.js ***!
-  \***********************************************************/
+/***/ "./src/game_objects/enemies/BoxBox/boxbox.js":
+/*!***************************************************!*\
+  !*** ./src/game_objects/enemies/BoxBox/boxbox.js ***!
+  \***************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   BoxBox: () => (/* binding */ BoxBox)
 /* harmony export */ });
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
-/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./GEOWars/src/game_objects/particles/enemy_spawn.js");
-/* harmony import */ var _boxbox_sprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./boxbox_sprite */ "./GEOWars/src/game_objects/enemies/BoxBox/boxbox_sprite.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./src/game_engine/sound.js");
+/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.js");
+/* harmony import */ var _boxbox_sprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./boxbox_sprite */ "./src/game_objects/enemies/BoxBox/boxbox_sprite.js");
 
 
 
@@ -2559,17 +2559,17 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/enemies/BoxBox/boxbox_sprite.js":
-/*!******************************************************************!*\
-  !*** ./GEOWars/src/game_objects/enemies/BoxBox/boxbox_sprite.js ***!
-  \******************************************************************/
+/***/ "./src/game_objects/enemies/BoxBox/boxbox_sprite.js":
+/*!**********************************************************!*\
+  !*** ./src/game_objects/enemies/BoxBox/boxbox_sprite.js ***!
+  \**********************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   BoxBoxSprite: () => (/* binding */ BoxBoxSprite)
 /* harmony export */ });
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./GEOWars/src/game_engine/line_sprite.js");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.js");
 
 
 class BoxBoxSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.LineSprite {
@@ -2642,20 +2642,20 @@ class BoxBoxSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/enemies/Grunt/grunt.js":
-/*!*********************************************************!*\
-  !*** ./GEOWars/src/game_objects/enemies/Grunt/grunt.js ***!
-  \*********************************************************/
+/***/ "./src/game_objects/enemies/Grunt/grunt.js":
+/*!*************************************************!*\
+  !*** ./src/game_objects/enemies/Grunt/grunt.js ***!
+  \*************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Grunt: () => (/* binding */ Grunt)
 /* harmony export */ });
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
-/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./GEOWars/src/game_objects/particles/enemy_spawn.js");
-/* harmony import */ var _grunt_sprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./grunt_sprite */ "./GEOWars/src/game_objects/enemies/Grunt/grunt_sprite.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./src/game_engine/sound.js");
+/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.js");
+/* harmony import */ var _grunt_sprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./grunt_sprite */ "./src/game_objects/enemies/Grunt/grunt_sprite.js");
 
 
 
@@ -2733,17 +2733,17 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/enemies/Grunt/grunt_sprite.js":
-/*!****************************************************************!*\
-  !*** ./GEOWars/src/game_objects/enemies/Grunt/grunt_sprite.js ***!
-  \****************************************************************/
+/***/ "./src/game_objects/enemies/Grunt/grunt_sprite.js":
+/*!********************************************************!*\
+  !*** ./src/game_objects/enemies/Grunt/grunt_sprite.js ***!
+  \********************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   GruntSprite: () => (/* binding */ GruntSprite)
 /* harmony export */ });
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./GEOWars/src/game_engine/line_sprite.js");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.js");
 
 class GruntSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.LineSprite {
     constructor(transform, spawningScale = 1) {
@@ -2807,21 +2807,21 @@ class GruntSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/enemies/Pinwheel/pinwheel.js":
-/*!***************************************************************!*\
-  !*** ./GEOWars/src/game_objects/enemies/Pinwheel/pinwheel.js ***!
-  \***************************************************************/
+/***/ "./src/game_objects/enemies/Pinwheel/pinwheel.js":
+/*!*******************************************************!*\
+  !*** ./src/game_objects/enemies/Pinwheel/pinwheel.js ***!
+  \*******************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Pinwheel: () => (/* binding */ Pinwheel)
 /* harmony export */ });
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/util */ "./GEOWars/src/game_engine/util.js");
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
-/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./GEOWars/src/game_objects/particles/enemy_spawn.js");
-/* harmony import */ var _pinwheel_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./pinwheel_sprite */ "./GEOWars/src/game_objects/enemies/Pinwheel/pinwheel_sprite.js");
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/sound */ "./src/game_engine/sound.js");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.js");
+/* harmony import */ var _pinwheel_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./pinwheel_sprite */ "./src/game_objects/enemies/Pinwheel/pinwheel_sprite.js");
 
 
 
@@ -2868,17 +2868,17 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/enemies/Pinwheel/pinwheel_sprite.js":
-/*!**********************************************************************!*\
-  !*** ./GEOWars/src/game_objects/enemies/Pinwheel/pinwheel_sprite.js ***!
-  \**********************************************************************/
+/***/ "./src/game_objects/enemies/Pinwheel/pinwheel_sprite.js":
+/*!**************************************************************!*\
+  !*** ./src/game_objects/enemies/Pinwheel/pinwheel_sprite.js ***!
+  \**************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   PinwheelSprite: () => (/* binding */ PinwheelSprite)
 /* harmony export */ });
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./GEOWars/src/game_engine/line_sprite.js");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.js");
 
 class PinwheelSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.LineSprite {
     constructor(transform, spawningScale = 1) {
@@ -2955,20 +2955,20 @@ class PinwheelSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/enemies/Singularity/alien_ship.js":
-/*!********************************************************************!*\
-  !*** ./GEOWars/src/game_objects/enemies/Singularity/alien_ship.js ***!
-  \********************************************************************/
+/***/ "./src/game_objects/enemies/Singularity/alien_ship.js":
+/*!************************************************************!*\
+  !*** ./src/game_objects/enemies/Singularity/alien_ship.js ***!
+  \************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   AlienShip: () => (/* binding */ AlienShip)
 /* harmony export */ });
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./GEOWars/src/game_engine/util.js");
-/* harmony import */ var _alien_ship_sprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./alien_ship_sprite */ "./GEOWars/src/game_objects/enemies/Singularity/alien_ship_sprite.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./src/game_engine/sound.js");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.js");
+/* harmony import */ var _alien_ship_sprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./alien_ship_sprite */ "./src/game_objects/enemies/Singularity/alien_ship_sprite.js");
 
 
 
@@ -3049,17 +3049,17 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/enemies/Singularity/alien_ship_sprite.js":
-/*!***************************************************************************!*\
-  !*** ./GEOWars/src/game_objects/enemies/Singularity/alien_ship_sprite.js ***!
-  \***************************************************************************/
+/***/ "./src/game_objects/enemies/Singularity/alien_ship_sprite.js":
+/*!*******************************************************************!*\
+  !*** ./src/game_objects/enemies/Singularity/alien_ship_sprite.js ***!
+  \*******************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   AlienShipSprite: () => (/* binding */ AlienShipSprite)
 /* harmony export */ });
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./GEOWars/src/game_engine/line_sprite.js");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.js");
 
 
 class AlienShipSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.LineSprite {
@@ -3106,26 +3106,26 @@ class AlienShipSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/enemies/Singularity/singularity.js":
-/*!*********************************************************************!*\
-  !*** ./GEOWars/src/game_objects/enemies/Singularity/singularity.js ***!
-  \*********************************************************************/
+/***/ "./src/game_objects/enemies/Singularity/singularity.js":
+/*!*************************************************************!*\
+  !*** ./src/game_objects/enemies/Singularity/singularity.js ***!
+  \*************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Singularity: () => (/* binding */ Singularity)
 /* harmony export */ });
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./GEOWars/src/game_engine/util.js");
-/* harmony import */ var _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/particle_explosion */ "./GEOWars/src/game_objects/particles/particle_explosion.js");
-/* harmony import */ var _particles_singularity_hit_explosion__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../particles/singularity_hit_explosion */ "./GEOWars/src/game_objects/particles/singularity_hit_explosion.js");
-/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./GEOWars/src/game_objects/particles/enemy_spawn.js");
-/* harmony import */ var _singularity_sprite__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./singularity_sprite */ "./GEOWars/src/game_objects/enemies/Singularity/singularity_sprite.js");
-/* harmony import */ var _particles_singularity_particles__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../particles/singularity_particles */ "./GEOWars/src/game_objects/particles/singularity_particles.js");
-/* harmony import */ var _alien_ship__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./alien_ship */ "./GEOWars/src/game_objects/enemies/Singularity/alien_ship.js");
-/* harmony import */ var _particles_Grid_grid_point__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../particles/Grid/grid_point */ "./GEOWars/src/game_objects/particles/Grid/grid_point.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./src/game_engine/sound.js");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.js");
+/* harmony import */ var _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.js");
+/* harmony import */ var _particles_singularity_hit_explosion__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../particles/singularity_hit_explosion */ "./src/game_objects/particles/singularity_hit_explosion.js");
+/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.js");
+/* harmony import */ var _singularity_sprite__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./singularity_sprite */ "./src/game_objects/enemies/Singularity/singularity_sprite.js");
+/* harmony import */ var _particles_singularity_particles__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../particles/singularity_particles */ "./src/game_objects/particles/singularity_particles.js");
+/* harmony import */ var _alien_ship__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./alien_ship */ "./src/game_objects/enemies/Singularity/alien_ship.js");
+/* harmony import */ var _particles_Grid_grid_point__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../particles/Grid/grid_point */ "./src/game_objects/particles/Grid/grid_point.js");
 
 
 
@@ -3319,17 +3319,17 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/enemies/Singularity/singularity_sprite.js":
-/*!****************************************************************************!*\
-  !*** ./GEOWars/src/game_objects/enemies/Singularity/singularity_sprite.js ***!
-  \****************************************************************************/
+/***/ "./src/game_objects/enemies/Singularity/singularity_sprite.js":
+/*!********************************************************************!*\
+  !*** ./src/game_objects/enemies/Singularity/singularity_sprite.js ***!
+  \********************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   SingularitySprite: () => (/* binding */ SingularitySprite)
 /* harmony export */ });
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./GEOWars/src/game_engine/line_sprite.js");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.js");
 
 
 class SingularitySprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.LineSprite {
@@ -3388,21 +3388,21 @@ class SingularitySprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODUL
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/enemies/Weaver/weaver.js":
-/*!***********************************************************!*\
-  !*** ./GEOWars/src/game_objects/enemies/Weaver/weaver.js ***!
-  \***********************************************************/
+/***/ "./src/game_objects/enemies/Weaver/weaver.js":
+/*!***************************************************!*\
+  !*** ./src/game_objects/enemies/Weaver/weaver.js ***!
+  \***************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Weaver: () => (/* binding */ Weaver)
 /* harmony export */ });
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./GEOWars/src/game_engine/util.js");
-/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./GEOWars/src/game_objects/particles/enemy_spawn.js");
-/* harmony import */ var _weaver_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./weaver_sprite */ "./GEOWars/src/game_objects/enemies/Weaver/weaver_sprite.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./src/game_engine/sound.js");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.js");
+/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.js");
+/* harmony import */ var _weaver_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./weaver_sprite */ "./src/game_objects/enemies/Weaver/weaver_sprite.js");
 
 
 
@@ -3525,17 +3525,17 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/enemies/Weaver/weaver_sprite.js":
-/*!******************************************************************!*\
-  !*** ./GEOWars/src/game_objects/enemies/Weaver/weaver_sprite.js ***!
-  \******************************************************************/
+/***/ "./src/game_objects/enemies/Weaver/weaver_sprite.js":
+/*!**********************************************************!*\
+  !*** ./src/game_objects/enemies/Weaver/weaver_sprite.js ***!
+  \**********************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   WeaverSprite: () => (/* binding */ WeaverSprite)
 /* harmony export */ });
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./GEOWars/src/game_engine/line_sprite.js");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.js");
 
 
 class WeaverSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.LineSprite {
@@ -3606,20 +3606,20 @@ class WeaverSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/particles/Grid/grid.js":
-/*!*********************************************************!*\
-  !*** ./GEOWars/src/game_objects/particles/Grid/grid.js ***!
-  \*********************************************************/
+/***/ "./src/game_objects/particles/Grid/grid.js":
+/*!*************************************************!*\
+  !*** ./src/game_objects/particles/Grid/grid.js ***!
+  \*************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Grid: () => (/* binding */ Grid)
 /* harmony export */ });
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
-/* harmony import */ var _grid_point__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./grid_point */ "./GEOWars/src/game_objects/particles/Grid/grid_point.js");
-/* harmony import */ var _grid_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./grid_sprite */ "./GEOWars/src/game_objects/particles/Grid/grid_sprite.js");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../game_engine/util */ "./GEOWars/src/game_engine/util.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _grid_point__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./grid_point */ "./src/game_objects/particles/Grid/grid_point.js");
+/* harmony import */ var _grid_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./grid_sprite */ "./src/game_objects/particles/Grid/grid_sprite.js");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.js");
 
 
 
@@ -3701,17 +3701,17 @@ class Grid extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/particles/Grid/grid_point.js":
-/*!***************************************************************!*\
-  !*** ./GEOWars/src/game_objects/particles/Grid/grid_point.js ***!
-  \***************************************************************/
+/***/ "./src/game_objects/particles/Grid/grid_point.js":
+/*!*******************************************************!*\
+  !*** ./src/game_objects/particles/Grid/grid_point.js ***!
+  \*******************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   GridPoint: () => (/* binding */ GridPoint)
 /* harmony export */ });
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.js");
 
 
 
@@ -3751,18 +3751,18 @@ class GridPoint extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.Ga
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/particles/Grid/grid_sprite.js":
-/*!****************************************************************!*\
-  !*** ./GEOWars/src/game_objects/particles/Grid/grid_sprite.js ***!
-  \****************************************************************/
+/***/ "./src/game_objects/particles/Grid/grid_sprite.js":
+/*!********************************************************!*\
+  !*** ./src/game_objects/particles/Grid/grid_sprite.js ***!
+  \********************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   GridSprite: () => (/* binding */ GridSprite)
 /* harmony export */ });
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./GEOWars/src/game_engine/line_sprite.js");
-/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/color */ "./GEOWars/src/game_engine/color.js");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.js");
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/color */ "./src/game_engine/color.js");
 
 
 
@@ -3830,19 +3830,19 @@ class GridSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.L
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/particles/Particle/particle.js":
-/*!*****************************************************************!*\
-  !*** ./GEOWars/src/game_objects/particles/Particle/particle.js ***!
-  \*****************************************************************/
+/***/ "./src/game_objects/particles/Particle/particle.js":
+/*!*********************************************************!*\
+  !*** ./src/game_objects/particles/Particle/particle.js ***!
+  \*********************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Particle: () => (/* binding */ Particle)
 /* harmony export */ });
-/* harmony import */ var _particle_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./particle_sprite */ "./GEOWars/src/game_objects/particles/Particle/particle_sprite.js");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/util */ "./GEOWars/src/game_engine/util.js");
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
+/* harmony import */ var _particle_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./particle_sprite */ "./src/game_objects/particles/Particle/particle_sprite.js");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.js");
 // direction of the particle is the direction of the velocity vector
 // the direction of the 
 // the particle dies when the hue reaches 0 
@@ -3926,18 +3926,18 @@ class Particle extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_2__.Gam
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/particles/Particle/particle_sprite.js":
-/*!************************************************************************!*\
-  !*** ./GEOWars/src/game_objects/particles/Particle/particle_sprite.js ***!
-  \************************************************************************/
+/***/ "./src/game_objects/particles/Particle/particle_sprite.js":
+/*!****************************************************************!*\
+  !*** ./src/game_objects/particles/Particle/particle_sprite.js ***!
+  \****************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   ParticleSprite: () => (/* binding */ ParticleSprite)
 /* harmony export */ });
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./GEOWars/src/game_engine/line_sprite.js");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/util */ "./GEOWars/src/game_engine/util.js");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.js");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.js");
 
 
 
@@ -4029,17 +4029,17 @@ class ParticleSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/particles/Singularity_Particle/singularity_particle.js":
-/*!*****************************************************************************************!*\
-  !*** ./GEOWars/src/game_objects/particles/Singularity_Particle/singularity_particle.js ***!
-  \*****************************************************************************************/
+/***/ "./src/game_objects/particles/Singularity_Particle/singularity_particle.js":
+/*!*********************************************************************************!*\
+  !*** ./src/game_objects/particles/Singularity_Particle/singularity_particle.js ***!
+  \*********************************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   SingularityParticle: () => (/* binding */ SingularityParticle)
 /* harmony export */ });
-/* harmony import */ var _Particle_particle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Particle/particle */ "./GEOWars/src/game_objects/particles/Particle/particle.js");
+/* harmony import */ var _Particle_particle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Particle/particle */ "./src/game_objects/particles/Particle/particle.js");
 // direction of the particle is the direction of the velocity vector
 // the direction of the 
 // the particle dies when the hue reaches 0 
@@ -4088,20 +4088,20 @@ class SingularityParticle extends _Particle_particle__WEBPACK_IMPORTED_MODULE_0_
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/particles/bullet_wall_explosion.js":
-/*!*********************************************************************!*\
-  !*** ./GEOWars/src/game_objects/particles/bullet_wall_explosion.js ***!
-  \*********************************************************************/
+/***/ "./src/game_objects/particles/bullet_wall_explosion.js":
+/*!*************************************************************!*\
+  !*** ./src/game_objects/particles/bullet_wall_explosion.js ***!
+  \*************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   BulletWallExplosion: () => (/* binding */ BulletWallExplosion)
 /* harmony export */ });
-/* harmony import */ var _Particle_particle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Particle/particle */ "./GEOWars/src/game_objects/particles/Particle/particle.js");
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
-/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/color */ "./GEOWars/src/game_engine/color.js");
+/* harmony import */ var _Particle_particle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Particle/particle */ "./src/game_objects/particles/Particle/particle.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/sound */ "./src/game_engine/sound.js");
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.js");
 
 
 
@@ -4169,17 +4169,17 @@ class BulletWallExplosion extends _game_engine_game_object__WEBPACK_IMPORTED_MOD
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/particles/enemy_spawn.js":
-/*!***********************************************************!*\
-  !*** ./GEOWars/src/game_objects/particles/enemy_spawn.js ***!
-  \***********************************************************/
+/***/ "./src/game_objects/particles/enemy_spawn.js":
+/*!***************************************************!*\
+  !*** ./src/game_objects/particles/enemy_spawn.js ***!
+  \***************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   EnemySpawn: () => (/* binding */ EnemySpawn)
 /* harmony export */ });
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.js");
 
 
 class EnemySpawn extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject{
@@ -4215,20 +4215,20 @@ const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/particles/particle_explosion.js":
-/*!******************************************************************!*\
-  !*** ./GEOWars/src/game_objects/particles/particle_explosion.js ***!
-  \******************************************************************/
+/***/ "./src/game_objects/particles/particle_explosion.js":
+/*!**********************************************************!*\
+  !*** ./src/game_objects/particles/particle_explosion.js ***!
+  \**********************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   ParticleExplosion: () => (/* binding */ ParticleExplosion)
 /* harmony export */ });
-/* harmony import */ var _Particle_particle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Particle/particle */ "./GEOWars/src/game_objects/particles/Particle/particle.js");
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
-/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/color */ "./GEOWars/src/game_engine/color.js");
+/* harmony import */ var _Particle_particle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Particle/particle */ "./src/game_objects/particles/Particle/particle.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/sound */ "./src/game_engine/sound.js");
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.js");
 
 
 
@@ -4289,20 +4289,20 @@ class ParticleExplosion extends _game_engine_game_object__WEBPACK_IMPORTED_MODUL
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/particles/ship_explosion.js":
-/*!**************************************************************!*\
-  !*** ./GEOWars/src/game_objects/particles/ship_explosion.js ***!
-  \**************************************************************/
+/***/ "./src/game_objects/particles/ship_explosion.js":
+/*!******************************************************!*\
+  !*** ./src/game_objects/particles/ship_explosion.js ***!
+  \******************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   ShipExplosion: () => (/* binding */ ShipExplosion)
 /* harmony export */ });
-/* harmony import */ var _Particle_particle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Particle/particle */ "./GEOWars/src/game_objects/particles/Particle/particle.js");
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
-/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/color */ "./GEOWars/src/game_engine/color.js");
+/* harmony import */ var _Particle_particle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Particle/particle */ "./src/game_objects/particles/Particle/particle.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/sound */ "./src/game_engine/sound.js");
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.js");
 
 
 
@@ -4348,20 +4348,20 @@ class ShipExplosion extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1_
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/particles/singularity_hit_explosion.js":
-/*!*************************************************************************!*\
-  !*** ./GEOWars/src/game_objects/particles/singularity_hit_explosion.js ***!
-  \*************************************************************************/
+/***/ "./src/game_objects/particles/singularity_hit_explosion.js":
+/*!*****************************************************************!*\
+  !*** ./src/game_objects/particles/singularity_hit_explosion.js ***!
+  \*****************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   SingularityHitExplosion: () => (/* binding */ SingularityHitExplosion)
 /* harmony export */ });
-/* harmony import */ var _Particle_particle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Particle/particle */ "./GEOWars/src/game_objects/particles/Particle/particle.js");
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
-/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/color */ "./GEOWars/src/game_engine/color.js");
+/* harmony import */ var _Particle_particle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Particle/particle */ "./src/game_objects/particles/Particle/particle.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/sound */ "./src/game_engine/sound.js");
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.js");
 
 
 
@@ -4418,20 +4418,20 @@ class SingularityHitExplosion extends _game_engine_game_object__WEBPACK_IMPORTED
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/particles/singularity_particles.js":
-/*!*********************************************************************!*\
-  !*** ./GEOWars/src/game_objects/particles/singularity_particles.js ***!
-  \*********************************************************************/
+/***/ "./src/game_objects/particles/singularity_particles.js":
+/*!*************************************************************!*\
+  !*** ./src/game_objects/particles/singularity_particles.js ***!
+  \*************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   SingularityParticles: () => (/* binding */ SingularityParticles)
 /* harmony export */ });
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/util */ "./GEOWars/src/game_engine/util.js");
-/* harmony import */ var _Singularity_Particle_singularity_particle__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Singularity_Particle/singularity_particle */ "./GEOWars/src/game_objects/particles/Singularity_Particle/singularity_particle.js");
-/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/color */ "./GEOWars/src/game_engine/color.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/util */ "./src/game_engine/util.js");
+/* harmony import */ var _Singularity_Particle_singularity_particle__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Singularity_Particle/singularity_particle */ "./src/game_objects/particles/Singularity_Particle/singularity_particle.js");
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.js");
 
 
 
@@ -4515,10 +4515,10 @@ class SingularityParticles extends _game_engine_game_object__WEBPACK_IMPORTED_MO
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/particles/star.js":
-/*!****************************************************!*\
-  !*** ./GEOWars/src/game_objects/particles/star.js ***!
-  \****************************************************/
+/***/ "./src/game_objects/particles/star.js":
+/*!********************************************!*\
+  !*** ./src/game_objects/particles/star.js ***!
+  \********************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -4526,8 +4526,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   Star: () => (/* binding */ Star),
 /* harmony export */   StarSprite: () => (/* binding */ StarSprite)
 /* harmony export */ });
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./GEOWars/src/game_engine/line_sprite.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.js");
 
 
 
@@ -4572,21 +4572,21 @@ class StarSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.L
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/ship/ship.js":
-/*!***********************************************!*\
-  !*** ./GEOWars/src/game_objects/ship/ship.js ***!
-  \***********************************************/
+/***/ "./src/game_objects/ship/ship.js":
+/*!***************************************!*\
+  !*** ./src/game_objects/ship/ship.js ***!
+  \***************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Ship: () => (/* binding */ Ship)
 /* harmony export */ });
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./GEOWars/src/game_engine/game_object.js");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
-/* harmony import */ var _ship_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ship_sprite */ "./GEOWars/src/game_objects/ship/ship_sprite.js");
-/* harmony import */ var _Bullet_bullet__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Bullet/bullet */ "./GEOWars/src/game_objects/Bullet/bullet.js");
-/* harmony import */ var _game_engine_transform__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_engine/transform */ "./GEOWars/src/game_engine/transform.js");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/sound */ "./src/game_engine/sound.js");
+/* harmony import */ var _ship_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ship_sprite */ "./src/game_objects/ship/ship_sprite.js");
+/* harmony import */ var _Bullet_bullet__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Bullet/bullet */ "./src/game_objects/Bullet/bullet.js");
+/* harmony import */ var _game_engine_transform__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_engine/transform */ "./src/game_engine/transform.js");
 
 
 
@@ -4964,17 +4964,17 @@ Ship.MOVES = {
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_objects/ship/ship_sprite.js":
-/*!******************************************************!*\
-  !*** ./GEOWars/src/game_objects/ship/ship_sprite.js ***!
-  \******************************************************/
+/***/ "./src/game_objects/ship/ship_sprite.js":
+/*!**********************************************!*\
+  !*** ./src/game_objects/ship/ship_sprite.js ***!
+  \**********************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   ShipSprite: () => (/* binding */ ShipSprite)
 /* harmony export */ });
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./GEOWars/src/game_engine/line_sprite.js");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.js");
 
 
 class ShipSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.LineSprite {
@@ -5041,33 +5041,33 @@ class ShipSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.L
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_script.js":
-/*!************************************!*\
-  !*** ./GEOWars/src/game_script.js ***!
-  \************************************/
+/***/ "./src/game_script.js":
+/*!****************************!*\
+  !*** ./src/game_script.js ***!
+  \****************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   GameScript: () => (/* binding */ GameScript)
 /* harmony export */ });
-/* harmony import */ var _game_objects_ship_ship__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_objects/ship/ship */ "./GEOWars/src/game_objects/ship/ship.js");
-/* harmony import */ var _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_objects/Walls/walls */ "./GEOWars/src/game_objects/Walls/walls.js");
-/* harmony import */ var _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game_objects/Overlay/overlay */ "./GEOWars/src/game_objects/Overlay/overlay.js");
-/* harmony import */ var _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./game_objects/particles/Grid/grid */ "./GEOWars/src/game_objects/particles/Grid/grid.js");
-/* harmony import */ var _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./game_objects/enemies/BoxBox/boxbox */ "./GEOWars/src/game_objects/enemies/BoxBox/boxbox.js");
-/* harmony import */ var _game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./game_objects/enemies/Pinwheel/pinwheel */ "./GEOWars/src/game_objects/enemies/Pinwheel/pinwheel.js");
-/* harmony import */ var _game_objects_enemies_Arrow_arrow__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./game_objects/enemies/Arrow/arrow */ "./GEOWars/src/game_objects/enemies/Arrow/arrow.js");
-/* harmony import */ var _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./game_objects/enemies/Grunt/grunt */ "./GEOWars/src/game_objects/enemies/Grunt/grunt.js");
-/* harmony import */ var _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./game_objects/enemies/Weaver/weaver */ "./GEOWars/src/game_objects/enemies/Weaver/weaver.js");
-/* harmony import */ var _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/singularity */ "./GEOWars/src/game_objects/enemies/Singularity/singularity.js");
-/* harmony import */ var _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/alien_ship */ "./GEOWars/src/game_objects/enemies/Singularity/alien_ship.js");
-/* harmony import */ var _game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./game_objects/particles/particle_explosion */ "./GEOWars/src/game_objects/particles/particle_explosion.js");
-/* harmony import */ var _game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./game_objects/particles/ship_explosion */ "./GEOWars/src/game_objects/particles/ship_explosion.js");
-/* harmony import */ var _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./game_objects/particles/star */ "./GEOWars/src/game_objects/particles/star.js");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./game_engine/util */ "./GEOWars/src/game_engine/util.js");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./game_engine/sound */ "./GEOWars/src/game_engine/sound.js");
-/* harmony import */ var _game_engine_state_machine__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./game_engine/state_machine */ "./GEOWars/src/game_engine/state_machine.js");
+/* harmony import */ var _game_objects_ship_ship__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_objects/ship/ship */ "./src/game_objects/ship/ship.js");
+/* harmony import */ var _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_objects/Walls/walls */ "./src/game_objects/Walls/walls.js");
+/* harmony import */ var _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game_objects/Overlay/overlay */ "./src/game_objects/Overlay/overlay.js");
+/* harmony import */ var _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./game_objects/particles/Grid/grid */ "./src/game_objects/particles/Grid/grid.js");
+/* harmony import */ var _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./game_objects/enemies/BoxBox/boxbox */ "./src/game_objects/enemies/BoxBox/boxbox.js");
+/* harmony import */ var _game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./game_objects/enemies/Pinwheel/pinwheel */ "./src/game_objects/enemies/Pinwheel/pinwheel.js");
+/* harmony import */ var _game_objects_enemies_Arrow_arrow__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./game_objects/enemies/Arrow/arrow */ "./src/game_objects/enemies/Arrow/arrow.js");
+/* harmony import */ var _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./game_objects/enemies/Grunt/grunt */ "./src/game_objects/enemies/Grunt/grunt.js");
+/* harmony import */ var _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./game_objects/enemies/Weaver/weaver */ "./src/game_objects/enemies/Weaver/weaver.js");
+/* harmony import */ var _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/singularity */ "./src/game_objects/enemies/Singularity/singularity.js");
+/* harmony import */ var _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/alien_ship */ "./src/game_objects/enemies/Singularity/alien_ship.js");
+/* harmony import */ var _game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./game_objects/particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.js");
+/* harmony import */ var _game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./game_objects/particles/ship_explosion */ "./src/game_objects/particles/ship_explosion.js");
+/* harmony import */ var _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./game_objects/particles/star */ "./src/game_objects/particles/star.js");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./game_engine/util */ "./src/game_engine/util.js");
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./game_engine/sound */ "./src/game_engine/sound.js");
+/* harmony import */ var _game_engine_state_machine__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./game_engine/state_machine */ "./src/game_engine/state_machine.js");
 
 
 
@@ -5686,10 +5686,10 @@ GameScript.spawnListList = [GameScript.Spawn1];
 
 /***/ }),
 
-/***/ "./GEOWars/src/game_view.js":
-/*!**********************************!*\
-  !*** ./GEOWars/src/game_view.js ***!
-  \**********************************/
+/***/ "./src/game_view.js":
+/*!**************************!*\
+  !*** ./src/game_view.js ***!
+  \**************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
@@ -5939,15 +5939,15 @@ GameView.MOVES = {
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
-/*!********************************!*\
-  !*** ./GEOWars/src/GEOWars.js ***!
-  \********************************/
+/*!************************!*\
+  !*** ./src/GEOWars.js ***!
+  \************************/
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_script */ "./GEOWars/src/game_script.js");
-/* harmony import */ var _game_view__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_view */ "./GEOWars/src/game_view.js");
-/* harmony import */ var _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game_engine/game_engine */ "./GEOWars/src/game_engine/game_engine.js");
-/* harmony import */ var _game_engine_Levels_levelDesigner__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./game_engine/Levels/levelDesigner */ "./GEOWars/src/game_engine/Levels/levelDesigner.js");
-/* harmony import */ var _AnimationView__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./AnimationView */ "./GEOWars/src/AnimationView.js");
+/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_script */ "./src/game_script.js");
+/* harmony import */ var _game_view__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_view */ "./src/game_view.js");
+/* harmony import */ var _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game_engine/game_engine */ "./src/game_engine/game_engine.js");
+/* harmony import */ var _game_engine_Levels_levelDesigner__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./game_engine/Levels/levelDesigner */ "./src/game_engine/Levels/levelDesigner.js");
+/* harmony import */ var _AnimationView__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./AnimationView */ "./src/AnimationView.js");
 
 
 

@@ -1,5 +1,5 @@
 module.exports = {
-    entry: "./GEOWars/src/GEOWars.js",
+    entry: "./src/GEOWars.js",
     output: {
         filename: "./bundle.js"
     },

@@ -7,7 +7,7 @@
 // load spawn event
 // save spawn event
 // create spawn event
-import { GameObject } from "../../../game_engine/game_object";
+import { GameObject } from "../../game_object";
 
 import { PlacingAnimation } from "./PlacingAnimation";
 import { BoxBoxSprite } from "../../../game_objects/enemies/BoxBox/boxbox_sprite";

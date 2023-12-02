@@ -1,4 +1,4 @@
-import { GameObject } from "../../../game_engine/game_object";
+import { GameObject } from "../../game_object";
 
 export class PlacingAnimation extends GameObject {
     constructor(engine) {
