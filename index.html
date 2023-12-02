@@ -4,40 +4,40 @@
   </head>
 
 <body class="gameArea">
-    <div class="title">
-      
+  <div class="title"></div>
+  <canvas id="canvas" class="gameCanvas" width="1000" height="600"></canvas>
+  <div class="footer">Control Direction With Keys: WASD </div>
+  <div class="footer">Control Firing With Cursor</div>
+  <div class="footer">Mute/Unmute With M</div>
+  <div id="myModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <div class="modalText">Control direction with left joystick / WASD</div>
+      <div class="modalText">Control firing with right joystick / cursor</div>
+      <div class="modalText">Mute/unmute with M</div>
+      <!-- <div class="modalText">
+        Avoid Enemy Shapes
+      </div> -->
     </div>
-    <canvas id="canvas" class="gameCanvas" width="1000" height="600">
-    </canvas>
-    <div class="footer">
-      Control Direction With Keys: WASD 
-    </div>
-    <div class="footer">
-      Control Firing With Cursor
-    </div>
-    <div class="footer">
-      Mute/Unmute With M
-    </div>
-    
+  </div>
 
-    <div id="myModal" class="modal">
+    <div id="pallet" class="pallet">
 
       <div class="modal-content">
-        <span class="close">&times;</span>
-
-        <div class="modalText">
-          Control direction with left joystick / WASD
-        </div>
-        <div class="modalText">
-          Control firing with right joystick / cursor
-        </div>
-        <div class="modalText">
-          Mute/unmute with M
-        </div>
+        <button id="Arrow">Arrow</button>
+        <button id="BoxBox">BoxBox</button>
+        <button id="Pinwheel">Pinwheel</button>
+        <button id="Weaver">Weaver</button>
+        <button id="Singularity">Singularity</button>
+        <button id="LevelEditor">Level Editor</button>
         <!-- <div class="modalText">
           Avoid Enemy Shapes
         </div> -->
       </div>
+    </div>
+
+    <div id="animationTestBox">
+      <canvas id="animationTestCanvas" class="animationCanvas" width="200" height="200"></canvas>
     </div>
 
     <div id="endModal" class="endModal">
@@ -101,9 +101,9 @@
 
     
       <!-- <div id="statsPanel"></div> -->
-    <link rel="stylesheet" type="text/css" media="screen" href="GEOWars/game_style.css" />  
+    <link rel="stylesheet" type="text/css" media="screen" href="./game_style.css" />  
     <!-- <script type="application/javascript" src="GEOWars/vendor/keymaster.js"></script> -->
-    <script type="application/javascript" src="GEOWars/lib/bundle.js"></script>
+    <script type="application/javascript" src="./dist/bundle.js"></script>
   </body>
 </html>
 

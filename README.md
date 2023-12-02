@@ -163,7 +163,7 @@ class Weaver extends GameObject {
 A LineSprite contains a transform and a `#draw` function for the user to overwrite. It is where the user puts the commands for the canvas context to draw a GameObject. `#addLineSprite` adds the sprite to the list of sprites to be rendered by the game engine during its rendering stage of the frame cycle. The following is an example of adding a LineSprite to a game object:
 
 ```javascript
-const LineSprite = require("../../../game_engine/line_sprite")
+import {LineSprite} from "../../../game_engine/line_sprite";
 
 class SingularitySprite extends LineSprite {
   constructor(transform, spawningScale = 1) {
@@ -293,7 +293,7 @@ this.shadowColor.s = 50
 ctx.shadowColor = this.shadowColor.evaluateColor()
 ```
 ## Transform
-A transform contains the position velocity and acceleration information about a GameObject. Position, translational velocity and acceleration are stored as [x,y] pairs, whereas angular values are doubles. Instance variables include: pos, vel, acc, angle, aVel, aAcc. Angular acceleration and acc are both set to 0 after the phsyics calculations are complete in order to keep accelerations from persisting when the forces that provide them no longer exist. Forces are currently not implemented but will be added soon. They will be stored as an instance variable of the transform and will be an array in which a force vector can be added. 
+A transform contains the position, velocity, and acceleration information about a GameObject. Position, translational velocity, and acceleration are stored as [x,y] pairs. Instance variables include: pos, vel, acc, angle, aVel, aAcc. Angular acceleration and acc are both set to 0 after the physics calculations are complete in order to keep accelerations from persisting when the forces that provide them no longer exist. Forces are currently not implemented but will be added soon. They will be stored as an instance variable of the transform and will be an array in which a force vector can be added. 
 ## Sound
 A Sound is another object built into the game engine that allows users to give it a url and a volume. Sound has methods `#play`, `#mute`, `#unmute`, `#pause`, and `#toggleMute`. `GameObject#playSound` allows the user to add a sound to the game engine sound queue to be played. Duplicate sounds added during the same frame will not double in volume, as the game engine will only play one of them. Sound's constructor takes in the URL and volume (a bool, zero to one) as parameters:
 
