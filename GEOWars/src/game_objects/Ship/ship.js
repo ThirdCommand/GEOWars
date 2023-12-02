@@ -8,6 +8,7 @@ export class Ship extends GameObject {
     constructor(engine, pos, initialCameraZPos) { 
         super(engine);
         this.transform.pos = pos;
+        this.transform.pos[2] = [0];
         this.cameraTransform = new Transform();
         this.cameraTransform.pos = [pos[0], pos[1], initialCameraZPos];
         this.addPhysicsComponent();
@@ -19,7 +20,7 @@ export class Ship extends GameObject {
         this.addCollider("General", this, this.radius);
         this.addCollider("ShipDeath", this, this.radius, ["BoxBox", "Singularity", "Weaver", "Grunt", "Arrow", "Pinwheel", "AlienShip"], ["General"]);
         this.addLineSprite(new ShipSprite(this.transform));
-        this.maxSpeed = 7.5; // 2.5
+        this.maxSpeed = 2.5; // 2.5
         this.mousePos = [0,0];
         this.fireAngle = 0;
         this.bulletSound = new Sound("GEOWars/sounds/Fire_normal.wav", 0.2);

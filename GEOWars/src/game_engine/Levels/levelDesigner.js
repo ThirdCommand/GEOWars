@@ -3,6 +3,7 @@ import { Overlay } from "../../game_objects/Overlay/overlay";
 import { Grid } from "../../game_objects/particles/Grid/grid";
 import { EnemyPlacer } from "../Levels/LevelDesign/EnemyPlacer";
 import { GameScript } from "../../game_script";
+import { Transform } from "../transform";
 
 import {
     Spawn,
@@ -111,8 +112,8 @@ export class LevelDesigner {
         return new Walls(this.engine, this);
     }
 
-    createGrid() {
-        return new Grid(this.engine, this);
+    createGrid(cameraTransform) {
+        return new Grid(this.engine, this, new Transform());
     }
 
     createOverlay() {

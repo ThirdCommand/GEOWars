@@ -284,7 +284,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_objects/particles/Grid/grid */ "./GEOWars/src/game_objects/particles/Grid/grid.js");
 /* harmony import */ var _Levels_LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Levels/LevelDesign/EnemyPlacer */ "./GEOWars/src/game_engine/Levels/LevelDesign/EnemyPlacer.js");
 /* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_script */ "./GEOWars/src/game_script.js");
-/* harmony import */ var _scene__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./scene */ "./GEOWars/src/game_engine/Levels/scene.js");
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../transform */ "./GEOWars/src/game_engine/transform.js");
+/* harmony import */ var _scene__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./scene */ "./GEOWars/src/game_engine/Levels/scene.js");
+
 
 
 
@@ -313,7 +315,7 @@ class LevelDesigner {
         const addWeaver = document.getElementById("Weaver");
         const addSingularity = document.getElementById("Singularity");
         const makeGame = document.getElementById("LevelEditor");
-        this.gameSequenceDisplay = new _scene__WEBPACK_IMPORTED_MODULE_5__.GameSequenceDisplay();
+        this.gameSequenceDisplay = new _scene__WEBPACK_IMPORTED_MODULE_6__.GameSequenceDisplay();
 
         addArrowButton.onclick = (e) => {
             e.stopPropagation();
@@ -380,7 +382,7 @@ class LevelDesigner {
     }
 
     addSpawnToEvent(spawn) {
-        new _scene__WEBPACK_IMPORTED_MODULE_5__.Spawn(this.engine, spawn);
+        new _scene__WEBPACK_IMPORTED_MODULE_6__.Spawn(this.engine, spawn);
     }
 
     addNewEvent() {}
@@ -391,8 +393,8 @@ class LevelDesigner {
         return new _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_0__.Walls(this.engine, this);
     }
 
-    createGrid() {
-        return new _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_2__.Grid(this.engine, this);
+    createGrid(cameraTransform) {
+        return new _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_2__.Grid(this.engine, this, new _transform__WEBPACK_IMPORTED_MODULE_5__.Transform());
     }
 
     createOverlay() {
@@ -1741,9 +1743,7 @@ class Transform {
                 const Xs = this.pos[0];
                 const Ys = this.pos[1];
                 const Zs = this.pos[2];
-                // this only works for things behind, not in front of the field
-                // const Xp = (-Zc * (Xs - Xc)) / (-Zc + Zs);
-                // const Yp = (-Zc * (Ys - Yc)) / (-Zc + Zs);'
+
                 const Yp = Yc + (Ys-Yc)/(Zs-Zc) * (0 - Zc);
                 const Xp = Xc + (Xs-Xc)/(Zs-Zc) * (0 - Zc);
                 absPos = [Xp, Yp];
@@ -1838,13 +1838,30 @@ const Util = {
     },
     // Find distance between two points.
     dist(pos1, pos2) {
-        return Math.sqrt(
-            Math.pow(pos1[0] - pos2[0], 2) + Math.pow(pos1[1] - pos2[1], 2)
+        let answer;
+        if(isNaN(pos1[2])) pos1[2] = 0;
+        if(isNaN(pos2[2])) pos2[2] = 0;
+        if(pos1.length === 3 && pos2.length === 3) {
+
+            answer =  Math.sqrt(
+                (pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2 + (pos1[2] - pos2[2]) ** 2
+            );
+            if(isNaN(answer)) {
+                console.log("NaN");
+            }
+            return answer;
+        }
+        answer =  Math.sqrt(
+            (pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2
         );
+        if(isNaN(answer)) {
+            console.log("NaN");
+        }
+        return answer;
     },
     // Find the length of the vector.
     norm(vec) {
-        return Util.dist([0, 0], vec);
+        return Util.dist([0, 0, 0], vec);
     },
     // Return a randomly oriented vector with the given length.
     randomVec(length) {
@@ -1853,6 +1870,9 @@ const Util = {
     },
     // Scale the length of a vector by the given amount.
     scale(vec, m) {
+        if(vec.length === 3) {
+            return [vec[0] * m, vec[1] * m, vec[2] * m];
+        }
         return [vec[0] * m, vec[1] * m];
     },
 
@@ -1889,8 +1909,10 @@ class Bullet extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         this.ID = bulletNumber;
         this.transform.pos[0] = pos[0];
         this.transform.pos[1] = pos[1];
+        this.transform.pos[2] = 0;
         this.transform.vel[0] = vel[0];
         this.transform.vel[1] = vel[1];
+        this.transform.vel[2] = 0;
         this.length = 12;
         this.radius = this.length / 4;
         this.wrap = false;
@@ -1944,7 +1966,6 @@ class Bullet extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
             } else {
                 const hitObjectTransform = collider.gameObject.transform;
                 const pos = hitObjectTransform.absolutePosition();
-                const vel = hitObjectTransform.absoluteVelocity();
                 const explosion = new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_4__.ParticleExplosion(this.gameEngine, pos);
                 this.gameEngine.gameScript.tallyScore(collider.gameObject);
                 collider.gameObject.remove();
@@ -3104,6 +3125,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _singularity_sprite__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./singularity_sprite */ "./GEOWars/src/game_objects/enemies/Singularity/singularity_sprite.js");
 /* harmony import */ var _particles_singularity_particles__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../particles/singularity_particles */ "./GEOWars/src/game_objects/particles/singularity_particles.js");
 /* harmony import */ var _alien_ship__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./alien_ship */ "./GEOWars/src/game_objects/enemies/Singularity/alien_ship.js");
+/* harmony import */ var _particles_Grid_grid_point__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../particles/Grid/grid_point */ "./GEOWars/src/game_objects/particles/Grid/grid_point.js");
+
 
 
 
@@ -3117,6 +3140,7 @@ class Singularity extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.
     constructor(engine, pos) {
         super(engine);
         this.transform.pos = pos;
+        this.transform.pos[2] = 0;
         this.gravityWellSize = 500;
         this.gravityConstant = 1000 * 0.5;
         this.radius = 15;
@@ -3227,21 +3251,55 @@ class Singularity extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.
 
     influenceAcceleration(object) {
         const pos = this.transform.absolutePosition();
-        const objectPos = object.transform.absolutePosition();
-        const dy = pos[1] - objectPos[1];
-        const dx = pos[0] - objectPos[0];
-        const unitVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.Util.dir([dx, dy]);
-        const r = Math.sqrt(dy * dy + dx * dx);
-        if (r > this.gravityWellSize * 7 / 8 || r < this.radius * 2){
-            // object.transform.acc = [0,0];
+
+        if(object instanceof _particles_Grid_grid_point__WEBPACK_IMPORTED_MODULE_9__.GridPoint) {
+            // let's try moving their original position in the z direction 
+            // depending on strength of gravity influence
+            const objectPos3D = [object.transform.pos[0], object.transform.pos[1], object.transform.pos[2]];
+            const dVector = [pos[0] - objectPos3D[0], pos[1] - objectPos3D[1], -200 - objectPos3D[2]]; // -200 is the z position of the gravity well for the grid
+            const dVectorZOrigin = [pos[0] - objectPos3D[0], pos[1] - objectPos3D[1],0]; // -200 is the z position of the gravity well for the grid
+            let r = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.Util.dist([0,0,0], dVector);
+            let rZOrigin = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.Util.dist([0,0,0], dVectorZOrigin);
+            
+            if (!(r > this.gravityWellSize * 3)){
+                if(r < 25) r=25;
+                if(rZOrigin < 25) rZOrigin=25;
+                // I think I can use both effects, but this one should be a lot smaller
+                // and then tuning it would be harder
+                
+                const unitVector3D = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.Util.scale(dVector, 1/r);
+                const accContribution= [
+                    unitVector3D[0] * this.gravityConstant * 5 / (r * r),
+                    unitVector3D[1] * this.gravityConstant * 5 / (r * r),
+                    unitVector3D[2] * this.gravityConstant * 5 / (r * r)
+                ];
+
+                // *************
+                // will need to multiply this a good amount
+                // if(r < 25) r=25;
+                const zContribution = this.gravityConstant * 20 / (rZOrigin ** 2) * 150;
+                //// ************
+
+                object.transform.acc[0] += accContribution[0];
+                object.transform.acc[1] += accContribution[1];
+                object.transform.acc[2] += accContribution[2];
+                object.originalPosition[2] += zContribution;
+            }
         } else {
-            const accContribution= [
-                unitVector[0] * this.gravityConstant / (r * r),
-                unitVector[1] * this.gravityConstant / (r * r)
-            ];
-            object.transform.acc[0] += accContribution[0];
-            object.transform.acc[1] += accContribution[1];
+            const objectPos = object.transform.absolutePosition();
+            const dVector2D = [pos[0] - objectPos[0], pos[1] - objectPos[1]];
+            const r = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.Util.dist([0,0], dVector2D);
+            if (!(r > this.gravityWellSize * 7 / 8 || r < this.radius * 2)){
+                const unitVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.Util.scale(dVector2D, 1/r);
+                const accContribution= [
+                    unitVector[0] * this.gravityConstant / (r * r),
+                    unitVector[1] * this.gravityConstant / (r * r)
+                ];
+                object.transform.acc[0] += accContribution[0];
+                object.transform.acc[1] += accContribution[1];
+            }
         }
+        
     }
 
     openGate(){
@@ -3568,7 +3626,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class Grid extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
-    constructor(engine, gameScript) {
+    constructor(engine, gameScript, cameraTransform) {
         super(engine);
 
         this.transform.pos = [0,0];
@@ -3577,9 +3635,9 @@ class Grid extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
         this.elasticity = 0.1; // force provided to pull particle back into place
         this.dampening = 0.1; // force produced from velocity (allows things to eventuall fall to rest)
 
-        this.gridPoints = this.createGridPoints();
+        this.gridPoints = this.createGridPoints(cameraTransform);
 
-        this.addLineSprite(new _grid_sprite__WEBPACK_IMPORTED_MODULE_2__.GridSprite(this.transform, this.gridPoints));
+        this.addLineSprite(new _grid_sprite__WEBPACK_IMPORTED_MODULE_2__.GridSprite(this.transform, this.gridPoints, cameraTransform));
         // this.addPhysicsComponent()
         // this.addCollider("General", this, this.radius)
     }
@@ -3612,7 +3670,7 @@ class Grid extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
         }
     }
 
-    createGridPoints(){
+    createGridPoints(cameraTransform){
         const columnCount = 20;
         const rowCount = 12;
         const gridPoints = [];
@@ -3625,8 +3683,8 @@ class Grid extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
                 ){
                     continue;
                 }
-                const position = [xPosition, yPosition];
-                gridRow.push(new _grid_point__WEBPACK_IMPORTED_MODULE_1__.GridPoint(this.gameEngine, position));
+                const position = [xPosition, yPosition, 0];
+                gridRow.push(new _grid_point__WEBPACK_IMPORTED_MODULE_1__.GridPoint(this.gameEngine, position, cameraTransform));
             }
             
             gridPoints.push(gridRow.slice());
@@ -3658,23 +3716,34 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class GridPoint extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
-    constructor(engine, pos) {
+    constructor(engine, pos, cameraTransform) {
         super(engine);
-        this.origionalPosition = [];
-        this.origionalPosition[0] = pos[0];
-        this.origionalPosition[1] = pos[1];
+        this.originalPosition = [];
+        this.originalPosition[0] = pos[0];
+        this.originalPosition[1] = pos[1];
+        this.originalPosition[2] = pos[2];
         this.transform.pos = pos;
+        this.transform.cameraTransform = cameraTransform;
         this.radius = 2;
-        this.elasticity = -0.0035; // force provided to pull particle back into place
+        this.elasticity = -0.0025; // force provided to pull particle back into place
         this.dampening = -0.04; // force produced from velocity (allows things to eventuall fall to rest)
 
         this.addPhysicsComponent();
         this.addCollider("General", this, this.radius);
     }
 
+    // let's try moving their original position in the z direction 
+    // depending on strength of gravity influence
+
+    // will need to reset z position to 0 after each update... not sure how yet
+    // ...maybe just set it to 0 after each update lolz
+
     update(deltaTime) {
-        this.transform.acc[0] += this.transform.vel[0] * this.dampening + (this.transform.pos[0] - this.origionalPosition[0]) * this.elasticity;
-        this.transform.acc[1] += this.transform.vel[1] * this.dampening + (this.transform.pos[1] - this.origionalPosition[1]) * this.elasticity;
+        this.transform.acc[0] += this.transform.vel[0] * this.dampening + (this.transform.pos[0] - this.originalPosition[0]) * this.elasticity;
+        this.transform.acc[1] += this.transform.vel[1] * this.dampening + (this.transform.pos[1] - this.originalPosition[1]) * this.elasticity;
+        this.transform.acc[2] += this.transform.vel[2] * this.dampening + (this.transform.pos[2] - this.originalPosition[2]) * this.elasticity;
+
+        this.originalPosition[2] = 0;
     }
 
 }
@@ -3698,9 +3767,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class GridSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.LineSprite {
-    constructor(transform, gridPoints) {
+    constructor(transform, gridPoints, cameraTransform) {
         super(transform);
         this.gridPoints = gridPoints;
+        this.cameraTransform = cameraTransform;
 
         this.color = new _game_engine_color__WEBPACK_IMPORTED_MODULE_1__.Color({
             "hsla": [202, 100, 70, 0.2]
@@ -3721,10 +3791,10 @@ class GridSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.L
 
         for (let i = 1; i < gridPoints.length - 1; i++) {
             ctx.beginPath();
-            const firstPosition = gridPoints[i][0].transform.pos;
+            const firstPosition = gridPoints[i][0].transform.absolutePosition();
             ctx.moveTo(firstPosition[0], firstPosition[1]);
             for (let j = 1; j < gridPoints[i].length; j++) {
-                const nextPosition = gridPoints[i][j].transform.pos;
+                const nextPosition = gridPoints[i][j].transform.absolutePosition();
                 ctx.lineTo(nextPosition[0], nextPosition[1]);
             }
 
@@ -3741,13 +3811,13 @@ class GridSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.L
             for (let i = 0; i < gridPoints.length; i++) {
                 let nextPosition = [];
                 if( i === 0 || i === 0) {
-                    nextPosition = gridPoints[i][j - 1].transform.pos;
+                    nextPosition = gridPoints[i][j - 1].transform.absolutePosition();
                     ctx.moveTo(nextPosition[0], nextPosition[1]);
                 } else {
                     if ( i === gridPoints.length - 1) {
-                        nextPosition = gridPoints[i][j - 1].transform.pos;
+                        nextPosition = gridPoints[i][j - 1].transform.absolutePosition();
                     } else {
-                        nextPosition = gridPoints[i][j].transform.pos;
+                        nextPosition = gridPoints[i][j].transform.absolutePosition();
                     }
                     ctx.lineTo(nextPosition[0], nextPosition[1]);
                 }
@@ -3805,16 +3875,17 @@ class Particle extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_2__.Gam
         this.transform.movementAngle = this.movementAngle;
         this.transform.vel = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.Util.vector3Cartesian(this.movementAngle, initialSpeed);
         this.radius = 3;
-        this.explosionDeceleration = 0.1; // in the direction the particle is moving
+        this.explosionDeceleration = -0.004; // in the direction the particle is moving
         this.transform.acc = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.Util.vector3Cartesian(this.movementAngle, -this.explosionDeceleration);
         this.addLineSprite(new _particle_sprite__WEBPACK_IMPORTED_MODULE_0__.ParticleSprite(this.transform, this.color));
         this.addPhysicsComponent();
+        this.dampening = -0.045;
         // this.addCollider("General", this, this.radius)
     }
 
     createMovementAngle(wallHit) {
         if (!wallHit){ 
-            return [(Math.random() * Math.PI * 2), Math.random() * Math.PI/2];
+            return [(Math.random() * Math.PI * 2), Math.random() * Math.PI * 2];
         } else {
             if (wallHit === "BOTTOM") {
                 // need to give second angle still
@@ -3831,15 +3902,18 @@ class Particle extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_2__.Gam
   
 
     update(deltaTime){
-        this.lineSprite.rectLength -= 0.01 * deltaTime;
-        this.lineSprite.color.a -= 0.001 * deltaTime;
+        // this.lineSprite.rectLength -= 0.01 * deltaTime;
+        this.lineSprite.color.a -= 0.0005 * deltaTime;
         if (this.lineSprite.hue < 0.06 || this.lineSprite.rectLength < 0.25 || ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1]) + Math.abs(this.transform.vel[2])) < 0.15)) {
             this.remove();
         }
         this.checkBounds();
         // acc is influenced by singularities, then changed to usual acc
         this.movementAngle = [Math.atan2(this.transform.vel[1], this.transform.vel[0]), Math.atan2(this.transform.vel[2], Math.sqrt(this.transform.vel[0] ** 2 + this.transform.vel[1] ** 2)/this.transform.vel[2])];
-        this.transform.acc = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.Util.vector3Cartesian(this.movementAngle, -this.explosionDeceleration);
+        // this.transform.acc = Util.vector3Cartesian(this.movementAngle, -this.explosionDeceleration);
+        this.transform.acc[0] += this.transform.vel[0] * this.dampening
+        this.transform.acc[1] += this.transform.vel[1] * this.dampening
+        this.transform.acc[2] += this.transform.vel[2] * this.dampening
     }
 
     checkBounds() {
@@ -3873,6 +3947,7 @@ class ParticleSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0
         this.rectLength = 15;
         this.rectWidth = 2;
         this.color = color;
+        // test
     }
 
     drawTwoDimensionNoParallax(ctx) {
@@ -3891,15 +3966,20 @@ class ParticleSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0
         ctx.lineWidth = w;
 
         ctx.moveTo(0, 0); //1
-        ctx.lineTo(0, l * Math.cos(this.transform.movementAngle[1])); //2
-
+        // ctx.lineTo(0, l * Math.cos(this.transform.movementAngle[1])); //2
+        ctx.beginPath();
+        const r = 1;
+        ctx.arc(0, 0, r, 0, 2 * Math.PI, true);
+        ctx.fill();
+// 
         ctx.closePath();
-        ctx.stroke();
+        // ctx.stroke();
         ctx.restore();
     }
 
     draw(ctx) {
-        // const pos = this.transform.absolutePosition();
+        const pos = this.transform.absolutePosition();
+        const r = this.transform.absoluteLength(3);
         // const vel = this.transform.absoluteVelocity();
         const l = this.rectLength;
         const w = this.transform.absoluteLength(this.rectWidth);
@@ -3907,36 +3987,40 @@ class ParticleSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0
 
         // calculate x, y, z of second point of line
         // use same calc, then add to current pos to get second point
-        const point2Position = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.Util.vector3Add(this.transform.pos, _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.Util.vector3Cartesian(this.transform.movementAngle, l));
+        // const point2Position = Util.vector3Add(this.transform.pos, Util.vector3Cartesian(this.transform.movementAngle, l));
 
-        const Xc = this.transform.cameraTransform.pos[0];
-        const Yc = this.transform.cameraTransform.pos[1];
-        const Zc = this.transform.cameraTransform.pos[2];
-        const X1 = this.transform.pos[0];
-        const Y1 = this.transform.pos[1];
-        const Z1 = this.transform.pos[2];
+        // const Xc = this.transform.cameraTransform.pos[0];
+        // const Yc = this.transform.cameraTransform.pos[1];
+        // const Zc = this.transform.cameraTransform.pos[2];
+        // const X1 = this.transform.pos[0];
+        // const Y1 = this.transform.pos[1];
+        // const Z1 = this.transform.pos[2];
 
-        const X2 = point2Position[0];
-        const Y2 = point2Position[1];
-        const Z2 = point2Position[2];
+        // const X2 = point2Position[0];
+        // const Y2 = point2Position[1];
+        // const Z2 = point2Position[2];
 
-        const Yp1 = Yc + (Y1-Yc)/(Z1-Zc) * (0 - Zc);
-        const Xp1 = Xc + (X1-Xc)/(Z1-Zc) * (0 - Zc);
+        // const Yp1 = Yc + (Y1-Yc)/(Z1-Zc) * (0 - Zc);
+        // const Xp1 = Xc + (X1-Xc)/(Z1-Zc) * (0 - Zc);
 
-        const Yp2 = Yc + (Y2-Yc)/(Z2-Zc) * (0 - Zc);
-        const Xp2 = Xc + (X2-Xc)/(Z2-Zc) * (0 - Zc);
+        // const Yp2 = Yc + (Y2-Yc)/(Z2-Zc) * (0 - Zc);
+        // const Xp2 = Xc + (X2-Xc)/(Z2-Zc) * (0 - Zc);
 
         
 
         ctx.save();
-
+        ctx.translate(pos[0], pos[1]);
+        ctx.strokeStyle  = this.color.evaluateColor();
+        ctx.fillStyle = this.color.evaluateColor();
         ctx.beginPath();
-        ctx.strokeStyle = this.color.evaluateColor();
-        ctx.lineWidth = w;
+        ctx.arc(0, 0, r, 0, 2 * Math.PI, true);
+        ctx.fill();
+        // ctx.strokeStyle = this.color.evaluateColor();
+        // ctx.lineWidth = w;
 
-        ctx.moveTo(Xp1, Yp1); //1
-        ctx.lineTo(Xp2, Yp2); //2
-        ctx.stroke();
+        // ctx.moveTo(Xp1, Yp1); //1
+        // ctx.lineTo(Xp2, Yp2); //2
+        // ctx.stroke();
 
         ctx.restore();
     }
@@ -4179,7 +4263,7 @@ class ParticleExplosion extends _game_engine_game_object__WEBPACK_IMPORTED_MODUL
 
     createExplosionParticles(){
         for (var i = 0; i < this.particleNum; i++) {
-            const speed = Math.random() * 3 + 4;
+            const speed = Math.random() * 15 + 4;
       
             const colorVarienceDelta = 30;
             const colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2;
@@ -4513,6 +4597,7 @@ class Ship extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
     constructor(engine, pos, initialCameraZPos) { 
         super(engine);
         this.transform.pos = pos;
+        this.transform.pos[2] = [0];
         this.cameraTransform = new _game_engine_transform__WEBPACK_IMPORTED_MODULE_4__.Transform();
         this.cameraTransform.pos = [pos[0], pos[1], initialCameraZPos];
         this.addPhysicsComponent();
@@ -4524,7 +4609,7 @@ class Ship extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
         this.addCollider("General", this, this.radius);
         this.addCollider("ShipDeath", this, this.radius, ["BoxBox", "Singularity", "Weaver", "Grunt", "Arrow", "Pinwheel", "AlienShip"], ["General"]);
         this.addLineSprite(new _ship_sprite__WEBPACK_IMPORTED_MODULE_2__.ShipSprite(this.transform));
-        this.maxSpeed = 7.5; // 2.5
+        this.maxSpeed = 2.5; // 2.5
         this.mousePos = [0,0];
         this.fireAngle = 0;
         this.bulletSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("GEOWars/sounds/Fire_normal.wav", 0.2);
@@ -5020,7 +5105,7 @@ class GameScript {
         this.ship = this.createShip();
         this.createStars();
         this.walls = this.createWalls();
-        this.grid = this.createGrid();
+        this.grid = this.createGrid(this.ship.cameraTransform);
         this.overlay = this.createOverlay();
         this.enemyCreatorList = this.createEnemyCreatorList();
         this.engine.addxButtonListener(this);
@@ -5486,8 +5571,8 @@ class GameScript {
         return new _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_1__.Walls(this.engine, this);
     }
 
-    createGrid() {
-        return new _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_3__.Grid(this.engine, this);
+    createGrid(cameraTransform) {
+        return new _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_3__.Grid(this.engine, this, cameraTransform);
     }
 
     createOverlay() {

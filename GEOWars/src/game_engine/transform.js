@@ -52,9 +52,7 @@ export class Transform {
                 const Xs = this.pos[0];
                 const Ys = this.pos[1];
                 const Zs = this.pos[2];
-                // this only works for things behind, not in front of the field
-                // const Xp = (-Zc * (Xs - Xc)) / (-Zc + Zs);
-                // const Yp = (-Zc * (Ys - Yc)) / (-Zc + Zs);'
+
                 const Yp = Yc + (Ys-Yc)/(Zs-Zc) * (0 - Zc);
                 const Xp = Xc + (Xs-Xc)/(Zs-Zc) * (0 - Zc);
                 absPos = [Xp, Yp];

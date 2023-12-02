@@ -7,10 +7,12 @@ import { EnemySpawn } from "../../particles/enemy_spawn";
 import { SingularitySprite } from "./singularity_sprite";
 import { SingularityParticles } from "../../particles/singularity_particles";
 import { AlienShip } from "./alien_ship";
+import { GridPoint } from "../../particles/Grid/grid_point";
 export class Singularity extends GameObject {
     constructor(engine, pos) {
         super(engine);
         this.transform.pos = pos;
+        this.transform.pos[2] = 0;
         this.gravityWellSize = 500;
         this.gravityConstant = 1000 * 0.5;
         this.radius = 15;
@@ -121,21 +123,55 @@ export class Singularity extends GameObject {
 
     influenceAcceleration(object) {
         const pos = this.transform.absolutePosition();
-        const objectPos = object.transform.absolutePosition();
-        const dy = pos[1] - objectPos[1];
-        const dx = pos[0] - objectPos[0];
-        const unitVector = Util.dir([dx, dy]);
-        const r = Math.sqrt(dy * dy + dx * dx);
-        if (r > this.gravityWellSize * 7 / 8 || r < this.radius * 2){
-            // object.transform.acc = [0,0];
+
+        if(object instanceof GridPoint) {
+            // let's try moving their original position in the z direction 
+            // depending on strength of gravity influence
+            const objectPos3D = [object.transform.pos[0], object.transform.pos[1], object.transform.pos[2]];
+            const dVector = [pos[0] - objectPos3D[0], pos[1] - objectPos3D[1], -200 - objectPos3D[2]]; // -200 is the z position of the gravity well for the grid
+            const dVectorZOrigin = [pos[0] - objectPos3D[0], pos[1] - objectPos3D[1],0]; // -200 is the z position of the gravity well for the grid
+            let r = Util.dist([0,0,0], dVector);
+            let rZOrigin = Util.dist([0,0,0], dVectorZOrigin);
+            
+            if (!(r > this.gravityWellSize * 3)){
+                if(r < 25) r=25;
+                if(rZOrigin < 25) rZOrigin=25;
+                // I think I can use both effects, but this one should be a lot smaller
+                // and then tuning it would be harder
+                
+                const unitVector3D = Util.scale(dVector, 1/r);
+                const accContribution= [
+                    unitVector3D[0] * this.gravityConstant * 5 / (r * r),
+                    unitVector3D[1] * this.gravityConstant * 5 / (r * r),
+                    unitVector3D[2] * this.gravityConstant * 5 / (r * r)
+                ];
+
+                // *************
+                // will need to multiply this a good amount
+                // if(r < 25) r=25;
+                const zContribution = this.gravityConstant * 20 / (rZOrigin ** 2) * 150;
+                //// ************
+
+                object.transform.acc[0] += accContribution[0];
+                object.transform.acc[1] += accContribution[1];
+                object.transform.acc[2] += accContribution[2];
+                object.originalPosition[2] += zContribution;
+            }
         } else {
-            const accContribution= [
-                unitVector[0] * this.gravityConstant / (r * r),
-                unitVector[1] * this.gravityConstant / (r * r)
-            ];
-            object.transform.acc[0] += accContribution[0];
-            object.transform.acc[1] += accContribution[1];
+            const objectPos = object.transform.absolutePosition();
+            const dVector2D = [pos[0] - objectPos[0], pos[1] - objectPos[1]];
+            const r = Util.dist([0,0], dVector2D);
+            if (!(r > this.gravityWellSize * 7 / 8 || r < this.radius * 2)){
+                const unitVector = Util.scale(dVector2D, 1/r);
+                const accContribution= [
+                    unitVector[0] * this.gravityConstant / (r * r),
+                    unitVector[1] * this.gravityConstant / (r * r)
+                ];
+                object.transform.acc[0] += accContribution[0];
+                object.transform.acc[1] += accContribution[1];
+            }
         }
+        
     }
 
     openGate(){

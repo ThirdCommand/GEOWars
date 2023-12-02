@@ -4,7 +4,7 @@ import { GridPoint } from "./grid_point";
 import { GridSprite } from "./grid_sprite";
 import { Util } from "../../../game_engine/util";
 export class Grid extends GameObject {
-    constructor(engine, gameScript) {
+    constructor(engine, gameScript, cameraTransform) {
         super(engine);
 
         this.transform.pos = [0,0];
@@ -13,9 +13,9 @@ export class Grid extends GameObject {
         this.elasticity = 0.1; // force provided to pull particle back into place
         this.dampening = 0.1; // force produced from velocity (allows things to eventuall fall to rest)
 
-        this.gridPoints = this.createGridPoints();
+        this.gridPoints = this.createGridPoints(cameraTransform);
 
-        this.addLineSprite(new GridSprite(this.transform, this.gridPoints));
+        this.addLineSprite(new GridSprite(this.transform, this.gridPoints, cameraTransform));
         // this.addPhysicsComponent()
         // this.addCollider("General", this, this.radius)
     }
@@ -48,7 +48,7 @@ export class Grid extends GameObject {
         }
     }
 
-    createGridPoints(){
+    createGridPoints(cameraTransform){
         const columnCount = 20;
         const rowCount = 12;
         const gridPoints = [];
@@ -61,8 +61,8 @@ export class Grid extends GameObject {
                 ){
                     continue;
                 }
-                const position = [xPosition, yPosition];
-                gridRow.push(new GridPoint(this.gameEngine, position));
+                const position = [xPosition, yPosition, 0];
+                gridRow.push(new GridPoint(this.gameEngine, position, cameraTransform));
             }
             
             gridPoints.push(gridRow.slice());

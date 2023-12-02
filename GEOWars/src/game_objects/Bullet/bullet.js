@@ -9,8 +9,10 @@ export class Bullet extends GameObject {
         this.ID = bulletNumber;
         this.transform.pos[0] = pos[0];
         this.transform.pos[1] = pos[1];
+        this.transform.pos[2] = 0;
         this.transform.vel[0] = vel[0];
         this.transform.vel[1] = vel[1];
+        this.transform.vel[2] = 0;
         this.length = 12;
         this.radius = this.length / 4;
         this.wrap = false;
@@ -64,7 +66,6 @@ export class Bullet extends GameObject {
             } else {
                 const hitObjectTransform = collider.gameObject.transform;
                 const pos = hitObjectTransform.absolutePosition();
-                const vel = hitObjectTransform.absoluteVelocity();
                 const explosion = new ParticleExplosion(this.gameEngine, pos);
                 this.gameEngine.gameScript.tallyScore(collider.gameObject);
                 collider.gameObject.remove();

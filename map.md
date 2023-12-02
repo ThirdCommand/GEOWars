@@ -61,3 +61,5 @@ Camera will need a Z position
 field will need a Z position
 stars will need their own Z position
 
+## Grid
+I could use the parallax with the grid and make it 3D and move in a way that looks better

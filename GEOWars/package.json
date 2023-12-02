@@ -20,5 +20,11 @@
   "bugs": {
     "url": "https://github.com/ThirdCommand/GEOWars/issues"
   },
-  "homepage": "https://github.com/ThirdCommand/GEOWars#readme"
+  "homepage": "https://github.com/ThirdCommand/GEOWars#readme",
+  "dependencies": {
+    "webpack": "^5.89.0"
+  },
+  "devDependencies": {
+    "webpack-cli": "^5.1.4"
+  }
 }

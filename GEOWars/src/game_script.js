@@ -35,7 +35,7 @@ export class GameScript {
         this.ship = this.createShip();
         this.createStars();
         this.walls = this.createWalls();
-        this.grid = this.createGrid();
+        this.grid = this.createGrid(this.ship.cameraTransform);
         this.overlay = this.createOverlay();
         this.enemyCreatorList = this.createEnemyCreatorList();
         this.engine.addxButtonListener(this);
@@ -501,8 +501,8 @@ export class GameScript {
         return new Walls(this.engine, this);
     }
 
-    createGrid() {
-        return new Grid(this.engine, this);
+    createGrid(cameraTransform) {
+        return new Grid(this.engine, this, cameraTransform);
     }
 
     createOverlay() {

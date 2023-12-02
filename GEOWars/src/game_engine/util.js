@@ -17,13 +17,30 @@ export const Util = {
     },
     // Find distance between two points.
     dist(pos1, pos2) {
-        return Math.sqrt(
-            Math.pow(pos1[0] - pos2[0], 2) + Math.pow(pos1[1] - pos2[1], 2)
+        let answer;
+        if(isNaN(pos1[2])) pos1[2] = 0;
+        if(isNaN(pos2[2])) pos2[2] = 0;
+        if(pos1.length === 3 && pos2.length === 3) {
+
+            answer =  Math.sqrt(
+                (pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2 + (pos1[2] - pos2[2]) ** 2
+            );
+            if(isNaN(answer)) {
+                console.log("NaN");
+            }
+            return answer;
+        }
+        answer =  Math.sqrt(
+            (pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2
         );
+        if(isNaN(answer)) {
+            console.log("NaN");
+        }
+        return answer;
     },
     // Find the length of the vector.
     norm(vec) {
-        return Util.dist([0, 0], vec);
+        return Util.dist([0, 0, 0], vec);
     },
     // Return a randomly oriented vector with the given length.
     randomVec(length) {
@@ -32,6 +49,9 @@ export const Util = {
     },
     // Scale the length of a vector by the given amount.
     scale(vec, m) {
+        if(vec.length === 3) {
+            return [vec[0] * m, vec[1] * m, vec[2] * m];
+        }
         return [vec[0] * m, vec[1] * m];
     },
 
