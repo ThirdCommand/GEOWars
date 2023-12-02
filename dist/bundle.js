@@ -1898,13 +1898,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _particles_bullet_wall_explosion__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../particles/bullet_wall_explosion */ "./src/game_objects/particles/bullet_wall_explosion.js");
 /* harmony import */ var _bullet_sprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./bullet_sprite */ "./src/game_objects/Bullet/bullet_sprite.js");
 /* harmony import */ var _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.js");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../game_engine/util */ "./src/game_engine/util.js");
+
 
 
 
 
 
 class Bullet extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
-    constructor(engine, pos, vel, bulletNumber) {
+    constructor(engine, pos, vel, bulletNumber, powerUpSide, powerLevel) {
         super(engine);
         this.ID = bulletNumber;
         this.transform.pos[0] = pos[0];
@@ -1923,6 +1925,14 @@ class Bullet extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         this.exploded = false;
         this.lifeTime = 4000;
         this.aliveTime = 0;
+        this.powerUpSide = powerUpSide;
+        this.bending = true;
+        this.bendTime = 0;
+        this.timeToBend = 1000;
+        this.powerLevel = 1; 
+        if (!powerUpSide) {
+            this.bending = false;
+        }
     }
 
     addExplosionCollider() {
@@ -1944,11 +1954,15 @@ class Bullet extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         if (this.aliveTime > this.lifeTime) {
             this.remove();
         }
+
+        if (this.bending) {
+            this.bend(deltaTime);
+        } 
         if (
             this.gameEngine.gameScript.isOutOfBounds(
                 this.transform.absolutePosition()
             ) &&
-      !this.exploded
+            !this.exploded
         ) {
             this.exploded = true;
             new _particles_bullet_wall_explosion__WEBPACK_IMPORTED_MODULE_2__.BulletWallExplosion(this.gameEngine, this.transform.pos);
@@ -1956,6 +1970,28 @@ class Bullet extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
             this.gameEngine.queueSound(this.wallhit);
             this.remove();
         }
+    }
+
+    bend(deltaTime) {  
+        this.bendTime += deltaTime;
+        if (this.bendTime > this.timeToBend) {
+            this.bending = false;
+        } else {
+            const speed = _game_engine_util__WEBPACK_IMPORTED_MODULE_5__.Util.norm(this.transform.vel);
+            const velDir = Math.atan2(this.transform.vel[1], this.transform.vel[0]);
+            let bendSpeed;
+            if(this.powerLevel >= 3){
+                // maybe I control the speed with trigger pressure
+                bendSpeed = this.powerUpSide === 'left' ? -0.0098 * deltaTime : 0.0098 * deltaTime;// (pi/32) / 1000 radians per milisecond
+            } else {
+                bendSpeed = this.powerUpSide === 'left' ? -0.000098 * deltaTime : 0.000098 * deltaTime;// (pi/32) / 1000 radians per milisecond
+            }
+            
+
+            this.transform.vel[0] = Math.cos(velDir + bendSpeed) * speed;
+            this.transform.vel[1] = Math.sin(velDir + bendSpeed) * speed;
+        }
+        // take speed, take velocity direction, change direction with bend speed, apply speed to that direction 
     }
 
     onCollision(collider, type) {
@@ -4923,8 +4959,7 @@ class Ship extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
         const bulletVel1 = [shipvx + relBulletVelX1, shipvy + relBulletVelY1];
         this.addChildGameObject(new _Bullet_bullet__WEBPACK_IMPORTED_MODULE_3__.Bullet(this.gameEngine, this.transform.pos, bulletVel1, this.bulletNumber));
 
-        if (this.powerLevel === 2) {
-
+        if (this.powerLevel >= 2) {
             const relBulletVelX2 = (_Bullet_bullet__WEBPACK_IMPORTED_MODULE_3__.Bullet.SPEED - 0.5) * Math.cos(this.fireAngle + Math.PI / 32);
             const relBulletVelY2 = (_Bullet_bullet__WEBPACK_IMPORTED_MODULE_3__.Bullet.SPEED - 0.5) * Math.sin(this.fireAngle + Math.PI / 32);
             const relBulletVelX3 = (_Bullet_bullet__WEBPACK_IMPORTED_MODULE_3__.Bullet.SPEED - 0.5) * Math.cos(this.fireAngle - Math.PI / 32);
@@ -4933,8 +4968,8 @@ class Ship extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
             const bulletVel2 = [shipvx + relBulletVelX2, shipvy + relBulletVelY2];
             const bulletVel3 = [shipvx + relBulletVelX3, shipvy + relBulletVelY3];
             // doesn't support parent transformations... yet
-            this.addChildGameObject(new _Bullet_bullet__WEBPACK_IMPORTED_MODULE_3__.Bullet(this.gameEngine, this.transform.pos, bulletVel2));
-            this.addChildGameObject(new _Bullet_bullet__WEBPACK_IMPORTED_MODULE_3__.Bullet(this.gameEngine, this.transform.pos, bulletVel3));
+            this.addChildGameObject(new _Bullet_bullet__WEBPACK_IMPORTED_MODULE_3__.Bullet(this.gameEngine, this.transform.pos, bulletVel2, this.bulletNumber, 'left', this.powerLevel));
+            this.addChildGameObject(new _Bullet_bullet__WEBPACK_IMPORTED_MODULE_3__.Bullet(this.gameEngine, this.transform.pos, bulletVel3, this.bulletNumber,  'right', this.powerLevel));
         }
     }
 

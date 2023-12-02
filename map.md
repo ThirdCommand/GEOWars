@@ -57,9 +57,27 @@ need to lower the grav effect on the ship... it's a little extreme at the moment
 I'm using nodist for version management... no memory of setting this up
 
 ## Star Parallax
+
 Camera will need a Z position
+
 field will need a Z position
+
 stars will need their own Z position
 
+## Particles Parallax
+
+add parallax
+
 ## Grid
+
 I could use the parallax with the grid and make it 3D and move in a way that looks better
+
+## Wants
+
+- enemy death pieces
+- particles back to squares/rectangles
+- 3D singularity rotating particles
+- 3D effect for BoxBox, Weaver, Grunt
+- fix bullets
+  - bullet upgrade "bend" instead of spread
+  - 

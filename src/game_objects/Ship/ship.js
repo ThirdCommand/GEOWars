@@ -334,8 +334,7 @@ export class Ship extends GameObject {
         const bulletVel1 = [shipvx + relBulletVelX1, shipvy + relBulletVelY1];
         this.addChildGameObject(new Bullet(this.gameEngine, this.transform.pos, bulletVel1, this.bulletNumber));
 
-        if (this.powerLevel === 2) {
-
+        if (this.powerLevel >= 2) {
             const relBulletVelX2 = (Bullet.SPEED - 0.5) * Math.cos(this.fireAngle + Math.PI / 32);
             const relBulletVelY2 = (Bullet.SPEED - 0.5) * Math.sin(this.fireAngle + Math.PI / 32);
             const relBulletVelX3 = (Bullet.SPEED - 0.5) * Math.cos(this.fireAngle - Math.PI / 32);
@@ -344,8 +343,8 @@ export class Ship extends GameObject {
             const bulletVel2 = [shipvx + relBulletVelX2, shipvy + relBulletVelY2];
             const bulletVel3 = [shipvx + relBulletVelX3, shipvy + relBulletVelY3];
             // doesn't support parent transformations... yet
-            this.addChildGameObject(new Bullet(this.gameEngine, this.transform.pos, bulletVel2));
-            this.addChildGameObject(new Bullet(this.gameEngine, this.transform.pos, bulletVel3));
+            this.addChildGameObject(new Bullet(this.gameEngine, this.transform.pos, bulletVel2, this.bulletNumber, 'left', this.powerLevel));
+            this.addChildGameObject(new Bullet(this.gameEngine, this.transform.pos, bulletVel3, this.bulletNumber,  'right', this.powerLevel));
         }
     }
 
