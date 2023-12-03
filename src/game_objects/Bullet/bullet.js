@@ -79,7 +79,7 @@ export class Bullet extends GameObject {
             const speed = Util.norm(this.transform.vel);
             const velDir = Math.atan2(this.transform.vel[1], this.transform.vel[0]);
             let bendSpeed;
-            if(this.powerLevel >= 3){
+            if(this.powerLevel > 2){
                 // maybe I control the speed with trigger pressure
                 bendSpeed = this.powerUpSide === 'left' ? -0.0098 * deltaTime : 0.0098 * deltaTime;// (pi/32) / 1000 radians per milisecond
             } else {

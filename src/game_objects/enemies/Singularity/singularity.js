@@ -17,10 +17,11 @@ export class Singularity extends GameObject {
         this.gravityConstant = 1000 * 0.5;
         this.radius = 15;
         this.points = 100;
-        this.throbbingCycleSpeed = 0.025;
+        this.throbbingCycleSpeed = 0.002;
         this.numberAbsorbed = 0;
         this.alienSpawnAmount = 10;
         this.alienSpawnSpeed = 1.5;
+        this.gravityPulsateScale = 1;
         this.deathSound = new Sound("GEOWars/sounds/Gravity_well_die.wav");
         this.gravityWellHitSound = new Sound("GEOWars/sounds/Gravity_well_hit.wav", 0.5);
         this.openGateSound = new Sound("GEOWars/sounds/Gravity_well_explode.wav");
@@ -57,7 +58,7 @@ export class Singularity extends GameObject {
             collider.gameObject.remove();
 
             this.throbbingCycleSpeed *= 1.2;
-            this.numberAbsorbed += 1;
+            this.numberAbsorbed += 0; // put back to 1 
         }
     }
 
@@ -110,11 +111,13 @@ export class Singularity extends GameObject {
 
         if (this.increasing) {
             this.lineSprite.throbbingScale += cycleSpeed * cycleSpeedScale;
+            this.gravityPulsateScale += cycleSpeed * 2 * cycleSpeedScale;
             if (this.lineSprite.throbbingScale > 1.2) {
                 this.increasing = !this.increasing;
             }
         } else {
             this.lineSprite.throbbingScale -= cycleSpeed * cycleSpeedScale;
+            this.gravityPulsateScale -= cycleSpeed * 2 * cycleSpeedScale;
             if (this.lineSprite.throbbingScale < 0.8) {
                 this.increasing = !this.increasing;
             }
@@ -133,30 +136,30 @@ export class Singularity extends GameObject {
             let r = Util.dist([0,0,0], dVector);
             let rZOrigin = Util.dist([0,0,0], dVectorZOrigin);
             
-            if (!(r > this.gravityWellSize * 3)){
-                if(r < 25) r=25;
-                if(rZOrigin < 25) rZOrigin=25;
-                // I think I can use both effects, but this one should be a lot smaller
-                // and then tuning it would be harder
+            if(r < 25) r = 25;
+            if(rZOrigin < 25) rZOrigin = 25;
+            // I think I can use both effects, but this one should be a lot smaller
+            // and then tuning it would be harder
                 
-                const unitVector3D = Util.scale(dVector, 1/r);
-                const accContribution= [
-                    unitVector3D[0] * this.gravityConstant * 5 / (r * r),
-                    unitVector3D[1] * this.gravityConstant * 5 / (r * r),
-                    unitVector3D[2] * this.gravityConstant * 5 / (r * r)
-                ];
+            // I really like the wave effect that happens with z acceleration being 25, and the spring -0.0025 + dampening -0.04
+            // but Z's effect distends too far
+            const unitVector3D = Util.scale(dVector, 1/r);
+            const accContribution= [
+                unitVector3D[0] * this.gravityConstant * 20 * this.gravityPulsateScale / (r * r),
+                unitVector3D[1] * this.gravityConstant * 20 * this.gravityPulsateScale / (r * r),
+                unitVector3D[2] * this.gravityConstant * 10 * this.gravityPulsateScale / (r * r)
+            ];
 
-                // *************
-                // will need to multiply this a good amount
-                // if(r < 25) r=25;
-                const zContribution = this.gravityConstant * 20 / (rZOrigin ** 2) * 150;
-                //// ************
+            // *************
+            // will need to multiply this a good amount
+            // if(r < 25) r=25;
+            const zContribution = this.gravityConstant * 20 * this.gravityPulsateScale / (rZOrigin ** 2) * 150;
+            //// ************
 
-                object.transform.acc[0] += accContribution[0];
-                object.transform.acc[1] += accContribution[1];
-                object.transform.acc[2] += accContribution[2];
-                object.originalPosition[2] += zContribution;
-            }
+            object.transform.acc[0] += accContribution[0];
+            object.transform.acc[1] += accContribution[1];
+            object.transform.acc[2] += accContribution[2];
+            object.originalPosition[2] += zContribution;
         } else {
             const objectPos = object.transform.absolutePosition();
             const dVector2D = [pos[0] - objectPos[0], pos[1] - objectPos[1]];

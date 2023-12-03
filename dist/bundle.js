@@ -1980,7 +1980,7 @@ class Bullet extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
             const speed = _game_engine_util__WEBPACK_IMPORTED_MODULE_5__.Util.norm(this.transform.vel);
             const velDir = Math.atan2(this.transform.vel[1], this.transform.vel[0]);
             let bendSpeed;
-            if(this.powerLevel >= 3){
+            if(this.powerLevel > 2){
                 // maybe I control the speed with trigger pressure
                 bendSpeed = this.powerUpSide === 'left' ? -0.0098 * deltaTime : 0.0098 * deltaTime;// (pi/32) / 1000 radians per milisecond
             } else {
@@ -3181,10 +3181,11 @@ class Singularity extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.
         this.gravityConstant = 1000 * 0.5;
         this.radius = 15;
         this.points = 100;
-        this.throbbingCycleSpeed = 0.025;
+        this.throbbingCycleSpeed = 0.002;
         this.numberAbsorbed = 0;
         this.alienSpawnAmount = 10;
         this.alienSpawnSpeed = 1.5;
+        this.gravityPulsateScale = 1;
         this.deathSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("GEOWars/sounds/Gravity_well_die.wav");
         this.gravityWellHitSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("GEOWars/sounds/Gravity_well_hit.wav", 0.5);
         this.openGateSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("GEOWars/sounds/Gravity_well_explode.wav");
@@ -3221,7 +3222,7 @@ class Singularity extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.
             collider.gameObject.remove();
 
             this.throbbingCycleSpeed *= 1.2;
-            this.numberAbsorbed += 1;
+            this.numberAbsorbed += 0; // put back to 1 
         }
     }
 
@@ -3274,11 +3275,13 @@ class Singularity extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.
 
         if (this.increasing) {
             this.lineSprite.throbbingScale += cycleSpeed * cycleSpeedScale;
+            this.gravityPulsateScale += cycleSpeed * 2 * cycleSpeedScale;
             if (this.lineSprite.throbbingScale > 1.2) {
                 this.increasing = !this.increasing;
             }
         } else {
             this.lineSprite.throbbingScale -= cycleSpeed * cycleSpeedScale;
+            this.gravityPulsateScale -= cycleSpeed * 2 * cycleSpeedScale;
             if (this.lineSprite.throbbingScale < 0.8) {
                 this.increasing = !this.increasing;
             }
@@ -3297,30 +3300,30 @@ class Singularity extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.
             let r = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.Util.dist([0,0,0], dVector);
             let rZOrigin = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.Util.dist([0,0,0], dVectorZOrigin);
             
-            if (!(r > this.gravityWellSize * 3)){
-                if(r < 25) r=25;
-                if(rZOrigin < 25) rZOrigin=25;
-                // I think I can use both effects, but this one should be a lot smaller
-                // and then tuning it would be harder
+            if(r < 25) r = 25;
+            if(rZOrigin < 25) rZOrigin = 25;
+            // I think I can use both effects, but this one should be a lot smaller
+            // and then tuning it would be harder
                 
-                const unitVector3D = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.Util.scale(dVector, 1/r);
-                const accContribution= [
-                    unitVector3D[0] * this.gravityConstant * 5 / (r * r),
-                    unitVector3D[1] * this.gravityConstant * 5 / (r * r),
-                    unitVector3D[2] * this.gravityConstant * 5 / (r * r)
-                ];
+            // I really like the wave effect that happens with z acceleration being 25, and the spring -0.0025 + dampening -0.04
+            // but Z's effect distends too far
+            const unitVector3D = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.Util.scale(dVector, 1/r);
+            const accContribution= [
+                unitVector3D[0] * this.gravityConstant * 20 * this.gravityPulsateScale / (r * r),
+                unitVector3D[1] * this.gravityConstant * 20 * this.gravityPulsateScale / (r * r),
+                unitVector3D[2] * this.gravityConstant * 10 * this.gravityPulsateScale / (r * r)
+            ];
 
-                // *************
-                // will need to multiply this a good amount
-                // if(r < 25) r=25;
-                const zContribution = this.gravityConstant * 20 / (rZOrigin ** 2) * 150;
-                //// ************
+            // *************
+            // will need to multiply this a good amount
+            // if(r < 25) r=25;
+            const zContribution = this.gravityConstant * 20 * this.gravityPulsateScale / (rZOrigin ** 2) * 150;
+            //// ************
 
-                object.transform.acc[0] += accContribution[0];
-                object.transform.acc[1] += accContribution[1];
-                object.transform.acc[2] += accContribution[2];
-                object.originalPosition[2] += zContribution;
-            }
+            object.transform.acc[0] += accContribution[0];
+            object.transform.acc[1] += accContribution[1];
+            object.transform.acc[2] += accContribution[2];
+            object.originalPosition[2] += zContribution;
         } else {
             const objectPos = object.transform.absolutePosition();
             const dVector2D = [pos[0] - objectPos[0], pos[1] - objectPos[1]];
@@ -3688,27 +3691,26 @@ class Grid extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
 
     deathPerterb(gridPoint, location){
         // pulls inward upon death. 1/r^2
-        const pullConstant = 1250;
+        const pullConstant = 1250 * 5;
 
         const pos = location;
         const objectPos = gridPoint.transform.absolutePosition();
         const dy = pos[1] - objectPos[1];
         const dx = pos[0] - objectPos[0];
         const unitVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_3__.Util.dir([dx, dy]);
-        const r = Math.sqrt(dy * dy + dx * dx);
-        if ( r >= 20 ) {
-            const velContribution = [
-                unitVector[0] * pullConstant / (r ),
-                unitVector[1] * pullConstant / (r )
-            ];
-            gridPoint.transform.vel[0] = velContribution[0];
-            gridPoint.transform.vel[1] = velContribution[1];
-        }
+        let r = Math.sqrt(dy * dy + dx * dx);
+        if ( r < 20 ) r = 20; // I think I need a bit more dampening for this to work
+        const velContribution = [
+            unitVector[0] * pullConstant / (r),
+            unitVector[1] * pullConstant / (r)
+        ];
+        gridPoint.transform.vel[0] = velContribution[0];
+        gridPoint.transform.vel[1] = velContribution[1];
     }
 
     createGridPoints(cameraTransform){
-        const columnCount = 20;
-        const rowCount = 12;
+        const columnCount = 90; // 40
+        const rowCount = 45; // 24
         const gridPoints = [];
         let gridRow = [];
         for (let yPosition = 0; yPosition <= this.arenaDimensions[1]; yPosition += this.arenaDimensions[1] / rowCount) {
@@ -3816,7 +3818,7 @@ class GridSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.L
     draw(ctx) {
         ctx.save();
         ctx.strokeStyle = this.color.evaluateColor();
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2;
         this.drawRows(ctx);
         this.drawColumns(ctx);
         ctx.restore();
@@ -4283,7 +4285,7 @@ class ParticleExplosion extends _game_engine_game_object__WEBPACK_IMPORTED_MODUL
         });
         if (engine.graphicQuality === 1) {
             // console.log("best")
-            this.particleNum = 80;
+            this.particleNum = 120; // was 80
         } else if (engine.graphicQuality === 2){
             // console.log("medium")
             this.particleNum = 40;
@@ -4299,7 +4301,7 @@ class ParticleExplosion extends _game_engine_game_object__WEBPACK_IMPORTED_MODUL
 
     createExplosionParticles(){
         for (var i = 0; i < this.particleNum; i++) {
-            const speed = Math.random() * 15 + 4;
+            const speed = Math.random() * 4 + 15;
       
             const colorVarienceDelta = 30;
             const colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2;
@@ -4770,7 +4772,7 @@ class Ship extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
     }
 
     upgradeBullets() {
-        this.powerLevel += 2;
+        this.powerLevel += 1;
         this.playSound(this.upgradeBulletsSound);
     }
   

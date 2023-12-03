@@ -76,8 +76,20 @@ I could use the parallax with the grid and make it 3D and move in a way that loo
 
 - enemy death pieces
 - particles back to squares/rectangles
-- 3D singularity rotating particles
+
+- singularity
+  - 3D singularity rotating particles
+  - pulsate grid effect
+  - gravity wave effect (somewhere, somehow lol)
+- weaver
+  - add mutual collision detection to prevent clumping with each other
+- grunt
+  - add mutual collision detection to prevent clumping with each other
+- death animation
+  - maybe add a portal effect with the grid
+  - ship disapears, re-appears (spawn portal?)
 - 3D effect for BoxBox, Weaver, Grunt
+- explosion also effects grid
 - fix bullets
   - bullet upgrade "bend" instead of spread
   - 

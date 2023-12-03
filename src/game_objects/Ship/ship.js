@@ -145,7 +145,7 @@ export class Ship extends GameObject {
     }
 
     upgradeBullets() {
-        this.powerLevel += 2;
+        this.powerLevel += 1;
         this.playSound(this.upgradeBulletsSound);
     }
   
