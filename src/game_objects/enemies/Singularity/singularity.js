@@ -13,7 +13,7 @@ export class Singularity extends GameObject {
         super(engine);
         this.transform.pos = pos;
         this.transform.pos[2] = 0;
-        this.gravityWellSize = 500;
+        this.gravityWellSize = 1000;
         this.gravityConstant = 1000 * 0.5;
         this.radius = 15;
         this.points = 100;
@@ -58,7 +58,7 @@ export class Singularity extends GameObject {
             collider.gameObject.remove();
 
             this.throbbingCycleSpeed *= 1.2;
-            this.numberAbsorbed += 0; // put back to 1 
+            this.numberAbsorbed += 1; // put back to 1 
         }
     }
 
@@ -89,12 +89,12 @@ export class Singularity extends GameObject {
         if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
             this.wallGraze();
         }
-        if (this.numberAbsorbed === 3) {
+        if (this.numberAbsorbed === 5) {
             this.soundAlarm(deltaTime);
         }
 
         this.animate(deltaTime);
-        if (this.numberAbsorbed >= 4) {
+        if (this.numberAbsorbed >= 6) {
             this.openGate();
         }
     }

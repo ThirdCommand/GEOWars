@@ -81,6 +81,7 @@ I could use the parallax with the grid and make it 3D and move in a way that loo
   - 3D singularity rotating particles
   - pulsate grid effect
   - gravity wave effect (somewhere, somehow lol)
+  - tweak grid spring/dampener values
 - weaver
   - add mutual collision detection to prevent clumping with each other
 - grunt
