@@ -92,5 +92,6 @@ I could use the parallax with the grid and make it 3D and move in a way that loo
 - 3D effect for BoxBox, Weaver, Grunt
 - explosion also effects grid
 - fix bullets
-  - bullet upgrade "bend" instead of spread
-  - 
+  - [x] bullet upgrade "bend" instead of spread
+  - second upgrade?
+  - change with trigger press?

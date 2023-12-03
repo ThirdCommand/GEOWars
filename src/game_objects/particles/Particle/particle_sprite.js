@@ -31,7 +31,7 @@ export class ParticleSprite extends LineSprite {
         const r = 1;
         ctx.arc(0, 0, r, 0, 2 * Math.PI, true);
         ctx.fill();
-// 
+        // 
         ctx.closePath();
         // ctx.stroke();
         ctx.restore();
@@ -40,10 +40,11 @@ export class ParticleSprite extends LineSprite {
     draw(ctx) {
         const pos = this.transform.absolutePosition();
         const r = this.transform.absoluteLength(3);
-        // const vel = this.transform.absoluteVelocity();
+        const vel = this.transform.absoluteVelocity();
         const l = this.rectLength;
         const w = this.transform.absoluteLength(this.rectWidth);
-        // const movementDirection = Math.atan2(vel[0], -vel[1]);
+
+        const movementDirection = Math.atan2(vel[0], -vel[1]);
 
         // calculate x, y, z of second point of line
         // use same calc, then add to current pos to get second point
@@ -70,11 +71,16 @@ export class ParticleSprite extends LineSprite {
 
         ctx.save();
         ctx.translate(pos[0], pos[1]);
+        ctx.rotate(movementDirection - Math.PI);
         ctx.strokeStyle  = this.color.evaluateColor();
         ctx.fillStyle = this.color.evaluateColor();
-        ctx.beginPath();
-        ctx.arc(0, 0, r, 0, 2 * Math.PI, true);
-        ctx.fill();
+
+        // the length and width should be closer as the particle gets closer to the camera
+        
+        ctx.fillRect(0,0,r, r*3);
+        // ctx.beginPath();
+        // ctx.arc(0, 0, r, 0, 2 * Math.PI, true);
+        // ctx.fill();
         // ctx.strokeStyle = this.color.evaluateColor();
         // ctx.lineWidth = w;
 

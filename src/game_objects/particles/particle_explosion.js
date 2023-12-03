@@ -28,16 +28,17 @@ export class ParticleExplosion extends GameObject{
         const explosionSound = new Sound("GEOWars/sounds/Enemy_explode.wav", 0.2);
         this.playSound(explosionSound);
         this.createExplosionParticles();
+        engine.gameScript.grid.Explosion(pos);
     }
 
     createExplosionParticles(){
         for (var i = 0; i < this.particleNum; i++) {
             const speed = Math.random() * 4 + 15;
       
-            const colorVarienceDelta = 30;
+            const colorVarienceDelta = 40;
             const colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2;
             const color = this.currentColor.dup();
-            color.a = Math.random() * 0.35 + 0.6;
+            color.a = Math.random() * 0.15 + 0.80;
             color.h = (color.h + colorVarience) % 360;
 
             const x = this.transform.absolutePosition()[0];

@@ -28,6 +28,31 @@ export class Grid extends GameObject {
         });
     }
 
+    Explosion(location) {
+        this.gridPoints.forEach((row) => {
+            row.forEach((gridPoint) => {
+                this.explosionPerterb(gridPoint, location);
+            });
+        });
+    }
+
+    explosionPerterb(gridPoint, location){
+        // pushes outward upon explosion. 1/r^2
+        const pushConstant = 1250 / 2;
+
+        const pos = location;
+        const objectPos = gridPoint.transform.absolutePosition();
+        const dy = pos[1] - objectPos[1];
+        const dx = pos[0] - objectPos[0];
+        const unitVector = Util.dir([dx, dy]);
+        let r = Math.sqrt(dy * dy + dx * dx);
+        if ( r < 15 ) r = 15; // I think I need a bit more dampening for this to work
+        gridPoint.transform.vel[0] += -unitVector[0] * pushConstant / (r * r * 2);
+        gridPoint.transform.vel[1] += -unitVector[1] * pushConstant / (r * r * 2);
+        gridPoint.transform.vel[2] += +pushConstant * 5 / (r * r);
+    }
+
+
     deathPerterb(gridPoint, location){
         // pulls inward upon death. 1/r^2
         const pullConstant = 1250 * 5;
@@ -43,8 +68,12 @@ export class Grid extends GameObject {
             unitVector[0] * pullConstant / (r),
             unitVector[1] * pullConstant / (r)
         ];
+        // const velContribution = [
+        //     0,0, pullConstant * 50 / (r ** 2)
+        // ];
         gridPoint.transform.vel[0] = velContribution[0];
         gridPoint.transform.vel[1] = velContribution[1];
+        // gridPoint.transform.vel[2] = velContribution[2];
     }
 
     createGridPoints(cameraTransform){
