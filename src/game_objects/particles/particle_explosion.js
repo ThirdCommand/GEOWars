@@ -16,7 +16,7 @@ export class ParticleExplosion extends GameObject{
         });
         if (engine.graphicQuality === 1) {
             // console.log("best")
-            this.particleNum = 80;
+            this.particleNum = 120; // was 80
         } else if (engine.graphicQuality === 2){
             // console.log("medium")
             this.particleNum = 40;
@@ -32,7 +32,7 @@ export class ParticleExplosion extends GameObject{
 
     createExplosionParticles(){
         for (var i = 0; i < this.particleNum; i++) {
-            const speed = Math.random() * 15 + 4;
+            const speed = Math.random() * 4 + 15;
       
             const colorVarienceDelta = 30;
             const colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2;

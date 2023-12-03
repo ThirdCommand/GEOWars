@@ -57,9 +57,39 @@ need to lower the grav effect on the ship... it's a little extreme at the moment
 I'm using nodist for version management... no memory of setting this up
 
 ## Star Parallax
+
 Camera will need a Z position
+
 field will need a Z position
+
 stars will need their own Z position
 
+## Particles Parallax
+
+add parallax
+
 ## Grid
+
 I could use the parallax with the grid and make it 3D and move in a way that looks better
+
+## Wants
+
+- enemy death pieces
+- particles back to squares/rectangles
+
+- singularity
+  - 3D singularity rotating particles
+  - pulsate grid effect
+  - gravity wave effect (somewhere, somehow lol)
+- weaver
+  - add mutual collision detection to prevent clumping with each other
+- grunt
+  - add mutual collision detection to prevent clumping with each other
+- death animation
+  - maybe add a portal effect with the grid
+  - ship disapears, re-appears (spawn portal?)
+- 3D effect for BoxBox, Weaver, Grunt
+- explosion also effects grid
+- fix bullets
+  - bullet upgrade "bend" instead of spread
+  - 

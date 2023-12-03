@@ -30,27 +30,26 @@ export class Grid extends GameObject {
 
     deathPerterb(gridPoint, location){
         // pulls inward upon death. 1/r^2
-        const pullConstant = 1250;
+        const pullConstant = 1250 * 5;
 
         const pos = location;
         const objectPos = gridPoint.transform.absolutePosition();
         const dy = pos[1] - objectPos[1];
         const dx = pos[0] - objectPos[0];
         const unitVector = Util.dir([dx, dy]);
-        const r = Math.sqrt(dy * dy + dx * dx);
-        if ( r >= 20 ) {
-            const velContribution = [
-                unitVector[0] * pullConstant / (r ),
-                unitVector[1] * pullConstant / (r )
-            ];
-            gridPoint.transform.vel[0] = velContribution[0];
-            gridPoint.transform.vel[1] = velContribution[1];
-        }
+        let r = Math.sqrt(dy * dy + dx * dx);
+        if ( r < 20 ) r = 20; // I think I need a bit more dampening for this to work
+        const velContribution = [
+            unitVector[0] * pullConstant / (r),
+            unitVector[1] * pullConstant / (r)
+        ];
+        gridPoint.transform.vel[0] = velContribution[0];
+        gridPoint.transform.vel[1] = velContribution[1];
     }
 
     createGridPoints(cameraTransform){
-        const columnCount = 20;
-        const rowCount = 12;
+        const columnCount = 90; // 40
+        const rowCount = 45; // 24
         const gridPoints = [];
         let gridRow = [];
         for (let yPosition = 0; yPosition <= this.arenaDimensions[1]; yPosition += this.arenaDimensions[1] / rowCount) {
