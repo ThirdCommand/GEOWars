@@ -3689,6 +3689,31 @@ class Grid extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
         });
     }
 
+    Explosion(location) {
+        this.gridPoints.forEach((row) => {
+            row.forEach((gridPoint) => {
+                this.explosionPerterb(gridPoint, location);
+            });
+        });
+    }
+
+    explosionPerterb(gridPoint, location){
+        // pushes outward upon explosion. 1/r^2
+        const pushConstant = 1250 / 2;
+
+        const pos = location;
+        const objectPos = gridPoint.transform.absolutePosition();
+        const dy = pos[1] - objectPos[1];
+        const dx = pos[0] - objectPos[0];
+        const unitVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_3__.Util.dir([dx, dy]);
+        let r = Math.sqrt(dy * dy + dx * dx);
+        if ( r < 15 ) r = 15; // I think I need a bit more dampening for this to work
+        gridPoint.transform.vel[0] += -unitVector[0] * pushConstant / (r * r * 2);
+        gridPoint.transform.vel[1] += -unitVector[1] * pushConstant / (r * r * 2);
+        gridPoint.transform.vel[2] += +pushConstant * 5 / (r * r);
+    }
+
+
     deathPerterb(gridPoint, location){
         // pulls inward upon death. 1/r^2
         const pullConstant = 1250 * 5;
@@ -3704,8 +3729,12 @@ class Grid extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
             unitVector[0] * pullConstant / (r),
             unitVector[1] * pullConstant / (r)
         ];
+        // const velContribution = [
+        //     0,0, pullConstant * 50 / (r ** 2)
+        // ];
         gridPoint.transform.vel[0] = velContribution[0];
         gridPoint.transform.vel[1] = velContribution[1];
+        // gridPoint.transform.vel[2] = velContribution[2];
     }
 
     createGridPoints(cameraTransform){
@@ -4009,7 +4038,7 @@ class ParticleSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0
         const r = 1;
         ctx.arc(0, 0, r, 0, 2 * Math.PI, true);
         ctx.fill();
-// 
+        // 
         ctx.closePath();
         // ctx.stroke();
         ctx.restore();
@@ -4018,10 +4047,11 @@ class ParticleSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0
     draw(ctx) {
         const pos = this.transform.absolutePosition();
         const r = this.transform.absoluteLength(3);
-        // const vel = this.transform.absoluteVelocity();
+        const vel = this.transform.absoluteVelocity();
         const l = this.rectLength;
         const w = this.transform.absoluteLength(this.rectWidth);
-        // const movementDirection = Math.atan2(vel[0], -vel[1]);
+
+        const movementDirection = Math.atan2(vel[0], -vel[1]);
 
         // calculate x, y, z of second point of line
         // use same calc, then add to current pos to get second point
@@ -4048,11 +4078,16 @@ class ParticleSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0
 
         ctx.save();
         ctx.translate(pos[0], pos[1]);
+        ctx.rotate(movementDirection - Math.PI);
         ctx.strokeStyle  = this.color.evaluateColor();
         ctx.fillStyle = this.color.evaluateColor();
-        ctx.beginPath();
-        ctx.arc(0, 0, r, 0, 2 * Math.PI, true);
-        ctx.fill();
+
+        // the length and width should be closer as the particle gets closer to the camera
+        
+        ctx.fillRect(0,0,r, r*3);
+        // ctx.beginPath();
+        // ctx.arc(0, 0, r, 0, 2 * Math.PI, true);
+        // ctx.fill();
         // ctx.strokeStyle = this.color.evaluateColor();
         // ctx.lineWidth = w;
 
@@ -4297,16 +4332,17 @@ class ParticleExplosion extends _game_engine_game_object__WEBPACK_IMPORTED_MODUL
         const explosionSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("GEOWars/sounds/Enemy_explode.wav", 0.2);
         this.playSound(explosionSound);
         this.createExplosionParticles();
+        engine.gameScript.grid.Explosion(pos);
     }
 
     createExplosionParticles(){
         for (var i = 0; i < this.particleNum; i++) {
             const speed = Math.random() * 4 + 15;
       
-            const colorVarienceDelta = 30;
+            const colorVarienceDelta = 40;
             const colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2;
             const color = this.currentColor.dup();
-            color.a = Math.random() * 0.35 + 0.6;
+            color.a = Math.random() * 0.15 + 0.80;
             color.h = (color.h + colorVarience) % 360;
 
             const x = this.transform.absolutePosition()[0];
