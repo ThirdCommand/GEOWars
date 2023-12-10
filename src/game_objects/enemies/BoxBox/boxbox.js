@@ -80,14 +80,14 @@ export class BoxBox extends GameObject {
                 _TopSquareTL: [-1/4 * w, d, Math.PI/2],
                 _TopSquareTR: [3/4 * w, d, Math.PI/2],
             },
-            _BottomSquareBL: [-3/4 * w,  -3/4 * w], // angle starts 90 degrees 
-            _BottomSquareBR: [1/4 * w, -3/4 * w], // scaled length is distance from axis of rotation
-            _BottomSquareTL: [-3/4 * w, 1/4 * w],
-            _BottomSquareTR: [1/4 * w, 1/4 * w],
-            _TopSquareBL: [-1/4 * w, -1/4 * w],
-            _TopSquareBR: [3/4 * w, -1/4 * w],
-            _TopSquareTL: [-1/4 * w, 3/4 * w],
-            _TopSquareTR: [3/4 * w, 3/4 * w],
+            _BottomSquareBL: [-3/4 * w, 3/4 * w],
+            _BottomSquareBR: [1/4 * w, 3/4 * w],
+            _BottomSquareTL: [-3/4 * w, -1/4 * w],
+            _BottomSquareTR: [1/4 * w, -1/4 * w],
+            _TopSquareBL: [-1/4 * w, 1/4 * w],
+            _TopSquareBR: [3/4 * w, 1/4 * w],
+            _TopSquareTL: [-1/4 * w, -3/4 * w],
+            _TopSquareTR: [3/4 * w, -3/4 * w],
         };
         
         const drawCoordinatesBottomLeft = {
@@ -184,7 +184,7 @@ export class BoxBox extends GameObject {
         this.rotationState = {
             animationState: "Paused",
             rotationDirection: "Left",
-            coordinateShift: [-3/4 * w,0],
+            coordinateShift: [3/4 * w,0],
             rotationAngle: 0,
             stateTime: 0,
             shapeState: "TopLeft",
@@ -229,7 +229,7 @@ export class BoxBox extends GameObject {
     animate(deltaTime) {
         const animationState = this.rotationState.animationState;
         let rotationAngle = this.rotationState.rotationAngle;
-        const rotationDirection = this.rotationState.rotationDirection;
+        
         const coordinateShift = this.rotationState.coordinateShift;
         const projectedDrawCoordinates = this.rotationState.projectedDrawCoordinates;
         const midPauseTime = this.rotationState.midPauseTime;
@@ -267,6 +267,7 @@ export class BoxBox extends GameObject {
                 this.startRotation();
             }
         }
+        const rotationDirection = this.rotationState.rotationDirection;
         this.rotationState.rotationAngle = rotationAngle;
         // apply rotation angle to coordinates
         const projectedWidthScale = [1, 1];
