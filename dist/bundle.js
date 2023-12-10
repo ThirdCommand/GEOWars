@@ -6156,12 +6156,12 @@ class GameScript {
                 }
             },
             GreenGroups: () => {
-                const randomPos = this.randomPosition(100);
+                const randomPos = this.randomPosition(50);
                 for (let i = 0; i < 3; i++) {
                     for (let j = 0; j < 3; j++) {
                         this.enemyCreatorList["Weaver"]([
                             i * 40 + randomPos[0],
-                            j * 40 + randomPos[1],
+                            j * 40 + randomPos[1] - 50,
                         ]);
                     }
                 }
@@ -6186,7 +6186,7 @@ class GameScript {
         return [
             (this.DIM_X - radius * 4) * Math.random() + radius * 4,
             (this.DIM_Y - radius * 4) * Math.random() + radius * 4,
-            // 500,300
+            // 1000,600
         ];
     }
 
