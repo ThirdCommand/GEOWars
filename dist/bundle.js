@@ -846,9 +846,11 @@ class GameEngine {
         this.setupPerformance();
         window.engine = this;
         this.gameEditorOpened = false;
+        this.frameCountForPerformance = 0;
     }
 
     setupPerformance() {
+        this.frameCountForPerformance = 0;
         this.collisionTime = 0;
         this.physicsCalcTime = 0;
         this.updateTime = 0;
@@ -897,22 +899,22 @@ class GameEngine {
         const beforeCollisionTime = performance.now();
         this.checkCollisions();
         const beforePhysicsCalcs = performance.now();
-        const collisionTime = beforeCollisionTime - beforePhysicsCalcs;
+        const collisionTime = beforePhysicsCalcs - beforeCollisionTime;
         this.movePhysicsComponents(delta);
         const beforeUpdate = performance.now();
-        const physicsCalcTime = beforePhysicsCalcs - beforeUpdate;
+        const physicsCalcTime = beforeUpdate - beforePhysicsCalcs;
         this.updateGameObjects(delta);
         const beforeRender = performance.now();
-        const updateTime = beforeUpdate - beforeRender;
+        const updateTime = beforeRender - beforeUpdate;
         this.clearCanvas();
         this.renderLineSprites(this.ctx);
         const beforeScriptUpdate = performance.now();
-        const renderTime = beforeRender - beforeScriptUpdate;
+        const renderTime = beforeScriptUpdate - beforeRender;
         this.updateControlListeners();
         if (!this.gameEditorOpened) {
             this.updateGameScript(delta);
         }
-        const scriptTime = beforeScriptUpdate - performance.now();
+        const scriptTime = performance.now() - beforeScriptUpdate;
         this.playSounds();
 
         this.collectPerformanceData(
@@ -921,7 +923,7 @@ class GameEngine {
             physicsCalcTime,
             updateTime,
             renderTime,
-            scriptTime
+            scriptTime,
         );
     }
 
@@ -933,6 +935,7 @@ class GameEngine {
         renderTime,
         scriptTime
     ) {
+        this.frameCountForPerformance += 1;
         this.collisionTime += collisionTime;
         this.physicsCalcTime += physicsCalcTime;
         this.updateTime += updateTime;
@@ -941,18 +944,13 @@ class GameEngine {
 
         this.timePassed += delta;
         if (this.timePassed > 1000 * 60) {
-            const totalTime =
-        this.collisionTime +
-        this.physicsCalcTime +
-        this.updateTime +
-        this.renderTime +
-        this.scriptTime;
             const timeData = {
-                collisionTime: (100 * this.collisionTime) / totalTime,
-                physicsCalcTime: (100 * this.physicsCalcTime) / totalTime,
-                updateTime: (100 * this.updateTime) / totalTime,
-                renderTime: (100 * this.renderTime) / totalTime,
-                scriptTime: (100 * this.scriptTime) / totalTime,
+                collisionTime: (this.collisionTime) / this.frameCountForPerformance,
+                physicsCalcTime: (this.physicsCalcTime) / this.frameCountForPerformance,
+                updateTime: (this.updateTime) / this.frameCountForPerformance,
+                renderTime: (this.renderTime) / this.frameCountForPerformance,
+                scriptTime: (this.scriptTime) / this.frameCountForPerformance,
+                frameRate: this.frameCountForPerformance / (this.timePassed / 1000)
             };
             console.log(timeData);
 
@@ -2095,12 +2093,28 @@ class Overlay extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.Game
         this.gameScript = gameScript;
         this.shipTransform = shipTransform;
         this.transform.pos = [0, 0];
+        this.frameRateUpdateRate = 500;
+        this.currentFrameRateUpdateTime = 0; 
+        this.currentFrameCount = 0;
+        this.frameRate = 0;
         this.addLineSprite(new _overlay_sprite__WEBPACK_IMPORTED_MODULE_0__.OverlaySprite(this.shipTransform, this.gameScript.DIM_X, this.gameScript.DIM_Y, this.gameEngine));
     }
 
     update(deltaTime) {
         this.lineSprite.score = this.gameScript.score;
         this.lineSprite.lives = this.gameScript.lives;
+        this.updateFrameRate(deltaTime);
+        this.lineSprite.frameRate = this.frameRate;
+    }
+
+    updateFrameRate(deltaTime) {
+        this.currentFrameRateUpdateTime += deltaTime;
+        this.currentFrameCount += 1;
+        if (this.currentFrameRateUpdateTime > this.frameRateUpdateRate) {
+            this.currentFrameRateUpdateTime = 0;
+            this.currentframeCount = 0;
+            this.frameRate = Math.floor(this.currentFrameCount / (this.frameRateUpdateRate / 1000));
+        }
     }
 }
 
@@ -2130,6 +2144,7 @@ class OverlaySprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0_
         this.height = DIM_Y;
         this.score = 0;
         this.lives = 0;
+        this.frameRate = 0;
         this.fontSize = 20;
         this.fontStyle = "Arial";
         this.shadowColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_1__.Color({
@@ -2146,8 +2161,15 @@ class OverlaySprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0_
         const zoomFactor = this.gameEngine.zoomScale / this.gameEngine.defaultZoomScale;
         ctx.font = this.fontSize * 1.3 + "px " + this.fontStyle;
         ctx.fillStyle = this.color.evaluateColor();
-
-        ctx.fillText("Score: " + this.score + "      " + "Lives: " + this.lives, (this.transform.pos[0] - 350 / zoomFactor) * this.gameEngine.zoomScale, (this.transform.pos[1] - 150 / zoomFactor )* this.gameEngine.zoomScale);
+        let displayText = "Score: " + this.score + "      " + "Lives: " + this.lives;
+        if(this.gameEngine.gameScript.testing) {
+            displayText += "      " + "FPS: " + this.frameRate;
+        }
+        ctx.fillText(
+            displayText,
+            (this.transform.pos[0] - 350 / zoomFactor) * this.gameEngine.zoomScale, 
+            (this.transform.pos[1] - 150 / zoomFactor) * this.gameEngine.zoomScale
+        );
         ctx.restore();
     }
 }
@@ -2747,6 +2769,7 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
             stateTime: 0,
             shapeState: "TopLeft",
             drawCoordinatesBottomLeft,
+            positionShift: [0,0],
             drawCoordinatesTopLeft,
             projectedDrawCoordinates, // change to projectedDrawCoordinates
             midPauseTime: 200,
@@ -2781,6 +2804,23 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
     // lines parallel to the axis of rotation will be the same length
     // coordinate perpendicular to the axis of rotation will be cosine of the angle of rotation
 
+    // switch to the other shape state
+    // switch to the other rotation direction
+    setupCompleteRotation() {
+        const rotationDirection = this.rotationState.rotationDirection;
+        const shapeState = this.rotationState.shapeState;
+        this.rotationState.shapeState = shapeState === "TopLeft" ? "BottomLeft" : "TopLeft";    
+        if(rotationDirection === "Top") {
+            this.setRotationDirectionProperties("Bottom", true);
+        } else if(rotationDirection === "Bottom") {
+            this.setRotationDirectionProperties("Top", true);
+        } else if(rotationDirection === "Left") {
+            this.setRotationDirectionProperties("Right", true);
+        } else if(rotationDirection === "Right") {
+            this.setRotationDirectionProperties("Left", true);
+        }
+    }
+
     // let's just do flat boxbox rotation for now
     // Bottom rotation first
     // rotate until 90 degrees, pause, then unrotate until 0 degrees
@@ -2792,19 +2832,25 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         const projectedDrawCoordinates = this.rotationState.projectedDrawCoordinates;
         const midPauseTime = this.rotationState.midPauseTime;
         const pauseTime = this.rotationState.pauseTime;
+        let originalAngle = rotationAngle;
         if(animationState === "Rotating") {
+            this.rotationState.positionShift = [0,0];
             if(rotationAngle < Math.PI / 2) {
                 rotationAngle += Math.PI / 2 * deltaTime / 1000;
             } else {
                 rotationAngle = Math.PI / 2;
+                originalAngle = Math.PI / 2;
                 this.rotationState.animationState = "MidPaused";
                 // next rotation axis will be grabbed
             }
         } else if (animationState === "MidPaused") {
             this.rotationState.stateTime += deltaTime;
+            // this.rotationState.positionShift[0] = this.rotationState.positionShift[0] * -1;
+            // this.rotationState.positionShift[1] = this.rotationState.positionShift[1] * -1;
             if(this.rotationState.stateTime > midPauseTime) {
                 this.rotationState.stateTime = 0;
                 this.rotationState.animationState = "CompletingRotation";
+                this.setupCompleteRotation();
             }
         } else if(animationState === "CompletingRotation") {
             // after the mid pause, we should continue the rotation
@@ -2815,6 +2861,7 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
                 rotationAngle -= Math.PI / 2 * deltaTime / 1000;
             } else {
                 rotationAngle = 0;
+                originalAngle = 0;
                 this.rotationState.animationState = "Paused";
             }
         } else if(animationState === "Paused") {
@@ -2827,6 +2874,36 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         }
         const rotationDirection = this.rotationState.rotationDirection;
         this.rotationState.rotationAngle = rotationAngle;
+
+        // calculating the length and original angle once is faster than every frame
+        // #optimization
+        const w = this.boxWidth;
+        const d = this.boxDepth;
+        const positionChange = 
+        (Math.sqrt((3/2 * w)**2 + d**2)/2) * Math.cos((originalAngle + Math.atan(d/ (3/2 * w)))) -
+        (Math.sqrt((3/2 * w)**2 + d**2)/2) * Math.cos((rotationAngle + Math.atan(d/ (3/2 * w))));
+        const drawPositionChange = (3/2 * w) / 2 - (Math.sqrt((3/2 * w)**2 + d**2)/2) * Math.cos((rotationAngle + Math.atan(d/ (3/2 * w))));
+
+        if(rotationDirection === "Top") { // because y is upside down
+            this.transform.pos[1] -= positionChange;
+            this.rotationState.positionShift[1] = -drawPositionChange;
+        } else if(rotationDirection === "Bottom") {
+            this.transform.pos[1] += positionChange;
+            this.rotationState.positionShift[1] = drawPositionChange;
+        } else if(rotationDirection === "Left") {
+            this.transform.pos[0] -= positionChange;
+            this.rotationState.positionShift[0] = -drawPositionChange;
+        } else if(rotationDirection === "Right") {
+            this.transform.pos[0] += positionChange;
+            this.rotationState.positionShift[0] = drawPositionChange;
+        }
+
+
+        // depending on which rotation direction, the coordinate shift will be different
+
+
+
+
         // apply rotation angle to coordinates
         const projectedWidthScale = [1, 1];
         if(rotationDirection === "Top"  || rotationDirection === "Bottom") { 
@@ -2842,164 +2919,176 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         // except theres issues there since it can rotate in any direction after getting to 180 degrees
         // I think I'll have to then swap points to the reversed version
         const drawCoordinates = this.rotationState.shapeState === "BottomLeft" ? this.rotationState.drawCoordinatesBottomLeft : this.rotationState.drawCoordinatesTopLeft;
-        if(this.rotationState.shapeState === "BottomLeft" || this.rotationState.shapeState === "TopLeft") {
-            let [x, y, angleOffset] = drawCoordinates.BottomSquareBL;
-            projectedDrawCoordinates.BottomSquareBL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            [x, y, angleOffset] = drawCoordinates.BottomSquareBR;
-            projectedDrawCoordinates.BottomSquareBR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            [x, y, angleOffset] = drawCoordinates.BottomSquareTL;
-            projectedDrawCoordinates.BottomSquareTL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            [x, y, angleOffset] = drawCoordinates.BottomSquareTR;
-            projectedDrawCoordinates.BottomSquareTR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            [x, y, angleOffset] = drawCoordinates.TopSquareBL;
-            projectedDrawCoordinates.TopSquareBL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            [x, y, angleOffset] = drawCoordinates.TopSquareBR;
-            projectedDrawCoordinates.TopSquareBR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            [x, y, angleOffset] = drawCoordinates.TopSquareTL;
-            projectedDrawCoordinates.TopSquareTL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            [x, y, angleOffset] = drawCoordinates.TopSquareTR;
-            projectedDrawCoordinates.TopSquareTR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            if(rotationDirection === "Left") {
-                const drawCoordinatesLeft = drawCoordinates.Left; 
-                // rotationAngle += Math.PI;
-                // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
-                [x,y,angleOffset] = drawCoordinatesLeft._BottomSquareBL;
-                projectedDrawCoordinates._BottomSquareBL = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
-                
-                [x, y, angleOffset] = drawCoordinatesLeft._BottomSquareBR;
-                projectedDrawCoordinates._BottomSquareBR = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
-                
-                [x, y, angleOffset] = drawCoordinatesLeft._BottomSquareTL;
-                projectedDrawCoordinates._BottomSquareTL = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
-                
-                [x, y, angleOffset] = drawCoordinatesLeft._BottomSquareTR;
-                projectedDrawCoordinates._BottomSquareTR = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
-                
-                [x, y, angleOffset] = drawCoordinatesLeft._TopSquareBL;
-                projectedDrawCoordinates._TopSquareBL    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
-                
-                [x, y, angleOffset] = drawCoordinatesLeft._TopSquareBR;
-                projectedDrawCoordinates._TopSquareBR    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
-                
-                [x, y, angleOffset] = drawCoordinatesLeft._TopSquareTL;
-                projectedDrawCoordinates._TopSquareTL    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        let [x, y, angleOffset] = drawCoordinates.BottomSquareBL;
+        projectedDrawCoordinates.BottomSquareBL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        [x, y, angleOffset] = drawCoordinates.BottomSquareBR;
+        projectedDrawCoordinates.BottomSquareBR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        [x, y, angleOffset] = drawCoordinates.BottomSquareTL;
+        projectedDrawCoordinates.BottomSquareTL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        [x, y, angleOffset] = drawCoordinates.BottomSquareTR;
+        projectedDrawCoordinates.BottomSquareTR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        [x, y, angleOffset] = drawCoordinates.TopSquareBL;
+        projectedDrawCoordinates.TopSquareBL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        [x, y, angleOffset] = drawCoordinates.TopSquareBR;
+        projectedDrawCoordinates.TopSquareBR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        [x, y, angleOffset] = drawCoordinates.TopSquareTL;
+        projectedDrawCoordinates.TopSquareTL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        [x, y, angleOffset] = drawCoordinates.TopSquareTR;
+        projectedDrawCoordinates.TopSquareTR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
 
-                [x, y, angleOffset] = drawCoordinatesLeft._TopSquareTR;
-                projectedDrawCoordinates._TopSquareTR    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            }
-            if(rotationDirection === "Right") {
-                const drawCoordinatesRight = drawCoordinates.Right; 
-                rotationAngle += Math.PI;
-                // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
-                [x, y, angleOffset] = drawCoordinatesRight._BottomSquareBL;
-                projectedDrawCoordinates._BottomSquareBL = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        if(rotationDirection === "Left") {
+            const drawCoordinatesLeft = drawCoordinates.Left; 
+            // rotationAngle += Math.PI;
+            // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
+            [x,y,angleOffset] = drawCoordinatesLeft._BottomSquareBL;
+            projectedDrawCoordinates._BottomSquareBL = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesRight._BottomSquareBR;
-                projectedDrawCoordinates._BottomSquareBR = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+            [x, y, angleOffset] = drawCoordinatesLeft._BottomSquareBR;
+            projectedDrawCoordinates._BottomSquareBR = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesRight._BottomSquareTL;
-                projectedDrawCoordinates._BottomSquareTL = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+            [x, y, angleOffset] = drawCoordinatesLeft._BottomSquareTL;
+            projectedDrawCoordinates._BottomSquareTL = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesRight._BottomSquareTR;
-                projectedDrawCoordinates._BottomSquareTR = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+            [x, y, angleOffset] = drawCoordinatesLeft._BottomSquareTR;
+            projectedDrawCoordinates._BottomSquareTR = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesRight._TopSquareBL;
-                projectedDrawCoordinates._TopSquareBL    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+            [x, y, angleOffset] = drawCoordinatesLeft._TopSquareBL;
+            projectedDrawCoordinates._TopSquareBL    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesRight._TopSquareBR;
-                projectedDrawCoordinates._TopSquareBR    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+            [x, y, angleOffset] = drawCoordinatesLeft._TopSquareBR;
+            projectedDrawCoordinates._TopSquareBR    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesRight._TopSquareTL;
-                projectedDrawCoordinates._TopSquareTL    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+            [x, y, angleOffset] = drawCoordinatesLeft._TopSquareTL;
+            projectedDrawCoordinates._TopSquareTL    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
 
-                [x, y, angleOffset] = drawCoordinatesRight._TopSquareTR;
-                projectedDrawCoordinates._TopSquareTR    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            }
-            if(rotationDirection === "Top") {
-                const drawCoordinatesTop = drawCoordinates.Top; 
-                // rotationAngle += Math.PI;
-                // distances to axis of rotation, [x, y, angleOffset], x is the same, y requires pythag;
-                [x,y,angleOffset] = drawCoordinatesTop._BottomSquareBL;
-                projectedDrawCoordinates._BottomSquareBL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesLeft._TopSquareTR;
+            projectedDrawCoordinates._TopSquareTR    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        }
+        if(rotationDirection === "Right") {
+            const drawCoordinatesRight = drawCoordinates.Right; 
+            rotationAngle += Math.PI;
+            // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
+            [x, y, angleOffset] = drawCoordinatesRight._BottomSquareBL;
+            projectedDrawCoordinates._BottomSquareBL = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesTop._BottomSquareBR;
-                projectedDrawCoordinates._BottomSquareBR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesRight._BottomSquareBR;
+            projectedDrawCoordinates._BottomSquareBR = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesTop._BottomSquareTL;
-                projectedDrawCoordinates._BottomSquareTL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesRight._BottomSquareTL;
+            projectedDrawCoordinates._BottomSquareTL = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesTop._BottomSquareTR;
-                projectedDrawCoordinates._BottomSquareTR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesRight._BottomSquareTR;
+            projectedDrawCoordinates._BottomSquareTR = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesTop._TopSquareBL;
-                projectedDrawCoordinates._TopSquareBL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesRight._TopSquareBL;
+            projectedDrawCoordinates._TopSquareBL    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesTop._TopSquareBR;
-                projectedDrawCoordinates._TopSquareBR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesRight._TopSquareBR;
+            projectedDrawCoordinates._TopSquareBR    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesTop._TopSquareTL;
-                projectedDrawCoordinates._TopSquareTL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesRight._TopSquareTL;
+            projectedDrawCoordinates._TopSquareTL    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
 
-                [x, y, angleOffset] = drawCoordinatesTop._TopSquareTR;
-                projectedDrawCoordinates._TopSquareTR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
-            } 
-            if(rotationDirection === "Bottom") {
-                const drawCoordinatesBottom = drawCoordinates.Bottom; 
-                // rotationAngle += Math.PI;
-                // distances to axis of rotation, [x, y, angleOffset], x is the same, y requires pythag;
-                [x,y,angleOffset] = drawCoordinatesBottom._BottomSquareBL;
-                projectedDrawCoordinates._BottomSquareBL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesRight._TopSquareTR;
+            projectedDrawCoordinates._TopSquareTR    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        }
+        if(rotationDirection === "Top") {
+            const drawCoordinatesTop = drawCoordinates.Top; 
+            // rotationAngle += Math.PI;
+            // distances to axis of rotation, [x, y, angleOffset], x is the same, y requires pythag;
+            [x,y,angleOffset] = drawCoordinatesTop._BottomSquareBL;
+            projectedDrawCoordinates._BottomSquareBL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
                 
-                [x, y, angleOffset] = drawCoordinatesBottom._BottomSquareBR;
-                projectedDrawCoordinates._BottomSquareBR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesTop._BottomSquareBR;
+            projectedDrawCoordinates._BottomSquareBR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
                 
-                [x, y, angleOffset] = drawCoordinatesBottom._BottomSquareTL;
-                projectedDrawCoordinates._BottomSquareTL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesTop._BottomSquareTL;
+            projectedDrawCoordinates._BottomSquareTL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
                 
-                [x, y, angleOffset] = drawCoordinatesBottom._BottomSquareTR;
-                projectedDrawCoordinates._BottomSquareTR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesTop._BottomSquareTR;
+            projectedDrawCoordinates._BottomSquareTR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
                 
-                [x, y, angleOffset] = drawCoordinatesBottom._TopSquareBL;
-                projectedDrawCoordinates._TopSquareBL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesTop._TopSquareBL;
+            projectedDrawCoordinates._TopSquareBL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
                 
-                [x, y, angleOffset] = drawCoordinatesBottom._TopSquareBR;
-                projectedDrawCoordinates._TopSquareBR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesTop._TopSquareBR;
+            projectedDrawCoordinates._TopSquareBR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
                 
-                [x, y, angleOffset] = drawCoordinatesBottom._TopSquareTL;
-                projectedDrawCoordinates._TopSquareTL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesTop._TopSquareTL;
+            projectedDrawCoordinates._TopSquareTL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
 
-                [x, y, angleOffset] = drawCoordinatesBottom._TopSquareTR;
-                projectedDrawCoordinates._TopSquareTR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
-            }
+            [x, y, angleOffset] = drawCoordinatesTop._TopSquareTR;
+            projectedDrawCoordinates._TopSquareTR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+        } 
+        if(rotationDirection === "Bottom") {
+            const drawCoordinatesBottom = drawCoordinates.Bottom; 
+            // rotationAngle += Math.PI;
+            // distances to axis of rotation, [x, y, angleOffset], x is the same, y requires pythag;
+            [x,y,angleOffset] = drawCoordinatesBottom._BottomSquareBL;
+            projectedDrawCoordinates._BottomSquareBL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+                
+            [x, y, angleOffset] = drawCoordinatesBottom._BottomSquareBR;
+            projectedDrawCoordinates._BottomSquareBR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+                
+            [x, y, angleOffset] = drawCoordinatesBottom._BottomSquareTL;
+            projectedDrawCoordinates._BottomSquareTL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+                
+            [x, y, angleOffset] = drawCoordinatesBottom._BottomSquareTR;
+            projectedDrawCoordinates._BottomSquareTR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+                
+            [x, y, angleOffset] = drawCoordinatesBottom._TopSquareBL;
+            projectedDrawCoordinates._TopSquareBL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+                
+            [x, y, angleOffset] = drawCoordinatesBottom._TopSquareBR;
+            projectedDrawCoordinates._TopSquareBR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+                
+            [x, y, angleOffset] = drawCoordinatesBottom._TopSquareTL;
+            projectedDrawCoordinates._TopSquareTL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+
+            [x, y, angleOffset] = drawCoordinatesBottom._TopSquareTR;
+            projectedDrawCoordinates._TopSquareTR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
         }
         // I do not need to consider the coordinate shift for the prime coordinates
         // I do for the non-primes because they are drawn from the center of the BoxBox, and are more general
     }
-
-    startRotation() {
-        // pick rotation direction
+    
+    setRotationDirectionProperties(rotationDirection, flipped) {
         const w = this.boxWidth;
+        const d = this.boxDepth;
         const coordinateShift = this.rotationState.coordinateShift;
-        if (this.rotationState.rotationDirection === "Bottom") {
-            this.rotationState.shapeState = this.rotationState.shapeState === "TopLeft" ? "BottomLeft" : "TopLeft";
-        }
-        const directionsMap = {Top: "Right", Right: "Bottom", Bottom: "Left", Left: "Top"};
-        const rotationDirection = directionsMap[this.rotationState.rotationDirection];
-        
         if(rotationDirection === "Top") {
             coordinateShift[0] = 0;
-            coordinateShift[1] = 3/4 * w;
+            coordinateShift[1] = flipped ? 
+                3/4 * w:
+                3/4 * w;
         } else if (rotationDirection === "Bottom") {
             coordinateShift[0] = 0;
-            coordinateShift[1] =  -3/4 * w;
+            coordinateShift[1] =  flipped ? 
+                -3/4 * w: 
+                -3/4 * w;
         } else if (rotationDirection === "Left") {
-            coordinateShift[0] = 3/4 * w;
+            coordinateShift[0] = flipped ? 
+                3/4 * w:
+                3/4 * w;
             coordinateShift[1] = 0;
         } else if (rotationDirection === "Right") {
-            coordinateShift[0] = -3/4 * w;
+            coordinateShift[0] = flipped ? 
+                -3/4 * w:
+                -3/4 * w;
             coordinateShift[1] = 0;
         }
         this.rotationState.rotationDirection = rotationDirection;
+    }
+
+    startRotation() {
+        // pick rotation direction
+        // if (this.rotationState.rotationDirection === "Bottom") {
+        //     this.rotationState.shapeState = this.rotationState.shapeState === "TopLeft" ? "BottomLeft" : "TopLeft";
+        // }
+        const directionsMap = {Top: "Right", Right: "Bottom", Bottom: "Left", Left: "Top"};
+        const rotationDirection = directionsMap[this.rotationState.rotationDirection];
+        
+        this.setRotationDirectionProperties(rotationDirection);
     }
 
     continueRotation() {
@@ -3046,12 +3135,13 @@ class BoxBoxSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__
         super(transform);
         this.spawningScale = 1;
         this.rotationState = rotationState;
+        this.spawning = false;
     }
 
     draw(ctx) {
-        const spawningScale = this.spawningScale || 1;
+        const spawningScale = this.spawningScale ||= 1;
         const pos = this.transform.absolutePosition();
-        const boxSize = 10 * spawningScale;
+        const boxWidth = 10 * spawningScale;
 
         // ctx.strokeStyle = "#F173BA";
 
@@ -3059,34 +3149,95 @@ class BoxBoxSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__
         const g = 75;
         const b = 75;
         ctx.save();
-        ctx.beginPath();
-        ctx.translate(pos[0] - this.rotationState.coordinateShift[0], pos[1] - this.rotationState.coordinateShift[1]);
+        if(this.spawning !== false) {
+            const w = boxWidth * spawningScale;
+            ctx.translate(
+                pos[0], 
+                pos[1]
+            );
+            this.drawSpawningBoxBox(ctx, w);
+            
+            return;
+        }
+        ctx.translate(
+            pos[0]  - this.rotationState.positionShift[0] - this.rotationState.coordinateShift[0], 
+            pos[1]  - this.rotationState.positionShift[1] - this.rotationState.coordinateShift[1]
+        );
         const blurFactor = 0.5;
         ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
         ctx.shadowBlur = 10 * blurFactor;
         ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
         ctx.lineWidth = 7.5 * blurFactor;
-        this.drawBox1(ctx, boxSize);
-        this.drawBox2(ctx, boxSize);
+        this.drawBox1(ctx);
+        this.drawBox2(ctx);
         ctx.lineWidth = 6 * blurFactor;
-        this.drawBox1(ctx, boxSize);
-        this.drawBox2(ctx, boxSize);
+        this.drawBox1(ctx);
+        this.drawBox2(ctx);
         ctx.lineWidth = 4.5;
-        this.drawBox1(ctx, boxSize);
-        this.drawBox2(ctx, boxSize);
+        this.drawBox1(ctx);
+        this.drawBox2(ctx);
         ctx.lineWidth = 3;
-        this.drawBox1(ctx, boxSize);
-        this.drawBox2(ctx, boxSize);
+        this.drawBox1(ctx);
+        this.drawBox2(ctx);
         ctx.strokeStyle = "rgb(255, 255, 255)";
         ctx.lineWidth = 1.5;
-        this.drawBox1(ctx, boxSize);
-        this.drawBox2(ctx, boxSize);
+        this.drawBox1(ctx);
+        this.drawBox2(ctx);
         ctx.restore();
     }
 
+    drawSpawningBoxBox(ctx, w) {
+        const r = 210;
+        const g = 75;
+        const b = 75;
+        const blurFactor = 0.5;
+        ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+        ctx.shadowBlur = 10 * blurFactor;
+        ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+        ctx.lineWidth = 7.5 * blurFactor;
+        this.drawSpawningBox1(ctx, w);
+        this.drawSpawningBox2(ctx, w);
+        ctx.lineWidth = 6 * blurFactor;
+        this.drawSpawningBox1(ctx, w);
+        this.drawSpawningBox2(ctx, w);
+        ctx.lineWidth = 4.5;
+        this.drawSpawningBox1(ctx, w);
+        this.drawSpawningBox2(ctx, w);
+        ctx.lineWidth = 3;
+        this.drawSpawningBox1(ctx, w);
+        this.drawSpawningBox2(ctx, w);
+        ctx.strokeStyle = "rgb(255, 255, 255)";
+        ctx.lineWidth = 1.5;
+        this.drawSpawningBox1(ctx, w);
+        this.drawSpawningBox2(ctx, w);
+        ctx.restore();
+    }
+
+    drawSpawningBox1(ctx, w) {
+        ctx.beginPath();
+        ctx.moveTo(-w / 4, w / 4);
+        ctx.lineTo(-w / 4, (-3 * w) / 4);
+        ctx.lineTo((3 * w) / 4, (-3 * w) / 4);
+        ctx.lineTo((3 * w) / 4, w / 4);
+        ctx.closePath();
+        ctx.stroke();
+    }
+    drawSpawningBox2(ctx, w) {
+        ctx.beginPath();
+        ctx.moveTo(w  / 4, -w  / 4);
+        ctx.lineTo(w  / 4, (3 * w)  / 4);
+        ctx.lineTo((-3 * w ) / 4, (3 * w ) / 4);
+        ctx.lineTo((-3 * w ) / 4, -w  / 4);
+        ctx.closePath();
+        ctx.stroke();
+    }
+
     drawBox1(ctx) {
+
         // need to rethink spawn scaling. 
         // I might have to bring back the original draw methods for spawn animation
+
+
         
         const projectedCoordinates = this.rotationState.projectedDrawCoordinates;
         
@@ -4786,18 +4937,18 @@ class EnemySpawn extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.G
     constructor(engine){
         super(engine);
         this.initialSpawningScale = 1.5;
-        // this.spawningScale = 1.5;
         this.lifeTime = 1000;
         this.existTime = 0;
-    // this.gameEngine.queueSound(this.parentObject.spawnSound)
+        // this.gameEngine.queueSound(this.parentObject.spawnSound)
     }
 
     update(timeDelta) {
         this.existTime += timeDelta;
+        this.parentObject.lineSprite.spawning = true;
         if (this.existTime >= this.lifeTime){
-      
-            this.parentObject.exist();
             this.parentObject.lineSprite.spawningScale = 1;
+            this.parentObject.exist();
+            this.parentObject.lineSprite.spawning = false;
             this.remove();
         }
 
@@ -5729,7 +5880,6 @@ class GameScript {
     }
 
     createStars() {
-        console.log(this.ship);
         const runoffFactor = 1.5;
         for(let i = 0; i < 400; i++) {
             const X = (runoffFactor * Math.random() - runoffFactor/2) * this.DIM_X; // based on zoom scale and eventually camera position
@@ -5933,6 +6083,16 @@ class GameScript {
 
     addSequenceTypes() {
         return {
+            BoxBoxesEverywhere: () => {
+                const randomPositions = [];
+                for (let i = 0; i < 50; i++) {
+                    const pos = this.randomPosition(10);
+                    randomPositions.push(pos);
+                }
+                randomPositions.forEach((pos) => {
+                    this.enemyCreatorList["BoxBox"](pos);
+                });
+            },
             Singularity: () => {
                 this.enemyCreatorList["Singularity"]([700, 300]);
             },
@@ -5975,17 +6135,17 @@ class GameScript {
                     [600, 100],
                 ];
                 const pos =
-          somePositions[
-              Math.floor(Math.random() * somePositions.length) %
-              somePositions.length
-          ];
+                    somePositions[
+                        Math.floor(Math.random() * somePositions.length) %
+                        somePositions.length
+                    ];
                 for (let i = 0; i < 5; i++) {
                     pos[1] += i * 80;
                     this.enemyCreatorList["Arrow"](pos);
                 }
             },
             GruntGroups: () => {
-                const randomPos = this.randomPosition();
+                const randomPos = this.randomPosition(50);
                 for (let i = 0; i < 3; i++) {
                     for (let j = 0; j < 3; j++) {
                         this.enemyCreatorList["Grunt"]([
@@ -5996,7 +6156,7 @@ class GameScript {
                 }
             },
             GreenGroups: () => {
-                const randomPos = this.randomPosition();
+                const randomPos = this.randomPosition(100);
                 for (let i = 0; i < 3; i++) {
                     for (let j = 0; j < 3; j++) {
                         this.enemyCreatorList["Weaver"]([
@@ -6019,10 +6179,13 @@ class GameScript {
     // let easyGroupsState = new StateMachine(this.engine, undefined)
     }
 
-    randomPosition() {
+    randomPosition(radius) {
+        if(!radius) {
+            radius = 40;
+        }
         return [
-            this.DIM_X * 0.7 * Math.random(),
-            this.DIM_Y * 0.7 * Math.random(),
+            (this.DIM_X - radius * 4) * Math.random() + radius * 4,
+            (this.DIM_Y - radius * 4) * Math.random() + radius * 4,
             // 500,300
         ];
     }
@@ -6041,7 +6204,7 @@ class GameScript {
         this.testing = false;
         if (this.testing) {
             if (this.sequenceCount === 0) {
-                this.enemyCreatorList["AlienShip"]([500, 100]);
+                this.sequenceTypes["BoxBoxesEverywhere"]();
                 this.sequenceCount += 1;
             }
         } else {
@@ -6280,6 +6443,28 @@ GameScript.Spawn1 = {
 };
 
 GameScript.spawnListList = [GameScript.Spawn1];
+
+
+
+// 2D 
+const performance2D = {
+    collisionTime: 0.12846034227596656,
+    frameRate: 117.86903385504282,
+    physicsCalcTime: 0.2529761062793578,
+    renderTime: 0.9149865687913138,
+    scriptTime: 0.00835571889659564,
+    updateTime: 0.1869786510739892,
+};
+
+// 3D
+const performance3D = {
+    collisionTime: 0.0705062137856271,
+    frameRate: 54.9810552849427,
+    physicsCalcTime: 0.16501970291499046,
+    renderTime: 1.1280691114636254,
+    scriptTime: 0.008426796002401008,
+    updateTime: 0.177841770708579,
+};
 
 
 /***/ }),

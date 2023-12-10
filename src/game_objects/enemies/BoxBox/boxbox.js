@@ -189,6 +189,7 @@ export class BoxBox extends GameObject {
             stateTime: 0,
             shapeState: "TopLeft",
             drawCoordinatesBottomLeft,
+            positionShift: [0,0],
             drawCoordinatesTopLeft,
             projectedDrawCoordinates, // change to projectedDrawCoordinates
             midPauseTime: 200,
@@ -223,6 +224,23 @@ export class BoxBox extends GameObject {
     // lines parallel to the axis of rotation will be the same length
     // coordinate perpendicular to the axis of rotation will be cosine of the angle of rotation
 
+    // switch to the other shape state
+    // switch to the other rotation direction
+    setupCompleteRotation() {
+        const rotationDirection = this.rotationState.rotationDirection;
+        const shapeState = this.rotationState.shapeState;
+        this.rotationState.shapeState = shapeState === "TopLeft" ? "BottomLeft" : "TopLeft";    
+        if(rotationDirection === "Top") {
+            this.setRotationDirectionProperties("Bottom", true);
+        } else if(rotationDirection === "Bottom") {
+            this.setRotationDirectionProperties("Top", true);
+        } else if(rotationDirection === "Left") {
+            this.setRotationDirectionProperties("Right", true);
+        } else if(rotationDirection === "Right") {
+            this.setRotationDirectionProperties("Left", true);
+        }
+    }
+
     // let's just do flat boxbox rotation for now
     // Bottom rotation first
     // rotate until 90 degrees, pause, then unrotate until 0 degrees
@@ -234,19 +252,25 @@ export class BoxBox extends GameObject {
         const projectedDrawCoordinates = this.rotationState.projectedDrawCoordinates;
         const midPauseTime = this.rotationState.midPauseTime;
         const pauseTime = this.rotationState.pauseTime;
+        let originalAngle = rotationAngle;
         if(animationState === "Rotating") {
+            this.rotationState.positionShift = [0,0];
             if(rotationAngle < Math.PI / 2) {
                 rotationAngle += Math.PI / 2 * deltaTime / 1000;
             } else {
                 rotationAngle = Math.PI / 2;
+                originalAngle = Math.PI / 2;
                 this.rotationState.animationState = "MidPaused";
                 // next rotation axis will be grabbed
             }
         } else if (animationState === "MidPaused") {
             this.rotationState.stateTime += deltaTime;
+            // this.rotationState.positionShift[0] = this.rotationState.positionShift[0] * -1;
+            // this.rotationState.positionShift[1] = this.rotationState.positionShift[1] * -1;
             if(this.rotationState.stateTime > midPauseTime) {
                 this.rotationState.stateTime = 0;
                 this.rotationState.animationState = "CompletingRotation";
+                this.setupCompleteRotation();
             }
         } else if(animationState === "CompletingRotation") {
             // after the mid pause, we should continue the rotation
@@ -257,6 +281,7 @@ export class BoxBox extends GameObject {
                 rotationAngle -= Math.PI / 2 * deltaTime / 1000;
             } else {
                 rotationAngle = 0;
+                originalAngle = 0;
                 this.rotationState.animationState = "Paused";
             }
         } else if(animationState === "Paused") {
@@ -269,6 +294,36 @@ export class BoxBox extends GameObject {
         }
         const rotationDirection = this.rotationState.rotationDirection;
         this.rotationState.rotationAngle = rotationAngle;
+
+        // calculating the length and original angle once is faster than every frame
+        // #optimization
+        const w = this.boxWidth;
+        const d = this.boxDepth;
+        const positionChange = 
+        (Math.sqrt((3/2 * w)**2 + d**2)/2) * Math.cos((originalAngle + Math.atan(d/ (3/2 * w)))) -
+        (Math.sqrt((3/2 * w)**2 + d**2)/2) * Math.cos((rotationAngle + Math.atan(d/ (3/2 * w))));
+        const drawPositionChange = (3/2 * w) / 2 - (Math.sqrt((3/2 * w)**2 + d**2)/2) * Math.cos((rotationAngle + Math.atan(d/ (3/2 * w))));
+
+        if(rotationDirection === "Top") { // because y is upside down
+            this.transform.pos[1] -= positionChange;
+            this.rotationState.positionShift[1] = -drawPositionChange;
+        } else if(rotationDirection === "Bottom") {
+            this.transform.pos[1] += positionChange;
+            this.rotationState.positionShift[1] = drawPositionChange;
+        } else if(rotationDirection === "Left") {
+            this.transform.pos[0] -= positionChange;
+            this.rotationState.positionShift[0] = -drawPositionChange;
+        } else if(rotationDirection === "Right") {
+            this.transform.pos[0] += positionChange;
+            this.rotationState.positionShift[0] = drawPositionChange;
+        }
+
+
+        // depending on which rotation direction, the coordinate shift will be different
+
+
+
+
         // apply rotation angle to coordinates
         const projectedWidthScale = [1, 1];
         if(rotationDirection === "Top"  || rotationDirection === "Bottom") { 
@@ -284,164 +339,176 @@ export class BoxBox extends GameObject {
         // except theres issues there since it can rotate in any direction after getting to 180 degrees
         // I think I'll have to then swap points to the reversed version
         const drawCoordinates = this.rotationState.shapeState === "BottomLeft" ? this.rotationState.drawCoordinatesBottomLeft : this.rotationState.drawCoordinatesTopLeft;
-        if(this.rotationState.shapeState === "BottomLeft" || this.rotationState.shapeState === "TopLeft") {
-            let [x, y, angleOffset] = drawCoordinates.BottomSquareBL;
-            projectedDrawCoordinates.BottomSquareBL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            [x, y, angleOffset] = drawCoordinates.BottomSquareBR;
-            projectedDrawCoordinates.BottomSquareBR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            [x, y, angleOffset] = drawCoordinates.BottomSquareTL;
-            projectedDrawCoordinates.BottomSquareTL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            [x, y, angleOffset] = drawCoordinates.BottomSquareTR;
-            projectedDrawCoordinates.BottomSquareTR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            [x, y, angleOffset] = drawCoordinates.TopSquareBL;
-            projectedDrawCoordinates.TopSquareBL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            [x, y, angleOffset] = drawCoordinates.TopSquareBR;
-            projectedDrawCoordinates.TopSquareBR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            [x, y, angleOffset] = drawCoordinates.TopSquareTL;
-            projectedDrawCoordinates.TopSquareTL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            [x, y, angleOffset] = drawCoordinates.TopSquareTR;
-            projectedDrawCoordinates.TopSquareTR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            if(rotationDirection === "Left") {
-                const drawCoordinatesLeft = drawCoordinates.Left; 
-                // rotationAngle += Math.PI;
-                // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
-                [x,y,angleOffset] = drawCoordinatesLeft._BottomSquareBL;
-                projectedDrawCoordinates._BottomSquareBL = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
-                
-                [x, y, angleOffset] = drawCoordinatesLeft._BottomSquareBR;
-                projectedDrawCoordinates._BottomSquareBR = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
-                
-                [x, y, angleOffset] = drawCoordinatesLeft._BottomSquareTL;
-                projectedDrawCoordinates._BottomSquareTL = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
-                
-                [x, y, angleOffset] = drawCoordinatesLeft._BottomSquareTR;
-                projectedDrawCoordinates._BottomSquareTR = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
-                
-                [x, y, angleOffset] = drawCoordinatesLeft._TopSquareBL;
-                projectedDrawCoordinates._TopSquareBL    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
-                
-                [x, y, angleOffset] = drawCoordinatesLeft._TopSquareBR;
-                projectedDrawCoordinates._TopSquareBR    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
-                
-                [x, y, angleOffset] = drawCoordinatesLeft._TopSquareTL;
-                projectedDrawCoordinates._TopSquareTL    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        let [x, y, angleOffset] = drawCoordinates.BottomSquareBL;
+        projectedDrawCoordinates.BottomSquareBL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        [x, y, angleOffset] = drawCoordinates.BottomSquareBR;
+        projectedDrawCoordinates.BottomSquareBR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        [x, y, angleOffset] = drawCoordinates.BottomSquareTL;
+        projectedDrawCoordinates.BottomSquareTL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        [x, y, angleOffset] = drawCoordinates.BottomSquareTR;
+        projectedDrawCoordinates.BottomSquareTR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        [x, y, angleOffset] = drawCoordinates.TopSquareBL;
+        projectedDrawCoordinates.TopSquareBL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        [x, y, angleOffset] = drawCoordinates.TopSquareBR;
+        projectedDrawCoordinates.TopSquareBR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        [x, y, angleOffset] = drawCoordinates.TopSquareTL;
+        projectedDrawCoordinates.TopSquareTL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        [x, y, angleOffset] = drawCoordinates.TopSquareTR;
+        projectedDrawCoordinates.TopSquareTR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
 
-                [x, y, angleOffset] = drawCoordinatesLeft._TopSquareTR;
-                projectedDrawCoordinates._TopSquareTR    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            }
-            if(rotationDirection === "Right") {
-                const drawCoordinatesRight = drawCoordinates.Right; 
-                rotationAngle += Math.PI;
-                // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
-                [x, y, angleOffset] = drawCoordinatesRight._BottomSquareBL;
-                projectedDrawCoordinates._BottomSquareBL = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        if(rotationDirection === "Left") {
+            const drawCoordinatesLeft = drawCoordinates.Left; 
+            // rotationAngle += Math.PI;
+            // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
+            [x,y,angleOffset] = drawCoordinatesLeft._BottomSquareBL;
+            projectedDrawCoordinates._BottomSquareBL = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesRight._BottomSquareBR;
-                projectedDrawCoordinates._BottomSquareBR = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+            [x, y, angleOffset] = drawCoordinatesLeft._BottomSquareBR;
+            projectedDrawCoordinates._BottomSquareBR = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesRight._BottomSquareTL;
-                projectedDrawCoordinates._BottomSquareTL = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+            [x, y, angleOffset] = drawCoordinatesLeft._BottomSquareTL;
+            projectedDrawCoordinates._BottomSquareTL = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesRight._BottomSquareTR;
-                projectedDrawCoordinates._BottomSquareTR = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+            [x, y, angleOffset] = drawCoordinatesLeft._BottomSquareTR;
+            projectedDrawCoordinates._BottomSquareTR = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesRight._TopSquareBL;
-                projectedDrawCoordinates._TopSquareBL    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+            [x, y, angleOffset] = drawCoordinatesLeft._TopSquareBL;
+            projectedDrawCoordinates._TopSquareBL    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesRight._TopSquareBR;
-                projectedDrawCoordinates._TopSquareBR    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+            [x, y, angleOffset] = drawCoordinatesLeft._TopSquareBR;
+            projectedDrawCoordinates._TopSquareBR    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesRight._TopSquareTL;
-                projectedDrawCoordinates._TopSquareTL    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+            [x, y, angleOffset] = drawCoordinatesLeft._TopSquareTL;
+            projectedDrawCoordinates._TopSquareTL    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
 
-                [x, y, angleOffset] = drawCoordinatesRight._TopSquareTR;
-                projectedDrawCoordinates._TopSquareTR    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
-            }
-            if(rotationDirection === "Top") {
-                const drawCoordinatesTop = drawCoordinates.Top; 
-                // rotationAngle += Math.PI;
-                // distances to axis of rotation, [x, y, angleOffset], x is the same, y requires pythag;
-                [x,y,angleOffset] = drawCoordinatesTop._BottomSquareBL;
-                projectedDrawCoordinates._BottomSquareBL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesLeft._TopSquareTR;
+            projectedDrawCoordinates._TopSquareTR    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        }
+        if(rotationDirection === "Right") {
+            const drawCoordinatesRight = drawCoordinates.Right; 
+            rotationAngle += Math.PI;
+            // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
+            [x, y, angleOffset] = drawCoordinatesRight._BottomSquareBL;
+            projectedDrawCoordinates._BottomSquareBL = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesTop._BottomSquareBR;
-                projectedDrawCoordinates._BottomSquareBR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesRight._BottomSquareBR;
+            projectedDrawCoordinates._BottomSquareBR = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesTop._BottomSquareTL;
-                projectedDrawCoordinates._BottomSquareTL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesRight._BottomSquareTL;
+            projectedDrawCoordinates._BottomSquareTL = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesTop._BottomSquareTR;
-                projectedDrawCoordinates._BottomSquareTR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesRight._BottomSquareTR;
+            projectedDrawCoordinates._BottomSquareTR = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesTop._TopSquareBL;
-                projectedDrawCoordinates._TopSquareBL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesRight._TopSquareBL;
+            projectedDrawCoordinates._TopSquareBL    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesTop._TopSquareBR;
-                projectedDrawCoordinates._TopSquareBR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesRight._TopSquareBR;
+            projectedDrawCoordinates._TopSquareBR    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
                 
-                [x, y, angleOffset] = drawCoordinatesTop._TopSquareTL;
-                projectedDrawCoordinates._TopSquareTL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesRight._TopSquareTL;
+            projectedDrawCoordinates._TopSquareTL    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
 
-                [x, y, angleOffset] = drawCoordinatesTop._TopSquareTR;
-                projectedDrawCoordinates._TopSquareTR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
-            } 
-            if(rotationDirection === "Bottom") {
-                const drawCoordinatesBottom = drawCoordinates.Bottom; 
-                // rotationAngle += Math.PI;
-                // distances to axis of rotation, [x, y, angleOffset], x is the same, y requires pythag;
-                [x,y,angleOffset] = drawCoordinatesBottom._BottomSquareBL;
-                projectedDrawCoordinates._BottomSquareBL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesRight._TopSquareTR;
+            projectedDrawCoordinates._TopSquareTR    = [(x * Math.cos(angleOffset + rotationAngle)), (-y + coordinateShift[1]) * projectedWidthScale[1]];
+        }
+        if(rotationDirection === "Top") {
+            const drawCoordinatesTop = drawCoordinates.Top; 
+            // rotationAngle += Math.PI;
+            // distances to axis of rotation, [x, y, angleOffset], x is the same, y requires pythag;
+            [x,y,angleOffset] = drawCoordinatesTop._BottomSquareBL;
+            projectedDrawCoordinates._BottomSquareBL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
                 
-                [x, y, angleOffset] = drawCoordinatesBottom._BottomSquareBR;
-                projectedDrawCoordinates._BottomSquareBR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesTop._BottomSquareBR;
+            projectedDrawCoordinates._BottomSquareBR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
                 
-                [x, y, angleOffset] = drawCoordinatesBottom._BottomSquareTL;
-                projectedDrawCoordinates._BottomSquareTL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesTop._BottomSquareTL;
+            projectedDrawCoordinates._BottomSquareTL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
                 
-                [x, y, angleOffset] = drawCoordinatesBottom._BottomSquareTR;
-                projectedDrawCoordinates._BottomSquareTR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesTop._BottomSquareTR;
+            projectedDrawCoordinates._BottomSquareTR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
                 
-                [x, y, angleOffset] = drawCoordinatesBottom._TopSquareBL;
-                projectedDrawCoordinates._TopSquareBL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesTop._TopSquareBL;
+            projectedDrawCoordinates._TopSquareBL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
                 
-                [x, y, angleOffset] = drawCoordinatesBottom._TopSquareBR;
-                projectedDrawCoordinates._TopSquareBR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesTop._TopSquareBR;
+            projectedDrawCoordinates._TopSquareBR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
                 
-                [x, y, angleOffset] = drawCoordinatesBottom._TopSquareTL;
-                projectedDrawCoordinates._TopSquareTL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+            [x, y, angleOffset] = drawCoordinatesTop._TopSquareTL;
+            projectedDrawCoordinates._TopSquareTL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
 
-                [x, y, angleOffset] = drawCoordinatesBottom._TopSquareTR;
-                projectedDrawCoordinates._TopSquareTR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
-            }
+            [x, y, angleOffset] = drawCoordinatesTop._TopSquareTR;
+            projectedDrawCoordinates._TopSquareTR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+        } 
+        if(rotationDirection === "Bottom") {
+            const drawCoordinatesBottom = drawCoordinates.Bottom; 
+            // rotationAngle += Math.PI;
+            // distances to axis of rotation, [x, y, angleOffset], x is the same, y requires pythag;
+            [x,y,angleOffset] = drawCoordinatesBottom._BottomSquareBL;
+            projectedDrawCoordinates._BottomSquareBL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+                
+            [x, y, angleOffset] = drawCoordinatesBottom._BottomSquareBR;
+            projectedDrawCoordinates._BottomSquareBR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+                
+            [x, y, angleOffset] = drawCoordinatesBottom._BottomSquareTL;
+            projectedDrawCoordinates._BottomSquareTL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+                
+            [x, y, angleOffset] = drawCoordinatesBottom._BottomSquareTR;
+            projectedDrawCoordinates._BottomSquareTR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+                
+            [x, y, angleOffset] = drawCoordinatesBottom._TopSquareBL;
+            projectedDrawCoordinates._TopSquareBL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+                
+            [x, y, angleOffset] = drawCoordinatesBottom._TopSquareBR;
+            projectedDrawCoordinates._TopSquareBR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+                
+            [x, y, angleOffset] = drawCoordinatesBottom._TopSquareTL;
+            projectedDrawCoordinates._TopSquareTL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
+
+            [x, y, angleOffset] = drawCoordinatesBottom._TopSquareTR;
+            projectedDrawCoordinates._TopSquareTR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y * Math.cos(angleOffset + rotationAngle))];
         }
         // I do not need to consider the coordinate shift for the prime coordinates
         // I do for the non-primes because they are drawn from the center of the BoxBox, and are more general
     }
-
-    startRotation() {
-        // pick rotation direction
+    
+    setRotationDirectionProperties(rotationDirection, flipped) {
         const w = this.boxWidth;
+        const d = this.boxDepth;
         const coordinateShift = this.rotationState.coordinateShift;
-        if (this.rotationState.rotationDirection === "Bottom") {
-            this.rotationState.shapeState = this.rotationState.shapeState === "TopLeft" ? "BottomLeft" : "TopLeft";
-        }
-        const directionsMap = {Top: "Right", Right: "Bottom", Bottom: "Left", Left: "Top"};
-        const rotationDirection = directionsMap[this.rotationState.rotationDirection];
-        
         if(rotationDirection === "Top") {
             coordinateShift[0] = 0;
-            coordinateShift[1] = 3/4 * w;
+            coordinateShift[1] = flipped ? 
+                3/4 * w:
+                3/4 * w;
         } else if (rotationDirection === "Bottom") {
             coordinateShift[0] = 0;
-            coordinateShift[1] =  -3/4 * w;
+            coordinateShift[1] =  flipped ? 
+                -3/4 * w: 
+                -3/4 * w;
         } else if (rotationDirection === "Left") {
-            coordinateShift[0] = 3/4 * w;
+            coordinateShift[0] = flipped ? 
+                3/4 * w:
+                3/4 * w;
             coordinateShift[1] = 0;
         } else if (rotationDirection === "Right") {
-            coordinateShift[0] = -3/4 * w;
+            coordinateShift[0] = flipped ? 
+                -3/4 * w:
+                -3/4 * w;
             coordinateShift[1] = 0;
         }
         this.rotationState.rotationDirection = rotationDirection;
+    }
+
+    startRotation() {
+        // pick rotation direction
+        // if (this.rotationState.rotationDirection === "Bottom") {
+        //     this.rotationState.shapeState = this.rotationState.shapeState === "TopLeft" ? "BottomLeft" : "TopLeft";
+        // }
+        const directionsMap = {Top: "Right", Right: "Bottom", Bottom: "Left", Left: "Top"};
+        const rotationDirection = directionsMap[this.rotationState.rotationDirection];
+        
+        this.setRotationDirectionProperties(rotationDirection);
     }
 
     continueRotation() {
