@@ -62,11 +62,11 @@ export class GameScript {
 
     createStars() {
         const runoffFactor = 1.5;
-        for(let i = 0; i < 400; i++) {
+        for(let i = 0; i < 900; i++) {
             const X = (runoffFactor * Math.random() - runoffFactor/2) * this.DIM_X; // based on zoom scale and eventually camera position
             const Y = (runoffFactor * Math.random() - runoffFactor/2) * this.DIM_Y;
             // const Z = -this.initialCameraZPos * 0.25 + -this.initialCameraZPos * 2 * Math.random();
-            const Z = -this.initialCameraZPos * (0.5 + 0.75 * Math.random());
+            const Z = -this.initialCameraZPos * (0.5 + 2* Math.random());
             new Star(this.engine, [X, Y, Z], this.ship.cameraTransform);
         }
     }

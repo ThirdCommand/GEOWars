@@ -11,7 +11,7 @@ export class BoxBoxSprite extends LineSprite {
     draw(ctx) {
         const spawningScale = this.spawningScale ||= 1;
         const pos = this.transform.absolutePosition();
-        const boxWidth = 10 * spawningScale;
+        const boxWidth = 11 * spawningScale;
 
         // ctx.strokeStyle = "#F173BA";
 

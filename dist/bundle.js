@@ -2593,7 +2593,7 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         // this.addPhysicsComponent()
         this.projectedDrawCoordinates = {};
         
-        this.boxWidth = 10;
+        this.boxWidth = 11;
         this.boxDepth = this.boxWidth;
 
         // there's only two versions of this coordate object
@@ -3085,8 +3085,10 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         // if (this.rotationState.rotationDirection === "Bottom") {
         //     this.rotationState.shapeState = this.rotationState.shapeState === "TopLeft" ? "BottomLeft" : "TopLeft";
         // }
-        const directionsMap = {Top: "Right", Right: "Bottom", Bottom: "Left", Left: "Top"};
-        const rotationDirection = directionsMap[this.rotationState.rotationDirection];
+        // const directionsMap = {Top: "Right", Right: "Bottom", Bottom: "Left", Left: "Top"};
+        // pick random rotation direction 
+        const rotationDirection = this.rotationDirections[Math.floor(Math.random() * this.rotationDirections.length)]; 
+        // const rotationDirection = directionsMap[this.rotationState.rotationDirection];
         
         this.setRotationDirectionProperties(rotationDirection);
     }
@@ -3141,7 +3143,7 @@ class BoxBoxSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__
     draw(ctx) {
         const spawningScale = this.spawningScale ||= 1;
         const pos = this.transform.absolutePosition();
-        const boxWidth = 10 * spawningScale;
+        const boxWidth = 11 * spawningScale;
 
         // ctx.strokeStyle = "#F173BA";
 
@@ -5881,11 +5883,11 @@ class GameScript {
 
     createStars() {
         const runoffFactor = 1.5;
-        for(let i = 0; i < 400; i++) {
+        for(let i = 0; i < 900; i++) {
             const X = (runoffFactor * Math.random() - runoffFactor/2) * this.DIM_X; // based on zoom scale and eventually camera position
             const Y = (runoffFactor * Math.random() - runoffFactor/2) * this.DIM_Y;
             // const Z = -this.initialCameraZPos * 0.25 + -this.initialCameraZPos * 2 * Math.random();
-            const Z = -this.initialCameraZPos * (0.5 + 0.75 * Math.random());
+            const Z = -this.initialCameraZPos * (0.5 + 2* Math.random());
             new _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_13__.Star(this.engine, [X, Y, Z], this.ship.cameraTransform);
         }
     }

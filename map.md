@@ -76,11 +76,16 @@ I could use the parallax with the grid and make it 3D and move in a way that loo
 
 - enemy death pieces
 - particles back to squares/rectangles
+- ship: fix position stutter (no input stutters)
+- refactor to camera as an object
+- BoxBox
+  - fix rotation off of map
 
 - singularity
   - 3D singularity rotating particles
   - pulsate grid effect
   - gravity wave effect (somewhere, somehow lol)
+  - try having orbiting singularities
   - tweak grid spring/dampener values
 - weaver
   - add mutual collision detection to prevent clumping with each other

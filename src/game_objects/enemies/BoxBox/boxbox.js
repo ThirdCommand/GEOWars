@@ -13,7 +13,7 @@ export class BoxBox extends GameObject {
         // this.addPhysicsComponent()
         this.projectedDrawCoordinates = {};
         
-        this.boxWidth = 10;
+        this.boxWidth = 11;
         this.boxDepth = this.boxWidth;
 
         // there's only two versions of this coordate object
@@ -505,8 +505,10 @@ export class BoxBox extends GameObject {
         // if (this.rotationState.rotationDirection === "Bottom") {
         //     this.rotationState.shapeState = this.rotationState.shapeState === "TopLeft" ? "BottomLeft" : "TopLeft";
         // }
-        const directionsMap = {Top: "Right", Right: "Bottom", Bottom: "Left", Left: "Top"};
-        const rotationDirection = directionsMap[this.rotationState.rotationDirection];
+        // const directionsMap = {Top: "Right", Right: "Bottom", Bottom: "Left", Left: "Top"};
+        // pick random rotation direction 
+        const rotationDirection = this.rotationDirections[Math.floor(Math.random() * this.rotationDirections.length)]; 
+        // const rotationDirection = directionsMap[this.rotationState.rotationDirection];
         
         this.setRotationDirectionProperties(rotationDirection);
     }
