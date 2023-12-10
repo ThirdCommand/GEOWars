@@ -5,12 +5,13 @@ export class BoxBoxSprite extends LineSprite {
         super(transform);
         this.spawningScale = 1;
         this.rotationState = rotationState;
+        this.spawning = false;
     }
 
     draw(ctx) {
-        const spawningScale = this.spawningScale || 1;
+        const spawningScale = this.spawningScale ||= 1;
         const pos = this.transform.absolutePosition();
-        const boxSize = 10 * spawningScale;
+        const boxWidth = 10 * spawningScale;
 
         // ctx.strokeStyle = "#F173BA";
 
@@ -18,11 +19,16 @@ export class BoxBoxSprite extends LineSprite {
         const g = 75;
         const b = 75;
         ctx.save();
-        ctx.strokeStyle = "rgb(255, 255, 255)";
-        ctx.fillStyle = "rgb(255, 255, 255)";
-        ctx.beginPath();
-        ctx.arc(pos[0], pos[1], 2, 0, 2 * Math.PI, true);
-        ctx.fill();
+        if(this.spawning !== false) {
+            const w = boxWidth * spawningScale;
+            ctx.translate(
+                pos[0], 
+                pos[1]
+            );
+            this.drawSpawningBoxBox(ctx, w);
+            
+            return;
+        }
         ctx.translate(
             pos[0]  - this.rotationState.positionShift[0] - this.rotationState.coordinateShift[0], 
             pos[1]  - this.rotationState.positionShift[1] - this.rotationState.coordinateShift[1]
@@ -32,27 +38,76 @@ export class BoxBoxSprite extends LineSprite {
         ctx.shadowBlur = 10 * blurFactor;
         ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
         ctx.lineWidth = 7.5 * blurFactor;
-        this.drawBox1(ctx, boxSize);
-        this.drawBox2(ctx, boxSize);
+        this.drawBox1(ctx);
+        this.drawBox2(ctx);
         ctx.lineWidth = 6 * blurFactor;
-        this.drawBox1(ctx, boxSize);
-        this.drawBox2(ctx, boxSize);
+        this.drawBox1(ctx);
+        this.drawBox2(ctx);
         ctx.lineWidth = 4.5;
-        this.drawBox1(ctx, boxSize);
-        this.drawBox2(ctx, boxSize);
+        this.drawBox1(ctx);
+        this.drawBox2(ctx);
         ctx.lineWidth = 3;
-        this.drawBox1(ctx, boxSize);
-        this.drawBox2(ctx, boxSize);
+        this.drawBox1(ctx);
+        this.drawBox2(ctx);
         ctx.strokeStyle = "rgb(255, 255, 255)";
         ctx.lineWidth = 1.5;
-        this.drawBox1(ctx, boxSize);
-        this.drawBox2(ctx, boxSize);
+        this.drawBox1(ctx);
+        this.drawBox2(ctx);
         ctx.restore();
     }
 
+    drawSpawningBoxBox(ctx, w) {
+        const r = 210;
+        const g = 75;
+        const b = 75;
+        const blurFactor = 0.5;
+        ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
+        ctx.shadowBlur = 10 * blurFactor;
+        ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
+        ctx.lineWidth = 7.5 * blurFactor;
+        this.drawSpawningBox1(ctx, w);
+        this.drawSpawningBox2(ctx, w);
+        ctx.lineWidth = 6 * blurFactor;
+        this.drawSpawningBox1(ctx, w);
+        this.drawSpawningBox2(ctx, w);
+        ctx.lineWidth = 4.5;
+        this.drawSpawningBox1(ctx, w);
+        this.drawSpawningBox2(ctx, w);
+        ctx.lineWidth = 3;
+        this.drawSpawningBox1(ctx, w);
+        this.drawSpawningBox2(ctx, w);
+        ctx.strokeStyle = "rgb(255, 255, 255)";
+        ctx.lineWidth = 1.5;
+        this.drawSpawningBox1(ctx, w);
+        this.drawSpawningBox2(ctx, w);
+        ctx.restore();
+    }
+
+    drawSpawningBox1(ctx, w) {
+        ctx.beginPath();
+        ctx.moveTo(-w / 4, w / 4);
+        ctx.lineTo(-w / 4, (-3 * w) / 4);
+        ctx.lineTo((3 * w) / 4, (-3 * w) / 4);
+        ctx.lineTo((3 * w) / 4, w / 4);
+        ctx.closePath();
+        ctx.stroke();
+    }
+    drawSpawningBox2(ctx, w) {
+        ctx.beginPath();
+        ctx.moveTo(w  / 4, -w  / 4);
+        ctx.lineTo(w  / 4, (3 * w)  / 4);
+        ctx.lineTo((-3 * w ) / 4, (3 * w ) / 4);
+        ctx.lineTo((-3 * w ) / 4, -w  / 4);
+        ctx.closePath();
+        ctx.stroke();
+    }
+
     drawBox1(ctx) {
+
         // need to rethink spawn scaling. 
         // I might have to bring back the original draw methods for spawn animation
+
+
         
         const projectedCoordinates = this.rotationState.projectedDrawCoordinates;
         
