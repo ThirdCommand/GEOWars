@@ -27,9 +27,11 @@ export class GameEngine {
         this.setupPerformance();
         window.engine = this;
         this.gameEditorOpened = false;
+        this.frameCountForPerformance = 0;
     }
 
     setupPerformance() {
+        this.frameCountForPerformance = 0;
         this.collisionTime = 0;
         this.physicsCalcTime = 0;
         this.updateTime = 0;
@@ -78,22 +80,22 @@ export class GameEngine {
         const beforeCollisionTime = performance.now();
         this.checkCollisions();
         const beforePhysicsCalcs = performance.now();
-        const collisionTime = beforeCollisionTime - beforePhysicsCalcs;
+        const collisionTime = beforePhysicsCalcs - beforeCollisionTime;
         this.movePhysicsComponents(delta);
         const beforeUpdate = performance.now();
-        const physicsCalcTime = beforePhysicsCalcs - beforeUpdate;
+        const physicsCalcTime = beforeUpdate - beforePhysicsCalcs;
         this.updateGameObjects(delta);
         const beforeRender = performance.now();
-        const updateTime = beforeUpdate - beforeRender;
+        const updateTime = beforeRender - beforeUpdate;
         this.clearCanvas();
         this.renderLineSprites(this.ctx);
         const beforeScriptUpdate = performance.now();
-        const renderTime = beforeRender - beforeScriptUpdate;
+        const renderTime = beforeScriptUpdate - beforeRender;
         this.updateControlListeners();
         if (!this.gameEditorOpened) {
             this.updateGameScript(delta);
         }
-        const scriptTime = beforeScriptUpdate - performance.now();
+        const scriptTime = performance.now() - beforeScriptUpdate;
         this.playSounds();
 
         this.collectPerformanceData(
@@ -102,7 +104,7 @@ export class GameEngine {
             physicsCalcTime,
             updateTime,
             renderTime,
-            scriptTime
+            scriptTime,
         );
     }
 
@@ -114,6 +116,7 @@ export class GameEngine {
         renderTime,
         scriptTime
     ) {
+        this.frameCountForPerformance += 1;
         this.collisionTime += collisionTime;
         this.physicsCalcTime += physicsCalcTime;
         this.updateTime += updateTime;
@@ -122,18 +125,13 @@ export class GameEngine {
 
         this.timePassed += delta;
         if (this.timePassed > 1000 * 60) {
-            const totalTime =
-        this.collisionTime +
-        this.physicsCalcTime +
-        this.updateTime +
-        this.renderTime +
-        this.scriptTime;
             const timeData = {
-                collisionTime: (100 * this.collisionTime) / totalTime,
-                physicsCalcTime: (100 * this.physicsCalcTime) / totalTime,
-                updateTime: (100 * this.updateTime) / totalTime,
-                renderTime: (100 * this.renderTime) / totalTime,
-                scriptTime: (100 * this.scriptTime) / totalTime,
+                collisionTime: (this.collisionTime) / this.frameCountForPerformance,
+                physicsCalcTime: (this.physicsCalcTime) / this.frameCountForPerformance,
+                updateTime: (this.updateTime) / this.frameCountForPerformance,
+                renderTime: (this.renderTime) / this.frameCountForPerformance,
+                scriptTime: (this.scriptTime) / this.frameCountForPerformance,
+                frameRate: this.frameCountForPerformance / (this.timePassed / 1000)
             };
             console.log(timeData);
 

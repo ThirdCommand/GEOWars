@@ -61,7 +61,6 @@ export class GameScript {
     }
 
     createStars() {
-        console.log(this.ship);
         const runoffFactor = 1.5;
         for(let i = 0; i < 400; i++) {
             const X = (runoffFactor * Math.random() - runoffFactor/2) * this.DIM_X; // based on zoom scale and eventually camera position
@@ -265,6 +264,16 @@ export class GameScript {
 
     addSequenceTypes() {
         return {
+            BoxBoxesEverywhere: () => {
+                const randomPositions = [];
+                for (let i = 0; i < 50; i++) {
+                    const pos = this.randomPosition(10);
+                    randomPositions.push(pos);
+                }
+                randomPositions.forEach((pos) => {
+                    this.enemyCreatorList["BoxBox"](pos);
+                });
+            },
             Singularity: () => {
                 this.enemyCreatorList["Singularity"]([700, 300]);
             },
@@ -307,17 +316,17 @@ export class GameScript {
                     [600, 100],
                 ];
                 const pos =
-          somePositions[
-              Math.floor(Math.random() * somePositions.length) %
-              somePositions.length
-          ];
+                    somePositions[
+                        Math.floor(Math.random() * somePositions.length) %
+                        somePositions.length
+                    ];
                 for (let i = 0; i < 5; i++) {
                     pos[1] += i * 80;
                     this.enemyCreatorList["Arrow"](pos);
                 }
             },
             GruntGroups: () => {
-                const randomPos = this.randomPosition();
+                const randomPos = this.randomPosition(50);
                 for (let i = 0; i < 3; i++) {
                     for (let j = 0; j < 3; j++) {
                         this.enemyCreatorList["Grunt"]([
@@ -328,7 +337,7 @@ export class GameScript {
                 }
             },
             GreenGroups: () => {
-                const randomPos = this.randomPosition();
+                const randomPos = this.randomPosition(100);
                 for (let i = 0; i < 3; i++) {
                     for (let j = 0; j < 3; j++) {
                         this.enemyCreatorList["Weaver"]([
@@ -351,10 +360,13 @@ export class GameScript {
     // let easyGroupsState = new StateMachine(this.engine, undefined)
     }
 
-    randomPosition() {
+    randomPosition(radius) {
+        if(!radius) {
+            radius = 40;
+        }
         return [
-            this.DIM_X * 0.7 * Math.random(),
-            this.DIM_Y * 0.7 * Math.random(),
+            (this.DIM_X - radius * 4) * Math.random() + radius * 4,
+            (this.DIM_Y - radius * 4) * Math.random() + radius * 4,
             // 500,300
         ];
     }
@@ -373,7 +385,7 @@ export class GameScript {
         this.testing = false;
         if (this.testing) {
             if (this.sequenceCount === 0) {
-                this.enemyCreatorList["AlienShip"]([500, 100]);
+                this.sequenceTypes["BoxBoxesEverywhere"]();
                 this.sequenceCount += 1;
             }
         } else {
@@ -612,3 +624,25 @@ GameScript.Spawn1 = {
 };
 
 GameScript.spawnListList = [GameScript.Spawn1];
+
+
+
+// 2D 
+const performance2D = {
+    collisionTime: 0.12846034227596656,
+    frameRate: 117.86903385504282,
+    physicsCalcTime: 0.2529761062793578,
+    renderTime: 0.9149865687913138,
+    scriptTime: 0.00835571889659564,
+    updateTime: 0.1869786510739892,
+};
+
+// 3D
+const performance3D = {
+    collisionTime: 0.0705062137856271,
+    frameRate: 54.9810552849427,
+    physicsCalcTime: 0.16501970291499046,
+    renderTime: 1.1280691114636254,
+    scriptTime: 0.008426796002401008,
+    updateTime: 0.177841770708579,
+};

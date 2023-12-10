@@ -18,8 +18,15 @@ export class BoxBoxSprite extends LineSprite {
         const g = 75;
         const b = 75;
         ctx.save();
+        ctx.strokeStyle = "rgb(255, 255, 255)";
+        ctx.fillStyle = "rgb(255, 255, 255)";
         ctx.beginPath();
-        ctx.translate(pos[0] - this.rotationState.coordinateShift[0], pos[1] - this.rotationState.coordinateShift[1]);
+        ctx.arc(pos[0], pos[1], 2, 0, 2 * Math.PI, true);
+        ctx.fill();
+        ctx.translate(
+            pos[0]  - this.rotationState.positionShift[0] - this.rotationState.coordinateShift[0], 
+            pos[1]  - this.rotationState.positionShift[1] - this.rotationState.coordinateShift[1]
+        );
         const blurFactor = 0.5;
         ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
         ctx.shadowBlur = 10 * blurFactor;
