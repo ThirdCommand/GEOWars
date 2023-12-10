@@ -47,7 +47,7 @@ export class BoxBoxSprite extends LineSprite {
         // need to rethink spawn scaling. 
         // I might have to bring back the original draw methods for spawn animation
         
-        const projectedCoordinates = this.rotationState.shapeState === "BottomLeft" ? this.rotationState.projectedDrawCoordinatesBottomLeft : this.rotationState.projectedDrawCoordinatesBottomLeft;
+        const projectedCoordinates = this.rotationState.projectedDrawCoordinates;
         
         const point1 = projectedCoordinates.BottomSquareBL;
         const point2 = projectedCoordinates.BottomSquareBR;
@@ -100,7 +100,7 @@ export class BoxBoxSprite extends LineSprite {
 
     drawBox2(ctx) {
         
-        const projectedCoordinates = this.rotationState.projectedDrawCoordinatesBottomLeft;
+        const projectedCoordinates = this.rotationState.projectedDrawCoordinates;
         const point1 = projectedCoordinates.TopSquareBL;
         const point2 = projectedCoordinates.TopSquareBR;
         const point3 = projectedCoordinates.TopSquareTR;
