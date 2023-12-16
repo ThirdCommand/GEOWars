@@ -16,6 +16,7 @@ import { GruntSprite } from "../../../game_objects/enemies/Grunt/grunt_sprite";
 import { PinwheelSprite } from "../../../game_objects/enemies/Pinwheel/pinwheel_sprite";
 import { WeaverSprite } from "../../../game_objects/enemies/Weaver/weaver_sprite";
 import { SingularitySprite } from "../../../game_objects/enemies/Singularity/singularity_sprite";
+import { Collider } from "../../collider";
 
 const spriteMap = {
     BoxBox: (transform) => new BoxBoxSprite(transform),
@@ -45,15 +46,36 @@ export class EnemyPlacer extends GameObject {
         this.levelDesigner = levelDesigner;
         this.clickRadius = getClickRadius[type];
         this.type = type;
-    // collider should be added after placed
+        this.originalClickComplete = false;
+        // click collider should be added after placed
     }
 
     place() {
         this.addCollider("General", this, this.clickRadius);
-        const spawn = { type: this.type, location: this.transform.pos };
-        this.levelDesigner.addSpawnToEvent();
+        this.spawn = {type: this.type, location: this.transform.pos};
+        const spawn = this.spawn;
+        console.log('spawn added: ',{spawn});
+        this.levelDesigner.addSpawnToEvent(spawn);
+        this.levelDesigner.enemyPlaced(spawn);
         this.removeMousePosListener();
+        this.addMouseClickListener();
     }
+
+    addMouseClickListener() {
+        const clickCollider = new Collider('Click', this,this.clickRadius,['MouseClick'], ["General"]);
+        this.clickCollider = clickCollider;
+        this.levelDesigner.addMouseClickListener(this.clickCollider);
+    }
+
+    onCollision(otherCollider, type) {
+        console.log('onCollision done?');
+        if (type === "Click" && this.originalClickComplete) {
+            this.levelDesigner.enemyPlacerClicked(this);
+        } else {
+            this.originalClickComplete = true;
+        }
+    }
+
 
     followMouse() {
         this.addMousePosListener();

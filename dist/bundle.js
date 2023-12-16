@@ -28,103 +28,143 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class AnimationView {
-  constructor(ctx) {
-    this.ctx = ctx;
-    this.gameObjects = [];
-    this.lineSprites = [];
-    this.zoomScale = 1;
-    this.ship = {
-      transform: {
-        pos: [],
-      },
-    };
-    this.lastTime = 0;
-    this.animate = this.animate.bind(this);
-  }
-
-  start() {
-    requestAnimationFrame(this.animate);
-    this.lastTime = 0;
-  }
-
-  animate(time) {
-    const timeDelta = time - this.lastTime;
-    this.lastTime = time;
-    this.animateGameObjects(timeDelta);
-    this.clearCanvas();
-    this.renderLineSprites(this.ctx);
-    // every call to animate requests causes another call to animate
-    requestAnimationFrame(this.animate.bind(this));
-  }
-
-  animateGameObjects(delta) {
-    this.gameObjects.forEach((object) => {
-      object.animate(delta);
-    });
-  }
-
-  clearCanvas() {
-    this.ctx.clearRect(0, 0, 200, 200);
-    this.ctx.fillStyle = "#000000";
-    this.ctx.fillRect(0, 0, 200, 200);
-  }
-
-  clear() {
-    const removeList = [...this.gameObjects];
-    removeList.forEach((gameObject) => {
-      this.remove(gameObject);
-    });
-  }
-
-  renderLineSprites(ctx) {
-    // ctx.scale = gameEngine.currentCamera.zoomScale
-    this.ctx.save();
-
-    this.ctx.scale(this.zoomScale, this.zoomScale);
-    this.lineSprites.forEach((sprite) => {
-      sprite.draw(ctx);
-    });
-    this.ctx.restore();
-    // ctx.scale(1,1)
-  }
-
-  addGameObject(gameObject) {
-    this.gameObjects.push(gameObject);
-  }
-
-  queueSound(sound) {}
-
-  addCollider() {}
-
-  addPhysicsComponent(physicsComponent) {}
-
-  remove(gameObject) {
-    if (gameObject.lineSprite) {
-      this.lineSprites.splice(
-        this.lineSprites.indexOf(gameObject.lineSprite),
-        1
-      );
+    constructor(ctx) {
+        this.ctx = ctx;
+        this.gameObjects = [];
+        this.lineSprites = [];
+        this.zoomScale = 1;
+        this.ship = {
+            transform: {
+                pos: [],
+            },
+        };
+        this.lastTime = 0;
+        this.animate = this.animate.bind(this);
+        this.overlayText = {
+            Location: [0, 0],
+            Time: 0,
+            Type: "",
+            StartingAngle: 0,
+        };
+        this.overlayTextCleared = true;
     }
 
-    this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1);
-  }
+    enemySelected({ type, location}) {
+        this.overlayTextCleared = false;
+        this.overlayText = {
+            Location: [location[0], location[1]],
+            Time: 0,
+            Type: type,
+            StartingAngle: 0,
+        };
+    }
 
-  addLineSprite(lineSprite) {
-    this.lineSprites.push(lineSprite);
-  }
+    start() {
+        requestAnimationFrame(this.animate);
+        this.lastTime = 0;
+    }
 
-  addEnemy(type) {
-    const enemyMap = {
-      BoxBox: (pos) => new _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_0__.BoxBox(this, pos),
-      Pinwheel: (pos) => new _game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_1__.Pinwheel(this, pos),
-      Arrow: (pos, angle) => new _game_objects_enemies_Arrow_arrow__WEBPACK_IMPORTED_MODULE_2__.Arrow(this, pos, angle),
-      Grunt: (pos) => new _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_3__.Grunt(this, pos, this.ship.transform),
-      Weaver: (pos) => new _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_4__.Weaver(this, pos, this.ship.transform),
-      Singularity: (pos) => new _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_5__.Singularity(this, pos),
-      AlienShip: (pos) => new _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_6__.AlienShip(this, pos, [0, 0], this.ship.transform),
-    };
-    enemyMap[type]([100, 100]);
-  }
+    animate(time) {
+        const timeDelta = time - this.lastTime;
+        this.lastTime = time;
+        this.animateGameObjects(timeDelta);
+        this.clearCanvas();
+        this.renderLineSprites(this.ctx);
+        this.renderOverlayText();
+        // every call to animate requests causes another call to animate
+        requestAnimationFrame(this.animate.bind(this));
+    }
+
+    renderOverlayText() {
+        if(this.overlayTextCleared) return;
+        this.ctx.save();
+        this.ctx.font = 18 + "px " + "Arial";
+        this.ctx.fillStyle = "white";
+        const typeText = "Type: " + this.overlayText.Type;
+        const positionText = "Location: " + this.overlayText.Location;
+        this.ctx.fillText(
+            typeText,
+            10,
+            20
+        );
+        this.ctx.fillText(
+            positionText,
+            10,
+            38
+        );
+        this.ctx.restore();
+    }
+
+
+    animateGameObjects(delta) {
+        this.gameObjects.forEach((object) => {
+            object.animate(delta);
+        });
+    }
+
+    clearCanvas() {
+        this.ctx.clearRect(0, 0, 200, 200);
+        this.ctx.fillStyle = "#000000";
+        this.ctx.fillRect(0, 0, 200, 200);
+    }
+
+    clear() {
+        const removeList = [...this.gameObjects];
+        removeList.forEach((gameObject) => {
+            this.remove(gameObject);
+        });
+        this.overlayTextCleared = true;
+    }
+
+    renderLineSprites(ctx) {
+    // ctx.scale = gameEngine.currentCamera.zoomScale
+        this.ctx.save();
+
+        this.ctx.scale(this.zoomScale, this.zoomScale);
+        this.lineSprites.forEach((sprite) => {
+            sprite.draw(ctx);
+        });
+        this.ctx.restore();
+    // ctx.scale(1,1)
+    }
+
+    addGameObject(gameObject) {
+        this.gameObjects.push(gameObject);
+    }
+
+    queueSound(sound) {}
+
+    addCollider() {}
+
+    addPhysicsComponent(physicsComponent) {}
+
+    remove(gameObject) {
+        if (gameObject.lineSprite) {
+            this.lineSprites.splice(
+                this.lineSprites.indexOf(gameObject.lineSprite),
+                1
+            );
+        }
+
+        this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1);
+    }
+
+    addLineSprite(lineSprite) {
+        this.lineSprites.push(lineSprite);
+    }
+
+    addEnemy(type) {
+        const enemyMap = {
+            BoxBox: (pos) => new _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_0__.BoxBox(this, pos),
+            Pinwheel: (pos) => new _game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_1__.Pinwheel(this, pos),
+            Arrow: (pos, angle) => new _game_objects_enemies_Arrow_arrow__WEBPACK_IMPORTED_MODULE_2__.Arrow(this, pos, angle),
+            Grunt: (pos) => new _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_3__.Grunt(this, pos, this.ship.transform),
+            Weaver: (pos) => new _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_4__.Weaver(this, pos, this.ship.transform),
+            Singularity: (pos) => new _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_5__.Singularity(this, pos),
+            AlienShip: (pos) => new _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_6__.AlienShip(this, pos, [0, 0], this.ship.transform),
+        };
+        enemyMap[type]([100, 100]);
+    }
 }
 
 
@@ -148,6 +188,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_objects_enemies_Pinwheel_pinwheel_sprite__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../game_objects/enemies/Pinwheel/pinwheel_sprite */ "./src/game_objects/enemies/Pinwheel/pinwheel_sprite.js");
 /* harmony import */ var _game_objects_enemies_Weaver_weaver_sprite__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../game_objects/enemies/Weaver/weaver_sprite */ "./src/game_objects/enemies/Weaver/weaver_sprite.js");
 /* harmony import */ var _game_objects_enemies_Singularity_singularity_sprite__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../game_objects/enemies/Singularity/singularity_sprite */ "./src/game_objects/enemies/Singularity/singularity_sprite.js");
+/* harmony import */ var _collider__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../collider */ "./src/game_engine/collider.js");
 // while placing, could do spawning animation over mouse position
 // once placed, draw it at the placed location
 // store the location
@@ -157,6 +198,7 @@ __webpack_require__.r(__webpack_exports__);
 // load spawn event
 // save spawn event
 // create spawn event
+
 
 
 
@@ -195,15 +237,36 @@ class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
         this.levelDesigner = levelDesigner;
         this.clickRadius = getClickRadius[type];
         this.type = type;
-    // collider should be added after placed
+        this.originalClickComplete = false;
+        // click collider should be added after placed
     }
 
     place() {
         this.addCollider("General", this, this.clickRadius);
-        const spawn = { type: this.type, location: this.transform.pos };
-        this.levelDesigner.addSpawnToEvent();
+        this.spawn = {type: this.type, location: this.transform.pos};
+        const spawn = this.spawn;
+        console.log('spawn added: ',{spawn});
+        this.levelDesigner.addSpawnToEvent(spawn);
+        this.levelDesigner.enemyPlaced(spawn);
         this.removeMousePosListener();
+        this.addMouseClickListener();
     }
+
+    addMouseClickListener() {
+        const clickCollider = new _collider__WEBPACK_IMPORTED_MODULE_8__.Collider('Click', this,this.clickRadius,['MouseClick'], ["General"]);
+        this.clickCollider = clickCollider;
+        this.levelDesigner.addMouseClickListener(this.clickCollider);
+    }
+
+    onCollision(otherCollider, type) {
+        console.log('onCollision done?');
+        if (type === "Click" && this.originalClickComplete) {
+            this.levelDesigner.enemyPlacerClicked(this);
+        } else {
+            this.originalClickComplete = true;
+        }
+    }
+
 
     followMouse() {
         this.addMousePosListener();
@@ -286,6 +349,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.js");
 /* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.js");
 /* harmony import */ var _scene__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./scene */ "./src/game_engine/Levels/scene.js");
+/* harmony import */ var _collider__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../collider */ "./src/game_engine/collider.js");
+/* harmony import */ var _game_object__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../game_object */ "./src/game_engine/game_object.js");
+
+
 
 
 
@@ -371,14 +438,46 @@ class LevelDesigner {
         this.engine;
     }
 
+    mouseClicked(pos) {
+        // check mouse position with click colliders
+        const duckTypedMouseGameObject = {
+            transform: {
+                pos
+            }
+        };
+        const mouseClickCollider = new _collider__WEBPACK_IMPORTED_MODULE_7__.Collider('MouseClicker',duckTypedMouseGameObject, 2, [], ["EnemyPlacer"]);
+        this.engine?.subscribers.forEach((subscriber) => {
+            console.log('checking subscriber: ', subscriber);
+            if (subscriber.type === "Click") {
+                subscriber.collisionCheck(mouseClickCollider);
+            }
+        });
+    }
+
+    enemyPlacerClicked(enemyPlacer) {
+        this.animationView.clear();
+        this.animationView.addEnemy(enemyPlacer.type);
+        this.animationView.enemySelected(enemyPlacer.spawn);
+    }
+
     getPalletModal() {
         const modal = document.getElementById("pallet");
 
     // add functions to buttons of the pallet
     }
 
+    enemyPlaced(spawn) {
+        this.animationView.enemySelected(spawn);
+    }
+
     addEnemy(type) {
         new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.engine, type, this);
+    }
+
+    addMouseClickListener(collider) {
+        console.log("adding collider to engine: ", collider);
+        // I might need to prefix all added colliders with LevelDesign or something
+        this.engine.addCollider(collider);
     }
 
     addSpawnToEvent(spawn) {
@@ -1043,7 +1142,7 @@ class GameEngine {
             listener.updateStartButtonListener(startButton, down);
         });
     }
-
+    // called by game view
     updateMousePos(mousePos) {
         this.mouseListeners.forEach((object) => {
             object.updateMousePos(mousePos);
@@ -1122,12 +1221,10 @@ class GameEngine {
                 colliders[subscription] = colliders[subscription] || {};
                 subscriber.subscribedColliderTypes.forEach((colliderType) => {
                     colliders[subscription][colliderType] =
-            colliders[subscription][colliderType] || [];
-                    colliders[subscription][colliderType].forEach(
-                        (subscribedCollider) => {
-                            subscriber.collisionCheck(subscribedCollider);
-                        }
-                    );
+                        colliders[subscription][colliderType] || [];
+                    colliders[subscription][colliderType].forEach((subscribedCollider) => {
+                        subscriber.collisionCheck(subscribedCollider);
+                    });
                 });
             });
         });
@@ -2583,6 +2680,156 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+// this is where i'm defining huge static stuff that doesn't change
+// between different boxboxes. There's only need to load one of these
+
+const boxWidth = 13;
+const boxDepth =  boxWidth / 3;
+
+// there's only two versions of this coordate object
+// 1. bottom left, top right
+// 2. top left, bottom right
+
+
+// bottom left:
+const w = boxWidth;
+const d = boxDepth;
+
+
+const drawCoordinatesTopLeft = {
+    // try making y negativified
+
+    BottomSquareBL: [-3/4 * w, 3/4 * w],
+    BottomSquareBR: [1/4 * w, 3/4 * w],
+    BottomSquareTL: [-3/4 * w, -1/4 * w],
+    BottomSquareTR: [1/4 * w, -1/4 * w],
+    TopSquareBL: [-1/4 * w, 1/4 * w],
+    TopSquareBR: [3/4 * w, 1/4 * w],
+    TopSquareTL: [-1/4 * w, -3/4 * w],
+    TopSquareTR: [3/4 * w, -3/4 * w],
+    Left: { // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
+        // take these distances to the axis of rotation, and then multiply them by cos(angle) of rotation
+        _BottomSquareBL: [d,  3/4 * w, Math.PI/2], // angle starts 90 degrees 
+        _BottomSquareBR: [Math.sqrt(w**2 + d**2), 3/4 * w, Math.atan(d/w)], // scaled length is distance from axis of rotation
+        _BottomSquareTL: [d, -1/4 * w, Math.PI/2],
+        _BottomSquareTR: [Math.sqrt(w**2 + d**2), -1/4 * w, Math.atan(d/w)],
+        _TopSquareBL: [Math.sqrt((w / 2)**2 + d**2), 1/4 * w, Math.atan(d/(w/2))],
+        _TopSquareBR: [Math.sqrt((3/2 * w)**2 + d**2), 1/4 * w, Math.atan(d/(3/2 * w))],
+        _TopSquareTL: [Math.sqrt((w / 2)**2 + d**2), -3/4 * w, Math.atan(d/(w/2))],
+        _TopSquareTR: [Math.sqrt((3/2 * w)**2 + d**2), -3/4 * w, Math.atan(d/(3/2 * w))]
+    },
+    Right: {
+        _BottomSquareBL: [Math.sqrt((3/2 * w)**2 + d**2), 3/4 * w, Math.atan(d/(3/2 * w))], // angle starts 90 degrees 
+        _BottomSquareBR: [Math.sqrt((w / 2)**2 + d**2), 3/4 * w, Math.atan(d/(w/2))],
+        _BottomSquareTL: [Math.sqrt((3/2 * w)**2 + d**2), -1/4 * w, Math.atan(d/(3/2 * w))],
+        _BottomSquareTR: [Math.sqrt((w / 2)**2 + d**2), -1/4 * w, Math.atan(d/(w/2))],
+        _TopSquareBL: [Math.sqrt(w**2 + d**2), 1/4 * w, Math.atan(d/w)],
+        _TopSquareBR: [d, 1/4 * w, Math.PI/2], 
+        _TopSquareTL: [Math.sqrt(w**2 + d**2), -3/4 * w, Math.atan(d/w)],
+        _TopSquareTR: [d, -3/4 * w, Math.PI/2] 
+    },
+    Top: { // X stays the same, Y scales
+        _BottomSquareBL: [-3/4 * w, d, -Math.PI/2],
+        _BottomSquareBR: [1/4 * w, d, -Math.PI/2],
+        _BottomSquareTL: [-3/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _BottomSquareTR: [1/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _TopSquareBL: [-1/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _TopSquareBR: [3/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _TopSquareTL: [-1/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
+        _TopSquareTR: [3/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
+    },
+    Bottom: { // X stays the same, Y scales
+        // BL <=> TR, TL <=> BR
+        _BottomSquareBL: [-3/4 * w, Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
+        _BottomSquareBR: [1/4 * w, Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
+        _BottomSquareTL: [-3/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _BottomSquareTR: [1/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _TopSquareBL: [-1/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _TopSquareBR: [3/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _TopSquareTL: [-1/4 * w, d, Math.PI/2],
+        _TopSquareTR: [3/4 * w, d, Math.PI/2],
+    },
+    _BottomSquareBL: [-3/4 * w, 3/4 * w],
+    _BottomSquareBR: [1/4 * w, 3/4 * w],
+    _BottomSquareTL: [-3/4 * w, -1/4 * w],
+    _BottomSquareTR: [1/4 * w, -1/4 * w],
+    _TopSquareBL: [-1/4 * w, 1/4 * w],
+    _TopSquareBR: [3/4 * w, 1/4 * w],
+    _TopSquareTL: [-1/4 * w, -3/4 * w],
+    _TopSquareTR: [3/4 * w, -3/4 * w],
+};
+
+const drawCoordinatesBottomLeft = {
+    // I think 
+    // flip Y coordinates for this shape
+
+
+    BottomSquareBL: [-3/4 * w, 1/4 * w],
+    BottomSquareBR: [1/4 * w, 1/4 * w],
+    BottomSquareTL: [-3/4 * w, -3/4 * w],
+    BottomSquareTR: [1/4 * w, -3/4 * w],
+    TopSquareBL: [-1/4 * w, 3/4 * w],
+    TopSquareBR: [3/4 * w, 3/4 * w],
+    TopSquareTL: [-1/4 * w, -1/4 * w],
+    TopSquareTR: [3/4 * w, -1/4 * w],
+
+    // top and bottom are correct
+    // left and right are wrong
+   
+    Left: { // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
+        // take these distances to the axis of rotation, and then multiply them by cos(angle) of rotation
+        //BL <=> TL, BR <=> TR
+        _BottomSquareBL: [d, 1/4 * w, Math.PI/2],
+        _BottomSquareBR:  [Math.sqrt(w**2 + d**2), 1/4 * w, Math.atan(d/w)],
+        _BottomSquareTL: [d,  -3/4 * w, Math.PI/2], 
+        _BottomSquareTR: [Math.sqrt(w**2 + d**2), -3/4 * w, Math.atan(d/w)],
+        _TopSquareBL: [Math.sqrt((w / 2)**2 + d**2), 3/4 * w, Math.atan(d/(w/2))],
+        _TopSquareBR: [Math.sqrt((3/2 * w)**2 + d**2), 3/4 * w, Math.atan(d/(3/2 * w))],
+        _TopSquareTL: [Math.sqrt((w / 2)**2 + d**2), -1/4 * w, Math.atan(d/(w/2))],
+        _TopSquareTR: [Math.sqrt((3/2 * w)**2 + d**2), -1/4 * w, Math.atan(d/(3/2 * w))],
+    },
+    Right: { // BL <=> TL, BR <=> TR
+        _BottomSquareBL: [Math.sqrt((3/2 * w)**2 + d**2), 1/4 * w, Math.atan(d/(3/2 * w))],// angle starts 90 degrees 
+        _BottomSquareBR: [Math.sqrt((w / 2)**2 + d**2), 1/4 * w, Math.atan(d/(w/2))],
+        _BottomSquareTL: [Math.sqrt((3/2 * w)**2 + d**2), -3/4 * w, Math.atan(d/(3/2 * w))], 
+        _BottomSquareTR: [Math.sqrt((w / 2)**2 + d**2), -3/4 * w, Math.atan(d/(w/2))],
+        _TopSquareBL: [Math.sqrt(w**2 + d**2), 3/4 * w, Math.atan(d/w)],
+        _TopSquareBR: [d, 3/4 * w, Math.PI/2],
+        _TopSquareTL: [Math.sqrt(w**2 + d**2), -1/4 * w, Math.atan(d/w)],
+        _TopSquareTR:  [d, -1/4 * w, Math.PI/2], 
+    },
+    Top: { // X stays the same, Y scales 
+        _BottomSquareBL: [-3/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],//[d,  -3/4 * w, Math.PI/2], // angle starts 90 degrees
+        _BottomSquareBR: [1/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
+        _BottomSquareTL: [-3/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _BottomSquareTR: [1/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _TopSquareBL: [-1/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/w)],
+        _TopSquareBR: [3/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _TopSquareTL: [-1/4 * w, -d, Math.PI/2],
+        _TopSquareTR: [3/4 * w, -d, Math.PI/2]
+    },
+    Bottom: { // X stays the same, Y scales
+        _BottomSquareBL: [-3/4 * w, d, Math.PI/2],
+        _BottomSquareBR: [1/4 * w, d, Math.PI/2],
+        _BottomSquareTL: [-3/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _BottomSquareTR: [1/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _TopSquareBL: [-1/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _TopSquareBR: [3/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _TopSquareTL: [-1/4 * w, Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
+        _TopSquareTR: [3/4 * w,  Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))]
+    },
+    _BottomSquareBL: [-3/4 * w, 1/4 * w],
+    _BottomSquareBR: [1/4 * w, 1/4 * w],
+    _BottomSquareTL: [-3/4 * w, -3/4 * w],
+    _BottomSquareTR: [1/4 * w, -3/4 * w],
+    _TopSquareBL: [-1/4 * w, 3/4 * w],
+    _TopSquareBR: [3/4 * w, 3/4 * w],
+    _TopSquareTL: [-1/4 * w, -1/4 * w],
+    _TopSquareTR: [3/4 * w, -1/4 * w],
+};
+
+
 class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
     constructor(engine, pos) {
         super(engine);
@@ -2593,8 +2840,8 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         // this.addPhysicsComponent()
         this.projectedDrawCoordinates = {};
         
-        this.boxWidth = 11;
-        this.boxDepth = this.boxWidth;
+        this.boxWidth = boxWidth;
+        this.boxDepth = boxWidth / 3;
 
         // there's only two versions of this coordate object
         // 1. bottom left, top right
@@ -2603,141 +2850,9 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
 
         // bottom left:
         const w = this.boxWidth;
-        const d = this.boxDepth;
         // the axis of rotation determines the length of the line for the _ coordinates
 
         // This one is done
-        const drawCoordinatesTopLeft = {
-            // try making y negativified
-
-            BottomSquareBL: [-3/4 * w, 3/4 * w],
-            BottomSquareBR: [1/4 * w, 3/4 * w],
-            BottomSquareTL: [-3/4 * w, -1/4 * w],
-            BottomSquareTR: [1/4 * w, -1/4 * w],
-            TopSquareBL: [-1/4 * w, 1/4 * w],
-            TopSquareBR: [3/4 * w, 1/4 * w],
-            TopSquareTL: [-1/4 * w, -3/4 * w],
-            TopSquareTR: [3/4 * w, -3/4 * w],
-            Left: { // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
-                // take these distances to the axis of rotation, and then multiply them by cos(angle) of rotation
-                _BottomSquareBL: [d,  3/4 * w, Math.PI/2], // angle starts 90 degrees 
-                _BottomSquareBR: [Math.sqrt(w**2 + d**2), 3/4 * w, Math.atan(d/w)], // scaled length is distance from axis of rotation
-                _BottomSquareTL: [d, -1/4 * w, Math.PI/2],
-                _BottomSquareTR: [Math.sqrt(w**2 + d**2), -1/4 * w, Math.atan(d/w)],
-                _TopSquareBL: [Math.sqrt((w / 2)**2 + d**2), 1/4 * w, Math.atan(d/(w/2))],
-                _TopSquareBR: [Math.sqrt((3/2 * w)**2 + d**2), 1/4 * w, Math.atan(d/(3/2 * w))],
-                _TopSquareTL: [Math.sqrt((w / 2)**2 + d**2), -3/4 * w, Math.atan(d/(w/2))],
-                _TopSquareTR: [Math.sqrt((3/2 * w)**2 + d**2), -3/4 * w, Math.atan(d/(3/2 * w))]
-            },
-            Right: {
-                _BottomSquareBL: [Math.sqrt((3/2 * w)**2 + d**2), 3/4 * w, Math.atan(d/(3/2 * w))], // angle starts 90 degrees 
-                _BottomSquareBR: [Math.sqrt((w / 2)**2 + d**2), 3/4 * w, Math.atan(d/(w/2))],
-                _BottomSquareTL: [Math.sqrt((3/2 * w)**2 + d**2), -1/4 * w, Math.atan(d/(3/2 * w))],
-                _BottomSquareTR: [Math.sqrt((w / 2)**2 + d**2), -1/4 * w, Math.atan(d/(w/2))],
-                _TopSquareBL: [Math.sqrt(w**2 + d**2), 1/4 * w, Math.atan(d/w)],
-                _TopSquareBR: [d, 1/4 * w, Math.PI/2], 
-                _TopSquareTL: [Math.sqrt(w**2 + d**2), -3/4 * w, Math.atan(d/w)],
-                _TopSquareTR: [d, -3/4 * w, Math.PI/2] 
-            },
-            Top: { // X stays the same, Y scales
-                _BottomSquareBL: [-3/4 * w, d, -Math.PI/2],
-                _BottomSquareBR: [1/4 * w, d, -Math.PI/2],
-                _BottomSquareTL: [-3/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _BottomSquareTR: [1/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _TopSquareBL: [-1/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _TopSquareBR: [3/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _TopSquareTL: [-1/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
-                _TopSquareTR: [3/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
-            },
-            Bottom: { // X stays the same, Y scales
-                // BL <=> TR, TL <=> BR
-                _BottomSquareBL: [-3/4 * w, Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
-                _BottomSquareBR: [1/4 * w, Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
-                _BottomSquareTL: [-3/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _BottomSquareTR: [1/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _TopSquareBL: [-1/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _TopSquareBR: [3/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _TopSquareTL: [-1/4 * w, d, Math.PI/2],
-                _TopSquareTR: [3/4 * w, d, Math.PI/2],
-            },
-            _BottomSquareBL: [-3/4 * w, 3/4 * w],
-            _BottomSquareBR: [1/4 * w, 3/4 * w],
-            _BottomSquareTL: [-3/4 * w, -1/4 * w],
-            _BottomSquareTR: [1/4 * w, -1/4 * w],
-            _TopSquareBL: [-1/4 * w, 1/4 * w],
-            _TopSquareBR: [3/4 * w, 1/4 * w],
-            _TopSquareTL: [-1/4 * w, -3/4 * w],
-            _TopSquareTR: [3/4 * w, -3/4 * w],
-        };
-        
-        const drawCoordinatesBottomLeft = {
-            // I think 
-            // flip Y coordinates for this shape
-
-
-            BottomSquareBL: [-3/4 * w, 1/4 * w],
-            BottomSquareBR: [1/4 * w, 1/4 * w],
-            BottomSquareTL: [-3/4 * w, -3/4 * w],
-            BottomSquareTR: [1/4 * w, -3/4 * w],
-            TopSquareBL: [-1/4 * w, 3/4 * w],
-            TopSquareBR: [3/4 * w, 3/4 * w],
-            TopSquareTL: [-1/4 * w, -1/4 * w],
-            TopSquareTR: [3/4 * w, -1/4 * w],
-
-            // top and bottom are correct
-            // left and right are wrong
-           
-            Left: { // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
-                // take these distances to the axis of rotation, and then multiply them by cos(angle) of rotation
-                //BL <=> TL, BR <=> TR
-                _BottomSquareBL: [d, 1/4 * w, Math.PI/2],
-                _BottomSquareBR:  [Math.sqrt(w**2 + d**2), 1/4 * w, Math.atan(d/w)],
-                _BottomSquareTL: [d,  -3/4 * w, Math.PI/2], 
-                _BottomSquareTR: [Math.sqrt(w**2 + d**2), -3/4 * w, Math.atan(d/w)],
-                _TopSquareBL: [Math.sqrt((w / 2)**2 + d**2), 3/4 * w, Math.atan(d/(w/2))],
-                _TopSquareBR: [Math.sqrt((3/2 * w)**2 + d**2), 3/4 * w, Math.atan(d/(3/2 * w))],
-                _TopSquareTL: [Math.sqrt((w / 2)**2 + d**2), -1/4 * w, Math.atan(d/(w/2))],
-                _TopSquareTR: [Math.sqrt((3/2 * w)**2 + d**2), -1/4 * w, Math.atan(d/(3/2 * w))],
-            },
-            Right: { // BL <=> TL, BR <=> TR
-                _BottomSquareBL: [Math.sqrt((3/2 * w)**2 + d**2), 1/4 * w, Math.atan(d/(3/2 * w))],// angle starts 90 degrees 
-                _BottomSquareBR: [Math.sqrt((w / 2)**2 + d**2), 1/4 * w, Math.atan(d/(w/2))],
-                _BottomSquareTL: [Math.sqrt((3/2 * w)**2 + d**2), -3/4 * w, Math.atan(d/(3/2 * w))], 
-                _BottomSquareTR: [Math.sqrt((w / 2)**2 + d**2), -3/4 * w, Math.atan(d/(w/2))],
-                _TopSquareBL: [Math.sqrt(w**2 + d**2), 3/4 * w, Math.atan(d/w)],
-                _TopSquareBR: [d, 3/4 * w, Math.PI/2],
-                _TopSquareTL: [Math.sqrt(w**2 + d**2), -1/4 * w, Math.atan(d/w)],
-                _TopSquareTR:  [d, -1/4 * w, Math.PI/2], 
-            },
-            Top: { // X stays the same, Y scales 
-                _BottomSquareBL: [-3/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],//[d,  -3/4 * w, Math.PI/2], // angle starts 90 degrees
-                _BottomSquareBR: [1/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
-                _BottomSquareTL: [-3/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _BottomSquareTR: [1/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _TopSquareBL: [-1/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/w)],
-                _TopSquareBR: [3/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _TopSquareTL: [-1/4 * w, -d, Math.PI/2],
-                _TopSquareTR: [3/4 * w, -d, Math.PI/2]
-            },
-            Bottom: { // X stays the same, Y scales
-                _BottomSquareBL: [-3/4 * w, d, Math.PI/2],
-                _BottomSquareBR: [1/4 * w, d, Math.PI/2],
-                _BottomSquareTL: [-3/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _BottomSquareTR: [1/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _TopSquareBL: [-1/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _TopSquareBR: [3/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _TopSquareTL: [-1/4 * w, Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
-                _TopSquareTR: [3/4 * w,  Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))]
-            },
-            _BottomSquareBL: [-3/4 * w, 1/4 * w],
-            _BottomSquareBR: [1/4 * w, 1/4 * w],
-            _BottomSquareTL: [-3/4 * w, -3/4 * w],
-            _BottomSquareTR: [1/4 * w, -3/4 * w],
-            _TopSquareBL: [-1/4 * w, 3/4 * w],
-            _TopSquareBR: [3/4 * w, 3/4 * w],
-            _TopSquareTL: [-1/4 * w, -1/4 * w],
-            _TopSquareTR: [3/4 * w, -1/4 * w],
-        };
 
         const projectedDrawCoordinates = {
             BottomSquareBL: [...drawCoordinatesBottomLeft.BottomSquareBL],
@@ -2757,6 +2872,7 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
             _TopSquareTL: [...drawCoordinatesBottomLeft._TopSquareTL],
             _TopSquareTR: [...drawCoordinatesBottomLeft._TopSquareTR],
         };
+
         
         this.animationStates = ["Paused", "Rotating", "MidPaused", "CompletingRotation"];
         this.rotationDirections = ["Bottom", "Top", "Left", "Right"];
@@ -2772,7 +2888,7 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
             positionShift: [0,0],
             drawCoordinatesTopLeft,
             projectedDrawCoordinates, // change to projectedDrawCoordinates
-            midPauseTime: 200,
+            midPauseTime: 10,
             pauseTime: 1000,
         };
         this.addLineSprite(new _boxbox_sprite__WEBPACK_IMPORTED_MODULE_3__.BoxBoxSprite(this.transform, this.rotationState));
@@ -2811,13 +2927,13 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         const shapeState = this.rotationState.shapeState;
         this.rotationState.shapeState = shapeState === "TopLeft" ? "BottomLeft" : "TopLeft";    
         if(rotationDirection === "Top") {
-            this.setRotationDirectionProperties("Bottom", true);
+            this.setRotationDirectionProperties("Bottom");
         } else if(rotationDirection === "Bottom") {
-            this.setRotationDirectionProperties("Top", true);
+            this.setRotationDirectionProperties("Top");
         } else if(rotationDirection === "Left") {
-            this.setRotationDirectionProperties("Right", true);
+            this.setRotationDirectionProperties("Right");
         } else if(rotationDirection === "Right") {
-            this.setRotationDirectionProperties("Left", true);
+            this.setRotationDirectionProperties("Left");
         }
     }
 
@@ -2829,7 +2945,9 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         let rotationAngle = this.rotationState.rotationAngle;
         
         const coordinateShift = this.rotationState.coordinateShift;
+        // defined statically above this class
         const projectedDrawCoordinates = this.rotationState.projectedDrawCoordinates;
+
         const midPauseTime = this.rotationState.midPauseTime;
         const pauseTime = this.rotationState.pauseTime;
         let originalAngle = rotationAngle;
@@ -3052,29 +3170,20 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         // I do for the non-primes because they are drawn from the center of the BoxBox, and are more general
     }
     
-    setRotationDirectionProperties(rotationDirection, flipped) {
+    setRotationDirectionProperties(rotationDirection) {
         const w = this.boxWidth;
-        const d = this.boxDepth;
         const coordinateShift = this.rotationState.coordinateShift;
         if(rotationDirection === "Top") {
             coordinateShift[0] = 0;
-            coordinateShift[1] = flipped ? 
-                3/4 * w:
-                3/4 * w;
+            coordinateShift[1] = 3/4 * w;
         } else if (rotationDirection === "Bottom") {
             coordinateShift[0] = 0;
-            coordinateShift[1] =  flipped ? 
-                -3/4 * w: 
-                -3/4 * w;
+            coordinateShift[1] = -3/4 * w;
         } else if (rotationDirection === "Left") {
-            coordinateShift[0] = flipped ? 
-                3/4 * w:
-                3/4 * w;
+            coordinateShift[0] = 3/4 * w;
             coordinateShift[1] = 0;
         } else if (rotationDirection === "Right") {
-            coordinateShift[0] = flipped ? 
-                -3/4 * w:
-                -3/4 * w;
+            coordinateShift[0] = -3/4 * w;
             coordinateShift[1] = 0;
         }
         this.rotationState.rotationDirection = rotationDirection;
@@ -3115,6 +3224,7 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         }
     }
 }
+console.log('how often is this called?');
 
 
 /***/ }),
@@ -6205,7 +6315,8 @@ class GameScript {
 
         this.testing = false;
         if (this.testing) {
-            if (this.sequenceCount === 0) {
+            this.intervalTime += delta;
+            if (this.sequenceCount === 0 && this.intervalTime > 5000) {
                 this.sequenceTypes["BoxBoxesEverywhere"]();
                 this.sequenceCount += 1;
             }
@@ -6482,7 +6593,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   GameView: () => (/* binding */ GameView)
 /* harmony export */ });
 class GameView {
-    constructor(engine, ctx, canvasEl) {
+    constructor(engine, ctx, canvasEl, levelDesigner) {
         this.ctx = ctx;
         this.engine = engine;
         // this.ship = this.game.addShip(); belongs in game script
@@ -6490,6 +6601,7 @@ class GameView {
         this.initialUnmute = true;
         this.gameStarted = false;
         this.modelClosed = false;
+        this.levelDesigner = levelDesigner;
         this.bindKeyboardKeys = this.bindKeyboardKeys.bind(this);
         this.animate = this.animate.bind(this);
         this.gameEditorOpened = false;
@@ -6569,6 +6681,8 @@ class GameView {
 
         window.addEventListener("click", (e) => {
             this.engine.mouseClicked([e.layerX, e.layerY]);
+            this.levelDesigner.mouseClicked([e.layerX, e.layerY]);
+
         });
 
         // function preventDefault(e) {
@@ -6748,10 +6862,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const gameEngine = new _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_2__.GameEngine(ctx);
     const animationWindow = document.getElementsByTagName("canvas")[1];
     const animationView = new _AnimationView__WEBPACK_IMPORTED_MODULE_4__.AnimationView(animationWindow.getContext("2d"));
-    new _game_engine_Levels_levelDesigner__WEBPACK_IMPORTED_MODULE_3__.LevelDesigner(gameEngine, animationView);
+    const levelDesigner = new _game_engine_Levels_levelDesigner__WEBPACK_IMPORTED_MODULE_3__.LevelDesigner(gameEngine, animationView);
 
     animationView.start();
-    new _game_view__WEBPACK_IMPORTED_MODULE_1__.GameView(gameEngine, ctx, canvasEl).start();
+    new _game_view__WEBPACK_IMPORTED_MODULE_1__.GameView(gameEngine, ctx, canvasEl, levelDesigner).start();
 });
 
 })();

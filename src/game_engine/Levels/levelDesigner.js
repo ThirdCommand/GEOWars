@@ -13,6 +13,8 @@ import {
     Operation,
     Scene,
 } from "./scene";
+import { Collider } from "../collider";
+import { GameObject } from "../game_object";
 
 // I should collect palced enemies
 
@@ -90,14 +92,46 @@ export class LevelDesigner {
         this.engine;
     }
 
+    mouseClicked(pos) {
+        // check mouse position with click colliders
+        const duckTypedMouseGameObject = {
+            transform: {
+                pos
+            }
+        };
+        const mouseClickCollider = new Collider('MouseClicker',duckTypedMouseGameObject, 2, [], ["EnemyPlacer"]);
+        this.engine?.subscribers.forEach((subscriber) => {
+            console.log('checking subscriber: ', subscriber);
+            if (subscriber.type === "Click") {
+                subscriber.collisionCheck(mouseClickCollider);
+            }
+        });
+    }
+
+    enemyPlacerClicked(enemyPlacer) {
+        this.animationView.clear();
+        this.animationView.addEnemy(enemyPlacer.type);
+        this.animationView.enemySelected(enemyPlacer.spawn);
+    }
+
     getPalletModal() {
         const modal = document.getElementById("pallet");
 
     // add functions to buttons of the pallet
     }
 
+    enemyPlaced(spawn) {
+        this.animationView.enemySelected(spawn);
+    }
+
     addEnemy(type) {
         new EnemyPlacer(this.engine, type, this);
+    }
+
+    addMouseClickListener(collider) {
+        console.log("adding collider to engine: ", collider);
+        // I might need to prefix all added colliders with LevelDesign or something
+        this.engine.addCollider(collider);
     }
 
     addSpawnToEvent(spawn) {

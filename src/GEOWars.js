@@ -13,8 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const gameEngine = new GameEngine(ctx);
     const animationWindow = document.getElementsByTagName("canvas")[1];
     const animationView = new AnimationView(animationWindow.getContext("2d"));
-    new LevelDesigner(gameEngine, animationView);
+    const levelDesigner = new LevelDesigner(gameEngine, animationView);
 
     animationView.start();
-    new GameView(gameEngine, ctx, canvasEl).start();
+    new GameView(gameEngine, ctx, canvasEl, levelDesigner).start();
 });

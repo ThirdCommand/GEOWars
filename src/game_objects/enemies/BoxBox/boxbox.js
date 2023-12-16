@@ -3,6 +3,156 @@ import {Sound} from "../../../game_engine/sound";
 import {EnemySpawn} from "../../particles/enemy_spawn";
 import {BoxBoxSprite} from "./boxbox_sprite";
 
+
+// this is where i'm defining huge static stuff that doesn't change
+// between different boxboxes. There's only need to load one of these
+
+const boxWidth = 13;
+const boxDepth =  boxWidth / 3;
+
+// there's only two versions of this coordate object
+// 1. bottom left, top right
+// 2. top left, bottom right
+
+
+// bottom left:
+const w = boxWidth;
+const d = boxDepth;
+
+
+const drawCoordinatesTopLeft = {
+    // try making y negativified
+
+    BottomSquareBL: [-3/4 * w, 3/4 * w],
+    BottomSquareBR: [1/4 * w, 3/4 * w],
+    BottomSquareTL: [-3/4 * w, -1/4 * w],
+    BottomSquareTR: [1/4 * w, -1/4 * w],
+    TopSquareBL: [-1/4 * w, 1/4 * w],
+    TopSquareBR: [3/4 * w, 1/4 * w],
+    TopSquareTL: [-1/4 * w, -3/4 * w],
+    TopSquareTR: [3/4 * w, -3/4 * w],
+    Left: { // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
+        // take these distances to the axis of rotation, and then multiply them by cos(angle) of rotation
+        _BottomSquareBL: [d,  3/4 * w, Math.PI/2], // angle starts 90 degrees 
+        _BottomSquareBR: [Math.sqrt(w**2 + d**2), 3/4 * w, Math.atan(d/w)], // scaled length is distance from axis of rotation
+        _BottomSquareTL: [d, -1/4 * w, Math.PI/2],
+        _BottomSquareTR: [Math.sqrt(w**2 + d**2), -1/4 * w, Math.atan(d/w)],
+        _TopSquareBL: [Math.sqrt((w / 2)**2 + d**2), 1/4 * w, Math.atan(d/(w/2))],
+        _TopSquareBR: [Math.sqrt((3/2 * w)**2 + d**2), 1/4 * w, Math.atan(d/(3/2 * w))],
+        _TopSquareTL: [Math.sqrt((w / 2)**2 + d**2), -3/4 * w, Math.atan(d/(w/2))],
+        _TopSquareTR: [Math.sqrt((3/2 * w)**2 + d**2), -3/4 * w, Math.atan(d/(3/2 * w))]
+    },
+    Right: {
+        _BottomSquareBL: [Math.sqrt((3/2 * w)**2 + d**2), 3/4 * w, Math.atan(d/(3/2 * w))], // angle starts 90 degrees 
+        _BottomSquareBR: [Math.sqrt((w / 2)**2 + d**2), 3/4 * w, Math.atan(d/(w/2))],
+        _BottomSquareTL: [Math.sqrt((3/2 * w)**2 + d**2), -1/4 * w, Math.atan(d/(3/2 * w))],
+        _BottomSquareTR: [Math.sqrt((w / 2)**2 + d**2), -1/4 * w, Math.atan(d/(w/2))],
+        _TopSquareBL: [Math.sqrt(w**2 + d**2), 1/4 * w, Math.atan(d/w)],
+        _TopSquareBR: [d, 1/4 * w, Math.PI/2], 
+        _TopSquareTL: [Math.sqrt(w**2 + d**2), -3/4 * w, Math.atan(d/w)],
+        _TopSquareTR: [d, -3/4 * w, Math.PI/2] 
+    },
+    Top: { // X stays the same, Y scales
+        _BottomSquareBL: [-3/4 * w, d, -Math.PI/2],
+        _BottomSquareBR: [1/4 * w, d, -Math.PI/2],
+        _BottomSquareTL: [-3/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _BottomSquareTR: [1/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _TopSquareBL: [-1/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _TopSquareBR: [3/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _TopSquareTL: [-1/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
+        _TopSquareTR: [3/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
+    },
+    Bottom: { // X stays the same, Y scales
+        // BL <=> TR, TL <=> BR
+        _BottomSquareBL: [-3/4 * w, Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
+        _BottomSquareBR: [1/4 * w, Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
+        _BottomSquareTL: [-3/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _BottomSquareTR: [1/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _TopSquareBL: [-1/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _TopSquareBR: [3/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _TopSquareTL: [-1/4 * w, d, Math.PI/2],
+        _TopSquareTR: [3/4 * w, d, Math.PI/2],
+    },
+    _BottomSquareBL: [-3/4 * w, 3/4 * w],
+    _BottomSquareBR: [1/4 * w, 3/4 * w],
+    _BottomSquareTL: [-3/4 * w, -1/4 * w],
+    _BottomSquareTR: [1/4 * w, -1/4 * w],
+    _TopSquareBL: [-1/4 * w, 1/4 * w],
+    _TopSquareBR: [3/4 * w, 1/4 * w],
+    _TopSquareTL: [-1/4 * w, -3/4 * w],
+    _TopSquareTR: [3/4 * w, -3/4 * w],
+};
+
+const drawCoordinatesBottomLeft = {
+    // I think 
+    // flip Y coordinates for this shape
+
+
+    BottomSquareBL: [-3/4 * w, 1/4 * w],
+    BottomSquareBR: [1/4 * w, 1/4 * w],
+    BottomSquareTL: [-3/4 * w, -3/4 * w],
+    BottomSquareTR: [1/4 * w, -3/4 * w],
+    TopSquareBL: [-1/4 * w, 3/4 * w],
+    TopSquareBR: [3/4 * w, 3/4 * w],
+    TopSquareTL: [-1/4 * w, -1/4 * w],
+    TopSquareTR: [3/4 * w, -1/4 * w],
+
+    // top and bottom are correct
+    // left and right are wrong
+   
+    Left: { // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
+        // take these distances to the axis of rotation, and then multiply them by cos(angle) of rotation
+        //BL <=> TL, BR <=> TR
+        _BottomSquareBL: [d, 1/4 * w, Math.PI/2],
+        _BottomSquareBR:  [Math.sqrt(w**2 + d**2), 1/4 * w, Math.atan(d/w)],
+        _BottomSquareTL: [d,  -3/4 * w, Math.PI/2], 
+        _BottomSquareTR: [Math.sqrt(w**2 + d**2), -3/4 * w, Math.atan(d/w)],
+        _TopSquareBL: [Math.sqrt((w / 2)**2 + d**2), 3/4 * w, Math.atan(d/(w/2))],
+        _TopSquareBR: [Math.sqrt((3/2 * w)**2 + d**2), 3/4 * w, Math.atan(d/(3/2 * w))],
+        _TopSquareTL: [Math.sqrt((w / 2)**2 + d**2), -1/4 * w, Math.atan(d/(w/2))],
+        _TopSquareTR: [Math.sqrt((3/2 * w)**2 + d**2), -1/4 * w, Math.atan(d/(3/2 * w))],
+    },
+    Right: { // BL <=> TL, BR <=> TR
+        _BottomSquareBL: [Math.sqrt((3/2 * w)**2 + d**2), 1/4 * w, Math.atan(d/(3/2 * w))],// angle starts 90 degrees 
+        _BottomSquareBR: [Math.sqrt((w / 2)**2 + d**2), 1/4 * w, Math.atan(d/(w/2))],
+        _BottomSquareTL: [Math.sqrt((3/2 * w)**2 + d**2), -3/4 * w, Math.atan(d/(3/2 * w))], 
+        _BottomSquareTR: [Math.sqrt((w / 2)**2 + d**2), -3/4 * w, Math.atan(d/(w/2))],
+        _TopSquareBL: [Math.sqrt(w**2 + d**2), 3/4 * w, Math.atan(d/w)],
+        _TopSquareBR: [d, 3/4 * w, Math.PI/2],
+        _TopSquareTL: [Math.sqrt(w**2 + d**2), -1/4 * w, Math.atan(d/w)],
+        _TopSquareTR:  [d, -1/4 * w, Math.PI/2], 
+    },
+    Top: { // X stays the same, Y scales 
+        _BottomSquareBL: [-3/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],//[d,  -3/4 * w, Math.PI/2], // angle starts 90 degrees
+        _BottomSquareBR: [1/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
+        _BottomSquareTL: [-3/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _BottomSquareTR: [1/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _TopSquareBL: [-1/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/w)],
+        _TopSquareBR: [3/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _TopSquareTL: [-1/4 * w, -d, Math.PI/2],
+        _TopSquareTR: [3/4 * w, -d, Math.PI/2]
+    },
+    Bottom: { // X stays the same, Y scales
+        _BottomSquareBL: [-3/4 * w, d, Math.PI/2],
+        _BottomSquareBR: [1/4 * w, d, Math.PI/2],
+        _BottomSquareTL: [-3/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _BottomSquareTR: [1/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _TopSquareBL: [-1/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _TopSquareBR: [3/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _TopSquareTL: [-1/4 * w, Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
+        _TopSquareTR: [3/4 * w,  Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))]
+    },
+    _BottomSquareBL: [-3/4 * w, 1/4 * w],
+    _BottomSquareBR: [1/4 * w, 1/4 * w],
+    _BottomSquareTL: [-3/4 * w, -3/4 * w],
+    _BottomSquareTR: [1/4 * w, -3/4 * w],
+    _TopSquareBL: [-1/4 * w, 3/4 * w],
+    _TopSquareBR: [3/4 * w, 3/4 * w],
+    _TopSquareTL: [-1/4 * w, -1/4 * w],
+    _TopSquareTR: [3/4 * w, -1/4 * w],
+};
+
+
 export class BoxBox extends GameObject {
     constructor(engine, pos) {
         super(engine);
@@ -13,8 +163,8 @@ export class BoxBox extends GameObject {
         // this.addPhysicsComponent()
         this.projectedDrawCoordinates = {};
         
-        this.boxWidth = 11;
-        this.boxDepth = this.boxWidth;
+        this.boxWidth = boxWidth;
+        this.boxDepth = boxWidth / 3;
 
         // there's only two versions of this coordate object
         // 1. bottom left, top right
@@ -23,141 +173,9 @@ export class BoxBox extends GameObject {
 
         // bottom left:
         const w = this.boxWidth;
-        const d = this.boxDepth;
         // the axis of rotation determines the length of the line for the _ coordinates
 
         // This one is done
-        const drawCoordinatesTopLeft = {
-            // try making y negativified
-
-            BottomSquareBL: [-3/4 * w, 3/4 * w],
-            BottomSquareBR: [1/4 * w, 3/4 * w],
-            BottomSquareTL: [-3/4 * w, -1/4 * w],
-            BottomSquareTR: [1/4 * w, -1/4 * w],
-            TopSquareBL: [-1/4 * w, 1/4 * w],
-            TopSquareBR: [3/4 * w, 1/4 * w],
-            TopSquareTL: [-1/4 * w, -3/4 * w],
-            TopSquareTR: [3/4 * w, -3/4 * w],
-            Left: { // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
-                // take these distances to the axis of rotation, and then multiply them by cos(angle) of rotation
-                _BottomSquareBL: [d,  3/4 * w, Math.PI/2], // angle starts 90 degrees 
-                _BottomSquareBR: [Math.sqrt(w**2 + d**2), 3/4 * w, Math.atan(d/w)], // scaled length is distance from axis of rotation
-                _BottomSquareTL: [d, -1/4 * w, Math.PI/2],
-                _BottomSquareTR: [Math.sqrt(w**2 + d**2), -1/4 * w, Math.atan(d/w)],
-                _TopSquareBL: [Math.sqrt((w / 2)**2 + d**2), 1/4 * w, Math.atan(d/(w/2))],
-                _TopSquareBR: [Math.sqrt((3/2 * w)**2 + d**2), 1/4 * w, Math.atan(d/(3/2 * w))],
-                _TopSquareTL: [Math.sqrt((w / 2)**2 + d**2), -3/4 * w, Math.atan(d/(w/2))],
-                _TopSquareTR: [Math.sqrt((3/2 * w)**2 + d**2), -3/4 * w, Math.atan(d/(3/2 * w))]
-            },
-            Right: {
-                _BottomSquareBL: [Math.sqrt((3/2 * w)**2 + d**2), 3/4 * w, Math.atan(d/(3/2 * w))], // angle starts 90 degrees 
-                _BottomSquareBR: [Math.sqrt((w / 2)**2 + d**2), 3/4 * w, Math.atan(d/(w/2))],
-                _BottomSquareTL: [Math.sqrt((3/2 * w)**2 + d**2), -1/4 * w, Math.atan(d/(3/2 * w))],
-                _BottomSquareTR: [Math.sqrt((w / 2)**2 + d**2), -1/4 * w, Math.atan(d/(w/2))],
-                _TopSquareBL: [Math.sqrt(w**2 + d**2), 1/4 * w, Math.atan(d/w)],
-                _TopSquareBR: [d, 1/4 * w, Math.PI/2], 
-                _TopSquareTL: [Math.sqrt(w**2 + d**2), -3/4 * w, Math.atan(d/w)],
-                _TopSquareTR: [d, -3/4 * w, Math.PI/2] 
-            },
-            Top: { // X stays the same, Y scales
-                _BottomSquareBL: [-3/4 * w, d, -Math.PI/2],
-                _BottomSquareBR: [1/4 * w, d, -Math.PI/2],
-                _BottomSquareTL: [-3/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _BottomSquareTR: [1/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _TopSquareBL: [-1/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _TopSquareBR: [3/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _TopSquareTL: [-1/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
-                _TopSquareTR: [3/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
-            },
-            Bottom: { // X stays the same, Y scales
-                // BL <=> TR, TL <=> BR
-                _BottomSquareBL: [-3/4 * w, Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
-                _BottomSquareBR: [1/4 * w, Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
-                _BottomSquareTL: [-3/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _BottomSquareTR: [1/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _TopSquareBL: [-1/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _TopSquareBR: [3/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _TopSquareTL: [-1/4 * w, d, Math.PI/2],
-                _TopSquareTR: [3/4 * w, d, Math.PI/2],
-            },
-            _BottomSquareBL: [-3/4 * w, 3/4 * w],
-            _BottomSquareBR: [1/4 * w, 3/4 * w],
-            _BottomSquareTL: [-3/4 * w, -1/4 * w],
-            _BottomSquareTR: [1/4 * w, -1/4 * w],
-            _TopSquareBL: [-1/4 * w, 1/4 * w],
-            _TopSquareBR: [3/4 * w, 1/4 * w],
-            _TopSquareTL: [-1/4 * w, -3/4 * w],
-            _TopSquareTR: [3/4 * w, -3/4 * w],
-        };
-        
-        const drawCoordinatesBottomLeft = {
-            // I think 
-            // flip Y coordinates for this shape
-
-
-            BottomSquareBL: [-3/4 * w, 1/4 * w],
-            BottomSquareBR: [1/4 * w, 1/4 * w],
-            BottomSquareTL: [-3/4 * w, -3/4 * w],
-            BottomSquareTR: [1/4 * w, -3/4 * w],
-            TopSquareBL: [-1/4 * w, 3/4 * w],
-            TopSquareBR: [3/4 * w, 3/4 * w],
-            TopSquareTL: [-1/4 * w, -1/4 * w],
-            TopSquareTR: [3/4 * w, -1/4 * w],
-
-            // top and bottom are correct
-            // left and right are wrong
-           
-            Left: { // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
-                // take these distances to the axis of rotation, and then multiply them by cos(angle) of rotation
-                //BL <=> TL, BR <=> TR
-                _BottomSquareBL: [d, 1/4 * w, Math.PI/2],
-                _BottomSquareBR:  [Math.sqrt(w**2 + d**2), 1/4 * w, Math.atan(d/w)],
-                _BottomSquareTL: [d,  -3/4 * w, Math.PI/2], 
-                _BottomSquareTR: [Math.sqrt(w**2 + d**2), -3/4 * w, Math.atan(d/w)],
-                _TopSquareBL: [Math.sqrt((w / 2)**2 + d**2), 3/4 * w, Math.atan(d/(w/2))],
-                _TopSquareBR: [Math.sqrt((3/2 * w)**2 + d**2), 3/4 * w, Math.atan(d/(3/2 * w))],
-                _TopSquareTL: [Math.sqrt((w / 2)**2 + d**2), -1/4 * w, Math.atan(d/(w/2))],
-                _TopSquareTR: [Math.sqrt((3/2 * w)**2 + d**2), -1/4 * w, Math.atan(d/(3/2 * w))],
-            },
-            Right: { // BL <=> TL, BR <=> TR
-                _BottomSquareBL: [Math.sqrt((3/2 * w)**2 + d**2), 1/4 * w, Math.atan(d/(3/2 * w))],// angle starts 90 degrees 
-                _BottomSquareBR: [Math.sqrt((w / 2)**2 + d**2), 1/4 * w, Math.atan(d/(w/2))],
-                _BottomSquareTL: [Math.sqrt((3/2 * w)**2 + d**2), -3/4 * w, Math.atan(d/(3/2 * w))], 
-                _BottomSquareTR: [Math.sqrt((w / 2)**2 + d**2), -3/4 * w, Math.atan(d/(w/2))],
-                _TopSquareBL: [Math.sqrt(w**2 + d**2), 3/4 * w, Math.atan(d/w)],
-                _TopSquareBR: [d, 3/4 * w, Math.PI/2],
-                _TopSquareTL: [Math.sqrt(w**2 + d**2), -1/4 * w, Math.atan(d/w)],
-                _TopSquareTR:  [d, -1/4 * w, Math.PI/2], 
-            },
-            Top: { // X stays the same, Y scales 
-                _BottomSquareBL: [-3/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],//[d,  -3/4 * w, Math.PI/2], // angle starts 90 degrees
-                _BottomSquareBR: [1/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
-                _BottomSquareTL: [-3/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _BottomSquareTR: [1/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _TopSquareBL: [-1/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/w)],
-                _TopSquareBR: [3/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _TopSquareTL: [-1/4 * w, -d, Math.PI/2],
-                _TopSquareTR: [3/4 * w, -d, Math.PI/2]
-            },
-            Bottom: { // X stays the same, Y scales
-                _BottomSquareBL: [-3/4 * w, d, Math.PI/2],
-                _BottomSquareBR: [1/4 * w, d, Math.PI/2],
-                _BottomSquareTL: [-3/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _BottomSquareTR: [1/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _TopSquareBL: [-1/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _TopSquareBR: [3/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _TopSquareTL: [-1/4 * w, Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
-                _TopSquareTR: [3/4 * w,  Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))]
-            },
-            _BottomSquareBL: [-3/4 * w, 1/4 * w],
-            _BottomSquareBR: [1/4 * w, 1/4 * w],
-            _BottomSquareTL: [-3/4 * w, -3/4 * w],
-            _BottomSquareTR: [1/4 * w, -3/4 * w],
-            _TopSquareBL: [-1/4 * w, 3/4 * w],
-            _TopSquareBR: [3/4 * w, 3/4 * w],
-            _TopSquareTL: [-1/4 * w, -1/4 * w],
-            _TopSquareTR: [3/4 * w, -1/4 * w],
-        };
 
         const projectedDrawCoordinates = {
             BottomSquareBL: [...drawCoordinatesBottomLeft.BottomSquareBL],
@@ -177,6 +195,7 @@ export class BoxBox extends GameObject {
             _TopSquareTL: [...drawCoordinatesBottomLeft._TopSquareTL],
             _TopSquareTR: [...drawCoordinatesBottomLeft._TopSquareTR],
         };
+
         
         this.animationStates = ["Paused", "Rotating", "MidPaused", "CompletingRotation"];
         this.rotationDirections = ["Bottom", "Top", "Left", "Right"];
@@ -192,7 +211,7 @@ export class BoxBox extends GameObject {
             positionShift: [0,0],
             drawCoordinatesTopLeft,
             projectedDrawCoordinates, // change to projectedDrawCoordinates
-            midPauseTime: 200,
+            midPauseTime: 10,
             pauseTime: 1000,
         };
         this.addLineSprite(new BoxBoxSprite(this.transform, this.rotationState));
@@ -231,13 +250,13 @@ export class BoxBox extends GameObject {
         const shapeState = this.rotationState.shapeState;
         this.rotationState.shapeState = shapeState === "TopLeft" ? "BottomLeft" : "TopLeft";    
         if(rotationDirection === "Top") {
-            this.setRotationDirectionProperties("Bottom", true);
+            this.setRotationDirectionProperties("Bottom");
         } else if(rotationDirection === "Bottom") {
-            this.setRotationDirectionProperties("Top", true);
+            this.setRotationDirectionProperties("Top");
         } else if(rotationDirection === "Left") {
-            this.setRotationDirectionProperties("Right", true);
+            this.setRotationDirectionProperties("Right");
         } else if(rotationDirection === "Right") {
-            this.setRotationDirectionProperties("Left", true);
+            this.setRotationDirectionProperties("Left");
         }
     }
 
@@ -249,7 +268,9 @@ export class BoxBox extends GameObject {
         let rotationAngle = this.rotationState.rotationAngle;
         
         const coordinateShift = this.rotationState.coordinateShift;
+        // defined statically above this class
         const projectedDrawCoordinates = this.rotationState.projectedDrawCoordinates;
+
         const midPauseTime = this.rotationState.midPauseTime;
         const pauseTime = this.rotationState.pauseTime;
         let originalAngle = rotationAngle;
@@ -472,29 +493,20 @@ export class BoxBox extends GameObject {
         // I do for the non-primes because they are drawn from the center of the BoxBox, and are more general
     }
     
-    setRotationDirectionProperties(rotationDirection, flipped) {
+    setRotationDirectionProperties(rotationDirection) {
         const w = this.boxWidth;
-        const d = this.boxDepth;
         const coordinateShift = this.rotationState.coordinateShift;
         if(rotationDirection === "Top") {
             coordinateShift[0] = 0;
-            coordinateShift[1] = flipped ? 
-                3/4 * w:
-                3/4 * w;
+            coordinateShift[1] = 3/4 * w;
         } else if (rotationDirection === "Bottom") {
             coordinateShift[0] = 0;
-            coordinateShift[1] =  flipped ? 
-                -3/4 * w: 
-                -3/4 * w;
+            coordinateShift[1] = -3/4 * w;
         } else if (rotationDirection === "Left") {
-            coordinateShift[0] = flipped ? 
-                3/4 * w:
-                3/4 * w;
+            coordinateShift[0] = 3/4 * w;
             coordinateShift[1] = 0;
         } else if (rotationDirection === "Right") {
-            coordinateShift[0] = flipped ? 
-                -3/4 * w:
-                -3/4 * w;
+            coordinateShift[0] = -3/4 * w;
             coordinateShift[1] = 0;
         }
         this.rotationState.rotationDirection = rotationDirection;
@@ -535,3 +547,4 @@ export class BoxBox extends GameObject {
         }
     }
 }
+console.log('how often is this called?');

@@ -1,5 +1,5 @@
 export class GameView {
-    constructor(engine, ctx, canvasEl) {
+    constructor(engine, ctx, canvasEl, levelDesigner) {
         this.ctx = ctx;
         this.engine = engine;
         // this.ship = this.game.addShip(); belongs in game script
@@ -7,6 +7,7 @@ export class GameView {
         this.initialUnmute = true;
         this.gameStarted = false;
         this.modelClosed = false;
+        this.levelDesigner = levelDesigner;
         this.bindKeyboardKeys = this.bindKeyboardKeys.bind(this);
         this.animate = this.animate.bind(this);
         this.gameEditorOpened = false;
@@ -86,6 +87,8 @@ export class GameView {
 
         window.addEventListener("click", (e) => {
             this.engine.mouseClicked([e.layerX, e.layerY]);
+            this.levelDesigner.mouseClicked([e.layerX, e.layerY]);
+
         });
 
         // function preventDefault(e) {

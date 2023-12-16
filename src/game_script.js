@@ -384,7 +384,8 @@ export class GameScript {
 
         this.testing = false;
         if (this.testing) {
-            if (this.sequenceCount === 0) {
+            this.intervalTime += delta;
+            if (this.sequenceCount === 0 && this.intervalTime > 5000) {
                 this.sequenceTypes["BoxBoxesEverywhere"]();
                 this.sequenceCount += 1;
             }

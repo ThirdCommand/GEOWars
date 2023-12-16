@@ -28,11 +28,9 @@ gameSequence = [scene1Start, event, event, wait, event, scene3End, scene2Start, 
 
 ## UI
 
-I commented out the game script update so that it wasn't in the way. that should be replaced by the level design vs play game selection
-
 - [x] added placing feature with a pallet
 
-- [ ] need to add a level designer button so that we can choose the level designer or the game
+- [ ] need way to open level designer
 
 - [ ] need way to select normal game or level designed game
 
@@ -42,14 +40,16 @@ I commented out the game script update so that it wasn't in the way. that should
 
 - [ ] need way to move serialized levels to the game
 
-- [ ] need to not be zoomed in and not have ship
+- [] need to not be zoomed in and not have ship
 
 enemy selector
 
 - hold click to move
+- click once to select
+  - selection puts them in the meta data box
 - meta data box (location editable)
   - type "r" for random quick edit
-  - random location button
+  - random location button (during game random, or random but hard coded)
   - type location to change it maybe
 
 need to lower the grav effect on the ship... it's a little extreme at the moment. maybe it should have less acceleration effect on it?
@@ -75,26 +75,31 @@ I could use the parallax with the grid and make it 3D and move in a way that loo
 ## Wants
 
 - enemy death pieces
-- particles back to squares/rectangles
 - ship: fix position stutter (no input stutters)
+  - fix gravity effect on ship
 - refactor to camera as an object
 - BoxBox
   - fix rotation off of map
+  - fix enemy placer for it (errors out)
 
 - singularity
   - 3D singularity rotating particles
+  - add small explosion effect from damaging hits
   - pulsate grid effect
   - gravity wave effect (somewhere, somehow lol)
   - try having orbiting singularities
   - tweak grid spring/dampener values
 - weaver
   - add mutual collision detection to prevent clumping with each other
+  - add 3D effect
 - grunt
   - add mutual collision detection to prevent clumping with each other
+  - 3D effect
 - death animation
   - maybe add a portal effect with the grid
   - ship disapears, re-appears (spawn portal?)
-- 3D effect for BoxBox, Weaver, Grunt
+- Polish bullet sprite more
+- add GEOMs
 - explosion also effects grid
 - fix bullets
   - [x] bullet upgrade "bend" instead of spread

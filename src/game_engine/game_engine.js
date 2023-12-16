@@ -224,7 +224,7 @@ export class GameEngine {
             listener.updateStartButtonListener(startButton, down);
         });
     }
-
+    // called by game view
     updateMousePos(mousePos) {
         this.mouseListeners.forEach((object) => {
             object.updateMousePos(mousePos);
@@ -303,12 +303,10 @@ export class GameEngine {
                 colliders[subscription] = colliders[subscription] || {};
                 subscriber.subscribedColliderTypes.forEach((colliderType) => {
                     colliders[subscription][colliderType] =
-            colliders[subscription][colliderType] || [];
-                    colliders[subscription][colliderType].forEach(
-                        (subscribedCollider) => {
-                            subscriber.collisionCheck(subscribedCollider);
-                        }
-                    );
+                        colliders[subscription][colliderType] || [];
+                    colliders[subscription][colliderType].forEach((subscribedCollider) => {
+                        subscriber.collisionCheck(subscribedCollider);
+                    });
                 });
             });
         });
