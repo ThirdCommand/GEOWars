@@ -132,7 +132,9 @@ class AnimationView {
         this.gameObjects.push(gameObject);
     }
 
-    queueSound(sound) {}
+    queueSound(sound) {
+        
+    }
 
     addCollider() {}
 
@@ -167,6 +169,238 @@ class AnimationView {
     }
 }
 
+
+/***/ }),
+
+/***/ "./src/game_engine/Levels/DesignElements/scenes.js":
+/*!*********************************************************!*\
+  !*** ./src/game_engine/Levels/DesignElements/scenes.js ***!
+  \*********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Event: () => (/* binding */ Event),
+/* harmony export */   GameSequence: () => (/* binding */ GameSequence),
+/* harmony export */   GameSequenceDisplay: () => (/* binding */ GameSequenceDisplay),
+/* harmony export */   Operation: () => (/* binding */ Operation),
+/* harmony export */   Scene: () => (/* binding */ Scene),
+/* harmony export */   Spawn: () => (/* binding */ Spawn)
+/* harmony export */ });
+const DIM_X = 1000;
+const DIM_Y = 600;
+const game = {
+    flatOES: [
+        {
+            name: 'LevelOne-Start',
+            __typename: 'Scene'
+        },
+        {
+            name: 'EasySpawns-Start',
+            __typename: 'Scene'
+        },
+        {
+            spawns: [
+                {
+                    type: 'RANDOM', // if random, then possibleTypes exists
+                    location: 'RANDOM', 
+                    possibleTypes: ['BoxBox','Pinwheel','Arrow'], 
+                    numberToGenerate: 10, // if there's a location it will be 1
+                    angle: undefined // for arrows
+                }
+            ],
+            __typename: 'Event'
+        },
+        {
+            type: 'WAIT',
+            time: 0,
+            waitTime: 10,
+            __typename: 'Operation'
+        },
+        {
+            name: 'EasySpawns-End',
+            __typename: 'Scene'
+        },
+        {
+            type: 'LOOP',
+            loop: {
+                loopIdx: 0,
+                sequenceIndexToLoopTo: 0,
+                repeatTimes: 5
+            },
+            __typename: 'Operation'
+        },
+        {
+            name: 'LevelOne-End',
+            __typename: 'Scene'
+        }
+    ]
+};
+
+class GameSequenceDisplay {
+    constructor(engine) {
+        this.engine = engine;
+        this.displaySequence = [];
+    }
+    
+}
+
+class GameSequence{
+    constructor (engine, flatOES) {
+        this.engine = engine;
+        this.sequenceIdx = 0;
+        this.flatOES = flatOES;
+    }
+
+    loadGame() {
+
+    }
+    update(dT) {
+        this.flatOES[sequenceIdx].update(dT);
+    }
+
+    nextSequence(i=1) {
+        if(typeof(this.flatOES[this.sequenceIdx + i]) === Scene) { // TODO fix class name
+            this.nextSequence(++i);
+        }
+        this.sequenceIdx += i;
+    }
+
+    serialize() {
+
+    }
+}
+
+class Scene {
+    constructor(gameSequence, name) {
+        this.name = name;
+    }
+}
+
+// loop, wait, 
+class Operation {
+    // can only loop if start and end of loop are in the same scene
+    constructor(gameSequence, {type, waitTime, loop}) {
+        this.gameSequence = gameSequence;
+        this.type = type;
+        this.waitTime = waitTime;
+        this.time = 0;
+        this.loop = loop; // {loopIdx, sequenceIndexToLoopTo, repeatTimes} // 
+        this.startingValues = {
+            type: type,
+            time: 0,
+            waitTime: waitTime,
+            loop: {
+                loopIdx: loop.loopIdx, // could probably default to 0
+                sequenceIndexToLoopTo: loop.sequenceIndexToLoopTo,
+                repeatTimes: loop.repeatTimes
+            }
+        };
+    }
+
+    update(dT) {
+        if(this.type === "WAIT") {
+            this.time += dT;
+            if(this.time >= this.waitTime) {
+                this.endOperation();
+            }
+        } else if (this.type === "LOOP") {
+            if(this.loop.loopIdx >= this.loop.repeatTimes) { // 3: 0, 1, 2
+                this.endOperation();
+            } else {
+                this.gameSequence.sequenceIndex = this.loop.sequenceIndexToLoopTo;
+                
+            }
+
+        }
+    }
+
+    resetStartingValues() {
+        this.type = this.startingValues.type;
+        this.time = 0,
+        this.waitTime = this.startingValues.waitTime,
+        this.loop =  {
+            loopIdx: this.startingValues.loop.loopIdx,
+            sequenceIndexToLoopTo: this.startingValues.sequenceIndexToLoopTo,
+            repeatTimes: this.startingValues.repeatTimes
+        };
+    }
+
+    endOperation() {
+        this.resetStartingValues();
+        this.gameSequence.nextSequence();
+    }
+}
+
+
+class Event {
+    constructor(gameSequence, spawns) {
+        this.gameSequence = gameSequence;
+        this.spawns = spawns; // this is different than the single spawn thing I have in the mock data
+    }
+
+    // should find way to handle groups told to spawn at random locations
+
+    update() {
+        this.spawnEverything();
+        this.endEvent();
+    }
+    spawnEverything() {
+        this.spawns.forEach((spawn) => {
+            spawn.spawnEvent();
+        });
+    }
+    endEvent() {
+        this.gameSequence.nextSequence();
+    }
+}
+
+// a single enemy, and location
+class Spawn { 
+    constructor(gameEngine, spawn) { // spawn: {type, location: [x,y]} 
+        this.spawn = spawn;
+        this.gameEngine = gameEngine;
+    }
+
+    // start with known positions entered first, 
+    // then we can easily add random and the buttons needed for that
+
+    // these random functions should be in the Event class I think
+
+    randomPosition() {
+        return [
+            this.DIM_X * 0.70 * Math.random(),
+            this.DIM_Y * 0.70 * Math.random(),
+        ];
+    }
+
+    randomMob(possibleSpawns) {
+        return possibleSpawns[Math.floor(Math.random() * possibleSpawns.length) % possibleSpawns.length];
+    }
+
+    spawnEvent() {
+        for(let i = 0; i < this.spawn.numberToGenerate; i++) {
+            let mobToSpawn = this.spawn.type;
+            let location = this.spawn.location;
+            if(this.spawn.type === 'RANDOM') {
+                mobToSpawn = this.randomMob(this.spawn.possibleSpawns);
+            } 
+            if(this.spawn.location === 'RANDOM') {
+                location = this.randomPosition();
+            }
+            this.gameEngine.enemyCreatorList[mobToSpawn](location);
+        }
+    }
+
+    serialize() {
+
+    }
+}
+
+
+
+// MOB randomly picked from chosen list
+// location randomly picked
 
 /***/ }),
 
@@ -348,7 +582,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./LevelDesign/EnemyPlacer */ "./src/game_engine/Levels/LevelDesign/EnemyPlacer.js");
 /* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.js");
 /* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.js");
-/* harmony import */ var _scene__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./scene */ "./src/game_engine/Levels/scene.js");
+/* harmony import */ var _DesignElements_scenes__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./DesignElements/scenes */ "./src/game_engine/Levels/DesignElements/scenes.js");
 /* harmony import */ var _collider__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../collider */ "./src/game_engine/collider.js");
 /* harmony import */ var _game_object__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../game_object */ "./src/game_engine/game_object.js");
 
@@ -362,19 +596,34 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-// I should collect palced enemies
+// I should collect placed enemies
 
 class LevelDesigner {
-    constructor(engine, animationView) {
+    constructor(engine, animationView, levelDesignerCtx) {
         this.DIM_X = 1000;
         this.DIM_Y = 600;
         this.BG_COLOR = "#000000";
         this.engine = engine;
         this.animationView = animationView;
+        this.levelDesignerCtx = levelDesignerCtx;
         // this.walls = this.createWalls();
         // this.grid = this.createGrid();
         this.palletModal = this.getPalletModal();
+        this.currentEvent;
+        this.currentScene;
+        // I'm running into an issue here
+        // there's the three different versions of game sequence
+        // there's the display one that shows while creating
+        // there's the serialized representation of it
+        // there's the one that's loaded from the serialized version
+        // I think it makes sense to combine the display and loaded versions 
+        this.gameSequence = new _DesignElements_scenes__WEBPACK_IMPORTED_MODULE_6__.GameSequence();
+
+
+        this.gameSequenceDisplay = new _DesignElements_scenes__WEBPACK_IMPORTED_MODULE_6__.GameSequenceDisplay();
+
         this.gameEditorOpened = false;
+        
 
         const addArrowButton = document.getElementById("Arrow");
         const addBoxBox = document.getElementById("BoxBox");
@@ -382,7 +631,11 @@ class LevelDesigner {
         const addWeaver = document.getElementById("Weaver");
         const addSingularity = document.getElementById("Singularity");
         const makeGame = document.getElementById("LevelEditor");
-        this.gameSequenceDisplay = new _scene__WEBPACK_IMPORTED_MODULE_6__.GameSequenceDisplay();
+        const makeEvent = document.getElementById("MakeEvent");
+        const addScene = document.getElementById("MakeScene");
+
+        const sceneNameSubmit = document.getElementById("sceneNameSubmit");
+       
 
         addArrowButton.onclick = (e) => {
             e.stopPropagation();
@@ -426,17 +679,33 @@ class LevelDesigner {
             this.engine.gameEditorOpened = this.gameEditorOpened;
             // change text to save or something. accidental click seems bad though
         };
+        makeEvent.onclick = (e) => {
+            e.stopPropagation();
+            console.log("make event clicked");
+            this.makeEvent();
+            // this.gameEditorOpened = !this.gameEditorOpened;
+            // this.engine.gameEditorOpened = this.gameEditorOpened;
+        };
+        addScene.onclick = (e) => {
+            e.stopPropagation();
+            console.log("make Scene clicked");
+            this.makeScene();
 
-        console.log({
-            addSingularity,
-            makeGame,
-        });
+            // this.gameEditorOpened = !this.gameEditorOpened;
+            // this.engine.gameEditorOpened = this.gameEditorOpened;
+        };
+        sceneNameSubmit.onclick = (e) => {
+            e.stopPropagation();
+            const name = document.getElementById("sceneName").value;
+            this.makeScene(name);
+            console.log("scene name submitted: ", name);
+        };
     }
 
-    levelDesigner(time) {
-        const timeDelta = time - this.lastTime;
-        this.engine;
-    }
+    // levelDesigner(time) {
+    //     const timeDelta = time - this.lastTime;
+    //     this.engine;
+    // }
 
     mouseClicked(pos) {
         // check mouse position with click colliders
@@ -454,6 +723,28 @@ class LevelDesigner {
         });
     }
 
+    makeEvent() {
+        const event = new _DesignElements_scenes__WEBPACK_IMPORTED_MODULE_6__.Event();
+        this.currentEvent = event;
+    }
+
+    makeScene(name) {
+        // this should add a box inside either the game sequence as a whole,
+        // or inside the current scene
+        const scene = new _DesignElements_scenes__WEBPACK_IMPORTED_MODULE_6__.Scene(this.gameSequence, name);
+        this.currentScene = scene;
+        const ctx = this.levelDesignerCtx;
+        const width = ctx.canvas.width;
+        const height = ctx.canvas.height;
+        console.log({width, height});
+        const sceneWidthOffset = 5;
+        const sceneWidth = width - sceneWidthOffset;
+
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(sceneWidthOffset, 0, sceneWidth -sceneWidthOffset, height);
+        ctx.stroke();
+    }
+
     enemyPlacerClicked(enemyPlacer) {
         this.animationView.clear();
         this.animationView.addEnemy(enemyPlacer.type);
@@ -462,7 +753,6 @@ class LevelDesigner {
 
     getPalletModal() {
         const modal = document.getElementById("pallet");
-
     // add functions to buttons of the pallet
     }
 
@@ -472,6 +762,8 @@ class LevelDesigner {
 
     addEnemy(type) {
         new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.engine, type, this);
+        // add this to the list of spawns for 
+        // the event that is being constructed
     }
 
     addMouseClickListener(collider) {
@@ -481,12 +773,14 @@ class LevelDesigner {
     }
 
     addSpawnToEvent(spawn) {
-        new _scene__WEBPACK_IMPORTED_MODULE_6__.Spawn(this.engine, spawn);
+        new _DesignElements_scenes__WEBPACK_IMPORTED_MODULE_6__.Spawn(this.engine, spawn);
     }
 
     addNewEvent() {}
 
-    update(deltaTime) {}
+    update(deltaTime) {
+
+    }
 
     createWalls() {
         return new _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_0__.Walls(this.engine, this);
@@ -520,233 +814,6 @@ class LevelDesigner {
     }
 }
 
-
-/***/ }),
-
-/***/ "./src/game_engine/Levels/scene.js":
-/*!*****************************************!*\
-  !*** ./src/game_engine/Levels/scene.js ***!
-  \*****************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   Event: () => (/* binding */ Event),
-/* harmony export */   GameSequence: () => (/* binding */ GameSequence),
-/* harmony export */   GameSequenceDisplay: () => (/* binding */ GameSequenceDisplay),
-/* harmony export */   Operation: () => (/* binding */ Operation),
-/* harmony export */   Scene: () => (/* binding */ Scene),
-/* harmony export */   Spawn: () => (/* binding */ Spawn)
-/* harmony export */ });
-const DIM_X = 1000;
-const DIM_Y = 600;
-const game = {
-    flatOES: [
-        {
-            name: 'LevelOne-Start',
-            __typename: 'Scene'
-        },
-        {
-            name: 'EasySpawns-Start',
-            __typename: 'Scene'
-        },
-        {
-            spawns: [
-                {
-                    type: 'RANDOM', // if random, then possibleTypes exists
-                    location: 'RANDOM', 
-                    possibleTypes: ['BoxBox','Pinwheel','Arrow'], 
-                    numberToGenerate: 10, // if there's a location it will be 1
-                    angle: undefined // for arrows
-                }
-            ],
-            __typename: 'Event'
-        },
-        {
-            type: 'WAIT',
-            time: 0,
-            waitTime: 10,
-            __typename: 'Operation'
-        },
-        {
-            name: 'EasySpawns-End',
-            __typename: 'Scene'
-        },
-        {
-            type: 'LOOP',
-            loop: {
-                loopIdx: 0,
-                sequenceIndexToLoopTo: 0,
-                repeatTimes: 5
-            },
-            __typename: 'Operation'
-        },
-        {
-            name: 'LevelOne-End',
-            __typename: 'Scene'
-        }
-    ]
-};
-
-class GameSequenceDisplay {
-    constructor(engine) {
-        this.engine = engine;
-        this.displaySequence = [];
-    }
-    
-
-}
-
-class GameSequence{
-    constructor (engine, flatOES) {
-        this.engine = engine;
-        this.sequenceIdx = 0;
-        this.flatOES = engine.flatOES;
-    }
-
-    loadGame() {
-
-    }
-    update(dT) {
-        flatOES[sequenceIdx].update(dT);
-    }
-
-    nextSequence(i=1) {
-        if(typeOf(flatOES[this.sequenceIdx + i]) === 'Scene') { // TODO fix class name
-            this.nextSequence(++i);
-        }
-        this.sequenceIdx += i;
-    }
-
-    serialize() {
-
-    }
-}
-
-class Scene {
-    constructor(gameSequence, name) {
-        this.name = name;
-    }
-}
-
-// loop, wait, 
-class Operation {
-    constructor(gameSequence, {type,waitTime,loop}) {
-        this.gameSequence = gameSequence;
-        this.type = type;
-        this.waitTime = waitTime;
-        this.time = 0;
-        this.loop = loop; // {loopIdx, sequenceIndexToLoopTo, repeatTimes} // 
-        this.startingValues = {
-            type: type,
-            time: 0,
-            waitTime: waitTime,
-            loop: {
-                loopIdx: loop.loopIdx,
-                sequenceIndexToLoopTo: sequenceIndexToLoopTo,
-                repeatTimes: repeatTimes
-            }
-        };
-    }
-
-    update(dT) {
-        if(this.type === "WAIT") {
-            this.time += dT;
-            if(this.time >= this.waitTime) {
-                endOperation();
-            }
-        } else if (this.type === "LOOP") {
-            if(this.loop.loopIdx >= this.loop.repeatTimes) { // 3: 0, 1, 2
-                endOperation();
-            } else {
-                gameSequence.sequenceIndex = this.loop.sequenceIndexToLoopTo;
-                
-            }
-
-        }
-    }
-
-    resetStartingValues() {
-        this.type = this.startingValues.type;
-        this.time = 0,
-        this.waitTime = this.startingValues.waitTime,
-        this.loop =  {
-            loopIdx: this.startingValues.loop.loopIdx,
-            sequenceIndexToLoopTo: this.startingValues.sequenceIndexToLoopTo,
-            repeatTimes: this.startingValues.repeatTimes
-        };
-    }
-
-    endOperation() {
-        this.resetStartingValues();
-        this.gameSequence.nextSequence();
-    }
-}
-
-
-class Event {
-    constructor(gameSequence, spawns) {
-        this.gameSequence = gameSequence;
-        this.spawns = spawns; // this is different than the single spawn thing I have in the mock data
-    }
-
-    update(dT) {
-        spawnEverything();
-        endEvent();
-    }
-
-    spawnEverything() {
-        this.spawns.forEach((spawn) => {
-            spawn.spawnEvent();
-        });
-    }
-    endEvent() {
-        this.gameSequence.nextSequence();
-    }
-}
-
-// a single enemy, and location
-class Spawn { 
-    constructor(gameEngine, spawn) { // spawn: {type, location: [x,y]} 
-        this.spawn = spawn;
-        this.gameEngine = gameEngine;
-    }
-
-    randomPosition() {
-        return [
-            this.DIM_X * 0.70 * Math.random(),
-            this.DIM_Y * 0.70 * Math.random(),
-            // 500,300
-        ];
-    }
-
-    randomMob(possibleSpawns) {
-        return possibleSpawns[Math.floor(Math.random() * possibleSpawns.length) % possibleSpawns.length];
-    }
-
-    spawnEvent() {
-        for(let i = 0; i < this.spawn.numberToGenerate; i++) {
-            let mobToSpawn = this.spawn.type;
-            let location = this.spawn.location;
-            if(this.spawn.type === 'RANDOM') {
-                mobToSpawn = randomMob(this.spawn.possibleSpawns);
-            } 
-            if(this.spawn.location === 'RANDOM') {
-                location = randomPosition();
-            }
-            this.gameEngine.enemyCreatorList[mobToSpawn](location);
-        }
-    }
-
-    serialize() {
-
-    }
-}
-
-
-
-// MOB randomly picked from chosen list
-// location randomly picked
 
 /***/ }),
 
@@ -6860,9 +6927,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const ctx = canvasEl.getContext("2d");
     const gameEngine = new _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_2__.GameEngine(ctx);
-    const animationWindow = document.getElementsByTagName("canvas")[1];
-    const animationView = new _AnimationView__WEBPACK_IMPORTED_MODULE_4__.AnimationView(animationWindow.getContext("2d"));
-    const levelDesigner = new _game_engine_Levels_levelDesigner__WEBPACK_IMPORTED_MODULE_3__.LevelDesigner(gameEngine, animationView);
+    const animationWindow = document.getElementsByTagName("canvas")[1].getContext("2d");
+    const levelDesignerCanvas = document.getElementsByTagName("canvas")[2];
+    const levelDesignerCtx = levelDesignerCanvas.getContext("2d");
+    const animationView = new _AnimationView__WEBPACK_IMPORTED_MODULE_4__.AnimationView(animationWindow);
+    const levelDesigner = new _game_engine_Levels_levelDesigner__WEBPACK_IMPORTED_MODULE_3__.LevelDesigner(gameEngine, animationView, levelDesignerCtx);
 
     animationView.start();
     new _game_view__WEBPACK_IMPORTED_MODULE_1__.GameView(gameEngine, ctx, canvasEl, levelDesigner).start();

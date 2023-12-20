@@ -111,7 +111,9 @@ export class AnimationView {
         this.gameObjects.push(gameObject);
     }
 
-    queueSound(sound) {}
+    queueSound(sound) {
+        
+    }
 
     addCollider() {}
 

@@ -37,10 +37,16 @@ gameSequence = [scene1Start, event, event, wait, event, scene3End, scene2Start, 
 - [ ] need to store the placed enemies so they can be serialized
 
 - [ ] need UI for scene timeline (woof)
+  - [ ] scrolling behavior means I need update cycles
+- [ ] Get First Piece Done
+  - [ ] Spawn Event Static Square
+    - [ ] ship spawn symbols
+    - [ ] count
+  - [ ] animation: scroll-ability
 
 - [ ] need way to move serialized levels to the game
 
-- [] need to not be zoomed in and not have ship
+- [ ] need to not be zoomed in and not have ship
 
 enemy selector
 
@@ -51,6 +57,12 @@ enemy selector
   - type "r" for random quick edit
   - random location button (during game random, or random but hard coded)
   - type location to change it maybe
+
+horizontal level editor:
+- boxes with symbols to indicate their function
+- no text, or minimal text
+- spawn events could have the ships that are spawned lined up in the box. If there's too many to fit, then the rest aren't shown
+- 
 
 need to lower the grav effect on the ship... it's a little extreme at the moment. maybe it should have less acceleration effect on it?
 
@@ -75,6 +87,7 @@ I could use the parallax with the grid and make it 3D and move in a way that loo
 ## Wants
 
 - enemy death pieces
+- modernize canvas transformations... scale and translate are outdated but supported for now
 - ship: fix position stutter (no input stutters)
   - fix gravity effect on ship
 - refactor to camera as an object

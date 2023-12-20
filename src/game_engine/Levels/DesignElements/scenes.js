@@ -54,25 +54,24 @@ export class GameSequenceDisplay {
         this.displaySequence = [];
     }
     
-
 }
 
 export class GameSequence{
     constructor (engine, flatOES) {
         this.engine = engine;
         this.sequenceIdx = 0;
-        this.flatOES = engine.flatOES;
+        this.flatOES = flatOES;
     }
 
     loadGame() {
 
     }
     update(dT) {
-        flatOES[sequenceIdx].update(dT);
+        this.flatOES[sequenceIdx].update(dT);
     }
 
     nextSequence(i=1) {
-        if(typeOf(flatOES[this.sequenceIdx + i]) === 'Scene') { // TODO fix class name
+        if(typeof(this.flatOES[this.sequenceIdx + i]) === Scene) { // TODO fix class name
             this.nextSequence(++i);
         }
         this.sequenceIdx += i;
@@ -91,7 +90,8 @@ export class Scene {
 
 // loop, wait, 
 export class Operation {
-    constructor(gameSequence, {type,waitTime,loop}) {
+    // can only loop if start and end of loop are in the same scene
+    constructor(gameSequence, {type, waitTime, loop}) {
         this.gameSequence = gameSequence;
         this.type = type;
         this.waitTime = waitTime;
@@ -102,9 +102,9 @@ export class Operation {
             time: 0,
             waitTime: waitTime,
             loop: {
-                loopIdx: loop.loopIdx,
-                sequenceIndexToLoopTo: sequenceIndexToLoopTo,
-                repeatTimes: repeatTimes
+                loopIdx: loop.loopIdx, // could probably default to 0
+                sequenceIndexToLoopTo: loop.sequenceIndexToLoopTo,
+                repeatTimes: loop.repeatTimes
             }
         };
     }
@@ -113,13 +113,13 @@ export class Operation {
         if(this.type === "WAIT") {
             this.time += dT;
             if(this.time >= this.waitTime) {
-                endOperation();
+                this.endOperation();
             }
         } else if (this.type === "LOOP") {
             if(this.loop.loopIdx >= this.loop.repeatTimes) { // 3: 0, 1, 2
-                endOperation();
+                this.endOperation();
             } else {
-                gameSequence.sequenceIndex = this.loop.sequenceIndexToLoopTo;
+                this.gameSequence.sequenceIndex = this.loop.sequenceIndexToLoopTo;
                 
             }
 
@@ -150,11 +150,12 @@ export class Event {
         this.spawns = spawns; // this is different than the single spawn thing I have in the mock data
     }
 
-    update(dT) {
-        spawnEverything();
-        endEvent();
-    }
+    // should find way to handle groups told to spawn at random locations
 
+    update() {
+        this.spawnEverything();
+        this.endEvent();
+    }
     spawnEverything() {
         this.spawns.forEach((spawn) => {
             spawn.spawnEvent();
@@ -172,11 +173,15 @@ export class Spawn {
         this.gameEngine = gameEngine;
     }
 
+    // start with known positions entered first, 
+    // then we can easily add random and the buttons needed for that
+
+    // these random functions should be in the Event class I think
+
     randomPosition() {
         return [
             this.DIM_X * 0.70 * Math.random(),
             this.DIM_Y * 0.70 * Math.random(),
-            // 500,300
         ];
     }
 
@@ -189,10 +194,10 @@ export class Spawn {
             let mobToSpawn = this.spawn.type;
             let location = this.spawn.location;
             if(this.spawn.type === 'RANDOM') {
-                mobToSpawn = randomMob(this.spawn.possibleSpawns);
+                mobToSpawn = this.randomMob(this.spawn.possibleSpawns);
             } 
             if(this.spawn.location === 'RANDOM') {
-                location = randomPosition();
+                location = this.randomPosition();
             }
             this.gameEngine.enemyCreatorList[mobToSpawn](location);
         }
