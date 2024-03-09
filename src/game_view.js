@@ -86,9 +86,11 @@ export class GameView {
         });
 
         window.addEventListener("click", (e) => {
-            this.engine.mouseClicked([e.layerX, e.layerY]);
-            this.levelDesigner.mouseClicked([e.layerX, e.layerY]);
+            this.engine.mouseClicked(e);
+        });
 
+        window.addEventListener("dblclick", (e) => {
+            this.engine.mouseDoubleClicked(e);
         });
 
         // function preventDefault(e) {
@@ -156,6 +158,7 @@ export class GameView {
     animate(time) {
         const timeDelta = time - this.lastTime;
         this.engine.tick(timeDelta);
+        this.levelDesigner.animate(timeDelta);
         this.lastTime = time;
         // every call to animate requests causes another call to animate
         requestAnimationFrame(this.animate.bind(this));

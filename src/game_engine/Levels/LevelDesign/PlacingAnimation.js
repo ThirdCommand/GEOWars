@@ -16,6 +16,10 @@ export class PlacingAnimation extends GameObject {
         this.remove();
     }
 
+    mouseDoubleClicked() {
+        
+    }
+
     mouseClicked(mousePos) {
         this.placeEnemy();
     }

@@ -16,7 +16,7 @@ import { GruntSprite } from "../../../game_objects/enemies/Grunt/grunt_sprite";
 import { PinwheelSprite } from "../../../game_objects/enemies/Pinwheel/pinwheel_sprite";
 import { WeaverSprite } from "../../../game_objects/enemies/Weaver/weaver_sprite";
 import { SingularitySprite } from "../../../game_objects/enemies/Singularity/singularity_sprite";
-import { Collider } from "../../collider";
+import { Util } from "../../util";
 
 const spriteMap = {
     BoxBox: (transform) => new BoxBoxSprite(transform),
@@ -51,7 +51,6 @@ export class EnemyPlacer extends GameObject {
     }
 
     place() {
-        this.addCollider("General", this, this.clickRadius);
         this.spawn = {type: this.type, location: this.transform.pos};
         const spawn = this.spawn;
         console.log('spawn added: ',{spawn});
@@ -62,14 +61,24 @@ export class EnemyPlacer extends GameObject {
     }
 
     addMouseClickListener() {
-        const clickCollider = new Collider('Click', this,this.clickRadius,['MouseClick'], ["General"]);
-        this.clickCollider = clickCollider;
-        this.levelDesigner.addMouseClickListener(this.clickCollider);
+        this.gameEngine.addClickListener(this);
     }
 
-    onCollision(otherCollider, type) {
-        console.log('onCollision done?');
-        if (type === "Click" && this.originalClickComplete) {
+
+    mouseClicked(mousePos) {
+        const centerDist = Util.dist(
+            this.transform.pos,
+            mousePos
+        );
+        if (centerDist < this.clickRadius) {
+            this.onMouseClick(mousePos);
+        }
+
+
+    }
+
+    onMouseClick(mousePos) {
+        if (this.originalClickComplete) {
             this.levelDesigner.enemyPlacerClicked(this);
         } else {
             this.originalClickComplete = true;

@@ -172,6 +172,219 @@ class AnimationView {
 
 /***/ }),
 
+/***/ "./src/game_engine/Levels/DesignElements/Event.js":
+/*!********************************************************!*\
+  !*** ./src/game_engine/Levels/DesignElements/Event.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Event: () => (/* binding */ Event),
+/* harmony export */   EventObject: () => (/* binding */ EventObject),
+/* harmony export */   EventObjectSprite: () => (/* binding */ EventObjectSprite)
+/* harmony export */ });
+/* harmony import */ var _game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../line_sprite */ "./src/game_engine/line_sprite.js");
+
+
+
+// maybe this is what is created from the serialized version
+class Event {
+    constructor(gameSequence, spawns) {
+        this.gameSequence = gameSequence;
+        this.spawns = spawns; // this is different than the single spawn thing I have in the mock data
+    }
+
+    // should find way to handle groups told to spawn at random locations
+
+    update() {
+        this.spawnEverything();
+        this.endEvent();
+    }
+    spawnEverything() {
+        this.spawns.forEach((spawn) => {
+            spawn.spawnEvent();
+        });
+    }
+    endEvent() {
+        this.gameSequence.nextSequence();
+    }
+}
+
+// maybe this is what is created by the UI
+// but it will also have to be created by the serialized data
+class EventObject extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
+    constructor(engine, eventToLoad) {
+        super(engine);
+        this.spawns = [];
+        this.selectedSpawns = [];
+        this.spawnSprites = {Pinwheel: 0, BoxBox: 0, Arrow: 0, Grunt: 0, Weaver: 0, Singularity: 0, AlienShip: 0};
+        if(eventToLoad) {
+            eventToLoad.spawns.forEeach((spawn) => this.addSpawn(spawn));
+        }
+        this.addLineSprite(new EventObjectSprite(this.transform, this.engine, this.spawnSprites));
+    }
+
+    // copy and paste should be supported
+    copy() {
+        return this.engine.addToClipBoard(new EventObject(this.engine, this.serialize()));
+    }
+
+    copySelectedSpawns() {
+        // I imagine shift click and then copy, and past
+    }
+
+    deleteSelectedSpawns() {
+
+    }
+
+    // copied into engine's clipboard
+    pasteCopiedSpawns(spawns) {
+        spawns.forEach((spawn) => (this.addSpawn(spawn)));
+    }
+
+    serialize() {  
+        return {
+            spawns: this.spawns.map((spawn) => spawn.serialize())
+        };
+    }
+
+    addSpawn(spawn) {
+        this.spawns.push(spawn);
+        this.spawnSprites[spawn.type] += 1;
+    }
+
+    deleteSpawn(spawn) {
+        this.spawns.splice(this.spawns.indexOf(spawn), 1);
+        this.spawnSprites[spawn.type] -= 1;
+    }
+
+    update() {
+    }
+}
+
+class EventObjectSprite extends _line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite {
+    constructor(transform, engine, spawnSprites) {
+        super(transform, engine);
+        this.spawnSprites = spawnSprites;
+    }
+
+    draw(ctx) {
+        // I'll need the position of the parent scene
+        // or that's handled by the scene draw... hmm
+        const sceneWidthOffset = 5;
+        const sceneWidth = ctx.canvas.width - sceneWidthOffset;
+        const height = ctx.canvas.height;
+        const eventSpacings = 5;
+        ctx.fillStyle = "#0000FF";
+        ctx.fillRect(sceneWidthOffset + eventSpacings, 0, sceneWidth -(eventSpacings + sceneWidthOffset) , height);
+        ctx.stroke();
+        // rectangle for now
+        // include list of other spawn objects and spawn them
+    }
+}
+
+
+
+/***/ }),
+
+/***/ "./src/game_engine/Levels/DesignElements/scene.js":
+/*!********************************************************!*\
+  !*** ./src/game_engine/Levels/DesignElements/scene.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Scene: () => (/* binding */ Scene),
+/* harmony export */   SceneObject: () => (/* binding */ SceneObject),
+/* harmony export */   SceneSprite: () => (/* binding */ SceneSprite)
+/* harmony export */ });
+/* harmony import */ var _UI_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../UI_line_sprite */ "./src/game_engine/UI_line_sprite.js");
+/* harmony import */ var _UI_Element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../UI_Element */ "./src/game_engine/UI_Element.js");
+
+
+
+class Scene {
+    constructor(gameSequence, name) {
+        this.name = name;
+    }
+}
+
+// this might just be the display object
+class SceneObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_1__.UIElement {
+    constructor(engine, name, position) {
+        super(engine, position);
+        // this will need to know its position
+        // right now I'm just throwing it up without 
+        // it keeping track of where it is
+        // so when the level editor creates it, it should give it its position too maybe
+        this.elements = [];
+        this.levelDesigner = engine;
+        this.widthHeight = [40,40];
+    
+        this.addUIElementSprite(new SceneSprite(name, this.UITransform, this.widthHeight));
+
+        this.clickRadius = 20;
+        this.addMouseClickListener();
+        this.addMouseDoubleClickListener();
+    }
+
+    clicked() {
+        console.log('scene clicked');
+    }
+
+    serialize() {
+        return this.scene;
+    }
+
+    onMouseClick(mousePos) {
+        this.gameEngine.sceneSelected(this);
+        this.UILineSprite.selected = true;
+    }
+
+    unSelected() {
+        this.UILineSprite.selected = false;
+    }
+    onMouseDoubleClicked(mousePos) {
+        console.log('yay mouse double clicked here');
+    }
+}
+
+class SceneSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_0__.UILineSprite {
+    constructor(name, UITransform, widthHeight) {
+        super(UITransform);
+        this.name = name;
+        this.widthHeight = widthHeight;
+        this.selected = false;
+    }
+
+    draw(ctx) {
+        const pos = this.UITransform.pos;
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+
+        this.drawFunction(ctx, pos);
+        ctx.restore();
+    }
+
+    drawFunction(ctx) {
+        const h = this.widthHeight[1];
+        const w = this.widthHeight[0];
+        ctx.fillStyle = "#FFFFFF";
+        if(this.selected) ctx.fillStyle = "#419ef0";
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = "rgba(0, 0, 0, 1)";
+        ctx.font = "10px Arial";
+        ctx.fillText(this.name, 2, h/2);
+    }
+}
+
+
+
+/***/ }),
+
 /***/ "./src/game_engine/Levels/DesignElements/scenes.js":
 /*!*********************************************************!*\
   !*** ./src/game_engine/Levels/DesignElements/scenes.js ***!
@@ -189,6 +402,25 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 const DIM_X = 1000;
 const DIM_Y = 600;
+
+
+
+// I don't think flat is necessary, and it actually makes it more complicated
+// compiling it to flat is more complicated than just handling the nesting
+
+// one difference is that flat would not have to be pre-loaded as objects at the beginning
+// but I don't think there is any benefit to that in the end.
+
+// the act of pre-loading is the reverse of compiling to flat when the level is saved
+// so I'm not saving myself any complexity with flat.
+// actually, I think it's more complex since I have to manipulate two different
+// data structures in the end instead of one
+
+
+// with flat, I can have the engine handle all of the game logic
+// with nested, I have to have the objects themselves include the game logic
+
+// FLAT
 const game = {
     flatOES: [
         {
@@ -236,6 +468,64 @@ const game = {
         }
     ]
 };
+
+// Nested:
+
+const scratch = {
+    scenes: [
+        {
+            type: 'SCENE',
+            name: 'FirsScene',
+            elements: [
+                {
+                    type: 'EVENT',
+                    name: 'FirstEvent',
+                    spawns: [
+                        {
+                            type: 'RANDOM', // if random, then possibleTypes exists
+                            location: 'RANDOM', 
+                            possibleTypes: ['BoxBox','Pinwheel','Arrow'], 
+                            numberToGenerate: 10, // if there's a location it will be 1
+                            angle: undefined // for arrows
+                        }
+                    ],
+                }
+            ]
+        }
+    ]
+};
+
+const NestedGame = {
+    scenes: [
+        {
+            name: 'LevelOne-Start',
+            events: [
+                {
+                    name: 'EasySpawns-Start',
+                    spawns: [
+                        {
+                            type: 'RANDOM', // if random, then possibleTypes exists
+                            location: 'RANDOM', 
+                            possibleTypes: ['BoxBox','Pinwheel','Arrow'], 
+                            numberToGenerate: 10, // if there's a location it will be 1
+                            angle: undefined // for arrows
+                        }
+                    ],
+                    operations: [
+                        {
+                            type: 'WAIT',
+                            time: 0,
+                            waitTime: 10
+                        }
+                    ],
+                    name: 'EasySpawns-End'
+                }
+            ]
+        }
+    
+    ]
+};
+
 
 class GameSequenceDisplay {
     constructor(engine) {
@@ -422,7 +712,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_objects_enemies_Pinwheel_pinwheel_sprite__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../game_objects/enemies/Pinwheel/pinwheel_sprite */ "./src/game_objects/enemies/Pinwheel/pinwheel_sprite.js");
 /* harmony import */ var _game_objects_enemies_Weaver_weaver_sprite__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../game_objects/enemies/Weaver/weaver_sprite */ "./src/game_objects/enemies/Weaver/weaver_sprite.js");
 /* harmony import */ var _game_objects_enemies_Singularity_singularity_sprite__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../game_objects/enemies/Singularity/singularity_sprite */ "./src/game_objects/enemies/Singularity/singularity_sprite.js");
-/* harmony import */ var _collider__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../collider */ "./src/game_engine/collider.js");
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../util */ "./src/game_engine/util.js");
 // while placing, could do spawning animation over mouse position
 // once placed, draw it at the placed location
 // store the location
@@ -476,7 +766,6 @@ class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
     }
 
     place() {
-        this.addCollider("General", this, this.clickRadius);
         this.spawn = {type: this.type, location: this.transform.pos};
         const spawn = this.spawn;
         console.log('spawn added: ',{spawn});
@@ -487,14 +776,24 @@ class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
     }
 
     addMouseClickListener() {
-        const clickCollider = new _collider__WEBPACK_IMPORTED_MODULE_8__.Collider('Click', this,this.clickRadius,['MouseClick'], ["General"]);
-        this.clickCollider = clickCollider;
-        this.levelDesigner.addMouseClickListener(this.clickCollider);
+        this.gameEngine.addClickListener(this);
     }
 
-    onCollision(otherCollider, type) {
-        console.log('onCollision done?');
-        if (type === "Click" && this.originalClickComplete) {
+
+    mouseClicked(mousePos) {
+        const centerDist = _util__WEBPACK_IMPORTED_MODULE_8__.Util.dist(
+            this.transform.pos,
+            mousePos
+        );
+        if (centerDist < this.clickRadius) {
+            this.onMouseClick(mousePos);
+        }
+
+
+    }
+
+    onMouseClick(mousePos) {
+        if (this.originalClickComplete) {
             this.levelDesigner.enemyPlacerClicked(this);
         } else {
             this.originalClickComplete = true;
@@ -546,6 +845,10 @@ class PlacingAnimation extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
         this.remove();
     }
 
+    mouseDoubleClicked() {
+        
+    }
+
     mouseClicked(mousePos) {
         this.placeEnemy();
     }
@@ -582,9 +885,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./LevelDesign/EnemyPlacer */ "./src/game_engine/Levels/LevelDesign/EnemyPlacer.js");
 /* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.js");
 /* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.js");
-/* harmony import */ var _DesignElements_scenes__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./DesignElements/scenes */ "./src/game_engine/Levels/DesignElements/scenes.js");
-/* harmony import */ var _collider__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../collider */ "./src/game_engine/collider.js");
-/* harmony import */ var _game_object__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _DesignElements_scene__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./DesignElements/scene */ "./src/game_engine/Levels/DesignElements/scene.js");
+/* harmony import */ var _DesignElements_scenes__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./DesignElements/scenes */ "./src/game_engine/Levels/DesignElements/scenes.js");
+/* harmony import */ var _collider__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../collider */ "./src/game_engine/collider.js");
+/* harmony import */ var _DesignElements_Event__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.js");
+
 
 
 
@@ -599,28 +904,56 @@ __webpack_require__.r(__webpack_exports__);
 // I should collect placed enemies
 
 class LevelDesigner {
-    constructor(engine, animationView, levelDesignerCtx) {
+    constructor(engine, animationView, levelDesignerCtx, animationWindow) {
         this.DIM_X = 1000;
         this.DIM_Y = 600;
         this.BG_COLOR = "#000000";
         this.engine = engine;
         this.animationView = animationView;
         this.levelDesignerCtx = levelDesignerCtx;
+        this.animationWindow = animationWindow;
+
+        this.UIElements = [];
+        this.UIElementSprites = [];
+
+        this.ctx = levelDesignerCtx;
+        this.gameObjects = [];
+        this.lineSprites = [];
+        this.zoomScale = 1;
+        this.ship = {
+            transform: {
+                pos: [],
+            },
+        };
+        this.lastTime = 0;
+        this.animate = this.animate.bind(this);
+        this.overlayText = {
+            Location: [0, 0],
+            Time: 0,
+            Type: "",
+            StartingAngle: 0,
+        };
+        this.overlayTextCleared = true;
+
+
         // this.walls = this.createWalls();
         // this.grid = this.createGrid();
         this.palletModal = this.getPalletModal();
         this.currentEvent;
-        this.currentScene;
+        this.selectedScene;
         // I'm running into an issue here
         // there's the three different versions of game sequence
         // there's the display one that shows while creating
         // there's the serialized representation of it
         // there's the one that's loaded from the serialized version
         // I think it makes sense to combine the display and loaded versions 
-        this.gameSequence = new _DesignElements_scenes__WEBPACK_IMPORTED_MODULE_6__.GameSequence();
+        this.gameSequence = new _DesignElements_scenes__WEBPACK_IMPORTED_MODULE_7__.GameSequence();
+
+        // main game array is the main list of sequence objects
+        this.mainGameArray = [];
 
 
-        this.gameSequenceDisplay = new _DesignElements_scenes__WEBPACK_IMPORTED_MODULE_6__.GameSequenceDisplay();
+        this.gameSequenceDisplay = new _DesignElements_scenes__WEBPACK_IMPORTED_MODULE_7__.GameSequenceDisplay();
 
         this.gameEditorOpened = false;
         
@@ -700,7 +1033,21 @@ class LevelDesigner {
             this.makeScene(name);
             console.log("scene name submitted: ", name);
         };
+
+        // this.levelDesignerCtx.addEventListener("dblclick", (e) => {
+        //     e.stopPropagation();
+        //     console.log("double clicked");
+        //     const pos = [e.offsetX, e.offsetY];
+        //     this.mouseDoubleClicked(pos);
+        // });
     }
+
+    mouseDoubleClicked(pos) {
+        console.log(pos);
+    }
+
+
+
 
     // levelDesigner(time) {
     //     const timeDelta = time - this.lastTime;
@@ -714,7 +1061,7 @@ class LevelDesigner {
                 pos
             }
         };
-        const mouseClickCollider = new _collider__WEBPACK_IMPORTED_MODULE_7__.Collider('MouseClicker',duckTypedMouseGameObject, 2, [], ["EnemyPlacer"]);
+        const mouseClickCollider = new _collider__WEBPACK_IMPORTED_MODULE_8__.Collider('MouseClicker',duckTypedMouseGameObject, 2, [], ["EnemyPlacer"]);
         this.engine?.subscribers.forEach((subscriber) => {
             console.log('checking subscriber: ', subscriber);
             if (subscriber.type === "Click") {
@@ -724,31 +1071,43 @@ class LevelDesigner {
     }
 
     makeEvent() {
-        const event = new _DesignElements_scenes__WEBPACK_IMPORTED_MODULE_6__.Event();
+        const event = new _DesignElements_Event__WEBPACK_IMPORTED_MODULE_9__.EventObject(this);
         this.currentEvent = event;
+    }
+
+    getNewDrawPosition(UIElements) {
+        const lastElement = UIElements[UIElements.length - 1];
+        const lastXPosition = lastElement?.UITransform?.pos[0] || 0;
+        const lastWidth = lastElement?.widthHeight[0] || 0;
+  
+        return [lastXPosition + lastWidth + 4, 4];
     }
 
     makeScene(name) {
         // this should add a box inside either the game sequence as a whole,
         // or inside the current scene
-        const scene = new _DesignElements_scenes__WEBPACK_IMPORTED_MODULE_6__.Scene(this.gameSequence, name);
-        this.currentScene = scene;
-        const ctx = this.levelDesignerCtx;
-        const width = ctx.canvas.width;
-        const height = ctx.canvas.height;
-        console.log({width, height});
-        const sceneWidthOffset = 5;
-        const sceneWidth = width - sceneWidthOffset;
-
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillRect(sceneWidthOffset, 0, sceneWidth -sceneWidthOffset, height);
-        ctx.stroke();
+        const newElementPosition = this.getNewDrawPosition(this.UIElementSprites);
+        // sprites are made and added automatically
+        const newScene  = new _DesignElements_scene__WEBPACK_IMPORTED_MODULE_6__.SceneObject(this, name, newElementPosition);
     }
 
     enemyPlacerClicked(enemyPlacer) {
         this.animationView.clear();
         this.animationView.addEnemy(enemyPlacer.type);
         this.animationView.enemySelected(enemyPlacer.spawn);
+    }
+
+    sceneDoubleClicked(scene) {
+        console.log("scene double clicked: ", scene);
+        // should move this into scene object
+        this.selectedScene.UILineSprite.selected = false;
+        this.selectedScene = scene;
+        scene.UILineSprite.selected = true;
+    }
+
+    sceneSelected(scene) {
+        this.selectedScene?.unSelected();
+        this.selectedScene = scene;
     }
 
     getPalletModal() {
@@ -762,18 +1121,31 @@ class LevelDesigner {
 
     addEnemy(type) {
         new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.engine, type, this);
+        
         // add this to the list of spawns for 
         // the event that is being constructed
     }
 
-    addMouseClickListener(collider) {
-        console.log("adding collider to engine: ", collider);
-        // I might need to prefix all added colliders with LevelDesign or something
-        this.engine.addCollider(collider);
+    addMouseClickListener(object) {
+        this.engine.addLevelDesignerClickListener(object);
+    }
+    addMouseDoubleClickListener(object) {
+        this.engine.addLevelDesignerDoubleClickListener(object);
     }
 
+    removeMouseClickListener(object) {
+        console.log('removing click listener from game engine');
+        this.engine.removeLevelDesignerClickListener(object);
+    }
+    removeMouseDoubleClickListener(object) {
+        console.log('removing click listener from game engine');
+        this.engine.removeLevelDesignerDoubleClickListener(object);
+    }
+
+
     addSpawnToEvent(spawn) {
-        new _DesignElements_scenes__WEBPACK_IMPORTED_MODULE_6__.Spawn(this.engine, spawn);
+        // TODO: event
+        this.currentEvent?.addSpawn(new _DesignElements_scenes__WEBPACK_IMPORTED_MODULE_7__.Spawn(this.engine, spawn));
     }
 
     addNewEvent() {}
@@ -812,8 +1184,261 @@ class LevelDesigner {
             );
         }
     }
+
+
+
+
+
+    start() {
+        requestAnimationFrame(this.animate);
+        this.lastTime = 0;
+    }
+
+    animate(time) {
+        const timeDelta = time - this.lastTime;
+        this.lastTime = time;
+
+        // it might be cool to animate the tiny enemies in the spawn card
+        // this.animateGameObjects(timeDelta);
+
+        this.clearCanvas();
+        this.renderLineSprites(this.levelDesignerCtx);
+        this.renderUILineSprites(this.levelDesignerCtx);
+        this.renderOverlayText();
+        // every call to animate requests causes another call to animate
+        requestAnimationFrame(this.animate.bind(this));
+    }
+
+    renderOverlayText() {
+        // if(this.overlayTextCleared) return;
+        // this.ctx.save();
+        // this.ctx.font = 18 + "px " + "Arial";
+        // this.ctx.fillStyle = "white";
+        // const typeText = "Type: " + this.overlayText.Type;
+        // const positionText = "Location: " + this.overlayText.Location;
+        // this.ctx.fillText(
+        //     typeText,
+        //     10,
+        //     20
+        // );
+        // this.ctx.fillText(
+        //     positionText,
+        //     10,
+        //     38
+        // );
+        // this.ctx.restore();
+    }
+
+
+    animateGameObjects(delta) {
+        // this.gameObjects.forEach((object) => {
+        //     object.animate(delta);
+        // });
+    }
+
+    clearCanvas() {
+        // this.ctx.clearRect(0, 0, 200, 200);
+        // this.ctx.fillStyle = "#000000";
+        // this.ctx.fillRect(0, 0, 200, 200);
+    }
+
+    clear() {
+        const removeList = [...this.gameObjects];
+        removeList.forEach((gameObject) => {
+            this.remove(gameObject);
+        });
+        this.overlayTextCleared = true;
+    }
+
+    renderLineSprites(ctx) {
+        // this might have to be rendered considering parent tree
+        // start with scene, recursively render each piece
+        // and the scene isn't completed until each child piece is rendered
+        // otherwise you don't know where to complete the end of the sprite
+
+        // to optimize (if needed later) I could render just what is visible during the frame
+        // maybe I could do the math to see what appears in the frame and only render that
+        // but I don't think it's necessary for now
+
+        ctx.save();
+        ctx.scale(this.zoomScale, this.zoomScale);
+        this.lineSprites.forEach((sprite) => {
+            sprite.draw(ctx);
+        });
+        ctx.restore();
+    }
+
+    renderUILineSprites(ctx) {
+        // this is the equation for new positions. 
+        // grab the last element in the array
+        // take its position, and width
+        // add a gap
+        // and place the next one there 
+        ctx.save();
+        this.UIElementSprites.forEach((sprite) => {
+            sprite.draw(ctx);
+        });
+        ctx.restore();
+    }
+
+    addGameObject(gameObject) {
+        this.gameObjects.push(gameObject);
+    }
+
+    queueSound() {
+        
+    }
+
+    addCollider() {}
+
+    addPhysicsComponent() {}
+
+    remove(gameObject) {
+        if (gameObject.lineSprite) {
+            this.lineSprites.splice(
+                this.lineSprites.indexOf(gameObject.lineSprite),
+                1
+            );
+        }
+
+        this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1);
+    }
+
+    removeUIElement(UIElement) {
+        if(UIElement.UIElementLineSprite) {
+            this.UIElementSprites.splice(
+                this.UIElementSprites.indexOf(UIElement.UIElementLineSprite),
+                1
+            );
+        }
+        this.UIElements.splice(this.UIElements.indexOf(UIElement), 1);
+    }
+
+    addUIElementSprite(UILineSprite) {
+        this.UIElementSprites.push(UILineSprite);
+    }
+
+    addUIElement(UIElement) {
+        this.UIElements.push(UIElement);
+    }
+
+    addLineSprite(lineSprite) {
+        this.lineSprites.push(lineSprite);
+    }
+
 }
 
+
+/***/ }),
+
+/***/ "./src/game_engine/UI_Element.js":
+/*!***************************************!*\
+  !*** ./src/game_engine/UI_Element.js ***!
+  \***************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   UIElement: () => (/* binding */ UIElement)
+/* harmony export */ });
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./transform */ "./src/game_engine/transform.js");
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./util */ "./src/game_engine/util.js");
+
+
+
+class UIElement {
+    constructor(engine, position) {
+        this.UITransform = new _transform__WEBPACK_IMPORTED_MODULE_0__.Transform(null, position);
+        this.gameEngine = engine; // this is level designer not the game engine
+        this.gameEngine.addUIElement(this);
+    }
+    addUIElementSprite(UILineSprite) {
+        this.UILineSprite = UILineSprite;
+        this.gameEngine.addUIElementSprite(UILineSprite);
+    }
+    addMouseClickListener() {
+        this.gameEngine.addMouseClickListener(this);
+    }
+    addMouseDoubleClickListener() {
+        this.gameEngine.addMouseDoubleClickListener(this);
+    }
+    removeMouseClickListener() {
+        this.gameEngine.removeMouseClickListener(this);
+    }
+    removeMouseDoubleClickListener() {
+        this.gameEngine.removeMouseDoubleClickListener(this);
+    }
+
+    mouseDoubleClicked(mousePos) {
+        console.log('checking double clicked in UI_Element');
+        const centerDist = _util__WEBPACK_IMPORTED_MODULE_1__.Util.dist(
+            this.UITransform.pos,
+            mousePos
+        );
+        if (centerDist < this.clickRadius) {
+            this.onMouseDoubleClicked(mousePos);
+        }
+    }
+
+    mouseClicked(mousePos) {
+        console.log('checking mouse click in UI_Element');
+        const centerPosition = [
+            this.UITransform.pos[0] + this.widthHeight[0] / 2,
+            this.UITransform.pos[1] + this.widthHeight[1] / 2
+        ];
+        const centerDist = _util__WEBPACK_IMPORTED_MODULE_1__.Util.dist(
+            centerPosition,
+            mousePos
+        );
+        if (centerDist < this.clickRadius) {
+            this.onMouseClick(mousePos);
+        }
+    }
+
+    onMouseDoubleClick(mousePos) {
+
+    }
+    onMouseClick(mousePos) {
+
+    }
+}
+
+/***/ }),
+
+/***/ "./src/game_engine/UI_line_sprite.js":
+/*!*******************************************!*\
+  !*** ./src/game_engine/UI_line_sprite.js ***!
+  \*******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   UILineSprite: () => (/* binding */ UILineSprite)
+/* harmony export */ });
+// this is a type of sprite for ui elements
+
+class UILineSprite {
+    // 
+    constructor(UITransform) {
+        this.UITransform = UITransform;
+        this.zoomScaling = 1;
+    }
+    // abstract functions
+    draw(ctx) {
+        // the context position is changed by the ui game engine
+        const pos = [0,0];
+        // if an element is being dragged, a ghost element replaces is for this drawing array
+        // the part that is being dragged will be handled by a separate drawing function
+
+        // allowing for drag and drop, and scrolling etc
+        const angle = this.transform.absoluteAngle();
+        this.drawFunction(ctx, pos, angle);
+    }
+    drawFunction(ctx, pos) {
+        // abstract
+        
+    }
+}
 
 /***/ }),
 
@@ -847,8 +1472,8 @@ class Collider {
         type,
         gameObject,
         radius = 5,
-        subscriptions,
-        subscribedColliderTypes
+        subscriptions, // the things this collider effects
+        subscribedColliderTypes // the things that effect this collider?
     ) {
         this.objectType = gameObject.constructor.name;
         this.type = type;
@@ -996,7 +1621,11 @@ class GameEngine {
         this.subscribers = [];
         this.muted = true;
         this.mouseListeners = [];
-        this.clickListeners = [];
+        this.gameClickListeners = [];
+        this.levelDesignerClickListeners = [];
+        this.gameDoubleClickListeners = [];
+        this.levelDesignerDoubleClickListeners = [];
+        this.doubleClickListeners = [];
         this.leftControlStickListeners = [];
         this.rightControlStickListeners = [];
         this.xButtonListeners = [];
@@ -1171,19 +1800,73 @@ class GameEngine {
         this.startButtonListeners.push(object);
     }
 
+    // ******** mouse stuff *******
+
     addClickListener(object) {
-        this.clickListeners.push(object);
+        this.gameClickListeners.push(object);
     }
 
-    mouseClicked(position) {
-        this.clickListeners.forEach((object) => {
-            object.mouseClicked(position);
-        });
+    addDoubleClickListener(object) {
+        this.gameDoubleClickListeners.push(object);
+    }
+
+    addLevelDesignerClickListener(object) {
+        this.levelDesignerClickListeners.push(object);
+    }
+
+    addLevelDesignerDoubleClickListener(object) {
+        this.levelDesignerDoubleClickListeners.push(object);
+    }
+
+    
+
+    mouseClicked(e) {
+        console.log(e);
+        if(e.target.classList[0] === "level-editor-canvas") {
+            console.log('mouse clicked in level editor');
+            console.log('listener array click', this.levelDesignerClickListeners);
+            this.levelDesignerClickListeners.forEach((object) => {
+                object.mouseClicked([e.offsetX, e.offsetY]);
+            });
+        } else if(e.target.classList[0] === "gameCanvas") {
+            console.log('clicked in game area');
+            const position = [e.layerX, e.layerY];
+            this.gameClickListeners.forEach((object) => {
+                object.mouseClicked(position);
+            });
+        }
+    }
+
+    mouseDoubleClicked(e) {
+        if(e.target.classList[0] === "level-editor-canvas") {
+            console.log('mouse double clicked in level designer');
+            console.log('listener array double click',this.levelDesignerDoubleClickListeners);
+            this.levelDesignerDoubleClickListeners.forEach((object) => {
+                object.mouseDoubleClicked([e.offsetX, e.offsetY]);
+            });
+        } else if(e.target.classList[0] === "game-canvas") {
+            const position = [e.layerX, e.layerY];
+            this.gameDoubleClickListeners.forEach((object) => {
+                object.mouseDoubleClicked(position);
+            });
+        }
     }
 
     removeClickListener(object) {
-        this.clickListeners.splice(this.clickListeners.indexOf(object), 1);
+        this.gameClickListeners.splice(this.gameClickListeners.indexOf(object), 1);
     }
+    removeDoubleClickListener(object) {
+        this.gameDoubleClickListeners.splice(this.gameDoubleClickListeners.indexOf(object), 1);
+    }
+
+    removeLevelDesignerClickListener(object) {
+        this.levelDesignerClickListeners.splice(this.levelDesignerClickListeners.indexOf(object), 1);
+    }
+    removeLevelDesignerDoubleClickListener(object) {
+        this.levelDesignerDoubleClickListeners.splice(this.levelDesignerDoubleClickListeners.indexOf(object), 1);
+    }
+
+    // ******** end of mouse stuff *******
 
     updateLeftControlStickListeners(unitVector) {
         this.leftControlStickListeners.forEach((listener) => {
@@ -1203,12 +1886,15 @@ class GameEngine {
         });
     }
 
+
+
     updateStartButtonListeners(startButton, down) {
     // console.log([startButton, down])
         this.startButtonListeners.forEach((listener) => {
             listener.updateStartButtonListener(startButton, down);
         });
     }
+
     // called by game view
     updateMousePos(mousePos) {
         this.mouseListeners.forEach((object) => {
@@ -1518,6 +2204,8 @@ class GameObject {
     }
 
     mouseClicked(mousePos) {}
+
+    mouseDoubleClicked(mousePos) {}
 
     addCollider(type, gameObject, radius, subscriptionTypes, subscriptions) {
     // game engine checks every collider with it's subscription types
@@ -5254,6 +5942,11 @@ class ShipExplosion extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1_
         this.createExplosionParticles();
     }
 
+    // create explosion lines that pop out of here
+    // they dissipate over time
+    // they should depend on the object that's destroyed to
+    // that means I should have a death animation for each
+
     createExplosionParticles() {
         for (var i = 0; i < this.particleNum; i++) {
             const speed = Math.random() * 10 + 4;
@@ -6747,9 +7440,11 @@ class GameView {
         });
 
         window.addEventListener("click", (e) => {
-            this.engine.mouseClicked([e.layerX, e.layerY]);
-            this.levelDesigner.mouseClicked([e.layerX, e.layerY]);
+            this.engine.mouseClicked(e);
+        });
 
+        window.addEventListener("dblclick", (e) => {
+            this.engine.mouseDoubleClicked(e);
         });
 
         // function preventDefault(e) {
@@ -6817,6 +7512,7 @@ class GameView {
     animate(time) {
         const timeDelta = time - this.lastTime;
         this.engine.tick(timeDelta);
+        this.levelDesigner.animate(timeDelta);
         this.lastTime = time;
         // every call to animate requests causes another call to animate
         requestAnimationFrame(this.animate.bind(this));

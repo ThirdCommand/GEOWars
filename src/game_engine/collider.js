@@ -17,8 +17,8 @@ export class Collider {
         type,
         gameObject,
         radius = 5,
-        subscriptions,
-        subscribedColliderTypes
+        subscriptions, // the things this collider effects
+        subscribedColliderTypes // the things that effect this collider?
     ) {
         this.objectType = gameObject.constructor.name;
         this.type = type;

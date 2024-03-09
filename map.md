@@ -29,6 +29,13 @@ gameSequence = [scene1Start, event, event, wait, event, scene3End, scene2Start, 
 ## UI
 
 - [x] added placing feature with a pallet
+- [x] double click event location
+- [x] I need a unified way to handle clicking because it's getting wild
+  - [x] I could have the engine handle everything between both canvases
+    - [x] No need for colliders, just add a listener to the list (either levelDesigner list or game list), and check all for that list when a click happens
+- [ ] fix regression where placing enemies fails
+- [ ] UI will need to handle screen resizing right
+  - [ ] When screen longer, canvas becomes wider and more elements are seen
 
 - [ ] need way to open level designer
 

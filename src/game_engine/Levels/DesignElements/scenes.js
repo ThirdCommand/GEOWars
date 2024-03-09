@@ -1,5 +1,24 @@
 const DIM_X = 1000;
 const DIM_Y = 600;
+
+
+
+// I don't think flat is necessary, and it actually makes it more complicated
+// compiling it to flat is more complicated than just handling the nesting
+
+// one difference is that flat would not have to be pre-loaded as objects at the beginning
+// but I don't think there is any benefit to that in the end.
+
+// the act of pre-loading is the reverse of compiling to flat when the level is saved
+// so I'm not saving myself any complexity with flat.
+// actually, I think it's more complex since I have to manipulate two different
+// data structures in the end instead of one
+
+
+// with flat, I can have the engine handle all of the game logic
+// with nested, I have to have the objects themselves include the game logic
+
+// FLAT
 const game = {
     flatOES: [
         {
@@ -47,6 +66,64 @@ const game = {
         }
     ]
 };
+
+// Nested:
+
+const scratch = {
+    scenes: [
+        {
+            type: 'SCENE',
+            name: 'FirsScene',
+            elements: [
+                {
+                    type: 'EVENT',
+                    name: 'FirstEvent',
+                    spawns: [
+                        {
+                            type: 'RANDOM', // if random, then possibleTypes exists
+                            location: 'RANDOM', 
+                            possibleTypes: ['BoxBox','Pinwheel','Arrow'], 
+                            numberToGenerate: 10, // if there's a location it will be 1
+                            angle: undefined // for arrows
+                        }
+                    ],
+                }
+            ]
+        }
+    ]
+};
+
+const NestedGame = {
+    scenes: [
+        {
+            name: 'LevelOne-Start',
+            events: [
+                {
+                    name: 'EasySpawns-Start',
+                    spawns: [
+                        {
+                            type: 'RANDOM', // if random, then possibleTypes exists
+                            location: 'RANDOM', 
+                            possibleTypes: ['BoxBox','Pinwheel','Arrow'], 
+                            numberToGenerate: 10, // if there's a location it will be 1
+                            angle: undefined // for arrows
+                        }
+                    ],
+                    operations: [
+                        {
+                            type: 'WAIT',
+                            time: 0,
+                            waitTime: 10
+                        }
+                    ],
+                    name: 'EasySpawns-End'
+                }
+            ]
+        }
+    
+    ]
+};
+
 
 export class GameSequenceDisplay {
     constructor(engine) {
