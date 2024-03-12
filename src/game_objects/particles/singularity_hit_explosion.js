@@ -48,5 +48,4 @@ export class SingularityHitExplosion extends GameObject {
             this.remove();
         }
     }
-    // ANIMATION = requestAnimationFrame(drawScene);
 }

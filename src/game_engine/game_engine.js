@@ -130,12 +130,12 @@ export class GameEngine {
         this.timePassed += delta;
         if (this.timePassed > 1000 * 60) {
             const timeData = {
+                frameRate: this.frameCountForPerformance / (this.timePassed / 1000),
                 collisionTime: (this.collisionTime) / this.frameCountForPerformance,
                 physicsCalcTime: (this.physicsCalcTime) / this.frameCountForPerformance,
                 updateTime: (this.updateTime) / this.frameCountForPerformance,
                 renderTime: (this.renderTime) / this.frameCountForPerformance,
-                scriptTime: (this.scriptTime) / this.frameCountForPerformance,
-                frameRate: this.frameCountForPerformance / (this.timePassed / 1000)
+                scriptTime: (this.scriptTime) / this.frameCountForPerformance
             };
             console.log(timeData);
 
@@ -211,15 +211,11 @@ export class GameEngine {
     
 
     mouseClicked(e) {
-        console.log(e);
         if(e.target.classList[0] === "level-editor-canvas") {
-            console.log('mouse clicked in level editor');
-            console.log('listener array click', this.levelDesignerClickListeners);
             this.levelDesignerClickListeners.forEach((object) => {
                 object.mouseClicked([e.offsetX, e.offsetY]);
             });
         } else if(e.target.classList[0] === "gameCanvas") {
-            console.log('clicked in game area');
             const position = [e.layerX, e.layerY];
             this.gameClickListeners.forEach((object) => {
                 object.mouseClicked(position);
@@ -229,8 +225,6 @@ export class GameEngine {
 
     mouseDoubleClicked(e) {
         if(e.target.classList[0] === "level-editor-canvas") {
-            console.log('mouse double clicked in level designer');
-            console.log('listener array double click',this.levelDesignerDoubleClickListeners);
             this.levelDesignerDoubleClickListeners.forEach((object) => {
                 object.mouseDoubleClicked([e.offsetX, e.offsetY]);
             });

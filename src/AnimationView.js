@@ -38,11 +38,6 @@ export class AnimationView {
         };
     }
 
-    start() {
-        requestAnimationFrame(this.animate);
-        this.lastTime = 0;
-    }
-
     animate(time) {
         const timeDelta = time - this.lastTime;
         this.lastTime = time;
@@ -50,8 +45,6 @@ export class AnimationView {
         this.clearCanvas();
         this.renderLineSprites(this.ctx);
         this.renderOverlayText();
-        // every call to animate requests causes another call to animate
-        requestAnimationFrame(this.animate.bind(this));
     }
 
     renderOverlayText() {

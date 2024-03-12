@@ -5,15 +5,8 @@ import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
 import { GameScript } from "../../game_script";
 import { Transform } from "../transform";
 import { SceneObject } from "./DesignElements/scene";
+import { Spawn } from "./DesignElements/Spawn";
 
-import {
-    Spawn,
-    GameSequence,
-    GameSequenceDisplay,
-    Event,
-    Operation,
-} from "./DesignElements/scenes";
-import { Collider } from "../collider";
 import { EventObject } from "./DesignElements/Event";
 
 // I should collect placed enemies
@@ -62,13 +55,11 @@ export class LevelDesigner {
         // there's the serialized representation of it
         // there's the one that's loaded from the serialized version
         // I think it makes sense to combine the display and loaded versions 
-        this.gameSequence = new GameSequence();
 
         // main game array is the main list of sequence objects
         this.mainGameArray = [];
 
 
-        this.gameSequenceDisplay = new GameSequenceDisplay();
 
         this.gameEditorOpened = false;
         
@@ -161,32 +152,11 @@ export class LevelDesigner {
         console.log(pos);
     }
 
-
-
-
-    // levelDesigner(time) {
-    //     const timeDelta = time - this.lastTime;
-    //     this.engine;
-    // }
-
-    mouseClicked(pos) {
-        // check mouse position with click colliders
-        const duckTypedMouseGameObject = {
-            transform: {
-                pos
-            }
-        };
-        const mouseClickCollider = new Collider('MouseClicker',duckTypedMouseGameObject, 2, [], ["EnemyPlacer"]);
-        this.engine?.subscribers.forEach((subscriber) => {
-            console.log('checking subscriber: ', subscriber);
-            if (subscriber.type === "Click") {
-                subscriber.collisionCheck(mouseClickCollider);
-            }
-        });
-    }
-
     makeEvent() {
-        const event = new EventObject(this);
+        // should provide this the current scene to know which array of elements to use
+        const newElementPosition = this.getNewDrawPosition(this.UIElementSprites);
+        console.log(newElementPosition);
+        const event = new EventObject(this, null, newElementPosition);
         this.currentEvent = event;
     }
 
@@ -204,6 +174,11 @@ export class LevelDesigner {
         const newElementPosition = this.getNewDrawPosition(this.UIElementSprites);
         // sprites are made and added automatically
         const newScene  = new SceneObject(this, name, newElementPosition);
+    }
+
+    eventSelected(event) {
+        this.currentEvent?.unSelected();
+        this.currentEvent = event;
     }
 
     enemyPlacerClicked(enemyPlacer) {
@@ -249,17 +224,13 @@ export class LevelDesigner {
     }
 
     removeMouseClickListener(object) {
-        console.log('removing click listener from game engine');
         this.engine.removeLevelDesignerClickListener(object);
     }
     removeMouseDoubleClickListener(object) {
-        console.log('removing click listener from game engine');
         this.engine.removeLevelDesignerDoubleClickListener(object);
     }
 
-
     addSpawnToEvent(spawn) {
-        // TODO: event
         this.currentEvent?.addSpawn(new Spawn(this.engine, spawn));
     }
 
@@ -300,15 +271,6 @@ export class LevelDesigner {
         }
     }
 
-
-
-
-
-    start() {
-        requestAnimationFrame(this.animate);
-        this.lastTime = 0;
-    }
-
     animate(time) {
         const timeDelta = time - this.lastTime;
         this.lastTime = time;
@@ -320,8 +282,6 @@ export class LevelDesigner {
         this.renderLineSprites(this.levelDesignerCtx);
         this.renderUILineSprites(this.levelDesignerCtx);
         this.renderOverlayText();
-        // every call to animate requests causes another call to animate
-        requestAnimationFrame(this.animate.bind(this));
     }
 
     renderOverlayText() {
@@ -352,9 +312,9 @@ export class LevelDesigner {
     }
 
     clearCanvas() {
-        // this.ctx.clearRect(0, 0, 200, 200);
-        // this.ctx.fillStyle = "#000000";
-        // this.ctx.fillRect(0, 0, 200, 200);
+        this.ctx.clearRect(0, 0, this.levelDesignerCtx.width, this.levelDesignerCtx.height);
+        this.ctx.fillStyle = "#000000";
+        this.ctx.fillRect(0, 0, this.levelDesignerCtx.width, this.levelDesignerCtx.height);
     }
 
     clear() {

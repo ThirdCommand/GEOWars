@@ -2,26 +2,26 @@ import { Transform } from "./transform";
 import { Util } from "./util";
 
 export class UIElement {
-    constructor(engine, position) {
+    constructor(levelDesigner, position) {
         this.UITransform = new Transform(null, position);
-        this.gameEngine = engine; // this is level designer not the game engine
-        this.gameEngine.addUIElement(this);
+        this.levelDesigner = levelDesigner; // this is level designer not the game engine
+        this.levelDesigner.addUIElement(this);
     }
     addUIElementSprite(UILineSprite) {
         this.UILineSprite = UILineSprite;
-        this.gameEngine.addUIElementSprite(UILineSprite);
+        this.levelDesigner.addUIElementSprite(UILineSprite);
     }
     addMouseClickListener() {
-        this.gameEngine.addMouseClickListener(this);
+        this.levelDesigner.addMouseClickListener(this);
     }
     addMouseDoubleClickListener() {
-        this.gameEngine.addMouseDoubleClickListener(this);
+        this.levelDesigner.addMouseDoubleClickListener(this);
     }
     removeMouseClickListener() {
-        this.gameEngine.removeMouseClickListener(this);
+        this.levelDesigner.removeMouseClickListener(this);
     }
     removeMouseDoubleClickListener() {
-        this.gameEngine.removeMouseDoubleClickListener(this);
+        this.levelDesigner.removeMouseDoubleClickListener(this);
     }
 
     mouseDoubleClicked(mousePos) {

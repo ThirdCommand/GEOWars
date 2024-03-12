@@ -8,6 +8,7 @@ export class GruntSprite extends LineSprite {
     }
 
     draw(ctx) {
+        if(!this.visible) return;
         const pos = this.transform.absolutePosition();
     
         const spawningScale = this.spawningScale;

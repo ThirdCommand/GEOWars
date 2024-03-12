@@ -53,5 +53,4 @@ export class ParticleExplosion extends GameObject{
             this.remove();
         }
     }
-    // ANIMATION = requestAnimationFrame(drawScene);
 }

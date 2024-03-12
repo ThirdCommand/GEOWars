@@ -18,8 +18,13 @@ import { WeaverSprite } from "../../../game_objects/enemies/Weaver/weaver_sprite
 import { SingularitySprite } from "../../../game_objects/enemies/Singularity/singularity_sprite";
 import { Util } from "../../util";
 
-const spriteMap = {
-    BoxBox: (transform) => new BoxBoxSprite(transform),
+// should add Alien too
+export const spriteMap = {
+    BoxBox: (transform) => {
+        const _BoxBoxSprite = new BoxBoxSprite(transform);
+        _BoxBoxSprite.spawning = true;
+        return _BoxBoxSprite;
+    },
     Arrow: (transform) => new ArrowSprite(transform),
     Grunt: (transform) => new GruntSprite(transform),
     Pinwheel: (transform) => new PinwheelSprite(transform),
@@ -53,7 +58,6 @@ export class EnemyPlacer extends GameObject {
     place() {
         this.spawn = {type: this.type, location: this.transform.pos};
         const spawn = this.spawn;
-        console.log('spawn added: ',{spawn});
         this.levelDesigner.addSpawnToEvent(spawn);
         this.levelDesigner.enemyPlaced(spawn);
         this.removeMousePosListener();

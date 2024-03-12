@@ -10,6 +10,7 @@ export class SingularitySprite extends LineSprite {
     }
 
     draw(ctx) {
+        if(!this.visible) return;
         let spawningScale = this.spawningScale;
         if (this.spawned) {
             spawningScale = this.throbbingScale;

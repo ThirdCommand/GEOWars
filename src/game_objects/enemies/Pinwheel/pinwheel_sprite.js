@@ -6,6 +6,8 @@ export class PinwheelSprite extends LineSprite {
     }
 
     draw(ctx) {
+        if(!this.visible) return;
+        
         const spawningScale = this.spawningScale || 1;
         const pos = this.transform.absolutePosition();
         const angle = this.transform.absoluteAngle();

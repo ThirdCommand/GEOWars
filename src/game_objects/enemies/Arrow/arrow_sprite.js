@@ -9,6 +9,7 @@ export class ArrowSprite extends LineSprite {
     }
 
     draw(ctx) {
+        if(!this.visible) return;
         const pos = this.transform.absolutePosition();
         const spawningScale = this.spawningScale || 1;
         const shipLength = 10.5 * 2.2 * spawningScale;

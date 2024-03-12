@@ -9,14 +9,9 @@ export class Scene {
 
 // this might just be the display object
 export class SceneObject extends UIElement {
-    constructor(engine, name, position) {
-        super(engine, position);
-        // this will need to know its position
-        // right now I'm just throwing it up without 
-        // it keeping track of where it is
-        // so when the level editor creates it, it should give it its position too maybe
+    constructor(levelDesigner, name, position) {
+        super(levelDesigner, position);
         this.elements = [];
-        this.levelDesigner = engine;
         this.widthHeight = [40,40];
     
         this.addUIElementSprite(new SceneSprite(name, this.UITransform, this.widthHeight));
@@ -26,25 +21,22 @@ export class SceneObject extends UIElement {
         this.addMouseDoubleClickListener();
     }
 
-    clicked() {
-        console.log('scene clicked');
-    }
-
     serialize() {
         return this.scene;
     }
 
     onMouseClick(mousePos) {
-        this.gameEngine.sceneSelected(this);
+        this.levelDesigner.sceneSelected(this);
         this.UILineSprite.selected = true;
+    }
+    onMouseDoubleClicked(mousePos) {
+        console.log('yay mouse double clicked here');
     }
 
     unSelected() {
         this.UILineSprite.selected = false;
     }
-    onMouseDoubleClicked(mousePos) {
-        console.log('yay mouse double clicked here');
-    }
+
 }
 
 export class SceneSprite extends UILineSprite {

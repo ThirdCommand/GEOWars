@@ -42,5 +42,4 @@ export class ShipExplosion extends GameObject {
             this.remove();
         }
     }
-    // ANIMATION = requestAnimationFrame(drawScene);
 }
