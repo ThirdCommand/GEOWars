@@ -43,26 +43,40 @@ const getClickRadius = {
 };
 
 export class EnemyPlacer extends GameObject {
-    constructor(engine, type, levelDesigner) {
+    constructor(engine, type, levelDesigner, loadingEvent, position) {
         super(engine);
         this.addLineSprite(spriteMap[type](this.transform));
-        this.addMousePosListener();
-        this.addChildGameObject(new PlacingAnimation(this.gameEngine));
         this.levelDesigner = levelDesigner;
         this.clickRadius = getClickRadius[type];
         this.type = type;
-        this.originalClickComplete = false;
+        
+
+        if(!loadingEvent) {
+            this.originalClickComplete = false;
+            this.addChildGameObject(new PlacingAnimation(this.gameEngine));
+        } else {
+            this.transform.pos[0] = position[0];
+            this.transform.pos[1] = position[1];
+            this.originalClickComplete = true;
+        }
         // click collider should be added after placed
     }
 
     place() {
         this.spawn = {type: this.type, location: this.transform.pos};
         const spawn = this.spawn;
-        this.levelDesigner.addSpawnToEvent(spawn);
+        this.levelDesigner.addSpawnToEvent(spawn, this);
         this.levelDesigner.enemyPlaced(spawn);
         this.removeMousePosListener();
         this.addMouseClickListener();
     }
+
+    eventUnselected() {
+        this.gameEngine.removeClickListener(this);
+        this.remove();
+    }
+
+
 
     addMouseClickListener() {
         this.gameEngine.addClickListener(this);
@@ -90,14 +104,6 @@ export class EnemyPlacer extends GameObject {
     }
 
 
-    followMouse() {
-        this.addMousePosListener();
-        this.addChildGameObject(new PlacingAnimation(this.gameEngine));
-    }
 
-    updateMousePos(mousePos) {
-        this.transform.pos[0] = mousePos[0];
-        this.transform.pos[1] = mousePos[1];
-    }
 }
 

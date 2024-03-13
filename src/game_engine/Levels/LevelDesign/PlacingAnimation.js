@@ -6,6 +6,7 @@ export class PlacingAnimation extends GameObject {
         this.initialSpawningScale = 1.5;
         this.cycleSpeed = 0.1;
         this.addClickListener();
+        this.addMousePosListener();
     }
 
     // Mouse handling should call this I think?
@@ -13,7 +14,13 @@ export class PlacingAnimation extends GameObject {
         this.parentObject.place();
         this.parentObject.lineSprite.spawningScale = 1;
         this.removeClickListener();
+        this.removeMousePosListener();
         this.remove();
+    }
+
+    updateMousePos(mousePos) {
+        this.parentObject.transform.pos[0] = mousePos[0];
+        this.parentObject.transform.pos[1] = mousePos[1];
     }
 
     mouseDoubleClicked() {

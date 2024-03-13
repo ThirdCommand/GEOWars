@@ -218,10 +218,12 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
     constructor(levelDesigner, eventToLoad, position) {
         super(levelDesigner, position);
         this.spawns = [];
+        this.enemyPlacers = [];
         this.selectedSpawns = [];
         this.spawnSprites = {Pinwheel: 0, BoxBox: 0, Arrow: 0, Grunt: 0, Weaver: 0, Singularity: 0, AlienShip: 0};
         this.widthHeight = [80, 40];
         this.clickRadius = 20;
+        this.addMouseClickListener();
 
         if(eventToLoad) {
             eventToLoad.spawns.forEach((spawn) => this.addSpawn(spawn));
@@ -242,6 +244,12 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
 
     }
 
+    loadSpawns() {
+        this.spawns.forEach((spawn) => {
+            this.enemyPlacers.push(new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.EnemyPlacer(this.levelDesigner.engine, spawn.type, this.levelDesigner, true, spawn.location));
+        });
+    }
+
     // copied into engine's clipboard
     pasteCopiedSpawns(spawns) {
         spawns.forEach((spawn) => (this.addSpawn(spawn)));
@@ -255,9 +263,12 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
 
     addSpawn(spawn) {
         console.log('adding spawn', spawn.spawn);
-        this.spawns.push(spawn);
+        this.spawns.push(spawn.spawn);
         this.spawnSprites[spawn.spawn.type] += 1;
-        console.log('spawnSprites', this.spawnSprites);
+    }
+
+    addEnemyPlacer(enemyPlacer) {
+        this.enemyPlacers.push(enemyPlacer);
     }
 
     deleteSpawn(spawn) {
@@ -266,11 +277,14 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
     }
 
     onMouseClick(mousePos) {
+        console.log('event object mouse click');
         this.levelDesigner.eventSelected(this);
+        this.loadSpawns();
         this.UILineSprite.selected = true;
     }
 
     unSelected() {
+        this.enemyPlacers.forEach((enemyPlacer) => enemyPlacer.eventUnselected());
         this.UILineSprite.selected = false;
     }
     onMouseDoubleClicked(mousePos) {
@@ -578,26 +592,40 @@ const getClickRadius = {
 };
 
 class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
-    constructor(engine, type, levelDesigner) {
+    constructor(engine, type, levelDesigner, loadingEvent, position) {
         super(engine);
         this.addLineSprite(spriteMap[type](this.transform));
-        this.addMousePosListener();
-        this.addChildGameObject(new _PlacingAnimation__WEBPACK_IMPORTED_MODULE_1__.PlacingAnimation(this.gameEngine));
         this.levelDesigner = levelDesigner;
         this.clickRadius = getClickRadius[type];
         this.type = type;
-        this.originalClickComplete = false;
+        
+
+        if(!loadingEvent) {
+            this.originalClickComplete = false;
+            this.addChildGameObject(new _PlacingAnimation__WEBPACK_IMPORTED_MODULE_1__.PlacingAnimation(this.gameEngine));
+        } else {
+            this.transform.pos[0] = position[0];
+            this.transform.pos[1] = position[1];
+            this.originalClickComplete = true;
+        }
         // click collider should be added after placed
     }
 
     place() {
         this.spawn = {type: this.type, location: this.transform.pos};
         const spawn = this.spawn;
-        this.levelDesigner.addSpawnToEvent(spawn);
+        this.levelDesigner.addSpawnToEvent(spawn, this);
         this.levelDesigner.enemyPlaced(spawn);
         this.removeMousePosListener();
         this.addMouseClickListener();
     }
+
+    eventUnselected() {
+        this.gameEngine.removeClickListener(this);
+        this.remove();
+    }
+
+
 
     addMouseClickListener() {
         this.gameEngine.addClickListener(this);
@@ -625,15 +653,7 @@ class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
     }
 
 
-    followMouse() {
-        this.addMousePosListener();
-        this.addChildGameObject(new _PlacingAnimation__WEBPACK_IMPORTED_MODULE_1__.PlacingAnimation(this.gameEngine));
-    }
 
-    updateMousePos(mousePos) {
-        this.transform.pos[0] = mousePos[0];
-        this.transform.pos[1] = mousePos[1];
-    }
 }
 
 
@@ -659,6 +679,7 @@ class PlacingAnimation extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
         this.initialSpawningScale = 1.5;
         this.cycleSpeed = 0.1;
         this.addClickListener();
+        this.addMousePosListener();
     }
 
     // Mouse handling should call this I think?
@@ -666,7 +687,13 @@ class PlacingAnimation extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
         this.parentObject.place();
         this.parentObject.lineSprite.spawningScale = 1;
         this.removeClickListener();
+        this.removeMousePosListener();
         this.remove();
+    }
+
+    updateMousePos(mousePos) {
+        this.parentObject.transform.pos[0] = mousePos[0];
+        this.parentObject.transform.pos[1] = mousePos[1];
     }
 
     mouseDoubleClicked() {
@@ -869,8 +896,8 @@ class LevelDesigner {
     makeEvent() {
         // should provide this the current scene to know which array of elements to use
         const newElementPosition = this.getNewDrawPosition(this.UIElementSprites);
-        console.log(newElementPosition);
         const event = new _DesignElements_Event__WEBPACK_IMPORTED_MODULE_8__.EventObject(this, null, newElementPosition);
+        this.currentEvent?.unSelected();
         this.currentEvent = event;
     }
 
@@ -944,8 +971,9 @@ class LevelDesigner {
         this.engine.removeLevelDesignerDoubleClickListener(object);
     }
 
-    addSpawnToEvent(spawn) {
+    addSpawnToEvent(spawn, enemyPlacer) {
         this.currentEvent?.addSpawn(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_7__.Spawn(this.engine, spawn));
+        this.currentEvent?.addEnemyPlacer(enemyPlacer);
     }
 
     addNewEvent() {}

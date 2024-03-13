@@ -155,8 +155,8 @@ export class LevelDesigner {
     makeEvent() {
         // should provide this the current scene to know which array of elements to use
         const newElementPosition = this.getNewDrawPosition(this.UIElementSprites);
-        console.log(newElementPosition);
         const event = new EventObject(this, null, newElementPosition);
+        this.currentEvent?.unSelected();
         this.currentEvent = event;
     }
 
@@ -230,8 +230,9 @@ export class LevelDesigner {
         this.engine.removeLevelDesignerDoubleClickListener(object);
     }
 
-    addSpawnToEvent(spawn) {
+    addSpawnToEvent(spawn, enemyPlacer) {
         this.currentEvent?.addSpawn(new Spawn(this.engine, spawn));
+        this.currentEvent?.addEnemyPlacer(enemyPlacer);
     }
 
     addNewEvent() {}
