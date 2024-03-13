@@ -43,6 +43,15 @@
   /* 0 0 75px #ff0080; */
 }
 
+.formContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    justify-content: center;
+    padding: 20px;
+    background-color: #72AB4B;
+}
+
 .space-between-form-and-button-panel {
     width: 40px;
 }

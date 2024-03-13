@@ -5,7 +5,7 @@ import { UILineSprite } from "../../UI_line_sprite";
 
 // maybe I should have a loop beginner and a loop ender repeater thingy
 // like in music
-export class Operation {
+export class Loop {
     // can only loop if start and end of loop are in the same scene
     constructor(gameSequence, {type, waitTime, loop}) {
         this.gameSequence = gameSequence;
@@ -60,18 +60,18 @@ export class Operation {
 }
 
 // UIElement
-export class OperationObject extends UIElement {
+export class LoopObject extends UIElement {
     constructor(levelDesigner, operationToLoad, position) {
         super(levelDesigner, position);
         this.widthHeight = [80, 40];
         this.clickRadius = 20;
         this.addMouseClickListener();
-        this.operation = new Operation(levelDesigner.gameSequence, operationToLoad);
-        this.addUIElementSprite(new OperationObjectSprite(this.UITransform, this.widthHeight));
+        this.operation = new Loop(levelDesigner.gameSequence, operationToLoad);
+        this.addUIElementSprite(new LoopObjectSprite(this.UITransform, this.widthHeight));
     }
 
     copy() {
-        return this.levelDesigner.addToClipBoard(new OperationObject(this.levelDesigner, this.serialize()));
+        return this.levelDesigner.addToClipBoard(new LoopObject(this.levelDesigner, this.serialize()));
     }
 
     serialize() {
@@ -88,7 +88,7 @@ export class OperationObject extends UIElement {
 }
 
 
-export class OperationObjectSprite extends UILineSprite {
+export class LoopObjectSprite extends UILineSprite {
     constructor(UITransform, widthHeight) {
         super(UITransform);
         this.widthHeight = widthHeight;

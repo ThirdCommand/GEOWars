@@ -179,10 +179,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _UI_Element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../UI_Element */ "./src/game_engine/UI_Element.js");
 /* harmony import */ var _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../UI_line_sprite */ "./src/game_engine/UI_line_sprite.js");
-/* harmony import */ var _line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../line_sprite */ "./src/game_engine/line_sprite.js");
-/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../transform */ "./src/game_engine/transform.js");
-/* harmony import */ var _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../LevelDesign/EnemyPlacer */ "./src/game_engine/Levels/LevelDesign/EnemyPlacer.js");
-
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../transform */ "./src/game_engine/transform.js");
+/* harmony import */ var _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../LevelDesign/EnemyPlacer */ "./src/game_engine/Levels/LevelDesign/EnemyPlacer.js");
 
 
 
@@ -246,7 +244,7 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
 
     loadSpawns() {
         this.spawns.forEach((spawn) => {
-            this.enemyPlacers.push(new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.EnemyPlacer(this.levelDesigner.engine, spawn.type, this.levelDesigner, true, spawn.location));
+            this.enemyPlacers.push(new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.levelDesigner.engine, spawn.type, this.levelDesigner, true, spawn.location));
         });
     }
 
@@ -310,13 +308,13 @@ class EventObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UIL
         this.sixthPosition = [50,30];
 
         this.spawnSpriteMap = {
-            BoxBox: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['BoxBox'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.firstPosition)),
-            Arrow: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['Arrow'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.secondPosition)),
-            Grunt: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['Grunt'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.thirdPosition)),
+            BoxBox: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['BoxBox'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.firstPosition)),
+            Arrow: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Arrow'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.secondPosition)),
+            Grunt: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Grunt'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.thirdPosition)),
 
-            Pinwheel: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['Pinwheel'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.fourthPosition)),
-            Weaver: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['Weaver'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.fifthPosition)),
-            Singularity: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['Singularity'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.sixthPosition)),
+            Pinwheel: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Pinwheel'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.fourthPosition)),
+            Weaver: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Weaver'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.fifthPosition)),
+            Singularity: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Singularity'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.sixthPosition)),
         };
 
         // change the sprites to have spawning scale be 0.5
@@ -434,6 +432,120 @@ class Spawn {
 
     serialize() {
 
+    }
+}
+
+/***/ }),
+
+/***/ "./src/game_engine/Levels/DesignElements/Time.js":
+/*!*******************************************************!*\
+  !*** ./src/game_engine/Levels/DesignElements/Time.js ***!
+  \*******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Time: () => (/* binding */ Time),
+/* harmony export */   TimeObject: () => (/* binding */ TimeObject),
+/* harmony export */   TimeObjectSprite: () => (/* binding */ TimeObjectSprite)
+/* harmony export */ });
+/* harmony import */ var _UI_Element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../UI_Element */ "./src/game_engine/UI_Element.js");
+/* harmony import */ var _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../UI_line_sprite */ "./src/game_engine/UI_line_sprite.js");
+
+
+
+// wait times
+class Time {
+    constructor(gameSequence, waitTime) {
+        this.gameSequence = gameSequence;
+        this.waitTime = waitTime;
+        this.time = 0;
+        this.startingValues = {
+            time: 0,
+            waitTime: waitTime,
+        };
+    }
+
+    // I'll have to make sure pausing doesn't fuck this up
+    update(dT) {
+        // maybe I just check if it's paused?
+        this.time += dT;
+        if(this.time >= this.waitTime) {
+            this.endOperation();
+        }
+    }
+
+    resetStartingValues() {
+        this.time = this.startingValues.time;
+        this.waitTime = this.startingValues.waitTime;
+    }
+
+    endOperation() {
+        this.resetStartingValues();
+        
+        // this will have to be the scene it's in I think
+        this.gameSequence.nextSequence();
+    }
+}
+
+// UIElement
+class TimeObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
+    constructor(levelDesigner, {waitTime}, position) {
+        super(levelDesigner, position);
+        this.waitTime = waitTime;
+        this.widthHeight = [50, 40];
+        this.clickRadius = 20;
+        this.addMouseClickListener();
+        this.timeConstruct = new Time(levelDesigner.gameSequence, waitTime);
+        this.addUIElementSprite(new TimeObjectSprite(this.UITransform, this.waitTime, this.widthHeight));
+    }
+
+    copy() {
+        return this.levelDesigner.addToClipBoard(new TimeObject(this.levelDesigner, this.serialize()));
+    }
+
+    serialize() {
+        return {
+            waitTime: this.waitTime,
+        };
+    }
+
+    changeTime(newTime) {
+        this.waitTime = newTime;
+        this.timeConstruct.waitTime = newTime;
+        this.UILineSprite.waitTime = newTime;
+    
+    }
+}
+
+
+class TimeObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UILineSprite {
+    constructor(UITransform, waitTime, widthHeight) {
+        super(UITransform);
+        this.waitTime = waitTime;
+        this.widthHeight = widthHeight;
+        this.selected = false;
+    }
+
+    draw(ctx) {
+        const pos = this.UITransform.pos;
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+
+        this.drawFunction(ctx, pos);
+        ctx.restore();
+    }
+
+    drawFunction(ctx) {
+        const h = this.widthHeight[1];
+        const w = this.widthHeight[0];
+        
+        ctx.fillStyle = "#A020F0";
+        if(this.selected) ctx.fillStyle = "#419ef0";
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = "rgba(0, 0, 0, 1)";
+        ctx.font = "10px Arial";
+        ctx.fillText(this.waitTime, 2, h/2);
     }
 }
 
@@ -739,6 +851,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _DesignElements_scene__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./DesignElements/scene */ "./src/game_engine/Levels/DesignElements/scene.js");
 /* harmony import */ var _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./DesignElements/Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.js");
 /* harmony import */ var _DesignElements_Event__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.js");
+/* harmony import */ var _DesignElements_Time__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.js");
+
 
 
 
@@ -790,6 +904,11 @@ class LevelDesigner {
         this.palletModal = this.getPalletModal();
         this.currentEvent;
         this.selectedScene;
+        this.selectedTime;
+
+        // scene can be selected, while also selecting other elements like event
+        // or time or loop. But only one at a time
+
         // I'm running into an issue here
         // there's the three different versions of game sequence
         // there's the display one that shows while creating
@@ -814,6 +933,7 @@ class LevelDesigner {
         const makeGame = document.getElementById("LevelEditor");
         const makeEvent = document.getElementById("MakeEvent");
         const addScene = document.getElementById("MakeScene");
+        const addTime = document.getElementById("TimeSubmit");
 
         const sceneNameSubmit = document.getElementById("sceneNameSubmit");
        
@@ -888,6 +1008,12 @@ class LevelDesigner {
             this.makeScene(name);
             console.log("scene name submitted: ", name);
         };
+        addTime.onclick = (e) => {
+            e.stopPropagation();
+            const time = document.getElementById("Time").value;
+            this.makeTime(time);
+            console.log("timeSubmitted: ", time);
+        };
 
         // this.levelDesignerCtx.addEventListener("dblclick", (e) => {
         //     e.stopPropagation();
@@ -895,6 +1021,12 @@ class LevelDesigner {
         //     const pos = [e.offsetX, e.offsetY];
         //     this.mouseDoubleClicked(pos);
         // });
+    }
+
+    makeTime(time) {
+        const newElementPosition = this.getNewDrawPosition(this.UIElementSprites);
+        const timeObject = new _DesignElements_Time__WEBPACK_IMPORTED_MODULE_9__.TimeObject(this, {waitTime: time}, newElementPosition);
+        this.selectedTime = timeObject;
     }
 
     mouseDoubleClicked(pos) {

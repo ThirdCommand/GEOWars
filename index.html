@@ -11,24 +11,31 @@
     <div class="footer">Control Firing With Cursor</div>
     <div class="footer">Mute/Unmute With M</div> -->
     <div id="pallet" class="pallet">
-        <form>
+        <form class="formContainer">
             <label for="sceneName">Scene Name:</label>
             <div class="scene-name-input-submit-container">
                 <input type="text" id="sceneName" >
                 <input type="button" id="sceneNameSubmit" value="Add Scene">
             </div>
+            <label for="TimeSubmit">Time:</label>
+            <div class="scene-name-input-submit-container">
+                <input type="text" id="Time" >
+                <input type="button" id="TimeSubmit" value="Add Time">
+            </div>
         </form>
         <div class="space-between-form-and-button-panel"></div>
         <div class="modal-content">
+            <button id="LevelEditor">Level Editor</button>
+            <button id="MakeScene">Create Scene</button>
+            <button id="MakeEvent">Create Event</button>
+            <button id="MakeOperation">Create Operation</button>
             <button id="Arrow">Arrow</button>
             <button id="BoxBox">BoxBox</button>
             <button id="Pinwheel">Pinwheel</button>
             <button id="Weaver">Weaver</button>
             <button id="Grunt">Grunt</button>
             <button id="Singularity">Singularity</button>
-            <button id="LevelEditor">Level Editor</button>
-            <button id="MakeEvent">Create Event</button>
-            <button id="MakeScene">Create Scene</button>
+            
         </div>
         <div id="animationTestBox">
             <canvas id="animationTestCanvas" class="animationCanvas" width="200" height="200"></canvas>

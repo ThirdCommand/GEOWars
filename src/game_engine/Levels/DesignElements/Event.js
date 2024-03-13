@@ -1,6 +1,5 @@
 import { UIElement } from "../../UI_Element";
 import { UILineSprite } from "../../UI_line_sprite";
-import { LineSprite } from "../../line_sprite";
 import { Transform } from "../../transform";
 
 import {EnemyPlacer, spriteMap} from "../LevelDesign/EnemyPlacer";

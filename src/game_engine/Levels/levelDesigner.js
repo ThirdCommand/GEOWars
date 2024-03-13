@@ -8,6 +8,7 @@ import { SceneObject } from "./DesignElements/scene";
 import { Spawn } from "./DesignElements/Spawn";
 
 import { EventObject } from "./DesignElements/Event";
+import { TimeObject } from "./DesignElements/Time";
 
 // I should collect placed enemies
 
@@ -49,6 +50,11 @@ export class LevelDesigner {
         this.palletModal = this.getPalletModal();
         this.currentEvent;
         this.selectedScene;
+        this.selectedTime;
+
+        // scene can be selected, while also selecting other elements like event
+        // or time or loop. But only one at a time
+
         // I'm running into an issue here
         // there's the three different versions of game sequence
         // there's the display one that shows while creating
@@ -73,6 +79,7 @@ export class LevelDesigner {
         const makeGame = document.getElementById("LevelEditor");
         const makeEvent = document.getElementById("MakeEvent");
         const addScene = document.getElementById("MakeScene");
+        const addTime = document.getElementById("TimeSubmit");
 
         const sceneNameSubmit = document.getElementById("sceneNameSubmit");
        
@@ -147,6 +154,12 @@ export class LevelDesigner {
             this.makeScene(name);
             console.log("scene name submitted: ", name);
         };
+        addTime.onclick = (e) => {
+            e.stopPropagation();
+            const time = document.getElementById("Time").value;
+            this.makeTime(time);
+            console.log("timeSubmitted: ", time);
+        };
 
         // this.levelDesignerCtx.addEventListener("dblclick", (e) => {
         //     e.stopPropagation();
@@ -154,6 +167,12 @@ export class LevelDesigner {
         //     const pos = [e.offsetX, e.offsetY];
         //     this.mouseDoubleClicked(pos);
         // });
+    }
+
+    makeTime(time) {
+        const newElementPosition = this.getNewDrawPosition(this.UIElementSprites);
+        const timeObject = new TimeObject(this, {waitTime: time}, newElementPosition);
+        this.selectedTime = timeObject;
     }
 
     mouseDoubleClicked(pos) {
