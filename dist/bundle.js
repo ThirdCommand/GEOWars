@@ -806,6 +806,7 @@ class LevelDesigner {
         
 
         const addArrowButton = document.getElementById("Arrow");
+        const addGruntButton = document.getElementById("Grunt");
         const addBoxBox = document.getElementById("BoxBox");
         const addPinwheel = document.getElementById("Pinwheel");
         const addWeaver = document.getElementById("Weaver");
@@ -816,6 +817,13 @@ class LevelDesigner {
 
         const sceneNameSubmit = document.getElementById("sceneNameSubmit");
        
+        addGruntButton.onclick = (e) => {
+            e.stopPropagation();
+            const type = "Grunt";
+            this.addEnemy(type);
+            this.animationView.clear();
+            this.animationView.addEnemy(type);
+        };
 
         addArrowButton.onclick = (e) => {
             e.stopPropagation();
