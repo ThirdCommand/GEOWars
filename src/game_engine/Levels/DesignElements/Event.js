@@ -72,6 +72,7 @@ export class EventObject extends UIElement {
 
     serialize() {  
         return {
+            type: 'Event',
             spawns: this.spawns.map((spawn) => spawn.serialize())
         };
     }

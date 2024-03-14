@@ -1,35 +1,61 @@
 import { UILineSprite } from "../../UI_line_sprite";
 import { UIElement } from "../../UI_Element";
 
+// there will have to be an ancestor scene that holds all the scenes and stuffs
 export class Scene {
-    constructor(gameSequence, name) {
-        this.name = name;
+    constructor(parentScene, name, gameElements, currentElementIndex) {
+        this.parentScene = parentScene;
+        this.name = name || "";
+        this.gameElements = gameElements || [];
+        this.currentElementIndex = currentElementIndex || 0;
+    }
+    update(dT) {
+        this.gameElements[this.currentElementIndex].update(dT);
+    }
+
+
+
+    nextElement() {
+        if(this.currentElementIndex < this.gameElements.length - 1) {
+            this.currentElementIndex++;
+        } else {
+            this.currentElementIndex = 0;
+            this.parentScene.nextElement();
+        }
     }
 }
 
-// this might just be the display object
 export class SceneObject extends UIElement {
-    constructor(levelDesigner, name, position) {
+    constructor(levelDesigner, sceneInfo, position) {
         super(levelDesigner, position);
-        this.elements = [];
+        // i'll have to create the game elements from the serialized data
+        this.gameElements = sceneInfo?.gameElements || [];
         this.widthHeight = [40,40];
     
-        this.addUIElementSprite(new SceneSprite(name, this.UITransform, this.widthHeight));
+        this.addUIElementSprite(new SceneSprite(sceneInfo?.name, this.UITransform, this.widthHeight));
 
         this.clickRadius = 20;
         this.addMouseClickListener();
         this.addMouseDoubleClickListener();
     }
 
-    serialize() {
-        return this.scene;
+    copy() {
+        return this.levelDesigner.addToClipBoard(new SceneObject(this.levelDesigner, this.serialize()));
     }
 
-    onMouseClick(mousePos) {
+    serialize() {
+        return {
+            type: 'Scene',
+            name: this.name,
+            gameElements: this.gameElements.map((element) => element.serialize()),
+        };
+    }
+
+    onMouseClick() {
         this.levelDesigner.sceneSelected(this);
         this.UILineSprite.selected = true;
     }
-    onMouseDoubleClicked(mousePos) {
+    onMouseDoubleClicked() {
         console.log('yay mouse double clicked here');
     }
 

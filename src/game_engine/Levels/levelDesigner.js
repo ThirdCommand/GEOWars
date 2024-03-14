@@ -200,7 +200,7 @@ export class LevelDesigner {
         // or inside the current scene
         const newElementPosition = this.getNewDrawPosition(this.UIElementSprites);
         // sprites are made and added automatically
-        const newScene  = new SceneObject(this, name, newElementPosition);
+        const newScene  = new SceneObject(this, {name}, newElementPosition);
     }
 
     eventSelected(event) {
