@@ -1244,7 +1244,6 @@ class LevelDesigner {
         const addSingularity = document.getElementById("Singularity");
         const makeGame = document.getElementById("LevelEditor");
         const makeEvent = document.getElementById("MakeEvent");
-        const addScene = document.getElementById("MakeScene");
         const addTime = document.getElementById("TimeSubmit");
         const addLoop = document.getElementById("LoopSubmit");
         const moveLeft = document.getElementById("MoveLeft");
@@ -1305,10 +1304,6 @@ class LevelDesigner {
         makeEvent.onclick = (e) => {
             e.stopPropagation();
             this.UIActionsToRun.push(() => this.makeEvent());
-        };
-        addScene.onclick = (e) => {
-            e.stopPropagation();
-            this.UIActionsToRun.push(() => this.makeScene());
         };
 
         sceneNameSubmit.onclick = (e) => {
@@ -4877,7 +4872,7 @@ class PinwheelSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0
         const pos = this.transform.absolutePosition();
         const angle = this.transform.absoluteAngle();
 
-        const shipWidth = 12 * spawningScale;
+        const shipWidth = 18 * spawningScale;
         const s = shipWidth / 2;
 
         const r = 59;

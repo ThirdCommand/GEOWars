@@ -74,7 +74,6 @@ export class LevelDesigner {
         const addSingularity = document.getElementById("Singularity");
         const makeGame = document.getElementById("LevelEditor");
         const makeEvent = document.getElementById("MakeEvent");
-        const addScene = document.getElementById("MakeScene");
         const addTime = document.getElementById("TimeSubmit");
         const addLoop = document.getElementById("LoopSubmit");
         const moveLeft = document.getElementById("MoveLeft");
@@ -135,10 +134,6 @@ export class LevelDesigner {
         makeEvent.onclick = (e) => {
             e.stopPropagation();
             this.UIActionsToRun.push(() => this.makeEvent());
-        };
-        addScene.onclick = (e) => {
-            e.stopPropagation();
-            this.UIActionsToRun.push(() => this.makeScene());
         };
 
         sceneNameSubmit.onclick = (e) => {

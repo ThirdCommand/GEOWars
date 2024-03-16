@@ -12,7 +12,7 @@ export class PinwheelSprite extends LineSprite {
         const pos = this.transform.absolutePosition();
         const angle = this.transform.absoluteAngle();
 
-        const shipWidth = 12 * spawningScale;
+        const shipWidth = 18 * spawningScale;
         const s = shipWidth / 2;
 
         const r = 59;

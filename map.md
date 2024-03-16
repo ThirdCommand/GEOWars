@@ -34,13 +34,12 @@ gameSequence = [scene1Start, event, event, wait, event, scene3End, scene2Start, 
   - [x] I could have the engine handle everything between both canvases
     - [x] No need for colliders, just add a listener to the list (either levelDesigner list or game list), and check all for that list when a click happens
 - [x] add time UI Element
-- [ ] 
 - [x] performance has completely tanked at the moment... woof
   - [x] I think multiple canvas were being run multiple times a frame
-- [ ] When a scene is selected, the array of things that it contains can be displayed under it
-  - [ ] I'll have to either add vertical scrolling while selected nested elements, or have the canvas grow vertically
+- [x] When a scene is selected, the array of things that it contains can be displayed under it
+  - [x] I'll have to either add vertical scrolling while selected nested elements, or have the canvas grow vertically
 - [x] fix regression where placing enemies fails
-- [ ] fix regression where placing enemies works but animation window fails somehow lol
+- [x] fix regression where placing enemies works but animation window fails somehow lol
 - [ ] UI will need to handle screen resizing right
   - [ ] When screen longer, canvas becomes wider and more elements are seen
 
@@ -58,7 +57,9 @@ gameSequence = [scene1Start, event, event, wait, event, scene3End, scene2Start, 
     - [x] name
     - [x] multiple of them
     - [x] selectable
-    - [ ] when selected show array of what is contained in it bellow
+    - [x] when selected show array of what is contained in it bellow
+    - [ ] unExpanding grandparent scene should work and note break things
+      - [ ] will need a stack of expanded scenes
   - [ ] Event
     - [ ] add game flags, like bullet upgrades... that might be it haha
     - [x] fix boxbox sprite for placing and placed
@@ -75,9 +76,10 @@ gameSequence = [scene1Start, event, event, wait, event, scene3End, scene2Start, 
   - [x] Time
     - [x] add UI for time
   - [ ] Loop
-    - [ ] add UI elements for loop type
-      - [ ] beginning
-      - [ ] end
+    - [x] add UI elements for loop type
+      - [x] beginning
+      - [x] end
+      - [ ] make sprite a little better
   - [ ] Operation: not fully baked yet. repeat "until" etc
     - [ ] something applied to selected elements
     - [ ] decrease the timing between spawns
