@@ -59,9 +59,7 @@ class AnimationView {
         };
     }
 
-    animate(time) {
-        const timeDelta = time - this.lastTime;
-        this.lastTime = time;
+    animate(timeDelta) {
         this.animateGameObjects(timeDelta);
         this.clearCanvas();
         this.renderLineSprites(this.ctx);
@@ -210,7 +208,7 @@ class Event {
     }
 }
 
-// maybe this is what is created by the UI
+// this is what is created by the UI
 // but it will also have to be created by the serialized data
 class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
     constructor(levelDesigner, eventToLoad, position) {
@@ -297,6 +295,7 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
 class EventObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UILineSprite {
     constructor(UITransform, spawnSprites, widthHeight) {
         super(UITransform);
+        this.selected = true;
         this.spawnSprites = spawnSprites;
         this.widthHeight = widthHeight;
 
@@ -341,11 +340,16 @@ class EventObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UIL
 
         ctx.fillStyle = "#000000";
 
-        if(this.selected) ctx.fillStyle = "#419ef0";
-        ctx.rect(0, 0, w, h);
-        ctx.fill();
-        ctx.lineWidth = 2;
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.lineWidth = this.selected ? 3 : 1;
         ctx.strokeStyle = "#FFFFFF";
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.lineTo(w,0);
+        ctx.lineTo(w,h);
+        ctx.lineTo(0,h);
+        ctx.closePath();
         ctx.stroke();
 
         // should add Alien too
@@ -381,6 +385,248 @@ class EventObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UIL
 }
 
 
+
+/***/ }),
+
+/***/ "./src/game_engine/Levels/DesignElements/Loop.js":
+/*!*******************************************************!*\
+  !*** ./src/game_engine/Levels/DesignElements/Loop.js ***!
+  \*******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   LoopBeginning: () => (/* binding */ LoopBeginning),
+/* harmony export */   LoopBeginningObject: () => (/* binding */ LoopBeginningObject),
+/* harmony export */   LoopBeginningObjectSprite: () => (/* binding */ LoopBeginningObjectSprite),
+/* harmony export */   LoopEnd: () => (/* binding */ LoopEnd),
+/* harmony export */   LoopEndObject: () => (/* binding */ LoopEndObject),
+/* harmony export */   LoopEndingObjectSprite: () => (/* binding */ LoopEndingObjectSprite)
+/* harmony export */ });
+/* harmony import */ var _UI_Element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../UI_Element */ "./src/game_engine/UI_Element.js");
+/* harmony import */ var _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../UI_line_sprite */ "./src/game_engine/UI_line_sprite.js");
+
+
+
+// loop, wait, 
+
+// maybe I should have a loop beginner and a loop ender repeater thingy
+// like in music
+
+// maybe when the game sequence comes across the beginning of a loop it will store that loop
+// and then when it comes across the end of the loop it will check if the loop is done
+// if it is it will move on, if not it will go back to the beginning of the loop
+class LoopEnd {
+    // can only loop if start and end of loop are in the same scene
+    constructor(scene, loop) {
+        this.scene = scene; // scene the loop is in
+        
+        this.startingLoopValues = {
+            loopIdx: loop.loopIdx, // could probably default to 0. this is how many times it's looped
+            // during the level edit process, whenever a loop is added
+            // it will increment the loopId. This way beginning loops and end loops will always 
+            // have matching loopIds without collision
+            loopId: scene.getLoopId(),
+            repeatTimes: loop.repeatTimes
+        };
+        this.loop = { // {loopIdx, loopId, repeatTimes}
+            loopIdx: this.startingLoopValues.loopIdx,
+            loopId: this.startingLoopValues.loopId,
+            repeatTimes: this.startingLoopValues.repeatTimes
+        }; 
+    }
+
+    update() {
+        if(this.loop.loopIdx >= this.loop.repeatTimes) { // 3: 0, 1, 2
+            this.endLoop();
+        } else {
+            this.loop.loopIdx++;
+            this.scene.goToLoopId(this.loop.loopId);
+                
+        }
+    }
+
+    resetStartingValues() {
+        this.loop =  {
+            loopIdx: this.startingLoopValues.loopIdx,
+            loopId: this.startingLoopValues.loopId,
+            repeatTimes: this.startingLoopValues.repeatTimes
+        };
+    }
+
+    endLoop() {
+        this.resetStartingValues();
+        this.scene.nextElement();
+    }
+}
+
+class LoopBeginning {
+    constructor(scene) {
+        this.scene = scene;
+        this.loopId = this.scene.createLoopId();
+    }
+    update() {
+        this.scene.nextElement();
+        // this means the next step will be delayed by a frame waiting
+        // for the next update call
+    }
+}
+
+// UIElement
+class LoopBeginningObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
+    constructor(levelDesigner, loop, position) {
+        super(levelDesigner, position);
+        this.widthHeight = [10, 40];
+        this.clickRadius = 5;
+        this.addMouseClickListener();
+        this.addUIElementSprite(new LoopBeginningObjectSprite(this.UITransform, this.widthHeight));
+    }
+
+    moveLeft() {
+        this.levelDesigner.moveLeft(this);
+    }
+
+    moveRight() {
+        this.levelDesigner.moveRight(this);
+    }
+
+    copy() {
+        // not sure how to create a new loop id if I'm copying a loop
+        return this.levelDesigner.addToClipBoard(new LoopBeginningObject(this.levelDesigner, this.serialize()));
+    }
+
+    serialize() {
+        return {
+            type: "LoopBeginning"
+        };
+    }
+
+    onMouseClick() {
+        console.log('loop beginning clicked');
+        this.levelDesigner.loopSelected(this);
+        this.UILineSprite.selected = true;
+    }
+    unSelected() {
+        this.UILineSprite.selected = false;
+    }
+}
+
+class LoopEndObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
+    constructor(levelDesigner, loop, position) {
+        // maybe I can give it a color when it's made by making both
+        // still 
+        super(levelDesigner, position);
+        this.loop = loop;
+        this.widthHeight = [30, 40];
+        this.clickRadius = 15;
+        this.addMouseClickListener();
+        this.addUIElementSprite(new LoopEndingObjectSprite(this.UITransform, this.widthHeight, this.loop.repeatTimes));
+    }
+
+    // maybe I can have a button that moves it left or right for now
+    // until I get drag and drop going
+
+    changeRepeatTimes(newRepeatTimes) {
+        this.loop.repeatTimes = newRepeatTimes;
+    }
+
+    changeStartingRepeatIndex(newRepeatIndex) {
+        this.loop.repeatIndex = newRepeatIndex;
+    }
+
+    copy() {
+        /// ohhhhh we don't care about the ids yet since they are 
+        // made in runtime
+        // okay maybe we do because we might want to have matching colors
+        // another time
+        return this.levelDesigner.addToClipBoard(new LoopEndObject(this.levelDesigner, this.serialize()));
+    }
+
+    serialize() {
+        return {
+            type: "LoopEnd",
+            loopIdx: this.loop.loopIdx,
+            repeatTimes: this.loop.repeatTimes
+        };
+    }
+    onMouseClick() {
+        console.log('loop end clicked');
+        this.levelDesigner.loopSelected(this);
+        this.UILineSprite.selected = true;
+    }
+    unSelected() {
+        this.UILineSprite.selected = false;
+    }
+}
+
+
+class LoopBeginningObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UILineSprite {
+    constructor(UITransform, widthHeight) {
+        super(UITransform);
+        this.selected = false;
+        this.widthHeight = widthHeight;
+    }
+
+    draw(ctx) {
+        const pos = this.UITransform.pos;
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+        this.drawFunction(ctx);
+        ctx.restore();
+    }
+
+    drawFunction(ctx) {
+        const h = this.widthHeight[1];
+        const w = this.widthHeight[0];
+
+        ctx.fillStyle = "#FFD700";
+        ctx.fillRect(0, 0, w, h);
+
+        const lineWidth = this.selected ? 3 : 1;
+
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.strokeRect(0 + lineWidth / 2, 0 + lineWidth / 2, w - lineWidth / 2, h - lineWidth / 2);
+    }
+
+}
+
+
+class LoopEndingObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UILineSprite {
+    constructor(UITransform, widthHeight, repeatTimes) {
+        super(UITransform);
+        this.widthHeight = widthHeight;
+        this.repeatTimes = repeatTimes;
+        this.selected = false;
+    }
+
+    draw(ctx) {
+        const pos = this.UITransform.pos;
+        ctx.save();
+        
+        ctx.translate(pos[0], pos[1]);
+        this.drawFunction(ctx);
+    
+        ctx.restore();
+    }
+
+    drawFunction(ctx) {
+        const h = this.widthHeight[1];
+        const w = this.widthHeight[0];
+
+        ctx.fillStyle = "#FFD700";
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.lineWidth = this.selected ? 3 : 1;
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.strokeRect(0,0, w, h);
+
+        ctx.fillStyle = "#000000";
+        ctx.font = "10px Arial";
+        ctx.fillText(this.repeatTimes, 2, this.widthHeight[1]/2);
+    }
+
+}
 
 /***/ }),
 
@@ -501,6 +747,10 @@ class TimeObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
         this.addUIElementSprite(new TimeObjectSprite(this.UITransform, this.waitTime, this.widthHeight));
     }
 
+    unSelected() {
+        this.UILineSprite.selected = false;
+    }
+
     copy() {
         return this.levelDesigner.addToClipBoard(new TimeObject(this.levelDesigner, this.serialize()));
     }
@@ -516,6 +766,10 @@ class TimeObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
         this.timeConstruct.waitTime = newTime;
         this.UILineSprite.waitTime = newTime;
     
+    }
+    onMouseClick() {
+        this.levelDesigner.timeSelected(this);
+        this.UILineSprite.selected = true;
     }
 }
 
@@ -594,17 +848,32 @@ class Scene {
 }
 
 class SceneObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_1__.UIElement {
-    constructor(levelDesigner, sceneInfo, position) {
+    constructor(levelDesigner, sceneInfo, parentScene, position) {
         super(levelDesigner, position);
         // i'll have to create the game elements from the serialized data
         this.gameElements = sceneInfo?.gameElements || [];
+        
+        this.parentScene = parentScene; // might be LevelDesigner
+        
+        this.expanded = false;
         this.widthHeight = [40,40];
-    
         this.addUIElementSprite(new SceneSprite(sceneInfo?.name, this.UITransform, this.widthHeight));
-
         this.clickRadius = 20;
         this.addMouseClickListener();
         this.addMouseDoubleClickListener();
+        
+    }
+
+    expandScene() {
+        this.expanded = true;
+        this.UILineSprite.expanded = true;
+        this.levelDesigner.expandScene(this);
+    }
+
+    unExpandScene() {
+        this.expanded = false;
+        this.UILineSprite.expanded = false;
+        this.levelDesigner.unExpandScene(this);
     }
 
     copy() {
@@ -624,7 +893,12 @@ class SceneObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_1__.UIElement {
         this.UILineSprite.selected = true;
     }
     onMouseDoubleClicked() {
-        console.log('yay mouse double clicked here');
+        this.expanded ? this.unExpandScene() : this.expandScene();
+        
+    }
+
+    selected() {
+        this.UILineSprite.selected = true;
     }
 
     unSelected() {
@@ -639,6 +913,7 @@ class SceneSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_0__.UILineSpr
         this.name = name;
         this.widthHeight = widthHeight;
         this.selected = false;
+        this.expanded = false;
     }
 
     draw(ctx) {
@@ -653,12 +928,25 @@ class SceneSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_0__.UILineSpr
     drawFunction(ctx) {
         const h = this.widthHeight[1];
         const w = this.widthHeight[0];
-        ctx.fillStyle = "#FFFFFF";
+        ctx.fillStyle = "#d3d3d3";
         if(this.selected) ctx.fillStyle = "#419ef0";
+        if(this.expanded) ctx.fillStyle = "#A020F0";
+        // I can add lines to the top and sides to show that it's expanded
         ctx.fillRect(0, 0, w, h);
         ctx.fillStyle = "rgba(0, 0, 0, 1)";
         ctx.font = "10px Arial";
         ctx.fillText(this.name, 2, h/2);
+
+        if(this.expanded) {
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.beginPath();
+            ctx.moveTo(0, h);
+            ctx.lineTo(0, 0);
+            ctx.lineTo(w, 0);
+            ctx.lineTo(w, h);
+            ctx.stroke();
+        }
     }
 }
 
@@ -879,6 +1167,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./DesignElements/Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.js");
 /* harmony import */ var _DesignElements_Event__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.js");
 /* harmony import */ var _DesignElements_Time__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.js");
+/* harmony import */ var _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.js");
+
 
 
 
@@ -894,17 +1184,26 @@ __webpack_require__.r(__webpack_exports__);
 // I should collect placed enemies
 
 class LevelDesigner {
-    constructor(engine, animationView, levelDesignerCtx, animationWindow) {
-        this.DIM_X = 1000;
-        this.DIM_Y = 600;
+    constructor(engine, animationView, levelDesignerCtx, animationWindow, serializedGame) {
+        this.serializedGame = serializedGame;
+        this.UIElementSprites = [];
+
+        // duck typing for scene
+        this.gameElements = []; // top level list of game elements
+        this.expandedScene = this; // starts as this
+        this.UITransform = {pos: [0,0]};
+
+        this.widthHeight = [0,0];
+
+        this.DIM_X = 1200;
+        this.DIM_Y = 300;
         this.BG_COLOR = "#000000";
         this.engine = engine;
         this.animationView = animationView;
         this.levelDesignerCtx = levelDesignerCtx;
-        this.animationWindow = animationWindow;
 
-        this.UIElements = [];
-        this.UIElementSprites = [];
+        this.animationWindow = animationWindow;
+        this.UIActionsToRun = [];
 
         this.ctx = levelDesignerCtx;
         this.gameObjects = [];
@@ -925,28 +1224,14 @@ class LevelDesigner {
         };
         this.overlayTextCleared = true;
 
-
-        // this.walls = this.createWalls();
-        // this.grid = this.createGrid();
         this.palletModal = this.getPalletModal();
-        this.currentEvent;
-        this.selectedScene;
-        this.selectedTime;
 
-        // scene can be selected, while also selecting other elements like event
-        // or time or loop. But only one at a time
-
-        // I'm running into an issue here
-        // there's the three different versions of game sequence
-        // there's the display one that shows while creating
-        // there's the serialized representation of it
-        // there's the one that's loaded from the serialized version
-        // I think it makes sense to combine the display and loaded versions 
+        // can be scene, time, event, or loop
+        this.selectedGameElement;
+ 
 
         // main game array is the main list of sequence objects
         this.mainGameArray = [];
-
-
 
         this.gameEditorOpened = false;
         
@@ -961,6 +1246,9 @@ class LevelDesigner {
         const makeEvent = document.getElementById("MakeEvent");
         const addScene = document.getElementById("MakeScene");
         const addTime = document.getElementById("TimeSubmit");
+        const addLoop = document.getElementById("LoopSubmit");
+        const moveLeft = document.getElementById("MoveLeft");
+        const moveRight = document.getElementById("MoveRight");
 
         const sceneNameSubmit = document.getElementById("sceneNameSubmit");
        
@@ -1016,31 +1304,48 @@ class LevelDesigner {
         };
         makeEvent.onclick = (e) => {
             e.stopPropagation();
-            console.log("make event clicked");
-            this.makeEvent();
-            // this.gameEditorOpened = !this.gameEditorOpened;
-            // this.engine.gameEditorOpened = this.gameEditorOpened;
+            this.UIActionsToRun.push(() => this.makeEvent());
         };
         addScene.onclick = (e) => {
             e.stopPropagation();
-            console.log("make Scene clicked");
-            this.makeScene();
-
-            // this.gameEditorOpened = !this.gameEditorOpened;
-            // this.engine.gameEditorOpened = this.gameEditorOpened;
+            this.UIActionsToRun.push(() => this.makeScene());
         };
+
         sceneNameSubmit.onclick = (e) => {
             e.stopPropagation();
             const name = document.getElementById("sceneName").value;
-            this.makeScene(name);
-            console.log("scene name submitted: ", name);
+            this.UIActionsToRun.push(() => this.makeScene(name));
         };
         addTime.onclick = (e) => {
             e.stopPropagation();
             const time = document.getElementById("Time").value;
-            this.makeTime(time);
-            console.log("timeSubmitted: ", time);
+            this.UIActionsToRun.push(() => this.makeTime(time));
         };
+        // should add a loop next to the currently selected element
+        // once I have elements nested under scenes, I'm not sure how this will work
+        // maybe it will make one next to the selected scene if nothing else is selected
+        addLoop.onclick = (e) => {
+            e.stopPropagation();
+            const loop = {
+                repeatTimes: Number(document.getElementById("Repeats").value),
+                loopIdx: Number(document.getElementById("StartingIndex").value),
+            };
+            this.UIActionsToRun.push(() => this.makeLoop(loop));
+        };
+        moveLeft.onclick = (e) => {
+            e.stopPropagation();
+            this.UIActionsToRun.push(
+                () => this.moveLeft(this.selectedGameElement)
+            );
+        };
+        moveRight.onclick = (e) => {
+            e.stopPropagation();
+            // add action to queue for engine to process
+            this.UIActionsToRun.push(
+                () => this.moveRight(this.selectedGameElement)
+            );
+        };
+
 
         // this.levelDesignerCtx.addEventListener("dblclick", (e) => {
         //     e.stopPropagation();
@@ -1051,42 +1356,130 @@ class LevelDesigner {
     }
 
     makeTime(time) {
-        const newElementPosition = this.getNewDrawPosition(this.UIElementSprites);
+        const newElementPosition = this.getNewDrawPosition();
         const timeObject = new _DesignElements_Time__WEBPACK_IMPORTED_MODULE_9__.TimeObject(this, {waitTime: time}, newElementPosition);
-        this.selectedTime = timeObject;
+        this.selectedGameElement = timeObject;
     }
 
     mouseDoubleClicked(pos) {
         console.log(pos);
     }
 
-    makeEvent() {
-        // should provide this the current scene to know which array of elements to use
-        const newElementPosition = this.getNewDrawPosition(this.UIElementSprites);
-        const event = new _DesignElements_Event__WEBPACK_IMPORTED_MODULE_8__.EventObject(this, null, newElementPosition);
-        this.currentEvent?.unSelected();
-        this.currentEvent = event;
+    expandScene(scene) {
+        this.selectedGameElement?.unSelected();
+        this.selectedGameElement = undefined;
+        // if the scene is in the same scene as the currently expanded scene
+        if(this.expandedScene.parentScene === scene.parentScene) {
+            this.expandedScene.unExpandScene();
+        }
+        this.expandedScene = scene;
+
+        // I'll have to do something about the click listeners
+        // I could add a check that the scene it is in is expanded
+        scene.gameElements.forEach((element) => {
+            element.parentSceneExpanded();
+            this.addUIElementSprite(element.UILineSprite);
+        });
     }
 
-    getNewDrawPosition(UIElements) {
-        const lastElement = UIElements[UIElements.length - 1];
+    // will eventually want stack of expanded scenes
+    // that way I can unexpand all the way back to the double clicked scene
+    unExpandScene(scene) {
+        if(this.expandedScene === scene) {
+            this.removeExpandedElements();
+            this.expandedScene = scene.parentScene;
+        }
+    }
+
+
+    getExpandedScenePosition() {
+        // expands into next row
+        
+
+    }
+
+    makeLoop(loop) {
+        new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__.LoopBeginningObject(this, undefined, this.getNewDrawPosition());
+        new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__.LoopEndObject(this, loop, this.getNewDrawPosition());
+    }
+
+    moveLeft(UIElement) {
+        const gameElements = this.expandedScene.gameElements;
+        for(let i = 0; i < gameElements.length; i++) {
+            const element = gameElements[i];
+            if(element === UIElement) {
+                if(i === 0) return;
+                const temp = gameElements[i - 1];
+                gameElements[i - 1] = UIElement;
+                gameElements[i] = temp;
+                this.swapAdjacentPositions(temp, UIElement);
+            }
+        }
+    }
+
+    moveRight(UIElement) {
+        const gameElements = this.expandedScene.gameElements;
+        for(let i = 0; i < gameElements.length; i++) {
+            const currentElement = gameElements[i];
+            if(currentElement === UIElement) {
+                if(i === gameElements.length - 1) return;
+                const temp = gameElements[i + 1];
+                gameElements[i + 1] = UIElement;
+                gameElements[i] = temp;
+                this.swapAdjacentPositions(UIElement, temp);
+                return;
+            }
+        }
+    }
+
+    makeEvent() {
+        // should provide this the current scene to know which array of elements to use
+        const newElementPosition = this.getNewDrawPosition();
+        const event = new _DesignElements_Event__WEBPACK_IMPORTED_MODULE_8__.EventObject(this, null, newElementPosition);
+        this.selectedGameElement?.unSelected();
+        this.selectedGameElement = event;
+    }
+    
+    swapAdjacentPositions(leftUIElement, rightUIElement) {
+        const newLeftX = leftUIElement?.UITransform?.pos[0] || 0;
+        const newRightX = newLeftX + rightUIElement?.widthHeight[0] + 4;
+        leftUIElement.UITransform.pos[0] = newRightX;
+        rightUIElement.UITransform.pos[0] = newLeftX;
+        
+        console.log(this.expandedScene.gameElements.map((element) => element.UITransform.pos[0]));
+    }
+
+    getNewDrawPosition() {
+        const expandedElements = this.expandedScene.gameElements;
+        const lastElement = expandedElements[expandedElements.length - 1];
         const lastXPosition = lastElement?.UITransform?.pos[0] || 0;
+        const lastYPosition = lastElement?.UITransform?.pos[1] || this.expandedScene.widthHeight[1] + this.expandedScene.UITransform.pos[1] + 4;
         const lastWidth = lastElement?.widthHeight[0] || 0;
   
-        return [lastXPosition + lastWidth + 4, 4];
+        return [lastXPosition + lastWidth + 4, lastYPosition];
     }
 
     makeScene(name) {
         // this should add a box inside either the game sequence as a whole,
         // or inside the current scene
-        const newElementPosition = this.getNewDrawPosition(this.UIElementSprites);
+        const newElementPosition = this.getNewDrawPosition();
         // sprites are made and added automatically
-        const newScene  = new _DesignElements_scene__WEBPACK_IMPORTED_MODULE_6__.SceneObject(this, {name}, newElementPosition);
+        const newScene  = new _DesignElements_scene__WEBPACK_IMPORTED_MODULE_6__.SceneObject(this, {name}, this.expandedScene, newElementPosition);
+    }
+
+    loopSelected(loop) {
+        this.selectedGameElement?.unSelected();
+        this.selectedGameElement = loop;
+    }
+
+    timeSelected(time) {
+        this.selectedGameElement?.unSelected();
+        this.selectedGameElement = time;
     }
 
     eventSelected(event) {
-        this.currentEvent?.unSelected();
-        this.currentEvent = event;
+        this.selectedGameElement?.unSelected();
+        this.selectedGameElement = event;
     }
 
     enemyPlacerClicked(enemyPlacer) {
@@ -1096,16 +1489,17 @@ class LevelDesigner {
     }
 
     sceneDoubleClicked(scene) {
+        // this should open the array of elements in the scene
         console.log("scene double clicked: ", scene);
         // should move this into scene object
-        this.selectedScene.UILineSprite.selected = false;
-        this.selectedScene = scene;
-        scene.UILineSprite.selected = true;
+        // this.selectedScene.UILineSprite.selected = false;
+        // this.selectedScene = scene;
+        // scene.UILineSprite.selected = true;
     }
 
     sceneSelected(scene) {
-        this.selectedScene?.unSelected();
-        this.selectedScene = scene;
+        this.selectedGameElement?.unSelected();
+        this.selectedGameElement = scene;
     }
 
     getPalletModal() {
@@ -1139,11 +1533,11 @@ class LevelDesigner {
     }
 
     addSpawnToEvent(spawn, enemyPlacer) {
-        this.currentEvent?.addSpawn(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_7__.Spawn(this.engine, spawn));
-        this.currentEvent?.addEnemyPlacer(enemyPlacer);
+        if(this.selectedGameElement.enemyPlacers) {
+            this.selectedGameElement?.addSpawn(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_7__.Spawn(this.engine, spawn));
+            this.selectedGameElement?.addEnemyPlacer(enemyPlacer);
+        }
     }
-
-    addNewEvent() {}
 
     update(deltaTime) {
 
@@ -1180,14 +1574,18 @@ class LevelDesigner {
         }
     }
 
-    animate(time) {
-        const timeDelta = time - this.lastTime;
-        this.lastTime = time;
+    runUIActions() {
+        this.UIActionsToRun.forEach((action) => action());
+        this.UIActionsToRun = [];
+    }
+
+    animate(timeDelta) {
 
         // it might be cool to animate the tiny enemies in the spawn card
         // this.animateGameObjects(timeDelta);
 
         this.clearCanvas();
+        this.runUIActions();
         this.renderLineSprites(this.levelDesignerCtx);
         this.renderUILineSprites(this.levelDesignerCtx);
         this.renderOverlayText();
@@ -1221,9 +1619,9 @@ class LevelDesigner {
     }
 
     clearCanvas() {
-        this.ctx.clearRect(0, 0, this.levelDesignerCtx.width, this.levelDesignerCtx.height);
+        this.ctx.clearRect(0, 0, this.DIM_X, this.DIM_Y);
         this.ctx.fillStyle = "#000000";
-        this.ctx.fillRect(0, 0, this.levelDesignerCtx.width, this.levelDesignerCtx.height);
+        this.ctx.fillRect(0, 0, this.DIM_X, this.DIM_Y);
     }
 
     clear() {
@@ -1235,15 +1633,6 @@ class LevelDesigner {
     }
 
     renderLineSprites(ctx) {
-        // this might have to be rendered considering parent tree
-        // start with scene, recursively render each piece
-        // and the scene isn't completed until each child piece is rendered
-        // otherwise you don't know where to complete the end of the sprite
-
-        // to optimize (if needed later) I could render just what is visible during the frame
-        // maybe I could do the math to see what appears in the frame and only render that
-        // but I don't think it's necessary for now
-
         ctx.save();
         ctx.scale(this.zoomScale, this.zoomScale);
         this.lineSprites.forEach((sprite) => {
@@ -1253,11 +1642,6 @@ class LevelDesigner {
     }
 
     renderUILineSprites(ctx) {
-        // this is the equation for new positions. 
-        // grab the last element in the array
-        // take its position, and width
-        // add a gap
-        // and place the next one there 
         ctx.save();
         this.UIElementSprites.forEach((sprite) => {
             sprite.draw(ctx);
@@ -1288,14 +1672,27 @@ class LevelDesigner {
         this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1);
     }
 
+    removeExpandedElements() {
+        const UIElements = this.expandedScene.gameElements;
+        UIElements.forEach((UIElement) => {
+            UIElement.parentSceneUnexpanded();
+            if(UIElement.UILineSprite) {
+                this.UIElementSprites.splice(
+                    this.UIElementSprites.indexOf(UIElement.UILineSprite),
+                    1
+                );
+            }
+        });
+    }
+
     removeUIElement(UIElement) {
-        if(UIElement.UIElementLineSprite) {
+        if(UIElement.UILineSprite) {
             this.UIElementSprites.splice(
-                this.UIElementSprites.indexOf(UIElement.UIElementLineSprite),
+                this.UIElementSprites.indexOf(UIElement.UILineSprite),
                 1
             );
         }
-        this.UIElements.splice(this.UIElements.indexOf(UIElement), 1);
+        this.expandedScene.gameElements.splice(this.expandedScene.gameElements.indexOf(UIElement), 1);
     }
 
     addUIElementSprite(UILineSprite) {
@@ -1303,7 +1700,7 @@ class LevelDesigner {
     }
 
     addUIElement(UIElement) {
-        this.UIElements.push(UIElement);
+        this.expandedScene.gameElements.push(UIElement);
     }
 
     addLineSprite(lineSprite) {
@@ -1335,6 +1732,7 @@ class UIElement {
         this.UITransform = new _transform__WEBPACK_IMPORTED_MODULE_0__.Transform(null, position);
         this.levelDesigner = levelDesigner; // this is level designer not the game engine
         this.levelDesigner.addUIElement(this);
+        this.inExpandedScene = true;
     }
     addUIElementSprite(UILineSprite) {
         this.UILineSprite = UILineSprite;
@@ -1353,10 +1751,26 @@ class UIElement {
         this.levelDesigner.removeMouseDoubleClickListener(this);
     }
 
+    parentSceneUnexpanded() {
+        this.inExpandedScene = false;
+        this.removeMouseClickListener();
+        this.removeMouseDoubleClickListener();
+    }
+
+    parentSceneExpanded () {
+        this.inExpandedScene = true;
+        this.addMouseClickListener();
+        this.addMouseDoubleClickListener();
+    }
+
     mouseDoubleClicked(mousePos) {
-        console.log('checking double clicked in UI_Element');
+        if(!this.inExpandedScene) return;
+        const centerPosition = [
+            this.UITransform.pos[0] + this.widthHeight[0] / 2,
+            this.UITransform.pos[1] + this.widthHeight[1] / 2
+        ];
         const centerDist = _util__WEBPACK_IMPORTED_MODULE_1__.Util.dist(
-            this.UITransform.pos,
+            centerPosition,
             mousePos
         );
         if (centerDist < this.clickRadius) {
@@ -1365,7 +1779,7 @@ class UIElement {
     }
 
     mouseClicked(mousePos) {
-        console.log('checking mouse click in UI_Element');
+        if(!this.inExpandedScene) return;
         const centerPosition = [
             this.UITransform.pos[0] + this.widthHeight[0] / 2,
             this.UITransform.pos[1] + this.widthHeight[1] / 2

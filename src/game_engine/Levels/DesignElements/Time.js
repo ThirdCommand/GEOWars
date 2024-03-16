@@ -47,6 +47,10 @@ export class TimeObject extends UIElement {
         this.addUIElementSprite(new TimeObjectSprite(this.UITransform, this.waitTime, this.widthHeight));
     }
 
+    unSelected() {
+        this.UILineSprite.selected = false;
+    }
+
     copy() {
         return this.levelDesigner.addToClipBoard(new TimeObject(this.levelDesigner, this.serialize()));
     }
@@ -62,6 +66,10 @@ export class TimeObject extends UIElement {
         this.timeConstruct.waitTime = newTime;
         this.UILineSprite.waitTime = newTime;
     
+    }
+    onMouseClick() {
+        this.levelDesigner.timeSelected(this);
+        this.UILineSprite.selected = true;
     }
 }
 

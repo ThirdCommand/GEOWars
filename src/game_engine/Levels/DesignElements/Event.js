@@ -27,7 +27,7 @@ export class Event {
     }
 }
 
-// maybe this is what is created by the UI
+// this is what is created by the UI
 // but it will also have to be created by the serialized data
 export class EventObject extends UIElement {
     constructor(levelDesigner, eventToLoad, position) {
@@ -114,6 +114,7 @@ export class EventObject extends UIElement {
 export class EventObjectSprite extends UILineSprite {
     constructor(UITransform, spawnSprites, widthHeight) {
         super(UITransform);
+        this.selected = true;
         this.spawnSprites = spawnSprites;
         this.widthHeight = widthHeight;
 
@@ -158,11 +159,16 @@ export class EventObjectSprite extends UILineSprite {
 
         ctx.fillStyle = "#000000";
 
-        if(this.selected) ctx.fillStyle = "#419ef0";
-        ctx.rect(0, 0, w, h);
-        ctx.fill();
-        ctx.lineWidth = 2;
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.lineWidth = this.selected ? 3 : 1;
         ctx.strokeStyle = "#FFFFFF";
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.lineTo(w,0);
+        ctx.lineTo(w,h);
+        ctx.lineTo(0,h);
+        ctx.closePath();
         ctx.stroke();
 
         // should add Alien too

@@ -38,9 +38,7 @@ export class AnimationView {
         };
     }
 
-    animate(time) {
-        const timeDelta = time - this.lastTime;
-        this.lastTime = time;
+    animate(timeDelta) {
         this.animateGameObjects(timeDelta);
         this.clearCanvas();
         this.renderLineSprites(this.ctx);

@@ -6,6 +6,7 @@ export class UIElement {
         this.UITransform = new Transform(null, position);
         this.levelDesigner = levelDesigner; // this is level designer not the game engine
         this.levelDesigner.addUIElement(this);
+        this.inExpandedScene = true;
     }
     addUIElementSprite(UILineSprite) {
         this.UILineSprite = UILineSprite;
@@ -24,10 +25,26 @@ export class UIElement {
         this.levelDesigner.removeMouseDoubleClickListener(this);
     }
 
+    parentSceneUnexpanded() {
+        this.inExpandedScene = false;
+        this.removeMouseClickListener();
+        this.removeMouseDoubleClickListener();
+    }
+
+    parentSceneExpanded () {
+        this.inExpandedScene = true;
+        this.addMouseClickListener();
+        this.addMouseDoubleClickListener();
+    }
+
     mouseDoubleClicked(mousePos) {
-        console.log('checking double clicked in UI_Element');
+        if(!this.inExpandedScene) return;
+        const centerPosition = [
+            this.UITransform.pos[0] + this.widthHeight[0] / 2,
+            this.UITransform.pos[1] + this.widthHeight[1] / 2
+        ];
         const centerDist = Util.dist(
-            this.UITransform.pos,
+            centerPosition,
             mousePos
         );
         if (centerDist < this.clickRadius) {
@@ -36,7 +53,7 @@ export class UIElement {
     }
 
     mouseClicked(mousePos) {
-        console.log('checking mouse click in UI_Element');
+        if(!this.inExpandedScene) return;
         const centerPosition = [
             this.UITransform.pos[0] + this.widthHeight[0] / 2,
             this.UITransform.pos[1] + this.widthHeight[1] / 2

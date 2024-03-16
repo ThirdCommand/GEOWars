@@ -67,12 +67,20 @@ export class LoopBeginning {
 
 // UIElement
 export class LoopBeginningObject extends UIElement {
-    constructor(levelDesigner, operationToLoad, position) {
+    constructor(levelDesigner, loop, position) {
         super(levelDesigner, position);
         this.widthHeight = [10, 40];
         this.clickRadius = 5;
         this.addMouseClickListener();
         this.addUIElementSprite(new LoopBeginningObjectSprite(this.UITransform, this.widthHeight));
+    }
+
+    moveLeft() {
+        this.levelDesigner.moveLeft(this);
+    }
+
+    moveRight() {
+        this.levelDesigner.moveRight(this);
     }
 
     copy() {
@@ -85,17 +93,31 @@ export class LoopBeginningObject extends UIElement {
             type: "LoopBeginning"
         };
     }
+
+    onMouseClick() {
+        console.log('loop beginning clicked');
+        this.levelDesigner.loopSelected(this);
+        this.UILineSprite.selected = true;
+    }
+    unSelected() {
+        this.UILineSprite.selected = false;
+    }
 }
 
 export class LoopEndObject extends UIElement {
     constructor(levelDesigner, loop, position) {
+        // maybe I can give it a color when it's made by making both
+        // still 
         super(levelDesigner, position);
         this.loop = loop;
         this.widthHeight = [30, 40];
-        this.clickRadius = 20;
+        this.clickRadius = 15;
         this.addMouseClickListener();
-        this.addUIElementSprite(new LoopEndingObjectSprite(this.UITransform, this.widthHeight));
+        this.addUIElementSprite(new LoopEndingObjectSprite(this.UITransform, this.widthHeight, this.loop.repeatTimes));
     }
+
+    // maybe I can have a button that moves it left or right for now
+    // until I get drag and drop going
 
     changeRepeatTimes(newRepeatTimes) {
         this.loop.repeatTimes = newRepeatTimes;
@@ -120,12 +142,21 @@ export class LoopEndObject extends UIElement {
             repeatTimes: this.loop.repeatTimes
         };
     }
+    onMouseClick() {
+        console.log('loop end clicked');
+        this.levelDesigner.loopSelected(this);
+        this.UILineSprite.selected = true;
+    }
+    unSelected() {
+        this.UILineSprite.selected = false;
+    }
 }
 
 
 export class LoopBeginningObjectSprite extends UILineSprite {
     constructor(UITransform, widthHeight) {
         super(UITransform);
+        this.selected = false;
         this.widthHeight = widthHeight;
     }
 
@@ -133,27 +164,59 @@ export class LoopBeginningObjectSprite extends UILineSprite {
         const pos = this.UITransform.pos;
         ctx.save();
         ctx.translate(pos[0], pos[1]);
-
-        ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
-        ctx.fillRect(-this.widthHeight[0] / 2, -this.widthHeight[1] / 2, this.widthHeight[0], this.widthHeight[1]);
+        this.drawFunction(ctx);
         ctx.restore();
     }
+
+    drawFunction(ctx) {
+        const h = this.widthHeight[1];
+        const w = this.widthHeight[0];
+
+        ctx.fillStyle = "#FFD700";
+        ctx.fillRect(0, 0, w, h);
+
+        const lineWidth = this.selected ? 3 : 1;
+
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.strokeRect(0 + lineWidth / 2, 0 + lineWidth / 2, w - lineWidth / 2, h - lineWidth / 2);
+    }
+
 }
 
 
 export class LoopEndingObjectSprite extends UILineSprite {
-    constructor(UITransform, widthHeight) {
+    constructor(UITransform, widthHeight, repeatTimes) {
         super(UITransform);
         this.widthHeight = widthHeight;
+        this.repeatTimes = repeatTimes;
+        this.selected = false;
     }
 
     draw(ctx) {
         const pos = this.UITransform.pos;
         ctx.save();
+        
         ctx.translate(pos[0], pos[1]);
-
-        ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
-        ctx.fillRect(-this.widthHeight[0] / 2, -this.widthHeight[1] / 2, this.widthHeight[0], this.widthHeight[1]);
+        this.drawFunction(ctx);
+    
         ctx.restore();
     }
+
+    drawFunction(ctx) {
+        const h = this.widthHeight[1];
+        const w = this.widthHeight[0];
+
+        ctx.fillStyle = "#FFD700";
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.lineWidth = this.selected ? 3 : 1;
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.strokeRect(0,0, w, h);
+
+        ctx.fillStyle = "#000000";
+        ctx.font = "10px Arial";
+        ctx.fillText(this.repeatTimes, 2, this.widthHeight[1]/2);
+    }
+
 }
