@@ -75,5 +75,4 @@ export class SingularityParticles extends GameObject {
         }
         this.changeCurrentColor();
     }
-    // ANIMATION = requestAnimationFrame(drawScene);
 }

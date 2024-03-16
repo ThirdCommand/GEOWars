@@ -4,42 +4,72 @@
   </head>
 
 <body class="gameArea">
-  <div class="title"></div>
-  <canvas id="canvas" class="gameCanvas" width="1000" height="600"></canvas>
-  <div class="footer">Control Direction With Keys: WASD </div>
-  <div class="footer">Control Firing With Cursor</div>
-  <div class="footer">Mute/Unmute With M</div>
-  <div id="myModal" class="modal">
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <div class="modalText">Control direction with left joystick / WASD</div>
-      <div class="modalText">Control firing with right joystick / cursor</div>
-      <div class="modalText">Mute/unmute with M</div>
-      <!-- <div class="modalText">
-        Avoid Enemy Shapes
-      </div> -->
-    </div>
-  </div>
-
+    <div class="title"></div>
+    <canvas id="canvas" class="gameCanvas" width="1000" height="600"></canvas>
+    <div class="game-space-editor-space"></div>
+    <!-- <div class="footer">Control Direction With Keys: WASD</div>
+    <div class="footer">Control Firing With Cursor</div>
+    <div class="footer">Mute/Unmute With M</div> -->
     <div id="pallet" class="pallet">
+        <form class="formContainer">
+            <input type="button" id="LevelEditor" value="Create a Level">
+            <label for="sceneName">Scene Name:</label>
+            <div class="scene-name-input-submit-container">
+                <input type="text" id="sceneName" >
+                <input type="button" id="sceneNameSubmit" value="Add Scene">
+            </div>
+            <label for="TimeSubmit">Time:</label>
+            <div class="scene-name-input-submit-container">
+                <input type="text" id="Time" >
+                <input type="button" id="TimeSubmit" value="Add Time">
+            </div>
+            <label for="LoopSubmit">Loop:</label>
+            <div class="scene-name-input-submit-container">
+                <label for="Repeats">Repeats:</label>
+                <input type="text" id="Repeats" >
+                <label for="StartingIndex">Starting Index:</label>
+                <input type="text" id="StartingIndex" >
+                <input type="button" id="LoopSubmit" value="Add Loop">
+            </div>
+            <label for="Movement">Move:</label>
+            <div class="scene-name-input-submit-container">
+                <input type="button" id="MoveLeft" value="Left">
+                <input type="button" id="MoveRight" value="Right">
+            </div>
+        </form>
+        <div class="space-between-form-and-button-panel"></div>
+        <div class="modal-content">
+            <button id="MakeEvent">Create Event</button>
+            <button id="Arrow">Arrow</button>
+            <button id="BoxBox">BoxBox</button>
+            <button id="Pinwheel">Pinwheel</button>
+            <button id="Weaver">Weaver</button>
+            <button id="Grunt">Grunt</button>
+            <button id="Singularity">Singularity</button>
+            
+        </div>
+        <div id="animationTestBox">
+            <canvas id="animationTestCanvas" class="animationCanvas" width="200" height="200"></canvas>
+        </div>
+    </div>
+    <canvas id="LevelEditorCanvas" class="level-editor-canvas" width="1200" height="300"></canvas>
 
-      <div class="modal-content">
-        <button id="Arrow">Arrow</button>
-        <button id="BoxBox">BoxBox</button>
-        <button id="Pinwheel">Pinwheel</button>
-        <button id="Weaver">Weaver</button>
-        <button id="Singularity">Singularity</button>
-        <button id="LevelEditor">Level Editor</button>
-        <!-- <div class="modalText">
-          Avoid Enemy Shapes
-        </div> -->
-      </div>
+    <div id="myModal" class="modal">
+
+        
+
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="modalText">Control direction with left joystick / WASD</div>
+            <div class="modalText">Control firing with right joystick / cursor</div>
+            <div class="modalText">Mute/unmute with M</div>
+            <!-- <div class="modalText">
+            Avoid Enemy Shapes
+            </div> -->
+        </div>
     </div>
 
-    <div id="animationTestBox">
-      <canvas id="animationTestCanvas" class="animationCanvas" width="200" height="200"></canvas>
-    </div>
-
+    
     <div id="endModal" class="endModal">
       <div class="modal-content">
         <span class="endClose">&times;</span>

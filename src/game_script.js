@@ -62,11 +62,11 @@ export class GameScript {
 
     createStars() {
         const runoffFactor = 1.5;
-        for(let i = 0; i < 400; i++) {
+        for(let i = 0; i < 900; i++) {
             const X = (runoffFactor * Math.random() - runoffFactor/2) * this.DIM_X; // based on zoom scale and eventually camera position
             const Y = (runoffFactor * Math.random() - runoffFactor/2) * this.DIM_Y;
             // const Z = -this.initialCameraZPos * 0.25 + -this.initialCameraZPos * 2 * Math.random();
-            const Z = -this.initialCameraZPos * (0.5 + 0.75 * Math.random());
+            const Z = -this.initialCameraZPos * (0.5 + 2* Math.random());
             new Star(this.engine, [X, Y, Z], this.ship.cameraTransform);
         }
     }
@@ -337,12 +337,12 @@ export class GameScript {
                 }
             },
             GreenGroups: () => {
-                const randomPos = this.randomPosition(100);
+                const randomPos = this.randomPosition(50);
                 for (let i = 0; i < 3; i++) {
                     for (let j = 0; j < 3; j++) {
                         this.enemyCreatorList["Weaver"]([
                             i * 40 + randomPos[0],
-                            j * 40 + randomPos[1],
+                            j * 40 + randomPos[1] - 50,
                         ]);
                     }
                 }
@@ -367,7 +367,7 @@ export class GameScript {
         return [
             (this.DIM_X - radius * 4) * Math.random() + radius * 4,
             (this.DIM_Y - radius * 4) * Math.random() + radius * 4,
-            // 500,300
+            // 1000,600
         ];
     }
 
@@ -384,7 +384,8 @@ export class GameScript {
 
         this.testing = false;
         if (this.testing) {
-            if (this.sequenceCount === 0) {
+            this.intervalTime += delta;
+            if (this.sequenceCount === 0 && this.intervalTime > 5000) {
                 this.sequenceTypes["BoxBoxesEverywhere"]();
                 this.sequenceCount += 1;
             }

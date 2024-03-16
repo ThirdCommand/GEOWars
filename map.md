@@ -28,18 +28,70 @@ gameSequence = [scene1Start, event, event, wait, event, scene3End, scene2Start, 
 
 ## UI
 
-I commented out the game script update so that it wasn't in the way. that should be replaced by the level design vs play game selection
-
 - [x] added placing feature with a pallet
+- [x] double click event location
+- [x] I need a unified way to handle clicking because it's getting wild
+  - [x] I could have the engine handle everything between both canvases
+    - [x] No need for colliders, just add a listener to the list (either levelDesigner list or game list), and check all for that list when a click happens
+- [x] add time UI Element
+- [x] performance has completely tanked at the moment... woof
+  - [x] I think multiple canvas were being run multiple times a frame
+- [x] When a scene is selected, the array of things that it contains can be displayed under it
+  - [x] I'll have to either add vertical scrolling while selected nested elements, or have the canvas grow vertically
+- [x] fix regression where placing enemies fails
+- [x] fix regression where placing enemies works but animation window fails somehow lol
+- [ ] UI will need to handle screen resizing right
+  - [ ] When screen longer, canvas becomes wider and more elements are seen
 
-- [ ] need to add a level designer button so that we can choose the level designer or the game
+- [ ] need way to open level designer
 
 - [ ] need way to select normal game or level designed game
 
 - [ ] need to store the placed enemies so they can be serialized
 
-- [ ] need UI for scene timeline (woof)
+- [x] need UI for scene timeline (woof)
+  - [x] scrolling behavior means I need update cycles
+- [x] Get First Piece Done
+- [ ] Pieces:
+  - [x] Scene
+    - [x] name
+    - [x] multiple of them
+    - [x] selectable
+    - [x] when selected show array of what is contained in it bellow
+    - [ ] unExpanding grandparent scene should work and note break things
+      - [ ] will need a stack of expanded scenes
+  - [ ] Event
+    - [ ] add game flags, like bullet upgrades... that might be it haha
+    - [x] fix boxbox sprite for placing and placed
+    - [x] ship spawn symbols on square
+    - [x] count of each
+    - [x] add spawn
+    - [ ] delete spawn
+    - [ ] multi select
+    - [ ] copy/paste
+    - [ ] escape key for getting out of about to place element
+    - [ ] continue placing same enemy after placing
+    - [ ] include ship position as a possible reference (spawn things around ship)
+      - [ ] handle case where ship is close to edge
+  - [x] Time
+    - [x] add UI for time
+  - [ ] Loop
+    - [x] add UI elements for loop type
+      - [x] beginning
+      - [x] end
+      - [ ] make sprite a little better
+  - [ ] Operation: not fully baked yet. repeat "until" etc
+    - [ ] something applied to selected elements
+    - [ ] decrease the timing between spawns
+    - [ ] increase a number
+    - [ ] check a number and change any element value in reaction to it
+      - [ ] position of ship
+      - [ ] number of enemies on map
 
+- [ ] animation in level editor space: scroll-ability, vertical, horizontal
+
+- [ ] have following "animation" when actually playing the level so you know where in the sequence you are
+- [ ] allow pause and playbacks (maybe a real game could come from that somehow lol)
 - [ ] need way to move serialized levels to the game
 
 - [ ] need to not be zoomed in and not have ship
@@ -47,10 +99,18 @@ I commented out the game script update so that it wasn't in the way. that should
 enemy selector
 
 - hold click to move
+- click once to select
+  - selection puts them in the meta data box
 - meta data box (location editable)
   - type "r" for random quick edit
-  - random location button
+  - random location button (during game random, or random but hard coded)
   - type location to change it maybe
+
+horizontal level editor:
+- boxes with symbols to indicate their function
+- no text, or minimal text
+- spawn events could have the ships that are spawned lined up in the box. If there's too many to fit, then the rest aren't shown
+- 
 
 need to lower the grav effect on the ship... it's a little extreme at the moment. maybe it should have less acceleration effect on it?
 
@@ -75,21 +135,32 @@ I could use the parallax with the grid and make it 3D and move in a way that loo
 ## Wants
 
 - enemy death pieces
-- particles back to squares/rectangles
+- modernize canvas transformations... scale and translate are outdated but supported for now
+- ship: fix position stutter (no input stutters)
+  - fix gravity effect on ship
+- refactor to camera as an object
+- BoxBox
+  - fix rotation off of map
+  - fix enemy placer for it (errors out)
 
 - singularity
   - 3D singularity rotating particles
+  - add small explosion effect from damaging hits
   - pulsate grid effect
   - gravity wave effect (somewhere, somehow lol)
+  - try having orbiting singularities
   - tweak grid spring/dampener values
 - weaver
   - add mutual collision detection to prevent clumping with each other
+  - add 3D effect
 - grunt
   - add mutual collision detection to prevent clumping with each other
+  - 3D effect
 - death animation
   - maybe add a portal effect with the grid
   - ship disapears, re-appears (spawn portal?)
-- 3D effect for BoxBox, Weaver, Grunt
+- Polish bullet sprite more
+- add GEOMs
 - explosion also effects grid
 - fix bullets
   - [x] bullet upgrade "bend" instead of spread

@@ -11,10 +11,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const ctx = canvasEl.getContext("2d");
     const gameEngine = new GameEngine(ctx);
-    const animationWindow = document.getElementsByTagName("canvas")[1];
-    const animationView = new AnimationView(animationWindow.getContext("2d"));
-    new LevelDesigner(gameEngine, animationView);
+    const animationWindow = document.getElementsByTagName("canvas")[1].getContext("2d");
+    const levelDesignerCanvas = document.getElementsByTagName("canvas")[2];
+    const levelDesignerCtx = levelDesignerCanvas.getContext("2d");
+    const animationView = new AnimationView(animationWindow);
+    const levelDesigner = new LevelDesigner(gameEngine, animationView, levelDesignerCtx);
 
-    animationView.start();
-    new GameView(gameEngine, ctx, canvasEl).start();
+    new GameView(gameEngine, ctx, canvasEl, levelDesigner, animationView).start();
 });

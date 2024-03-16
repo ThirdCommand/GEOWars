@@ -3,6 +3,14 @@ export class LineSprite {
         this.transform = transform;
         // this.drawFunction = draw
         this.zoomScaling = 1;
+        this.visible = true;
+    }
+
+    makeVisible() {
+        this.visible = true;
+    }
+    makeInvisible() {
+        this.visible = false;
     }
     // abstract functions
     draw(ctx) {

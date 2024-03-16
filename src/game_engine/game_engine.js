@@ -11,7 +11,11 @@ export class GameEngine {
         this.subscribers = [];
         this.muted = true;
         this.mouseListeners = [];
-        this.clickListeners = [];
+        this.gameClickListeners = [];
+        this.levelDesignerClickListeners = [];
+        this.gameDoubleClickListeners = [];
+        this.levelDesignerDoubleClickListeners = [];
+        this.doubleClickListeners = [];
         this.leftControlStickListeners = [];
         this.rightControlStickListeners = [];
         this.xButtonListeners = [];
@@ -126,12 +130,12 @@ export class GameEngine {
         this.timePassed += delta;
         if (this.timePassed > 1000 * 60) {
             const timeData = {
+                frameRate: this.frameCountForPerformance / (this.timePassed / 1000),
                 collisionTime: (this.collisionTime) / this.frameCountForPerformance,
                 physicsCalcTime: (this.physicsCalcTime) / this.frameCountForPerformance,
                 updateTime: (this.updateTime) / this.frameCountForPerformance,
                 renderTime: (this.renderTime) / this.frameCountForPerformance,
-                scriptTime: (this.scriptTime) / this.frameCountForPerformance,
-                frameRate: this.frameCountForPerformance / (this.timePassed / 1000)
+                scriptTime: (this.scriptTime) / this.frameCountForPerformance
             };
             console.log(timeData);
 
@@ -186,19 +190,67 @@ export class GameEngine {
         this.startButtonListeners.push(object);
     }
 
+    // ******** mouse stuff *******
+
     addClickListener(object) {
-        this.clickListeners.push(object);
+        this.gameClickListeners.push(object);
     }
 
-    mouseClicked(position) {
-        this.clickListeners.forEach((object) => {
-            object.mouseClicked(position);
-        });
+    addDoubleClickListener(object) {
+        this.gameDoubleClickListeners.push(object);
+    }
+
+    addLevelDesignerClickListener(object) {
+        this.levelDesignerClickListeners.push(object);
+    }
+
+    addLevelDesignerDoubleClickListener(object) {
+        this.levelDesignerDoubleClickListeners.push(object);
+    }
+
+    
+
+    mouseClicked(e) {
+        if(e.target.classList[0] === "level-editor-canvas") {
+            this.levelDesignerClickListeners.forEach((object) => {
+                object.mouseClicked([e.offsetX, e.offsetY]);
+            });
+        } else if(e.target.classList[0] === "gameCanvas") {
+            const position = [e.layerX, e.layerY];
+            this.gameClickListeners.forEach((object) => {
+                object.mouseClicked(position);
+            });
+        }
+    }
+
+    mouseDoubleClicked(e) {
+        if(e.target.classList[0] === "level-editor-canvas") {
+            this.levelDesignerDoubleClickListeners.forEach((object) => {
+                object.mouseDoubleClicked([e.offsetX, e.offsetY]);
+            });
+        } else if(e.target.classList[0] === "game-canvas") {
+            const position = [e.layerX, e.layerY];
+            this.gameDoubleClickListeners.forEach((object) => {
+                object.mouseDoubleClicked(position);
+            });
+        }
     }
 
     removeClickListener(object) {
-        this.clickListeners.splice(this.clickListeners.indexOf(object), 1);
+        this.gameClickListeners.splice(this.gameClickListeners.indexOf(object), 1);
     }
+    removeDoubleClickListener(object) {
+        this.gameDoubleClickListeners.splice(this.gameDoubleClickListeners.indexOf(object), 1);
+    }
+
+    removeLevelDesignerClickListener(object) {
+        this.levelDesignerClickListeners.splice(this.levelDesignerClickListeners.indexOf(object), 1);
+    }
+    removeLevelDesignerDoubleClickListener(object) {
+        this.levelDesignerDoubleClickListeners.splice(this.levelDesignerDoubleClickListeners.indexOf(object), 1);
+    }
+
+    // ******** end of mouse stuff *******
 
     updateLeftControlStickListeners(unitVector) {
         this.leftControlStickListeners.forEach((listener) => {
@@ -218,6 +270,8 @@ export class GameEngine {
         });
     }
 
+
+
     updateStartButtonListeners(startButton, down) {
     // console.log([startButton, down])
         this.startButtonListeners.forEach((listener) => {
@@ -225,6 +279,7 @@ export class GameEngine {
         });
     }
 
+    // called by game view
     updateMousePos(mousePos) {
         this.mouseListeners.forEach((object) => {
             object.updateMousePos(mousePos);
@@ -303,12 +358,10 @@ export class GameEngine {
                 colliders[subscription] = colliders[subscription] || {};
                 subscriber.subscribedColliderTypes.forEach((colliderType) => {
                     colliders[subscription][colliderType] =
-            colliders[subscription][colliderType] || [];
-                    colliders[subscription][colliderType].forEach(
-                        (subscribedCollider) => {
-                            subscriber.collisionCheck(subscribedCollider);
-                        }
-                    );
+                        colliders[subscription][colliderType] || [];
+                    colliders[subscription][colliderType].forEach((subscribedCollider) => {
+                        subscriber.collisionCheck(subscribedCollider);
+                    });
                 });
             });
         });

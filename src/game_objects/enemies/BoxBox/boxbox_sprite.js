@@ -4,14 +4,15 @@ export class BoxBoxSprite extends LineSprite {
     constructor(transform, rotationState) {
         super(transform);
         this.spawningScale = 1;
-        this.rotationState = rotationState;
+        this.rotationState = rotationState || {positionShift: [0,0], coordinateShift: [0,0], projectedDrawCoordinates: []};
         this.spawning = false;
     }
 
     draw(ctx) {
+        if(!this.visible) return;
         const spawningScale = this.spawningScale ||= 1;
         const pos = this.transform.absolutePosition();
-        const boxWidth = 10 * spawningScale;
+        const boxWidth = 11 * spawningScale;
 
         // ctx.strokeStyle = "#F173BA";
 

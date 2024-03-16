@@ -16,9 +16,15 @@ import { GruntSprite } from "../../../game_objects/enemies/Grunt/grunt_sprite";
 import { PinwheelSprite } from "../../../game_objects/enemies/Pinwheel/pinwheel_sprite";
 import { WeaverSprite } from "../../../game_objects/enemies/Weaver/weaver_sprite";
 import { SingularitySprite } from "../../../game_objects/enemies/Singularity/singularity_sprite";
+import { Util } from "../../util";
 
-const spriteMap = {
-    BoxBox: (transform) => new BoxBoxSprite(transform),
+// should add Alien too
+export const spriteMap = {
+    BoxBox: (transform) => {
+        const _BoxBoxSprite = new BoxBoxSprite(transform);
+        _BoxBoxSprite.spawning = true;
+        return _BoxBoxSprite;
+    },
     Arrow: (transform) => new ArrowSprite(transform),
     Grunt: (transform) => new GruntSprite(transform),
     Pinwheel: (transform) => new PinwheelSprite(transform),
@@ -37,32 +43,67 @@ const getClickRadius = {
 };
 
 export class EnemyPlacer extends GameObject {
-    constructor(engine, type, levelDesigner) {
+    constructor(engine, type, levelDesigner, loadingEvent, position) {
         super(engine);
         this.addLineSprite(spriteMap[type](this.transform));
-        this.addMousePosListener();
-        this.addChildGameObject(new PlacingAnimation(this.gameEngine));
         this.levelDesigner = levelDesigner;
         this.clickRadius = getClickRadius[type];
         this.type = type;
-    // collider should be added after placed
+        
+
+        if(!loadingEvent) {
+            this.originalClickComplete = false;
+            this.addChildGameObject(new PlacingAnimation(this.gameEngine));
+        } else {
+            this.transform.pos[0] = position[0];
+            this.transform.pos[1] = position[1];
+            this.originalClickComplete = true;
+        }
+        // click collider should be added after placed
     }
 
     place() {
-        this.addCollider("General", this, this.clickRadius);
-        const spawn = { type: this.type, location: this.transform.pos };
-        this.levelDesigner.addSpawnToEvent();
+        this.spawn = {type: this.type, location: this.transform.pos};
+        const spawn = this.spawn;
+        this.levelDesigner.addSpawnToEvent(spawn, this);
+        this.levelDesigner.enemyPlaced(spawn);
         this.removeMousePosListener();
+        this.addMouseClickListener();
     }
 
-    followMouse() {
-        this.addMousePosListener();
-        this.addChildGameObject(new PlacingAnimation(this.gameEngine));
+    eventUnselected() {
+        this.gameEngine.removeClickListener(this);
+        this.remove();
     }
 
-    updateMousePos(mousePos) {
-        this.transform.pos[0] = mousePos[0];
-        this.transform.pos[1] = mousePos[1];
+
+
+    addMouseClickListener() {
+        this.gameEngine.addClickListener(this);
     }
+
+
+    mouseClicked(mousePos) {
+        const centerDist = Util.dist(
+            this.transform.pos,
+            mousePos
+        );
+        if (centerDist < this.clickRadius) {
+            this.onMouseClick(mousePos);
+        }
+
+
+    }
+
+    onMouseClick(mousePos) {
+        if (this.originalClickComplete) {
+            this.levelDesigner.enemyPlacerClicked(this);
+        } else {
+            this.originalClickComplete = true;
+        }
+    }
+
+
+
 }
 

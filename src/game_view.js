@@ -1,5 +1,5 @@
 export class GameView {
-    constructor(engine, ctx, canvasEl) {
+    constructor(engine, ctx, canvasEl, levelDesigner, animationView) {
         this.ctx = ctx;
         this.engine = engine;
         // this.ship = this.game.addShip(); belongs in game script
@@ -7,9 +7,12 @@ export class GameView {
         this.initialUnmute = true;
         this.gameStarted = false;
         this.modelClosed = false;
+        this.levelDesigner = levelDesigner;
+        this.animationView = animationView;
         this.bindKeyboardKeys = this.bindKeyboardKeys.bind(this);
-        this.animate = this.animate.bind(this);
         this.gameEditorOpened = false;
+        this.lastTime = 0;
+        this.animate = this.animate.bind(this);
     }
 
     bindKeyboardKeys() {
@@ -85,7 +88,11 @@ export class GameView {
         });
 
         window.addEventListener("click", (e) => {
-            this.engine.mouseClicked([e.layerX, e.layerY]);
+            this.engine.mouseClicked(e);
+        });
+
+        window.addEventListener("dblclick", (e) => {
+            this.engine.mouseDoubleClicked(e);
         });
 
         // function preventDefault(e) {
@@ -153,9 +160,11 @@ export class GameView {
     animate(time) {
         const timeDelta = time - this.lastTime;
         this.engine.tick(timeDelta);
+        this.levelDesigner.animate(timeDelta);
+        this.animationView.animate(timeDelta);
         this.lastTime = time;
         // every call to animate requests causes another call to animate
-        requestAnimationFrame(this.animate.bind(this));
+        requestAnimationFrame(this.animate);
     }
 }
 

@@ -18,6 +18,11 @@ export class ShipExplosion extends GameObject {
         this.createExplosionParticles();
     }
 
+    // create explosion lines that pop out of here
+    // they dissipate over time
+    // they should depend on the object that's destroyed to
+    // that means I should have a death animation for each
+
     createExplosionParticles() {
         for (var i = 0; i < this.particleNum; i++) {
             const speed = Math.random() * 10 + 4;
@@ -37,5 +42,4 @@ export class ShipExplosion extends GameObject {
             this.remove();
         }
     }
-    // ANIMATION = requestAnimationFrame(drawScene);
 }

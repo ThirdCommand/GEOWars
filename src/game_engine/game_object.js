@@ -76,6 +76,8 @@ export class GameObject {
 
     mouseClicked(mousePos) {}
 
+    mouseDoubleClicked(mousePos) {}
+
     addCollider(type, gameObject, radius, subscriptionTypes, subscriptions) {
     // game engine checks every collider with it's subscription types
         const newCollider = new Collider(

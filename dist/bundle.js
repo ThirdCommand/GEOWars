@@ -28,104 +28,928 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class AnimationView {
-  constructor(ctx) {
-    this.ctx = ctx;
-    this.gameObjects = [];
-    this.lineSprites = [];
-    this.zoomScale = 1;
-    this.ship = {
-      transform: {
-        pos: [],
-      },
-    };
-    this.lastTime = 0;
-    this.animate = this.animate.bind(this);
-  }
-
-  start() {
-    requestAnimationFrame(this.animate);
-    this.lastTime = 0;
-  }
-
-  animate(time) {
-    const timeDelta = time - this.lastTime;
-    this.lastTime = time;
-    this.animateGameObjects(timeDelta);
-    this.clearCanvas();
-    this.renderLineSprites(this.ctx);
-    // every call to animate requests causes another call to animate
-    requestAnimationFrame(this.animate.bind(this));
-  }
-
-  animateGameObjects(delta) {
-    this.gameObjects.forEach((object) => {
-      object.animate(delta);
-    });
-  }
-
-  clearCanvas() {
-    this.ctx.clearRect(0, 0, 200, 200);
-    this.ctx.fillStyle = "#000000";
-    this.ctx.fillRect(0, 0, 200, 200);
-  }
-
-  clear() {
-    const removeList = [...this.gameObjects];
-    removeList.forEach((gameObject) => {
-      this.remove(gameObject);
-    });
-  }
-
-  renderLineSprites(ctx) {
-    // ctx.scale = gameEngine.currentCamera.zoomScale
-    this.ctx.save();
-
-    this.ctx.scale(this.zoomScale, this.zoomScale);
-    this.lineSprites.forEach((sprite) => {
-      sprite.draw(ctx);
-    });
-    this.ctx.restore();
-    // ctx.scale(1,1)
-  }
-
-  addGameObject(gameObject) {
-    this.gameObjects.push(gameObject);
-  }
-
-  queueSound(sound) {}
-
-  addCollider() {}
-
-  addPhysicsComponent(physicsComponent) {}
-
-  remove(gameObject) {
-    if (gameObject.lineSprite) {
-      this.lineSprites.splice(
-        this.lineSprites.indexOf(gameObject.lineSprite),
-        1
-      );
+    constructor(ctx) {
+        this.ctx = ctx;
+        this.gameObjects = [];
+        this.lineSprites = [];
+        this.zoomScale = 1;
+        this.ship = {
+            transform: {
+                pos: [],
+            },
+        };
+        this.lastTime = 0;
+        this.animate = this.animate.bind(this);
+        this.overlayText = {
+            Location: [0, 0],
+            Time: 0,
+            Type: "",
+            StartingAngle: 0,
+        };
+        this.overlayTextCleared = true;
     }
 
-    this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1);
-  }
+    enemySelected({ type, location}) {
+        this.overlayTextCleared = false;
+        this.overlayText = {
+            Location: [location[0], location[1]],
+            Time: 0,
+            Type: type,
+            StartingAngle: 0,
+        };
+    }
 
-  addLineSprite(lineSprite) {
-    this.lineSprites.push(lineSprite);
-  }
+    animate(timeDelta) {
+        this.animateGameObjects(timeDelta);
+        this.clearCanvas();
+        this.renderLineSprites(this.ctx);
+        this.renderOverlayText();
+    }
 
-  addEnemy(type) {
-    const enemyMap = {
-      BoxBox: (pos) => new _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_0__.BoxBox(this, pos),
-      Pinwheel: (pos) => new _game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_1__.Pinwheel(this, pos),
-      Arrow: (pos, angle) => new _game_objects_enemies_Arrow_arrow__WEBPACK_IMPORTED_MODULE_2__.Arrow(this, pos, angle),
-      Grunt: (pos) => new _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_3__.Grunt(this, pos, this.ship.transform),
-      Weaver: (pos) => new _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_4__.Weaver(this, pos, this.ship.transform),
-      Singularity: (pos) => new _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_5__.Singularity(this, pos),
-      AlienShip: (pos) => new _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_6__.AlienShip(this, pos, [0, 0], this.ship.transform),
-    };
-    enemyMap[type]([100, 100]);
-  }
+    renderOverlayText() {
+        if(this.overlayTextCleared) return;
+        this.ctx.save();
+        this.ctx.font = 18 + "px " + "Arial";
+        this.ctx.fillStyle = "white";
+        const typeText = "Type: " + this.overlayText.Type;
+        const positionText = "Location: " + this.overlayText.Location;
+        this.ctx.fillText(
+            typeText,
+            10,
+            20
+        );
+        this.ctx.fillText(
+            positionText,
+            10,
+            38
+        );
+        this.ctx.restore();
+    }
+
+
+    animateGameObjects(delta) {
+        this.gameObjects.forEach((object) => {
+            object.animate(delta);
+        });
+    }
+
+    clearCanvas() {
+        this.ctx.clearRect(0, 0, 200, 200);
+        this.ctx.fillStyle = "#000000";
+        this.ctx.fillRect(0, 0, 200, 200);
+    }
+
+    clear() {
+        const removeList = [...this.gameObjects];
+        removeList.forEach((gameObject) => {
+            this.remove(gameObject);
+        });
+        this.overlayTextCleared = true;
+    }
+
+    renderLineSprites(ctx) {
+    // ctx.scale = gameEngine.currentCamera.zoomScale
+        this.ctx.save();
+
+        this.ctx.scale(this.zoomScale, this.zoomScale);
+        this.lineSprites.forEach((sprite) => {
+            sprite.draw(ctx);
+        });
+        this.ctx.restore();
+    // ctx.scale(1,1)
+    }
+
+    addGameObject(gameObject) {
+        this.gameObjects.push(gameObject);
+    }
+
+    queueSound(sound) {
+        
+    }
+
+    addCollider() {}
+
+    addPhysicsComponent(physicsComponent) {}
+
+    remove(gameObject) {
+        if (gameObject.lineSprite) {
+            this.lineSprites.splice(
+                this.lineSprites.indexOf(gameObject.lineSprite),
+                1
+            );
+        }
+
+        this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1);
+    }
+
+    addLineSprite(lineSprite) {
+        this.lineSprites.push(lineSprite);
+    }
+
+    addEnemy(type) {
+        const enemyMap = {
+            BoxBox: (pos) => new _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_0__.BoxBox(this, pos),
+            Pinwheel: (pos) => new _game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_1__.Pinwheel(this, pos),
+            Arrow: (pos, angle) => new _game_objects_enemies_Arrow_arrow__WEBPACK_IMPORTED_MODULE_2__.Arrow(this, pos, angle),
+            Grunt: (pos) => new _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_3__.Grunt(this, pos, this.ship.transform),
+            Weaver: (pos) => new _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_4__.Weaver(this, pos, this.ship.transform),
+            Singularity: (pos) => new _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_5__.Singularity(this, pos),
+            AlienShip: (pos) => new _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_6__.AlienShip(this, pos, [0, 0], this.ship.transform),
+        };
+        enemyMap[type]([100, 100]);
+    }
 }
+
+
+/***/ }),
+
+/***/ "./src/game_engine/Levels/DesignElements/Event.js":
+/*!********************************************************!*\
+  !*** ./src/game_engine/Levels/DesignElements/Event.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Event: () => (/* binding */ Event),
+/* harmony export */   EventObject: () => (/* binding */ EventObject),
+/* harmony export */   EventObjectSprite: () => (/* binding */ EventObjectSprite)
+/* harmony export */ });
+/* harmony import */ var _UI_Element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../UI_Element */ "./src/game_engine/UI_Element.js");
+/* harmony import */ var _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../UI_line_sprite */ "./src/game_engine/UI_line_sprite.js");
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../transform */ "./src/game_engine/transform.js");
+/* harmony import */ var _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../LevelDesign/EnemyPlacer */ "./src/game_engine/Levels/LevelDesign/EnemyPlacer.js");
+
+
+
+
+
+
+// maybe this is what is created from the serialized version
+class Event {
+    constructor(gameSequence, spawns) {
+        this.gameSequence = gameSequence;
+        this.spawns = spawns; // this is different than the single spawn thing I have in the mock data
+    }
+
+    // should find way to handle groups told to spawn at random locations
+
+    update() {
+        this.spawnEverything();
+        this.endEvent();
+    }
+    spawnEverything() {
+        this.spawns.forEach((spawn) => {
+            spawn.spawnEvent();
+        });
+    }
+    endEvent() {
+        this.gameSequence.nextSequence();
+    }
+}
+
+// this is what is created by the UI
+// but it will also have to be created by the serialized data
+class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
+    constructor(levelDesigner, eventToLoad, position) {
+        super(levelDesigner, position);
+        this.spawns = [];
+        this.enemyPlacers = [];
+        this.selectedSpawns = [];
+        this.spawnSprites = {Pinwheel: 0, BoxBox: 0, Arrow: 0, Grunt: 0, Weaver: 0, Singularity: 0, AlienShip: 0};
+        this.widthHeight = [80, 40];
+        this.clickRadius = 20;
+        this.addMouseClickListener();
+
+        if(eventToLoad) {
+            eventToLoad.spawns.forEach((spawn) => this.addSpawn(spawn));
+        }
+        this.addUIElementSprite(new EventObjectSprite(this.UITransform, this.spawnSprites, this.widthHeight));
+    }
+
+    // copy and paste should be supported
+    copy() {
+        return this.levelDesigner.addToClipBoard(new EventObject(this.levelDesigner, this.serialize()));
+    }
+
+    copySelectedSpawns() {
+        // I imagine shift click and then copy, and past
+    }
+
+    deleteSelectedSpawns() {
+
+    }
+
+    loadSpawns() {
+        this.spawns.forEach((spawn) => {
+            this.enemyPlacers.push(new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.levelDesigner.engine, spawn.type, this.levelDesigner, true, spawn.location));
+        });
+    }
+
+    // copied into engine's clipboard
+    pasteCopiedSpawns(spawns) {
+        spawns.forEach((spawn) => (this.addSpawn(spawn)));
+    }
+
+    serialize() {  
+        return {
+            type: 'Event',
+            spawns: this.spawns.map((spawn) => spawn.serialize())
+        };
+    }
+
+    addSpawn(spawn) {
+        console.log('adding spawn', spawn.spawn);
+        this.spawns.push(spawn.spawn);
+        this.spawnSprites[spawn.spawn.type] += 1;
+    }
+
+    addEnemyPlacer(enemyPlacer) {
+        this.enemyPlacers.push(enemyPlacer);
+    }
+
+    deleteSpawn(spawn) {
+        this.spawns.splice(this.spawns.indexOf(spawn), 1);
+        this.spawnSprites[spawn.type] -= 1;
+    }
+
+    onMouseClick(mousePos) {
+        console.log('event object mouse click');
+        this.levelDesigner.eventSelected(this);
+        this.loadSpawns();
+        this.UILineSprite.selected = true;
+    }
+
+    unSelected() {
+        this.enemyPlacers.forEach((enemyPlacer) => enemyPlacer.eventUnselected());
+        this.UILineSprite.selected = false;
+    }
+    onMouseDoubleClicked(mousePos) {
+        console.log('yay mouse double clicked here');
+    }
+
+    update() {
+    }
+}
+
+class EventObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UILineSprite {
+    constructor(UITransform, spawnSprites, widthHeight) {
+        super(UITransform);
+        this.selected = true;
+        this.spawnSprites = spawnSprites;
+        this.widthHeight = widthHeight;
+
+        this.firstPosition = [10,10];
+        this.secondPosition = [30,10];
+        this.thirdPosition = [50,10];
+
+        this.fourthPosition = [10,30];
+        this.fifthPosition = [30,30];
+        this.sixthPosition = [50,30];
+
+        this.spawnSpriteMap = {
+            BoxBox: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['BoxBox'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.firstPosition)),
+            Arrow: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Arrow'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.secondPosition)),
+            Grunt: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Grunt'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.thirdPosition)),
+
+            Pinwheel: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Pinwheel'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.fourthPosition)),
+            Weaver: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Weaver'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.fifthPosition)),
+            Singularity: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Singularity'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.sixthPosition)),
+        };
+
+        // change the sprites to have spawning scale be 0.5
+        Object.keys(this.spawnSpriteMap).forEach((key) => {
+            this.spawnSpriteMap[key].spawningScale = 0.5;
+        });
+    }
+
+
+
+    draw(ctx) {
+        const pos = this.UITransform.pos;
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+
+        this.drawFunction(ctx);
+        ctx.restore();
+    }
+
+    drawFunction(ctx) {
+        const h = this.widthHeight[1];
+        const w = this.widthHeight[0];
+
+        ctx.fillStyle = "#000000";
+
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.lineWidth = this.selected ? 3 : 1;
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.lineTo(w,0);
+        ctx.lineTo(w,h);
+        ctx.lineTo(0,h);
+        ctx.closePath();
+        ctx.stroke();
+
+        // should add Alien too
+        // BoxBox, then Pinwheel, then Grunt, then Arrow, then Weaver, then Singularity
+
+        // BoxBox location: 5,5
+        // Grunt location: 10,5
+        // Arrow location: 15,5
+        const BoxBoxSprite = this.spawnSpriteMap['BoxBox'];
+        const ArrowSprite = this.spawnSpriteMap['Arrow'];
+        const GruntSprite = this.spawnSpriteMap['Grunt'];
+
+        const PinwheelSprite = this.spawnSpriteMap['Pinwheel'];
+        const WeaverSprite = this.spawnSpriteMap['Weaver'];
+        const SingularitySprite = this.spawnSpriteMap['Singularity'];
+
+        this.spawnSprites.BoxBox > 0 ? BoxBoxSprite.makeVisible() : BoxBoxSprite.makeInvisible();
+        this.spawnSprites.Arrow > 0 ? ArrowSprite.makeVisible() : ArrowSprite.makeInvisible();
+        this.spawnSprites.Grunt > 0 ? GruntSprite.makeVisible() : GruntSprite.makeInvisible();
+
+        this.spawnSprites.Pinwheel > 0 ? PinwheelSprite.makeVisible() : PinwheelSprite.makeInvisible();
+        this.spawnSprites.Weaver > 0 ? WeaverSprite.makeVisible() : WeaverSprite.makeInvisible();
+        this.spawnSprites.Singularity > 0 ? SingularitySprite.makeVisible() : SingularitySprite.makeInvisible();
+
+        BoxBoxSprite.draw(ctx);
+        ArrowSprite.draw(ctx);
+        GruntSprite.draw(ctx);
+
+        PinwheelSprite.draw(ctx);
+        WeaverSprite.draw(ctx);
+        SingularitySprite.draw(ctx);
+    }
+}
+
+
+
+/***/ }),
+
+/***/ "./src/game_engine/Levels/DesignElements/Loop.js":
+/*!*******************************************************!*\
+  !*** ./src/game_engine/Levels/DesignElements/Loop.js ***!
+  \*******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   LoopBeginning: () => (/* binding */ LoopBeginning),
+/* harmony export */   LoopBeginningObject: () => (/* binding */ LoopBeginningObject),
+/* harmony export */   LoopBeginningObjectSprite: () => (/* binding */ LoopBeginningObjectSprite),
+/* harmony export */   LoopEnd: () => (/* binding */ LoopEnd),
+/* harmony export */   LoopEndObject: () => (/* binding */ LoopEndObject),
+/* harmony export */   LoopEndingObjectSprite: () => (/* binding */ LoopEndingObjectSprite)
+/* harmony export */ });
+/* harmony import */ var _UI_Element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../UI_Element */ "./src/game_engine/UI_Element.js");
+/* harmony import */ var _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../UI_line_sprite */ "./src/game_engine/UI_line_sprite.js");
+
+
+
+// loop, wait, 
+
+// maybe I should have a loop beginner and a loop ender repeater thingy
+// like in music
+
+// maybe when the game sequence comes across the beginning of a loop it will store that loop
+// and then when it comes across the end of the loop it will check if the loop is done
+// if it is it will move on, if not it will go back to the beginning of the loop
+class LoopEnd {
+    // can only loop if start and end of loop are in the same scene
+    constructor(scene, loop) {
+        this.scene = scene; // scene the loop is in
+        
+        this.startingLoopValues = {
+            loopIdx: loop.loopIdx, // could probably default to 0. this is how many times it's looped
+            // during the level edit process, whenever a loop is added
+            // it will increment the loopId. This way beginning loops and end loops will always 
+            // have matching loopIds without collision
+            loopId: scene.getLoopId(),
+            repeatTimes: loop.repeatTimes
+        };
+        this.loop = { // {loopIdx, loopId, repeatTimes}
+            loopIdx: this.startingLoopValues.loopIdx,
+            loopId: this.startingLoopValues.loopId,
+            repeatTimes: this.startingLoopValues.repeatTimes
+        }; 
+    }
+
+    update() {
+        if(this.loop.loopIdx >= this.loop.repeatTimes) { // 3: 0, 1, 2
+            this.endLoop();
+        } else {
+            this.loop.loopIdx++;
+            this.scene.goToLoopId(this.loop.loopId);
+                
+        }
+    }
+
+    resetStartingValues() {
+        this.loop =  {
+            loopIdx: this.startingLoopValues.loopIdx,
+            loopId: this.startingLoopValues.loopId,
+            repeatTimes: this.startingLoopValues.repeatTimes
+        };
+    }
+
+    endLoop() {
+        this.resetStartingValues();
+        this.scene.nextElement();
+    }
+}
+
+class LoopBeginning {
+    constructor(scene) {
+        this.scene = scene;
+        this.loopId = this.scene.createLoopId();
+    }
+    update() {
+        this.scene.nextElement();
+        // this means the next step will be delayed by a frame waiting
+        // for the next update call
+    }
+}
+
+// UIElement
+class LoopBeginningObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
+    constructor(levelDesigner, loop, position) {
+        super(levelDesigner, position);
+        this.widthHeight = [10, 40];
+        this.clickRadius = 5;
+        this.addMouseClickListener();
+        this.addUIElementSprite(new LoopBeginningObjectSprite(this.UITransform, this.widthHeight));
+    }
+
+    moveLeft() {
+        this.levelDesigner.moveLeft(this);
+    }
+
+    moveRight() {
+        this.levelDesigner.moveRight(this);
+    }
+
+    copy() {
+        // not sure how to create a new loop id if I'm copying a loop
+        return this.levelDesigner.addToClipBoard(new LoopBeginningObject(this.levelDesigner, this.serialize()));
+    }
+
+    serialize() {
+        return {
+            type: "LoopBeginning"
+        };
+    }
+
+    onMouseClick() {
+        console.log('loop beginning clicked');
+        this.levelDesigner.loopSelected(this);
+        this.UILineSprite.selected = true;
+    }
+    unSelected() {
+        this.UILineSprite.selected = false;
+    }
+}
+
+class LoopEndObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
+    constructor(levelDesigner, loop, position) {
+        // maybe I can give it a color when it's made by making both
+        // still 
+        super(levelDesigner, position);
+        this.loop = loop;
+        this.widthHeight = [30, 40];
+        this.clickRadius = 15;
+        this.addMouseClickListener();
+        this.addUIElementSprite(new LoopEndingObjectSprite(this.UITransform, this.widthHeight, this.loop.repeatTimes));
+    }
+
+    // maybe I can have a button that moves it left or right for now
+    // until I get drag and drop going
+
+    changeRepeatTimes(newRepeatTimes) {
+        this.loop.repeatTimes = newRepeatTimes;
+    }
+
+    changeStartingRepeatIndex(newRepeatIndex) {
+        this.loop.repeatIndex = newRepeatIndex;
+    }
+
+    copy() {
+        /// ohhhhh we don't care about the ids yet since they are 
+        // made in runtime
+        // okay maybe we do because we might want to have matching colors
+        // another time
+        return this.levelDesigner.addToClipBoard(new LoopEndObject(this.levelDesigner, this.serialize()));
+    }
+
+    serialize() {
+        return {
+            type: "LoopEnd",
+            loopIdx: this.loop.loopIdx,
+            repeatTimes: this.loop.repeatTimes
+        };
+    }
+    onMouseClick() {
+        console.log('loop end clicked');
+        this.levelDesigner.loopSelected(this);
+        this.UILineSprite.selected = true;
+    }
+    unSelected() {
+        this.UILineSprite.selected = false;
+    }
+}
+
+
+class LoopBeginningObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UILineSprite {
+    constructor(UITransform, widthHeight) {
+        super(UITransform);
+        this.selected = false;
+        this.widthHeight = widthHeight;
+    }
+
+    draw(ctx) {
+        const pos = this.UITransform.pos;
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+        this.drawFunction(ctx);
+        ctx.restore();
+    }
+
+    drawFunction(ctx) {
+        const h = this.widthHeight[1];
+        const w = this.widthHeight[0];
+
+        ctx.fillStyle = "#FFD700";
+        ctx.fillRect(0, 0, w, h);
+
+        const lineWidth = this.selected ? 3 : 1;
+
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.strokeRect(0 + lineWidth / 2, 0 + lineWidth / 2, w - lineWidth / 2, h - lineWidth / 2);
+    }
+
+}
+
+
+class LoopEndingObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UILineSprite {
+    constructor(UITransform, widthHeight, repeatTimes) {
+        super(UITransform);
+        this.widthHeight = widthHeight;
+        this.repeatTimes = repeatTimes;
+        this.selected = false;
+    }
+
+    draw(ctx) {
+        const pos = this.UITransform.pos;
+        ctx.save();
+        
+        ctx.translate(pos[0], pos[1]);
+        this.drawFunction(ctx);
+    
+        ctx.restore();
+    }
+
+    drawFunction(ctx) {
+        const h = this.widthHeight[1];
+        const w = this.widthHeight[0];
+
+        ctx.fillStyle = "#FFD700";
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.lineWidth = this.selected ? 3 : 1;
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.strokeRect(0,0, w, h);
+
+        ctx.fillStyle = "#000000";
+        ctx.font = "10px Arial";
+        ctx.fillText(this.repeatTimes, 2, this.widthHeight[1]/2);
+    }
+
+}
+
+/***/ }),
+
+/***/ "./src/game_engine/Levels/DesignElements/Spawn.js":
+/*!********************************************************!*\
+  !*** ./src/game_engine/Levels/DesignElements/Spawn.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Spawn: () => (/* binding */ Spawn)
+/* harmony export */ });
+// a single enemy, and location
+class Spawn { 
+    constructor(gameEngine, spawn) { // spawn: {type, location: [x,y]} 
+        this.spawn = spawn;
+        this.gameEngine = gameEngine;
+    }
+
+    // start with known positions entered first, 
+    // then we can easily add random and the buttons needed for that
+
+    // these random functions should be in the Event class I think
+
+    randomPosition() {
+        return [
+            this.DIM_X * 0.70 * Math.random(),
+            this.DIM_Y * 0.70 * Math.random(),
+        ];
+    }
+
+    randomMob(possibleSpawns) {
+        return possibleSpawns[Math.floor(Math.random() * possibleSpawns.length) % possibleSpawns.length];
+    }
+
+    spawnEvent() {
+        for(let i = 0; i < this.spawn.numberToGenerate; i++) {
+            let mobToSpawn = this.spawn.type;
+            let location = this.spawn.location;
+            if(this.spawn.type === 'RANDOM') {
+                mobToSpawn = this.randomMob(this.spawn.possibleSpawns);
+            } 
+            if(this.spawn.location === 'RANDOM') {
+                location = this.randomPosition();
+            }
+            this.gameEngine.enemyCreatorList[mobToSpawn](location);
+        }
+    }
+
+    serialize() {
+
+    }
+}
+
+/***/ }),
+
+/***/ "./src/game_engine/Levels/DesignElements/Time.js":
+/*!*******************************************************!*\
+  !*** ./src/game_engine/Levels/DesignElements/Time.js ***!
+  \*******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Time: () => (/* binding */ Time),
+/* harmony export */   TimeObject: () => (/* binding */ TimeObject),
+/* harmony export */   TimeObjectSprite: () => (/* binding */ TimeObjectSprite)
+/* harmony export */ });
+/* harmony import */ var _UI_Element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../UI_Element */ "./src/game_engine/UI_Element.js");
+/* harmony import */ var _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../UI_line_sprite */ "./src/game_engine/UI_line_sprite.js");
+
+
+
+// wait times
+class Time {
+    constructor(gameSequence, waitTime) {
+        this.gameSequence = gameSequence;
+        this.waitTime = waitTime;
+        this.time = 0;
+        this.startingValues = {
+            time: 0,
+            waitTime: waitTime,
+        };
+    }
+
+    // I'll have to make sure pausing doesn't fuck this up
+    update(dT) {
+        // maybe I just check if it's paused?
+        this.time += dT;
+        if(this.time >= this.waitTime) {
+            this.endOperation();
+        }
+    }
+
+    resetStartingValues() {
+        this.time = this.startingValues.time;
+        this.waitTime = this.startingValues.waitTime;
+    }
+
+    endOperation() {
+        this.resetStartingValues();
+        
+        // this will have to be the scene it's in I think
+        this.gameSequence.nextSequence();
+    }
+}
+
+// UIElement
+class TimeObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
+    constructor(levelDesigner, {waitTime}, position) {
+        super(levelDesigner, position);
+        this.waitTime = waitTime;
+        this.widthHeight = [50, 40];
+        this.clickRadius = 20;
+        this.addMouseClickListener();
+        this.timeConstruct = new Time(levelDesigner.gameSequence, waitTime);
+        this.addUIElementSprite(new TimeObjectSprite(this.UITransform, this.waitTime, this.widthHeight));
+    }
+
+    unSelected() {
+        this.UILineSprite.selected = false;
+    }
+
+    copy() {
+        return this.levelDesigner.addToClipBoard(new TimeObject(this.levelDesigner, this.serialize()));
+    }
+
+    serialize() {
+        return {
+            waitTime: this.waitTime,
+        };
+    }
+
+    changeTime(newTime) {
+        this.waitTime = newTime;
+        this.timeConstruct.waitTime = newTime;
+        this.UILineSprite.waitTime = newTime;
+    
+    }
+    onMouseClick() {
+        this.levelDesigner.timeSelected(this);
+        this.UILineSprite.selected = true;
+    }
+}
+
+
+class TimeObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UILineSprite {
+    constructor(UITransform, waitTime, widthHeight) {
+        super(UITransform);
+        this.waitTime = waitTime;
+        this.widthHeight = widthHeight;
+        this.selected = false;
+    }
+
+    draw(ctx) {
+        const pos = this.UITransform.pos;
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+
+        this.drawFunction(ctx, pos);
+        ctx.restore();
+    }
+
+    drawFunction(ctx) {
+        const h = this.widthHeight[1];
+        const w = this.widthHeight[0];
+        
+        ctx.fillStyle = "#A020F0";
+        if(this.selected) ctx.fillStyle = "#419ef0";
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = "rgba(0, 0, 0, 1)";
+        ctx.font = "10px Arial";
+        ctx.fillText(this.waitTime, 2, h/2);
+    }
+}
+
+/***/ }),
+
+/***/ "./src/game_engine/Levels/DesignElements/scene.js":
+/*!********************************************************!*\
+  !*** ./src/game_engine/Levels/DesignElements/scene.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Scene: () => (/* binding */ Scene),
+/* harmony export */   SceneObject: () => (/* binding */ SceneObject),
+/* harmony export */   SceneSprite: () => (/* binding */ SceneSprite)
+/* harmony export */ });
+/* harmony import */ var _UI_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../UI_line_sprite */ "./src/game_engine/UI_line_sprite.js");
+/* harmony import */ var _UI_Element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../UI_Element */ "./src/game_engine/UI_Element.js");
+
+
+
+// there will have to be an ancestor scene that holds all the scenes and stuffs
+class Scene {
+    constructor(parentScene, name, gameElements, currentElementIndex) {
+        this.parentScene = parentScene;
+        this.name = name || "";
+        this.gameElements = gameElements || [];
+        this.currentElementIndex = currentElementIndex || 0;
+    }
+    update(dT) {
+        this.gameElements[this.currentElementIndex].update(dT);
+    }
+
+
+
+    nextElement() {
+        if(this.currentElementIndex < this.gameElements.length - 1) {
+            this.currentElementIndex++;
+        } else {
+            this.currentElementIndex = 0;
+            this.parentScene.nextElement();
+        }
+    }
+}
+
+class SceneObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_1__.UIElement {
+    constructor(levelDesigner, sceneInfo, parentScene, position) {
+        super(levelDesigner, position);
+        // i'll have to create the game elements from the serialized data
+        this.gameElements = sceneInfo?.gameElements || [];
+        
+        this.parentScene = parentScene; // might be LevelDesigner
+        
+        this.expanded = false;
+        this.widthHeight = [40,40];
+        this.addUIElementSprite(new SceneSprite(sceneInfo?.name, this.UITransform, this.widthHeight));
+        this.clickRadius = 20;
+        this.addMouseClickListener();
+        this.addMouseDoubleClickListener();
+        
+    }
+
+    expandScene() {
+        this.expanded = true;
+        this.UILineSprite.expanded = true;
+        this.levelDesigner.expandScene(this);
+    }
+
+    unExpandScene() {
+        this.expanded = false;
+        this.UILineSprite.expanded = false;
+        this.levelDesigner.unExpandScene(this);
+    }
+
+    copy() {
+        return this.levelDesigner.addToClipBoard(new SceneObject(this.levelDesigner, this.serialize()));
+    }
+
+    serialize() {
+        return {
+            type: 'Scene',
+            name: this.name,
+            gameElements: this.gameElements.map((element) => element.serialize()),
+        };
+    }
+
+    onMouseClick() {
+        this.levelDesigner.sceneSelected(this);
+        this.UILineSprite.selected = true;
+    }
+    onMouseDoubleClicked() {
+        this.expanded ? this.unExpandScene() : this.expandScene();
+        
+    }
+
+    selected() {
+        this.UILineSprite.selected = true;
+    }
+
+    unSelected() {
+        this.UILineSprite.selected = false;
+    }
+
+}
+
+class SceneSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_0__.UILineSprite {
+    constructor(name, UITransform, widthHeight) {
+        super(UITransform);
+        this.name = name;
+        this.widthHeight = widthHeight;
+        this.selected = false;
+        this.expanded = false;
+    }
+
+    draw(ctx) {
+        const pos = this.UITransform.pos;
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+
+        this.drawFunction(ctx, pos);
+        ctx.restore();
+    }
+
+    drawFunction(ctx) {
+        const h = this.widthHeight[1];
+        const w = this.widthHeight[0];
+        ctx.fillStyle = "#d3d3d3";
+        if(this.selected) ctx.fillStyle = "#419ef0";
+        if(this.expanded) ctx.fillStyle = "#A020F0";
+        // I can add lines to the top and sides to show that it's expanded
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = "rgba(0, 0, 0, 1)";
+        ctx.font = "10px Arial";
+        ctx.fillText(this.name, 2, h/2);
+
+        if(this.expanded) {
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.beginPath();
+            ctx.moveTo(0, h);
+            ctx.lineTo(0, 0);
+            ctx.lineTo(w, 0);
+            ctx.lineTo(w, h);
+            ctx.stroke();
+        }
+    }
+}
+
 
 
 /***/ }),
@@ -138,7 +962,8 @@ class AnimationView {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   EnemyPlacer: () => (/* binding */ EnemyPlacer)
+/* harmony export */   EnemyPlacer: () => (/* binding */ EnemyPlacer),
+/* harmony export */   spriteMap: () => (/* binding */ spriteMap)
 /* harmony export */ });
 /* harmony import */ var _game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_object */ "./src/game_engine/game_object.js");
 /* harmony import */ var _PlacingAnimation__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./PlacingAnimation */ "./src/game_engine/Levels/LevelDesign/PlacingAnimation.js");
@@ -148,6 +973,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_objects_enemies_Pinwheel_pinwheel_sprite__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../game_objects/enemies/Pinwheel/pinwheel_sprite */ "./src/game_objects/enemies/Pinwheel/pinwheel_sprite.js");
 /* harmony import */ var _game_objects_enemies_Weaver_weaver_sprite__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../game_objects/enemies/Weaver/weaver_sprite */ "./src/game_objects/enemies/Weaver/weaver_sprite.js");
 /* harmony import */ var _game_objects_enemies_Singularity_singularity_sprite__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../game_objects/enemies/Singularity/singularity_sprite */ "./src/game_objects/enemies/Singularity/singularity_sprite.js");
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../util */ "./src/game_engine/util.js");
 // while placing, could do spawning animation over mouse position
 // once placed, draw it at the placed location
 // store the location
@@ -167,8 +993,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+// should add Alien too
 const spriteMap = {
-    BoxBox: (transform) => new _game_objects_enemies_BoxBox_boxbox_sprite__WEBPACK_IMPORTED_MODULE_2__.BoxBoxSprite(transform),
+    BoxBox: (transform) => {
+        const _BoxBoxSprite = new _game_objects_enemies_BoxBox_boxbox_sprite__WEBPACK_IMPORTED_MODULE_2__.BoxBoxSprite(transform);
+        _BoxBoxSprite.spawning = true;
+        return _BoxBoxSprite;
+    },
     Arrow: (transform) => new _game_objects_enemies_Arrow_arrow_sprite__WEBPACK_IMPORTED_MODULE_3__.ArrowSprite(transform),
     Grunt: (transform) => new _game_objects_enemies_Grunt_grunt_sprite__WEBPACK_IMPORTED_MODULE_4__.GruntSprite(transform),
     Pinwheel: (transform) => new _game_objects_enemies_Pinwheel_pinwheel_sprite__WEBPACK_IMPORTED_MODULE_5__.PinwheelSprite(transform),
@@ -187,33 +1019,68 @@ const getClickRadius = {
 };
 
 class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
-    constructor(engine, type, levelDesigner) {
+    constructor(engine, type, levelDesigner, loadingEvent, position) {
         super(engine);
         this.addLineSprite(spriteMap[type](this.transform));
-        this.addMousePosListener();
-        this.addChildGameObject(new _PlacingAnimation__WEBPACK_IMPORTED_MODULE_1__.PlacingAnimation(this.gameEngine));
         this.levelDesigner = levelDesigner;
         this.clickRadius = getClickRadius[type];
         this.type = type;
-    // collider should be added after placed
+        
+
+        if(!loadingEvent) {
+            this.originalClickComplete = false;
+            this.addChildGameObject(new _PlacingAnimation__WEBPACK_IMPORTED_MODULE_1__.PlacingAnimation(this.gameEngine));
+        } else {
+            this.transform.pos[0] = position[0];
+            this.transform.pos[1] = position[1];
+            this.originalClickComplete = true;
+        }
+        // click collider should be added after placed
     }
 
     place() {
-        this.addCollider("General", this, this.clickRadius);
-        const spawn = { type: this.type, location: this.transform.pos };
-        this.levelDesigner.addSpawnToEvent();
+        this.spawn = {type: this.type, location: this.transform.pos};
+        const spawn = this.spawn;
+        this.levelDesigner.addSpawnToEvent(spawn, this);
+        this.levelDesigner.enemyPlaced(spawn);
         this.removeMousePosListener();
+        this.addMouseClickListener();
     }
 
-    followMouse() {
-        this.addMousePosListener();
-        this.addChildGameObject(new _PlacingAnimation__WEBPACK_IMPORTED_MODULE_1__.PlacingAnimation(this.gameEngine));
+    eventUnselected() {
+        this.gameEngine.removeClickListener(this);
+        this.remove();
     }
 
-    updateMousePos(mousePos) {
-        this.transform.pos[0] = mousePos[0];
-        this.transform.pos[1] = mousePos[1];
+
+
+    addMouseClickListener() {
+        this.gameEngine.addClickListener(this);
     }
+
+
+    mouseClicked(mousePos) {
+        const centerDist = _util__WEBPACK_IMPORTED_MODULE_8__.Util.dist(
+            this.transform.pos,
+            mousePos
+        );
+        if (centerDist < this.clickRadius) {
+            this.onMouseClick(mousePos);
+        }
+
+
+    }
+
+    onMouseClick(mousePos) {
+        if (this.originalClickComplete) {
+            this.levelDesigner.enemyPlacerClicked(this);
+        } else {
+            this.originalClickComplete = true;
+        }
+    }
+
+
+
 }
 
 
@@ -239,6 +1106,7 @@ class PlacingAnimation extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
         this.initialSpawningScale = 1.5;
         this.cycleSpeed = 0.1;
         this.addClickListener();
+        this.addMousePosListener();
     }
 
     // Mouse handling should call this I think?
@@ -246,7 +1114,17 @@ class PlacingAnimation extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
         this.parentObject.place();
         this.parentObject.lineSprite.spawningScale = 1;
         this.removeClickListener();
+        this.removeMousePosListener();
         this.remove();
+    }
+
+    updateMousePos(mousePos) {
+        this.parentObject.transform.pos[0] = mousePos[0];
+        this.parentObject.transform.pos[1] = mousePos[1];
+    }
+
+    mouseDoubleClicked() {
+        
     }
 
     mouseClicked(mousePos) {
@@ -285,7 +1163,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./LevelDesign/EnemyPlacer */ "./src/game_engine/Levels/LevelDesign/EnemyPlacer.js");
 /* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.js");
 /* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.js");
-/* harmony import */ var _scene__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./scene */ "./src/game_engine/Levels/scene.js");
+/* harmony import */ var _DesignElements_scene__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./DesignElements/scene */ "./src/game_engine/Levels/DesignElements/scene.js");
+/* harmony import */ var _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./DesignElements/Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.js");
+/* harmony import */ var _DesignElements_Event__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.js");
+/* harmony import */ var _DesignElements_Time__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.js");
+/* harmony import */ var _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.js");
 
 
 
@@ -295,27 +1177,87 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-// I should collect palced enemies
+
+
+
+
+// I should collect placed enemies
 
 class LevelDesigner {
-    constructor(engine, animationView) {
-        this.DIM_X = 1000;
-        this.DIM_Y = 600;
+    constructor(engine, animationView, levelDesignerCtx, animationWindow, serializedGame) {
+        this.serializedGame = serializedGame;
+        this.UIElementSprites = [];
+
+        // duck typing for scene
+        this.gameElements = []; // top level list of game elements
+        this.expandedScene = this; // starts as this
+        this.UITransform = {pos: [0,0]};
+
+        this.widthHeight = [0,0];
+
+        this.DIM_X = 1200;
+        this.DIM_Y = 300;
         this.BG_COLOR = "#000000";
         this.engine = engine;
         this.animationView = animationView;
-        // this.walls = this.createWalls();
-        // this.grid = this.createGrid();
+        this.levelDesignerCtx = levelDesignerCtx;
+
+        this.animationWindow = animationWindow;
+        this.UIActionsToRun = [];
+
+        this.ctx = levelDesignerCtx;
+        this.gameObjects = [];
+        this.lineSprites = [];
+        this.zoomScale = 1;
+        this.ship = {
+            transform: {
+                pos: [],
+            },
+        };
+        this.lastTime = 0;
+        this.animate = this.animate.bind(this);
+        this.overlayText = {
+            Location: [0, 0],
+            Time: 0,
+            Type: "",
+            StartingAngle: 0,
+        };
+        this.overlayTextCleared = true;
+
         this.palletModal = this.getPalletModal();
+
+        // can be scene, time, event, or loop
+        this.selectedGameElement;
+ 
+
+        // main game array is the main list of sequence objects
+        this.mainGameArray = [];
+
         this.gameEditorOpened = false;
+        
 
         const addArrowButton = document.getElementById("Arrow");
+        const addGruntButton = document.getElementById("Grunt");
         const addBoxBox = document.getElementById("BoxBox");
         const addPinwheel = document.getElementById("Pinwheel");
         const addWeaver = document.getElementById("Weaver");
         const addSingularity = document.getElementById("Singularity");
         const makeGame = document.getElementById("LevelEditor");
-        this.gameSequenceDisplay = new _scene__WEBPACK_IMPORTED_MODULE_6__.GameSequenceDisplay();
+        const makeEvent = document.getElementById("MakeEvent");
+        const addTime = document.getElementById("TimeSubmit");
+        const addLoop = document.getElementById("LoopSubmit");
+        const moveLeft = document.getElementById("MoveLeft");
+        const moveRight = document.getElementById("MoveRight");
+
+        const sceneNameSubmit = document.getElementById("sceneNameSubmit");
+       
+        addGruntButton.onclick = (e) => {
+            e.stopPropagation();
+            const type = "Grunt";
+            this.addEnemy(type);
+            this.animationView.clear();
+            this.animationView.addEnemy(type);
+        };
 
         addArrowButton.onclick = (e) => {
             e.stopPropagation();
@@ -359,35 +1301,242 @@ class LevelDesigner {
             this.engine.gameEditorOpened = this.gameEditorOpened;
             // change text to save or something. accidental click seems bad though
         };
+        makeEvent.onclick = (e) => {
+            e.stopPropagation();
+            this.UIActionsToRun.push(() => this.makeEvent());
+        };
 
-        console.log({
-            addSingularity,
-            makeGame,
+        sceneNameSubmit.onclick = (e) => {
+            e.stopPropagation();
+            const name = document.getElementById("sceneName").value;
+            this.UIActionsToRun.push(() => this.makeScene(name));
+        };
+        addTime.onclick = (e) => {
+            e.stopPropagation();
+            const time = document.getElementById("Time").value;
+            this.UIActionsToRun.push(() => this.makeTime(time));
+        };
+        // should add a loop next to the currently selected element
+        // once I have elements nested under scenes, I'm not sure how this will work
+        // maybe it will make one next to the selected scene if nothing else is selected
+        addLoop.onclick = (e) => {
+            e.stopPropagation();
+            const loop = {
+                repeatTimes: Number(document.getElementById("Repeats").value),
+                loopIdx: Number(document.getElementById("StartingIndex").value),
+            };
+            this.UIActionsToRun.push(() => this.makeLoop(loop));
+        };
+        moveLeft.onclick = (e) => {
+            e.stopPropagation();
+            this.UIActionsToRun.push(
+                () => this.moveLeft(this.selectedGameElement)
+            );
+        };
+        moveRight.onclick = (e) => {
+            e.stopPropagation();
+            // add action to queue for engine to process
+            this.UIActionsToRun.push(
+                () => this.moveRight(this.selectedGameElement)
+            );
+        };
+
+
+        // this.levelDesignerCtx.addEventListener("dblclick", (e) => {
+        //     e.stopPropagation();
+        //     console.log("double clicked");
+        //     const pos = [e.offsetX, e.offsetY];
+        //     this.mouseDoubleClicked(pos);
+        // });
+    }
+
+    makeTime(time) {
+        const newElementPosition = this.getNewDrawPosition();
+        const timeObject = new _DesignElements_Time__WEBPACK_IMPORTED_MODULE_9__.TimeObject(this, {waitTime: time}, newElementPosition);
+        this.selectedGameElement = timeObject;
+    }
+
+    mouseDoubleClicked(pos) {
+        console.log(pos);
+    }
+
+    expandScene(scene) {
+        this.selectedGameElement?.unSelected();
+        this.selectedGameElement = undefined;
+        // if the scene is in the same scene as the currently expanded scene
+        if(this.expandedScene.parentScene === scene.parentScene) {
+            this.expandedScene.unExpandScene();
+        }
+        this.expandedScene = scene;
+
+        // I'll have to do something about the click listeners
+        // I could add a check that the scene it is in is expanded
+        scene.gameElements.forEach((element) => {
+            element.parentSceneExpanded();
+            this.addUIElementSprite(element.UILineSprite);
         });
     }
 
-    levelDesigner(time) {
-        const timeDelta = time - this.lastTime;
-        this.engine;
+    // will eventually want stack of expanded scenes
+    // that way I can unexpand all the way back to the double clicked scene
+    unExpandScene(scene) {
+        if(this.expandedScene === scene) {
+            this.removeExpandedElements();
+            this.expandedScene = scene.parentScene;
+        }
+    }
+
+
+    getExpandedScenePosition() {
+        // expands into next row
+        
+
+    }
+
+    makeLoop(loop) {
+        new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__.LoopBeginningObject(this, undefined, this.getNewDrawPosition());
+        new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__.LoopEndObject(this, loop, this.getNewDrawPosition());
+    }
+
+    moveLeft(UIElement) {
+        const gameElements = this.expandedScene.gameElements;
+        for(let i = 0; i < gameElements.length; i++) {
+            const element = gameElements[i];
+            if(element === UIElement) {
+                if(i === 0) return;
+                const temp = gameElements[i - 1];
+                gameElements[i - 1] = UIElement;
+                gameElements[i] = temp;
+                this.swapAdjacentPositions(temp, UIElement);
+            }
+        }
+    }
+
+    moveRight(UIElement) {
+        const gameElements = this.expandedScene.gameElements;
+        for(let i = 0; i < gameElements.length; i++) {
+            const currentElement = gameElements[i];
+            if(currentElement === UIElement) {
+                if(i === gameElements.length - 1) return;
+                const temp = gameElements[i + 1];
+                gameElements[i + 1] = UIElement;
+                gameElements[i] = temp;
+                this.swapAdjacentPositions(UIElement, temp);
+                return;
+            }
+        }
+    }
+
+    makeEvent() {
+        // should provide this the current scene to know which array of elements to use
+        const newElementPosition = this.getNewDrawPosition();
+        const event = new _DesignElements_Event__WEBPACK_IMPORTED_MODULE_8__.EventObject(this, null, newElementPosition);
+        this.selectedGameElement?.unSelected();
+        this.selectedGameElement = event;
+    }
+    
+    swapAdjacentPositions(leftUIElement, rightUIElement) {
+        const newLeftX = leftUIElement?.UITransform?.pos[0] || 0;
+        const newRightX = newLeftX + rightUIElement?.widthHeight[0] + 4;
+        leftUIElement.UITransform.pos[0] = newRightX;
+        rightUIElement.UITransform.pos[0] = newLeftX;
+        
+        console.log(this.expandedScene.gameElements.map((element) => element.UITransform.pos[0]));
+    }
+
+    getNewDrawPosition() {
+        const expandedElements = this.expandedScene.gameElements;
+        const lastElement = expandedElements[expandedElements.length - 1];
+        const lastXPosition = lastElement?.UITransform?.pos[0] || 0;
+        const lastYPosition = lastElement?.UITransform?.pos[1] || this.expandedScene.widthHeight[1] + this.expandedScene.UITransform.pos[1] + 4;
+        const lastWidth = lastElement?.widthHeight[0] || 0;
+  
+        return [lastXPosition + lastWidth + 4, lastYPosition];
+    }
+
+    makeScene(name) {
+        // this should add a box inside either the game sequence as a whole,
+        // or inside the current scene
+        const newElementPosition = this.getNewDrawPosition();
+        // sprites are made and added automatically
+        const newScene  = new _DesignElements_scene__WEBPACK_IMPORTED_MODULE_6__.SceneObject(this, {name}, this.expandedScene, newElementPosition);
+    }
+
+    loopSelected(loop) {
+        this.selectedGameElement?.unSelected();
+        this.selectedGameElement = loop;
+    }
+
+    timeSelected(time) {
+        this.selectedGameElement?.unSelected();
+        this.selectedGameElement = time;
+    }
+
+    eventSelected(event) {
+        this.selectedGameElement?.unSelected();
+        this.selectedGameElement = event;
+    }
+
+    enemyPlacerClicked(enemyPlacer) {
+        this.animationView.clear();
+        this.animationView.addEnemy(enemyPlacer.type);
+        this.animationView.enemySelected(enemyPlacer.spawn);
+    }
+
+    sceneDoubleClicked(scene) {
+        // this should open the array of elements in the scene
+        console.log("scene double clicked: ", scene);
+        // should move this into scene object
+        // this.selectedScene.UILineSprite.selected = false;
+        // this.selectedScene = scene;
+        // scene.UILineSprite.selected = true;
+    }
+
+    sceneSelected(scene) {
+        this.selectedGameElement?.unSelected();
+        this.selectedGameElement = scene;
     }
 
     getPalletModal() {
         const modal = document.getElementById("pallet");
-
     // add functions to buttons of the pallet
+    }
+
+    enemyPlaced(spawn) {
+        this.animationView.enemySelected(spawn);
     }
 
     addEnemy(type) {
         new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.engine, type, this);
+        
+        // add this to the list of spawns for 
+        // the event that is being constructed
     }
 
-    addSpawnToEvent(spawn) {
-        new _scene__WEBPACK_IMPORTED_MODULE_6__.Spawn(this.engine, spawn);
+    addMouseClickListener(object) {
+        this.engine.addLevelDesignerClickListener(object);
+    }
+    addMouseDoubleClickListener(object) {
+        this.engine.addLevelDesignerDoubleClickListener(object);
     }
 
-    addNewEvent() {}
+    removeMouseClickListener(object) {
+        this.engine.removeLevelDesignerClickListener(object);
+    }
+    removeMouseDoubleClickListener(object) {
+        this.engine.removeLevelDesignerDoubleClickListener(object);
+    }
 
-    update(deltaTime) {}
+    addSpawnToEvent(spawn, enemyPlacer) {
+        if(this.selectedGameElement.enemyPlacers) {
+            this.selectedGameElement?.addSpawn(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_7__.Spawn(this.engine, spawn));
+            this.selectedGameElement?.addEnemyPlacer(enemyPlacer);
+        }
+    }
+
+    update(deltaTime) {
+
+    }
 
     createWalls() {
         return new _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_0__.Walls(this.engine, this);
@@ -419,235 +1568,270 @@ class LevelDesigner {
             );
         }
     }
+
+    runUIActions() {
+        this.UIActionsToRun.forEach((action) => action());
+        this.UIActionsToRun = [];
+    }
+
+    animate(timeDelta) {
+
+        // it might be cool to animate the tiny enemies in the spawn card
+        // this.animateGameObjects(timeDelta);
+
+        this.clearCanvas();
+        this.runUIActions();
+        this.renderLineSprites(this.levelDesignerCtx);
+        this.renderUILineSprites(this.levelDesignerCtx);
+        this.renderOverlayText();
+    }
+
+    renderOverlayText() {
+        // if(this.overlayTextCleared) return;
+        // this.ctx.save();
+        // this.ctx.font = 18 + "px " + "Arial";
+        // this.ctx.fillStyle = "white";
+        // const typeText = "Type: " + this.overlayText.Type;
+        // const positionText = "Location: " + this.overlayText.Location;
+        // this.ctx.fillText(
+        //     typeText,
+        //     10,
+        //     20
+        // );
+        // this.ctx.fillText(
+        //     positionText,
+        //     10,
+        //     38
+        // );
+        // this.ctx.restore();
+    }
+
+
+    animateGameObjects(delta) {
+        // this.gameObjects.forEach((object) => {
+        //     object.animate(delta);
+        // });
+    }
+
+    clearCanvas() {
+        this.ctx.clearRect(0, 0, this.DIM_X, this.DIM_Y);
+        this.ctx.fillStyle = "#000000";
+        this.ctx.fillRect(0, 0, this.DIM_X, this.DIM_Y);
+    }
+
+    clear() {
+        const removeList = [...this.gameObjects];
+        removeList.forEach((gameObject) => {
+            this.remove(gameObject);
+        });
+        this.overlayTextCleared = true;
+    }
+
+    renderLineSprites(ctx) {
+        ctx.save();
+        ctx.scale(this.zoomScale, this.zoomScale);
+        this.lineSprites.forEach((sprite) => {
+            sprite.draw(ctx);
+        });
+        ctx.restore();
+    }
+
+    renderUILineSprites(ctx) {
+        ctx.save();
+        this.UIElementSprites.forEach((sprite) => {
+            sprite.draw(ctx);
+        });
+        ctx.restore();
+    }
+
+    addGameObject(gameObject) {
+        this.gameObjects.push(gameObject);
+    }
+
+    queueSound() {
+        
+    }
+
+    addCollider() {}
+
+    addPhysicsComponent() {}
+
+    remove(gameObject) {
+        if (gameObject.lineSprite) {
+            this.lineSprites.splice(
+                this.lineSprites.indexOf(gameObject.lineSprite),
+                1
+            );
+        }
+
+        this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1);
+    }
+
+    removeExpandedElements() {
+        const UIElements = this.expandedScene.gameElements;
+        UIElements.forEach((UIElement) => {
+            UIElement.parentSceneUnexpanded();
+            if(UIElement.UILineSprite) {
+                this.UIElementSprites.splice(
+                    this.UIElementSprites.indexOf(UIElement.UILineSprite),
+                    1
+                );
+            }
+        });
+    }
+
+    removeUIElement(UIElement) {
+        if(UIElement.UILineSprite) {
+            this.UIElementSprites.splice(
+                this.UIElementSprites.indexOf(UIElement.UILineSprite),
+                1
+            );
+        }
+        this.expandedScene.gameElements.splice(this.expandedScene.gameElements.indexOf(UIElement), 1);
+    }
+
+    addUIElementSprite(UILineSprite) {
+        this.UIElementSprites.push(UILineSprite);
+    }
+
+    addUIElement(UIElement) {
+        this.expandedScene.gameElements.push(UIElement);
+    }
+
+    addLineSprite(lineSprite) {
+        this.lineSprites.push(lineSprite);
+    }
+
 }
 
 
 /***/ }),
 
-/***/ "./src/game_engine/Levels/scene.js":
-/*!*****************************************!*\
-  !*** ./src/game_engine/Levels/scene.js ***!
-  \*****************************************/
+/***/ "./src/game_engine/UI_Element.js":
+/*!***************************************!*\
+  !*** ./src/game_engine/UI_Element.js ***!
+  \***************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   Event: () => (/* binding */ Event),
-/* harmony export */   GameSequence: () => (/* binding */ GameSequence),
-/* harmony export */   GameSequenceDisplay: () => (/* binding */ GameSequenceDisplay),
-/* harmony export */   Operation: () => (/* binding */ Operation),
-/* harmony export */   Scene: () => (/* binding */ Scene),
-/* harmony export */   Spawn: () => (/* binding */ Spawn)
+/* harmony export */   UIElement: () => (/* binding */ UIElement)
 /* harmony export */ });
-const DIM_X = 1000;
-const DIM_Y = 600;
-const game = {
-    flatOES: [
-        {
-            name: 'LevelOne-Start',
-            __typename: 'Scene'
-        },
-        {
-            name: 'EasySpawns-Start',
-            __typename: 'Scene'
-        },
-        {
-            spawns: [
-                {
-                    type: 'RANDOM', // if random, then possibleTypes exists
-                    location: 'RANDOM', 
-                    possibleTypes: ['BoxBox','Pinwheel','Arrow'], 
-                    numberToGenerate: 10, // if there's a location it will be 1
-                    angle: undefined // for arrows
-                }
-            ],
-            __typename: 'Event'
-        },
-        {
-            type: 'WAIT',
-            time: 0,
-            waitTime: 10,
-            __typename: 'Operation'
-        },
-        {
-            name: 'EasySpawns-End',
-            __typename: 'Scene'
-        },
-        {
-            type: 'LOOP',
-            loop: {
-                loopIdx: 0,
-                sequenceIndexToLoopTo: 0,
-                repeatTimes: 5
-            },
-            __typename: 'Operation'
-        },
-        {
-            name: 'LevelOne-End',
-            __typename: 'Scene'
-        }
-    ]
-};
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./transform */ "./src/game_engine/transform.js");
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./util */ "./src/game_engine/util.js");
 
-class GameSequenceDisplay {
-    constructor(engine) {
-        this.engine = engine;
-        this.displaySequence = [];
+
+
+class UIElement {
+    constructor(levelDesigner, position) {
+        this.UITransform = new _transform__WEBPACK_IMPORTED_MODULE_0__.Transform(null, position);
+        this.levelDesigner = levelDesigner; // this is level designer not the game engine
+        this.levelDesigner.addUIElement(this);
+        this.inExpandedScene = true;
     }
-    
-
-}
-
-class GameSequence{
-    constructor (engine, flatOES) {
-        this.engine = engine;
-        this.sequenceIdx = 0;
-        this.flatOES = engine.flatOES;
+    addUIElementSprite(UILineSprite) {
+        this.UILineSprite = UILineSprite;
+        this.levelDesigner.addUIElementSprite(UILineSprite);
+    }
+    addMouseClickListener() {
+        this.levelDesigner.addMouseClickListener(this);
+    }
+    addMouseDoubleClickListener() {
+        this.levelDesigner.addMouseDoubleClickListener(this);
+    }
+    removeMouseClickListener() {
+        this.levelDesigner.removeMouseClickListener(this);
+    }
+    removeMouseDoubleClickListener() {
+        this.levelDesigner.removeMouseDoubleClickListener(this);
     }
 
-    loadGame() {
-
-    }
-    update(dT) {
-        flatOES[sequenceIdx].update(dT);
-    }
-
-    nextSequence(i=1) {
-        if(typeOf(flatOES[this.sequenceIdx + i]) === 'Scene') { // TODO fix class name
-            this.nextSequence(++i);
-        }
-        this.sequenceIdx += i;
+    parentSceneUnexpanded() {
+        this.inExpandedScene = false;
+        this.removeMouseClickListener();
+        this.removeMouseDoubleClickListener();
     }
 
-    serialize() {
-
-    }
-}
-
-class Scene {
-    constructor(gameSequence, name) {
-        this.name = name;
-    }
-}
-
-// loop, wait, 
-class Operation {
-    constructor(gameSequence, {type,waitTime,loop}) {
-        this.gameSequence = gameSequence;
-        this.type = type;
-        this.waitTime = waitTime;
-        this.time = 0;
-        this.loop = loop; // {loopIdx, sequenceIndexToLoopTo, repeatTimes} // 
-        this.startingValues = {
-            type: type,
-            time: 0,
-            waitTime: waitTime,
-            loop: {
-                loopIdx: loop.loopIdx,
-                sequenceIndexToLoopTo: sequenceIndexToLoopTo,
-                repeatTimes: repeatTimes
-            }
-        };
+    parentSceneExpanded () {
+        this.inExpandedScene = true;
+        this.addMouseClickListener();
+        this.addMouseDoubleClickListener();
     }
 
-    update(dT) {
-        if(this.type === "WAIT") {
-            this.time += dT;
-            if(this.time >= this.waitTime) {
-                endOperation();
-            }
-        } else if (this.type === "LOOP") {
-            if(this.loop.loopIdx >= this.loop.repeatTimes) { // 3: 0, 1, 2
-                endOperation();
-            } else {
-                gameSequence.sequenceIndex = this.loop.sequenceIndexToLoopTo;
-                
-            }
-
-        }
-    }
-
-    resetStartingValues() {
-        this.type = this.startingValues.type;
-        this.time = 0,
-        this.waitTime = this.startingValues.waitTime,
-        this.loop =  {
-            loopIdx: this.startingValues.loop.loopIdx,
-            sequenceIndexToLoopTo: this.startingValues.sequenceIndexToLoopTo,
-            repeatTimes: this.startingValues.repeatTimes
-        };
-    }
-
-    endOperation() {
-        this.resetStartingValues();
-        this.gameSequence.nextSequence();
-    }
-}
-
-
-class Event {
-    constructor(gameSequence, spawns) {
-        this.gameSequence = gameSequence;
-        this.spawns = spawns; // this is different than the single spawn thing I have in the mock data
-    }
-
-    update(dT) {
-        spawnEverything();
-        endEvent();
-    }
-
-    spawnEverything() {
-        this.spawns.forEach((spawn) => {
-            spawn.spawnEvent();
-        });
-    }
-    endEvent() {
-        this.gameSequence.nextSequence();
-    }
-}
-
-// a single enemy, and location
-class Spawn { 
-    constructor(gameEngine, spawn) { // spawn: {type, location: [x,y]} 
-        this.spawn = spawn;
-        this.gameEngine = gameEngine;
-    }
-
-    randomPosition() {
-        return [
-            this.DIM_X * 0.70 * Math.random(),
-            this.DIM_Y * 0.70 * Math.random(),
-            // 500,300
+    mouseDoubleClicked(mousePos) {
+        if(!this.inExpandedScene) return;
+        const centerPosition = [
+            this.UITransform.pos[0] + this.widthHeight[0] / 2,
+            this.UITransform.pos[1] + this.widthHeight[1] / 2
         ];
-    }
-
-    randomMob(possibleSpawns) {
-        return possibleSpawns[Math.floor(Math.random() * possibleSpawns.length) % possibleSpawns.length];
-    }
-
-    spawnEvent() {
-        for(let i = 0; i < this.spawn.numberToGenerate; i++) {
-            let mobToSpawn = this.spawn.type;
-            let location = this.spawn.location;
-            if(this.spawn.type === 'RANDOM') {
-                mobToSpawn = randomMob(this.spawn.possibleSpawns);
-            } 
-            if(this.spawn.location === 'RANDOM') {
-                location = randomPosition();
-            }
-            this.gameEngine.enemyCreatorList[mobToSpawn](location);
+        const centerDist = _util__WEBPACK_IMPORTED_MODULE_1__.Util.dist(
+            centerPosition,
+            mousePos
+        );
+        if (centerDist < this.clickRadius) {
+            this.onMouseDoubleClicked(mousePos);
         }
     }
 
-    serialize() {
+    mouseClicked(mousePos) {
+        if(!this.inExpandedScene) return;
+        const centerPosition = [
+            this.UITransform.pos[0] + this.widthHeight[0] / 2,
+            this.UITransform.pos[1] + this.widthHeight[1] / 2
+        ];
+        const centerDist = _util__WEBPACK_IMPORTED_MODULE_1__.Util.dist(
+            centerPosition,
+            mousePos
+        );
+        if (centerDist < this.clickRadius) {
+            this.onMouseClick(mousePos);
+        }
+    }
+
+    onMouseDoubleClick(mousePos) {
+
+    }
+    onMouseClick(mousePos) {
 
     }
 }
 
+/***/ }),
 
+/***/ "./src/game_engine/UI_line_sprite.js":
+/*!*******************************************!*\
+  !*** ./src/game_engine/UI_line_sprite.js ***!
+  \*******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-// MOB randomly picked from chosen list
-// location randomly picked
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   UILineSprite: () => (/* binding */ UILineSprite)
+/* harmony export */ });
+// this is a type of sprite for ui elements
+
+class UILineSprite {
+    // 
+    constructor(UITransform) {
+        this.UITransform = UITransform;
+        this.zoomScaling = 1;
+    }
+    // abstract functions
+    draw(ctx) {
+        // the context position is changed by the ui game engine
+        const pos = [0,0];
+        // if an element is being dragged, a ghost element replaces is for this drawing array
+        // the part that is being dragged will be handled by a separate drawing function
+
+        // allowing for drag and drop, and scrolling etc
+        const angle = this.transform.absoluteAngle();
+        this.drawFunction(ctx, pos, angle);
+    }
+    drawFunction(ctx, pos) {
+        // abstract
+        
+    }
+}
 
 /***/ }),
 
@@ -681,8 +1865,8 @@ class Collider {
         type,
         gameObject,
         radius = 5,
-        subscriptions,
-        subscribedColliderTypes
+        subscriptions, // the things this collider effects
+        subscribedColliderTypes // the things that effect this collider?
     ) {
         this.objectType = gameObject.constructor.name;
         this.type = type;
@@ -830,7 +2014,11 @@ class GameEngine {
         this.subscribers = [];
         this.muted = true;
         this.mouseListeners = [];
-        this.clickListeners = [];
+        this.gameClickListeners = [];
+        this.levelDesignerClickListeners = [];
+        this.gameDoubleClickListeners = [];
+        this.levelDesignerDoubleClickListeners = [];
+        this.doubleClickListeners = [];
         this.leftControlStickListeners = [];
         this.rightControlStickListeners = [];
         this.xButtonListeners = [];
@@ -945,12 +2133,12 @@ class GameEngine {
         this.timePassed += delta;
         if (this.timePassed > 1000 * 60) {
             const timeData = {
+                frameRate: this.frameCountForPerformance / (this.timePassed / 1000),
                 collisionTime: (this.collisionTime) / this.frameCountForPerformance,
                 physicsCalcTime: (this.physicsCalcTime) / this.frameCountForPerformance,
                 updateTime: (this.updateTime) / this.frameCountForPerformance,
                 renderTime: (this.renderTime) / this.frameCountForPerformance,
-                scriptTime: (this.scriptTime) / this.frameCountForPerformance,
-                frameRate: this.frameCountForPerformance / (this.timePassed / 1000)
+                scriptTime: (this.scriptTime) / this.frameCountForPerformance
             };
             console.log(timeData);
 
@@ -1005,19 +2193,67 @@ class GameEngine {
         this.startButtonListeners.push(object);
     }
 
+    // ******** mouse stuff *******
+
     addClickListener(object) {
-        this.clickListeners.push(object);
+        this.gameClickListeners.push(object);
     }
 
-    mouseClicked(position) {
-        this.clickListeners.forEach((object) => {
-            object.mouseClicked(position);
-        });
+    addDoubleClickListener(object) {
+        this.gameDoubleClickListeners.push(object);
+    }
+
+    addLevelDesignerClickListener(object) {
+        this.levelDesignerClickListeners.push(object);
+    }
+
+    addLevelDesignerDoubleClickListener(object) {
+        this.levelDesignerDoubleClickListeners.push(object);
+    }
+
+    
+
+    mouseClicked(e) {
+        if(e.target.classList[0] === "level-editor-canvas") {
+            this.levelDesignerClickListeners.forEach((object) => {
+                object.mouseClicked([e.offsetX, e.offsetY]);
+            });
+        } else if(e.target.classList[0] === "gameCanvas") {
+            const position = [e.layerX, e.layerY];
+            this.gameClickListeners.forEach((object) => {
+                object.mouseClicked(position);
+            });
+        }
+    }
+
+    mouseDoubleClicked(e) {
+        if(e.target.classList[0] === "level-editor-canvas") {
+            this.levelDesignerDoubleClickListeners.forEach((object) => {
+                object.mouseDoubleClicked([e.offsetX, e.offsetY]);
+            });
+        } else if(e.target.classList[0] === "game-canvas") {
+            const position = [e.layerX, e.layerY];
+            this.gameDoubleClickListeners.forEach((object) => {
+                object.mouseDoubleClicked(position);
+            });
+        }
     }
 
     removeClickListener(object) {
-        this.clickListeners.splice(this.clickListeners.indexOf(object), 1);
+        this.gameClickListeners.splice(this.gameClickListeners.indexOf(object), 1);
     }
+    removeDoubleClickListener(object) {
+        this.gameDoubleClickListeners.splice(this.gameDoubleClickListeners.indexOf(object), 1);
+    }
+
+    removeLevelDesignerClickListener(object) {
+        this.levelDesignerClickListeners.splice(this.levelDesignerClickListeners.indexOf(object), 1);
+    }
+    removeLevelDesignerDoubleClickListener(object) {
+        this.levelDesignerDoubleClickListeners.splice(this.levelDesignerDoubleClickListeners.indexOf(object), 1);
+    }
+
+    // ******** end of mouse stuff *******
 
     updateLeftControlStickListeners(unitVector) {
         this.leftControlStickListeners.forEach((listener) => {
@@ -1037,6 +2273,8 @@ class GameEngine {
         });
     }
 
+
+
     updateStartButtonListeners(startButton, down) {
     // console.log([startButton, down])
         this.startButtonListeners.forEach((listener) => {
@@ -1044,6 +2282,7 @@ class GameEngine {
         });
     }
 
+    // called by game view
     updateMousePos(mousePos) {
         this.mouseListeners.forEach((object) => {
             object.updateMousePos(mousePos);
@@ -1122,12 +2361,10 @@ class GameEngine {
                 colliders[subscription] = colliders[subscription] || {};
                 subscriber.subscribedColliderTypes.forEach((colliderType) => {
                     colliders[subscription][colliderType] =
-            colliders[subscription][colliderType] || [];
-                    colliders[subscription][colliderType].forEach(
-                        (subscribedCollider) => {
-                            subscriber.collisionCheck(subscribedCollider);
-                        }
-                    );
+                        colliders[subscription][colliderType] || [];
+                    colliders[subscription][colliderType].forEach((subscribedCollider) => {
+                        subscriber.collisionCheck(subscribedCollider);
+                    });
                 });
             });
         });
@@ -1355,6 +2592,8 @@ class GameObject {
 
     mouseClicked(mousePos) {}
 
+    mouseDoubleClicked(mousePos) {}
+
     addCollider(type, gameObject, radius, subscriptionTypes, subscriptions) {
     // game engine checks every collider with it's subscription types
         const newCollider = new _collider__WEBPACK_IMPORTED_MODULE_5__.Collider(
@@ -1426,6 +2665,14 @@ class LineSprite {
         this.transform = transform;
         // this.drawFunction = draw
         this.zoomScaling = 1;
+        this.visible = true;
+    }
+
+    makeVisible() {
+        this.visible = true;
+    }
+    makeInvisible() {
+        this.visible = false;
     }
     // abstract functions
     draw(ctx) {
@@ -2378,6 +3625,7 @@ class ArrowSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.
     }
 
     draw(ctx) {
+        if(!this.visible) return;
         const pos = this.transform.absolutePosition();
         const spawningScale = this.spawningScale || 1;
         const shipLength = 10.5 * 2.2 * spawningScale;
@@ -2583,6 +3831,156 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+// this is where i'm defining huge static stuff that doesn't change
+// between different boxboxes. There's only need to load one of these
+
+const boxWidth = 13;
+const boxDepth =  boxWidth / 3;
+
+// there's only two versions of this coordate object
+// 1. bottom left, top right
+// 2. top left, bottom right
+
+
+// bottom left:
+const w = boxWidth;
+const d = boxDepth;
+
+
+const drawCoordinatesTopLeft = {
+    // try making y negativified
+
+    BottomSquareBL: [-3/4 * w, 3/4 * w],
+    BottomSquareBR: [1/4 * w, 3/4 * w],
+    BottomSquareTL: [-3/4 * w, -1/4 * w],
+    BottomSquareTR: [1/4 * w, -1/4 * w],
+    TopSquareBL: [-1/4 * w, 1/4 * w],
+    TopSquareBR: [3/4 * w, 1/4 * w],
+    TopSquareTL: [-1/4 * w, -3/4 * w],
+    TopSquareTR: [3/4 * w, -3/4 * w],
+    Left: { // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
+        // take these distances to the axis of rotation, and then multiply them by cos(angle) of rotation
+        _BottomSquareBL: [d,  3/4 * w, Math.PI/2], // angle starts 90 degrees 
+        _BottomSquareBR: [Math.sqrt(w**2 + d**2), 3/4 * w, Math.atan(d/w)], // scaled length is distance from axis of rotation
+        _BottomSquareTL: [d, -1/4 * w, Math.PI/2],
+        _BottomSquareTR: [Math.sqrt(w**2 + d**2), -1/4 * w, Math.atan(d/w)],
+        _TopSquareBL: [Math.sqrt((w / 2)**2 + d**2), 1/4 * w, Math.atan(d/(w/2))],
+        _TopSquareBR: [Math.sqrt((3/2 * w)**2 + d**2), 1/4 * w, Math.atan(d/(3/2 * w))],
+        _TopSquareTL: [Math.sqrt((w / 2)**2 + d**2), -3/4 * w, Math.atan(d/(w/2))],
+        _TopSquareTR: [Math.sqrt((3/2 * w)**2 + d**2), -3/4 * w, Math.atan(d/(3/2 * w))]
+    },
+    Right: {
+        _BottomSquareBL: [Math.sqrt((3/2 * w)**2 + d**2), 3/4 * w, Math.atan(d/(3/2 * w))], // angle starts 90 degrees 
+        _BottomSquareBR: [Math.sqrt((w / 2)**2 + d**2), 3/4 * w, Math.atan(d/(w/2))],
+        _BottomSquareTL: [Math.sqrt((3/2 * w)**2 + d**2), -1/4 * w, Math.atan(d/(3/2 * w))],
+        _BottomSquareTR: [Math.sqrt((w / 2)**2 + d**2), -1/4 * w, Math.atan(d/(w/2))],
+        _TopSquareBL: [Math.sqrt(w**2 + d**2), 1/4 * w, Math.atan(d/w)],
+        _TopSquareBR: [d, 1/4 * w, Math.PI/2], 
+        _TopSquareTL: [Math.sqrt(w**2 + d**2), -3/4 * w, Math.atan(d/w)],
+        _TopSquareTR: [d, -3/4 * w, Math.PI/2] 
+    },
+    Top: { // X stays the same, Y scales
+        _BottomSquareBL: [-3/4 * w, d, -Math.PI/2],
+        _BottomSquareBR: [1/4 * w, d, -Math.PI/2],
+        _BottomSquareTL: [-3/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _BottomSquareTR: [1/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _TopSquareBL: [-1/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _TopSquareBR: [3/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _TopSquareTL: [-1/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
+        _TopSquareTR: [3/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
+    },
+    Bottom: { // X stays the same, Y scales
+        // BL <=> TR, TL <=> BR
+        _BottomSquareBL: [-3/4 * w, Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
+        _BottomSquareBR: [1/4 * w, Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
+        _BottomSquareTL: [-3/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _BottomSquareTR: [1/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _TopSquareBL: [-1/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _TopSquareBR: [3/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _TopSquareTL: [-1/4 * w, d, Math.PI/2],
+        _TopSquareTR: [3/4 * w, d, Math.PI/2],
+    },
+    _BottomSquareBL: [-3/4 * w, 3/4 * w],
+    _BottomSquareBR: [1/4 * w, 3/4 * w],
+    _BottomSquareTL: [-3/4 * w, -1/4 * w],
+    _BottomSquareTR: [1/4 * w, -1/4 * w],
+    _TopSquareBL: [-1/4 * w, 1/4 * w],
+    _TopSquareBR: [3/4 * w, 1/4 * w],
+    _TopSquareTL: [-1/4 * w, -3/4 * w],
+    _TopSquareTR: [3/4 * w, -3/4 * w],
+};
+
+const drawCoordinatesBottomLeft = {
+    // I think 
+    // flip Y coordinates for this shape
+
+
+    BottomSquareBL: [-3/4 * w, 1/4 * w],
+    BottomSquareBR: [1/4 * w, 1/4 * w],
+    BottomSquareTL: [-3/4 * w, -3/4 * w],
+    BottomSquareTR: [1/4 * w, -3/4 * w],
+    TopSquareBL: [-1/4 * w, 3/4 * w],
+    TopSquareBR: [3/4 * w, 3/4 * w],
+    TopSquareTL: [-1/4 * w, -1/4 * w],
+    TopSquareTR: [3/4 * w, -1/4 * w],
+
+    // top and bottom are correct
+    // left and right are wrong
+   
+    Left: { // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
+        // take these distances to the axis of rotation, and then multiply them by cos(angle) of rotation
+        //BL <=> TL, BR <=> TR
+        _BottomSquareBL: [d, 1/4 * w, Math.PI/2],
+        _BottomSquareBR:  [Math.sqrt(w**2 + d**2), 1/4 * w, Math.atan(d/w)],
+        _BottomSquareTL: [d,  -3/4 * w, Math.PI/2], 
+        _BottomSquareTR: [Math.sqrt(w**2 + d**2), -3/4 * w, Math.atan(d/w)],
+        _TopSquareBL: [Math.sqrt((w / 2)**2 + d**2), 3/4 * w, Math.atan(d/(w/2))],
+        _TopSquareBR: [Math.sqrt((3/2 * w)**2 + d**2), 3/4 * w, Math.atan(d/(3/2 * w))],
+        _TopSquareTL: [Math.sqrt((w / 2)**2 + d**2), -1/4 * w, Math.atan(d/(w/2))],
+        _TopSquareTR: [Math.sqrt((3/2 * w)**2 + d**2), -1/4 * w, Math.atan(d/(3/2 * w))],
+    },
+    Right: { // BL <=> TL, BR <=> TR
+        _BottomSquareBL: [Math.sqrt((3/2 * w)**2 + d**2), 1/4 * w, Math.atan(d/(3/2 * w))],// angle starts 90 degrees 
+        _BottomSquareBR: [Math.sqrt((w / 2)**2 + d**2), 1/4 * w, Math.atan(d/(w/2))],
+        _BottomSquareTL: [Math.sqrt((3/2 * w)**2 + d**2), -3/4 * w, Math.atan(d/(3/2 * w))], 
+        _BottomSquareTR: [Math.sqrt((w / 2)**2 + d**2), -3/4 * w, Math.atan(d/(w/2))],
+        _TopSquareBL: [Math.sqrt(w**2 + d**2), 3/4 * w, Math.atan(d/w)],
+        _TopSquareBR: [d, 3/4 * w, Math.PI/2],
+        _TopSquareTL: [Math.sqrt(w**2 + d**2), -1/4 * w, Math.atan(d/w)],
+        _TopSquareTR:  [d, -1/4 * w, Math.PI/2], 
+    },
+    Top: { // X stays the same, Y scales 
+        _BottomSquareBL: [-3/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],//[d,  -3/4 * w, Math.PI/2], // angle starts 90 degrees
+        _BottomSquareBR: [1/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
+        _BottomSquareTL: [-3/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _BottomSquareTR: [1/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _TopSquareBL: [-1/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/w)],
+        _TopSquareBR: [3/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _TopSquareTL: [-1/4 * w, -d, Math.PI/2],
+        _TopSquareTR: [3/4 * w, -d, Math.PI/2]
+    },
+    Bottom: { // X stays the same, Y scales
+        _BottomSquareBL: [-3/4 * w, d, Math.PI/2],
+        _BottomSquareBR: [1/4 * w, d, Math.PI/2],
+        _BottomSquareTL: [-3/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _BottomSquareTR: [1/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
+        _TopSquareBL: [-1/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _TopSquareBR: [3/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
+        _TopSquareTL: [-1/4 * w, Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
+        _TopSquareTR: [3/4 * w,  Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))]
+    },
+    _BottomSquareBL: [-3/4 * w, 1/4 * w],
+    _BottomSquareBR: [1/4 * w, 1/4 * w],
+    _BottomSquareTL: [-3/4 * w, -3/4 * w],
+    _BottomSquareTR: [1/4 * w, -3/4 * w],
+    _TopSquareBL: [-1/4 * w, 3/4 * w],
+    _TopSquareBR: [3/4 * w, 3/4 * w],
+    _TopSquareTL: [-1/4 * w, -1/4 * w],
+    _TopSquareTR: [3/4 * w, -1/4 * w],
+};
+
+
 class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
     constructor(engine, pos) {
         super(engine);
@@ -2593,8 +3991,8 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         // this.addPhysicsComponent()
         this.projectedDrawCoordinates = {};
         
-        this.boxWidth = 10;
-        this.boxDepth = this.boxWidth;
+        this.boxWidth = boxWidth;
+        this.boxDepth = boxWidth / 3;
 
         // there's only two versions of this coordate object
         // 1. bottom left, top right
@@ -2603,141 +4001,9 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
 
         // bottom left:
         const w = this.boxWidth;
-        const d = this.boxDepth;
         // the axis of rotation determines the length of the line for the _ coordinates
 
         // This one is done
-        const drawCoordinatesTopLeft = {
-            // try making y negativified
-
-            BottomSquareBL: [-3/4 * w, 3/4 * w],
-            BottomSquareBR: [1/4 * w, 3/4 * w],
-            BottomSquareTL: [-3/4 * w, -1/4 * w],
-            BottomSquareTR: [1/4 * w, -1/4 * w],
-            TopSquareBL: [-1/4 * w, 1/4 * w],
-            TopSquareBR: [3/4 * w, 1/4 * w],
-            TopSquareTL: [-1/4 * w, -3/4 * w],
-            TopSquareTR: [3/4 * w, -3/4 * w],
-            Left: { // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
-                // take these distances to the axis of rotation, and then multiply them by cos(angle) of rotation
-                _BottomSquareBL: [d,  3/4 * w, Math.PI/2], // angle starts 90 degrees 
-                _BottomSquareBR: [Math.sqrt(w**2 + d**2), 3/4 * w, Math.atan(d/w)], // scaled length is distance from axis of rotation
-                _BottomSquareTL: [d, -1/4 * w, Math.PI/2],
-                _BottomSquareTR: [Math.sqrt(w**2 + d**2), -1/4 * w, Math.atan(d/w)],
-                _TopSquareBL: [Math.sqrt((w / 2)**2 + d**2), 1/4 * w, Math.atan(d/(w/2))],
-                _TopSquareBR: [Math.sqrt((3/2 * w)**2 + d**2), 1/4 * w, Math.atan(d/(3/2 * w))],
-                _TopSquareTL: [Math.sqrt((w / 2)**2 + d**2), -3/4 * w, Math.atan(d/(w/2))],
-                _TopSquareTR: [Math.sqrt((3/2 * w)**2 + d**2), -3/4 * w, Math.atan(d/(3/2 * w))]
-            },
-            Right: {
-                _BottomSquareBL: [Math.sqrt((3/2 * w)**2 + d**2), 3/4 * w, Math.atan(d/(3/2 * w))], // angle starts 90 degrees 
-                _BottomSquareBR: [Math.sqrt((w / 2)**2 + d**2), 3/4 * w, Math.atan(d/(w/2))],
-                _BottomSquareTL: [Math.sqrt((3/2 * w)**2 + d**2), -1/4 * w, Math.atan(d/(3/2 * w))],
-                _BottomSquareTR: [Math.sqrt((w / 2)**2 + d**2), -1/4 * w, Math.atan(d/(w/2))],
-                _TopSquareBL: [Math.sqrt(w**2 + d**2), 1/4 * w, Math.atan(d/w)],
-                _TopSquareBR: [d, 1/4 * w, Math.PI/2], 
-                _TopSquareTL: [Math.sqrt(w**2 + d**2), -3/4 * w, Math.atan(d/w)],
-                _TopSquareTR: [d, -3/4 * w, Math.PI/2] 
-            },
-            Top: { // X stays the same, Y scales
-                _BottomSquareBL: [-3/4 * w, d, -Math.PI/2],
-                _BottomSquareBR: [1/4 * w, d, -Math.PI/2],
-                _BottomSquareTL: [-3/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _BottomSquareTR: [1/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _TopSquareBL: [-1/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _TopSquareBR: [3/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _TopSquareTL: [-1/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
-                _TopSquareTR: [3/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
-            },
-            Bottom: { // X stays the same, Y scales
-                // BL <=> TR, TL <=> BR
-                _BottomSquareBL: [-3/4 * w, Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
-                _BottomSquareBR: [1/4 * w, Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
-                _BottomSquareTL: [-3/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _BottomSquareTR: [1/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _TopSquareBL: [-1/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _TopSquareBR: [3/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _TopSquareTL: [-1/4 * w, d, Math.PI/2],
-                _TopSquareTR: [3/4 * w, d, Math.PI/2],
-            },
-            _BottomSquareBL: [-3/4 * w, 3/4 * w],
-            _BottomSquareBR: [1/4 * w, 3/4 * w],
-            _BottomSquareTL: [-3/4 * w, -1/4 * w],
-            _BottomSquareTR: [1/4 * w, -1/4 * w],
-            _TopSquareBL: [-1/4 * w, 1/4 * w],
-            _TopSquareBR: [3/4 * w, 1/4 * w],
-            _TopSquareTL: [-1/4 * w, -3/4 * w],
-            _TopSquareTR: [3/4 * w, -3/4 * w],
-        };
-        
-        const drawCoordinatesBottomLeft = {
-            // I think 
-            // flip Y coordinates for this shape
-
-
-            BottomSquareBL: [-3/4 * w, 1/4 * w],
-            BottomSquareBR: [1/4 * w, 1/4 * w],
-            BottomSquareTL: [-3/4 * w, -3/4 * w],
-            BottomSquareTR: [1/4 * w, -3/4 * w],
-            TopSquareBL: [-1/4 * w, 3/4 * w],
-            TopSquareBR: [3/4 * w, 3/4 * w],
-            TopSquareTL: [-1/4 * w, -1/4 * w],
-            TopSquareTR: [3/4 * w, -1/4 * w],
-
-            // top and bottom are correct
-            // left and right are wrong
-           
-            Left: { // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
-                // take these distances to the axis of rotation, and then multiply them by cos(angle) of rotation
-                //BL <=> TL, BR <=> TR
-                _BottomSquareBL: [d, 1/4 * w, Math.PI/2],
-                _BottomSquareBR:  [Math.sqrt(w**2 + d**2), 1/4 * w, Math.atan(d/w)],
-                _BottomSquareTL: [d,  -3/4 * w, Math.PI/2], 
-                _BottomSquareTR: [Math.sqrt(w**2 + d**2), -3/4 * w, Math.atan(d/w)],
-                _TopSquareBL: [Math.sqrt((w / 2)**2 + d**2), 3/4 * w, Math.atan(d/(w/2))],
-                _TopSquareBR: [Math.sqrt((3/2 * w)**2 + d**2), 3/4 * w, Math.atan(d/(3/2 * w))],
-                _TopSquareTL: [Math.sqrt((w / 2)**2 + d**2), -1/4 * w, Math.atan(d/(w/2))],
-                _TopSquareTR: [Math.sqrt((3/2 * w)**2 + d**2), -1/4 * w, Math.atan(d/(3/2 * w))],
-            },
-            Right: { // BL <=> TL, BR <=> TR
-                _BottomSquareBL: [Math.sqrt((3/2 * w)**2 + d**2), 1/4 * w, Math.atan(d/(3/2 * w))],// angle starts 90 degrees 
-                _BottomSquareBR: [Math.sqrt((w / 2)**2 + d**2), 1/4 * w, Math.atan(d/(w/2))],
-                _BottomSquareTL: [Math.sqrt((3/2 * w)**2 + d**2), -3/4 * w, Math.atan(d/(3/2 * w))], 
-                _BottomSquareTR: [Math.sqrt((w / 2)**2 + d**2), -3/4 * w, Math.atan(d/(w/2))],
-                _TopSquareBL: [Math.sqrt(w**2 + d**2), 3/4 * w, Math.atan(d/w)],
-                _TopSquareBR: [d, 3/4 * w, Math.PI/2],
-                _TopSquareTL: [Math.sqrt(w**2 + d**2), -1/4 * w, Math.atan(d/w)],
-                _TopSquareTR:  [d, -1/4 * w, Math.PI/2], 
-            },
-            Top: { // X stays the same, Y scales 
-                _BottomSquareBL: [-3/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],//[d,  -3/4 * w, Math.PI/2], // angle starts 90 degrees
-                _BottomSquareBR: [1/4 * w, -Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
-                _BottomSquareTL: [-3/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _BottomSquareTR: [1/4 * w, -Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _TopSquareBL: [-1/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/w)],
-                _TopSquareBR: [3/4 * w, -Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _TopSquareTL: [-1/4 * w, -d, Math.PI/2],
-                _TopSquareTR: [3/4 * w, -d, Math.PI/2]
-            },
-            Bottom: { // X stays the same, Y scales
-                _BottomSquareBL: [-3/4 * w, d, Math.PI/2],
-                _BottomSquareBR: [1/4 * w, d, Math.PI/2],
-                _BottomSquareTL: [-3/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _BottomSquareTR: [1/4 * w, Math.sqrt(w**2 + d**2), Math.atan(d/ w)],
-                _TopSquareBL: [-1/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _TopSquareBR: [3/4 * w, Math.sqrt((w / 2)**2 + d**2), Math.atan(d/(w/2))],
-                _TopSquareTL: [-1/4 * w, Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))],
-                _TopSquareTR: [3/4 * w,  Math.sqrt((3/2 * w)**2 + d**2),  Math.atan(d/(3/2 * w))]
-            },
-            _BottomSquareBL: [-3/4 * w, 1/4 * w],
-            _BottomSquareBR: [1/4 * w, 1/4 * w],
-            _BottomSquareTL: [-3/4 * w, -3/4 * w],
-            _BottomSquareTR: [1/4 * w, -3/4 * w],
-            _TopSquareBL: [-1/4 * w, 3/4 * w],
-            _TopSquareBR: [3/4 * w, 3/4 * w],
-            _TopSquareTL: [-1/4 * w, -1/4 * w],
-            _TopSquareTR: [3/4 * w, -1/4 * w],
-        };
 
         const projectedDrawCoordinates = {
             BottomSquareBL: [...drawCoordinatesBottomLeft.BottomSquareBL],
@@ -2757,6 +4023,7 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
             _TopSquareTL: [...drawCoordinatesBottomLeft._TopSquareTL],
             _TopSquareTR: [...drawCoordinatesBottomLeft._TopSquareTR],
         };
+
         
         this.animationStates = ["Paused", "Rotating", "MidPaused", "CompletingRotation"];
         this.rotationDirections = ["Bottom", "Top", "Left", "Right"];
@@ -2772,7 +4039,7 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
             positionShift: [0,0],
             drawCoordinatesTopLeft,
             projectedDrawCoordinates, // change to projectedDrawCoordinates
-            midPauseTime: 200,
+            midPauseTime: 10,
             pauseTime: 1000,
         };
         this.addLineSprite(new _boxbox_sprite__WEBPACK_IMPORTED_MODULE_3__.BoxBoxSprite(this.transform, this.rotationState));
@@ -2811,13 +4078,13 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         const shapeState = this.rotationState.shapeState;
         this.rotationState.shapeState = shapeState === "TopLeft" ? "BottomLeft" : "TopLeft";    
         if(rotationDirection === "Top") {
-            this.setRotationDirectionProperties("Bottom", true);
+            this.setRotationDirectionProperties("Bottom");
         } else if(rotationDirection === "Bottom") {
-            this.setRotationDirectionProperties("Top", true);
+            this.setRotationDirectionProperties("Top");
         } else if(rotationDirection === "Left") {
-            this.setRotationDirectionProperties("Right", true);
+            this.setRotationDirectionProperties("Right");
         } else if(rotationDirection === "Right") {
-            this.setRotationDirectionProperties("Left", true);
+            this.setRotationDirectionProperties("Left");
         }
     }
 
@@ -2829,7 +4096,9 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         let rotationAngle = this.rotationState.rotationAngle;
         
         const coordinateShift = this.rotationState.coordinateShift;
+        // defined statically above this class
         const projectedDrawCoordinates = this.rotationState.projectedDrawCoordinates;
+
         const midPauseTime = this.rotationState.midPauseTime;
         const pauseTime = this.rotationState.pauseTime;
         let originalAngle = rotationAngle;
@@ -3052,29 +4321,20 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         // I do for the non-primes because they are drawn from the center of the BoxBox, and are more general
     }
     
-    setRotationDirectionProperties(rotationDirection, flipped) {
+    setRotationDirectionProperties(rotationDirection) {
         const w = this.boxWidth;
-        const d = this.boxDepth;
         const coordinateShift = this.rotationState.coordinateShift;
         if(rotationDirection === "Top") {
             coordinateShift[0] = 0;
-            coordinateShift[1] = flipped ? 
-                3/4 * w:
-                3/4 * w;
+            coordinateShift[1] = 3/4 * w;
         } else if (rotationDirection === "Bottom") {
             coordinateShift[0] = 0;
-            coordinateShift[1] =  flipped ? 
-                -3/4 * w: 
-                -3/4 * w;
+            coordinateShift[1] = -3/4 * w;
         } else if (rotationDirection === "Left") {
-            coordinateShift[0] = flipped ? 
-                3/4 * w:
-                3/4 * w;
+            coordinateShift[0] = 3/4 * w;
             coordinateShift[1] = 0;
         } else if (rotationDirection === "Right") {
-            coordinateShift[0] = flipped ? 
-                -3/4 * w:
-                -3/4 * w;
+            coordinateShift[0] = -3/4 * w;
             coordinateShift[1] = 0;
         }
         this.rotationState.rotationDirection = rotationDirection;
@@ -3085,8 +4345,10 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         // if (this.rotationState.rotationDirection === "Bottom") {
         //     this.rotationState.shapeState = this.rotationState.shapeState === "TopLeft" ? "BottomLeft" : "TopLeft";
         // }
-        const directionsMap = {Top: "Right", Right: "Bottom", Bottom: "Left", Left: "Top"};
-        const rotationDirection = directionsMap[this.rotationState.rotationDirection];
+        // const directionsMap = {Top: "Right", Right: "Bottom", Bottom: "Left", Left: "Top"};
+        // pick random rotation direction 
+        const rotationDirection = this.rotationDirections[Math.floor(Math.random() * this.rotationDirections.length)]; 
+        // const rotationDirection = directionsMap[this.rotationState.rotationDirection];
         
         this.setRotationDirectionProperties(rotationDirection);
     }
@@ -3113,6 +4375,7 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         }
     }
 }
+console.log('how often is this called?');
 
 
 /***/ }),
@@ -3134,14 +4397,15 @@ class BoxBoxSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__
     constructor(transform, rotationState) {
         super(transform);
         this.spawningScale = 1;
-        this.rotationState = rotationState;
+        this.rotationState = rotationState || {positionShift: [0,0], coordinateShift: [0,0], projectedDrawCoordinates: []};
         this.spawning = false;
     }
 
     draw(ctx) {
+        if(!this.visible) return;
         const spawningScale = this.spawningScale ||= 1;
         const pos = this.transform.absolutePosition();
-        const boxWidth = 10 * spawningScale;
+        const boxWidth = 11 * spawningScale;
 
         // ctx.strokeStyle = "#F173BA";
 
@@ -3468,6 +4732,7 @@ class GruntSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.
     }
 
     draw(ctx) {
+        if(!this.visible) return;
         const pos = this.transform.absolutePosition();
     
         const spawningScale = this.spawningScale;
@@ -3601,11 +4866,13 @@ class PinwheelSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0
     }
 
     draw(ctx) {
+        if(!this.visible) return;
+        
         const spawningScale = this.spawningScale || 1;
         const pos = this.transform.absolutePosition();
         const angle = this.transform.absoluteAngle();
 
-        const shipWidth = 12 * spawningScale;
+        const shipWidth = 18 * spawningScale;
         const s = shipWidth / 2;
 
         const r = 59;
@@ -4059,6 +5326,7 @@ class SingularitySprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODUL
     }
 
     draw(ctx) {
+        if(!this.visible) return;
         let spawningScale = this.spawningScale;
         if (this.spawned) {
             spawningScale = this.throbbingScale;
@@ -4262,9 +5530,10 @@ class WeaverSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__
     }
 
     draw(ctx) {
-    // drawing this guy is taking waaay too much time.
-    // I took out the blurr factor and it's way better.
-    // doesn't look as nice, but it's a starting point
+        if(!this.visible) return;
+        // drawing this guy is taking waaay too much time.
+        // I took out the blurr factor and it's way better.
+        // doesn't look as nice, but it's a starting point
         const pos = this.transform.absolutePosition();
         const angle = this.transform.absoluteAngle();
         const spawningScale = this.spawningScale;
@@ -5035,7 +6304,6 @@ class ParticleExplosion extends _game_engine_game_object__WEBPACK_IMPORTED_MODUL
             this.remove();
         }
     }
-    // ANIMATION = requestAnimationFrame(drawScene);
 }
 
 
@@ -5075,6 +6343,11 @@ class ShipExplosion extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1_
         this.createExplosionParticles();
     }
 
+    // create explosion lines that pop out of here
+    // they dissipate over time
+    // they should depend on the object that's destroyed to
+    // that means I should have a death animation for each
+
     createExplosionParticles() {
         for (var i = 0; i < this.particleNum; i++) {
             const speed = Math.random() * 10 + 4;
@@ -5094,7 +6367,6 @@ class ShipExplosion extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1_
             this.remove();
         }
     }
-    // ANIMATION = requestAnimationFrame(drawScene);
 }
 
 
@@ -5164,7 +6436,6 @@ class SingularityHitExplosion extends _game_engine_game_object__WEBPACK_IMPORTED
             this.remove();
         }
     }
-    // ANIMATION = requestAnimationFrame(drawScene);
 }
 
 
@@ -5261,7 +6532,6 @@ class SingularityParticles extends _game_engine_game_object__WEBPACK_IMPORTED_MO
         }
         this.changeCurrentColor();
     }
-    // ANIMATION = requestAnimationFrame(drawScene);
 }
 
 
@@ -5881,11 +7151,11 @@ class GameScript {
 
     createStars() {
         const runoffFactor = 1.5;
-        for(let i = 0; i < 400; i++) {
+        for(let i = 0; i < 900; i++) {
             const X = (runoffFactor * Math.random() - runoffFactor/2) * this.DIM_X; // based on zoom scale and eventually camera position
             const Y = (runoffFactor * Math.random() - runoffFactor/2) * this.DIM_Y;
             // const Z = -this.initialCameraZPos * 0.25 + -this.initialCameraZPos * 2 * Math.random();
-            const Z = -this.initialCameraZPos * (0.5 + 0.75 * Math.random());
+            const Z = -this.initialCameraZPos * (0.5 + 2* Math.random());
             new _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_13__.Star(this.engine, [X, Y, Z], this.ship.cameraTransform);
         }
     }
@@ -6156,12 +7426,12 @@ class GameScript {
                 }
             },
             GreenGroups: () => {
-                const randomPos = this.randomPosition(100);
+                const randomPos = this.randomPosition(50);
                 for (let i = 0; i < 3; i++) {
                     for (let j = 0; j < 3; j++) {
                         this.enemyCreatorList["Weaver"]([
                             i * 40 + randomPos[0],
-                            j * 40 + randomPos[1],
+                            j * 40 + randomPos[1] - 50,
                         ]);
                     }
                 }
@@ -6186,7 +7456,7 @@ class GameScript {
         return [
             (this.DIM_X - radius * 4) * Math.random() + radius * 4,
             (this.DIM_Y - radius * 4) * Math.random() + radius * 4,
-            // 500,300
+            // 1000,600
         ];
     }
 
@@ -6203,7 +7473,8 @@ class GameScript {
 
         this.testing = false;
         if (this.testing) {
-            if (this.sequenceCount === 0) {
+            this.intervalTime += delta;
+            if (this.sequenceCount === 0 && this.intervalTime > 5000) {
                 this.sequenceTypes["BoxBoxesEverywhere"]();
                 this.sequenceCount += 1;
             }
@@ -6480,7 +7751,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   GameView: () => (/* binding */ GameView)
 /* harmony export */ });
 class GameView {
-    constructor(engine, ctx, canvasEl) {
+    constructor(engine, ctx, canvasEl, levelDesigner, animationView) {
         this.ctx = ctx;
         this.engine = engine;
         // this.ship = this.game.addShip(); belongs in game script
@@ -6488,9 +7759,12 @@ class GameView {
         this.initialUnmute = true;
         this.gameStarted = false;
         this.modelClosed = false;
+        this.levelDesigner = levelDesigner;
+        this.animationView = animationView;
         this.bindKeyboardKeys = this.bindKeyboardKeys.bind(this);
-        this.animate = this.animate.bind(this);
         this.gameEditorOpened = false;
+        this.lastTime = 0;
+        this.animate = this.animate.bind(this);
     }
 
     bindKeyboardKeys() {
@@ -6566,7 +7840,11 @@ class GameView {
         });
 
         window.addEventListener("click", (e) => {
-            this.engine.mouseClicked([e.layerX, e.layerY]);
+            this.engine.mouseClicked(e);
+        });
+
+        window.addEventListener("dblclick", (e) => {
+            this.engine.mouseDoubleClicked(e);
         });
 
         // function preventDefault(e) {
@@ -6634,9 +7912,11 @@ class GameView {
     animate(time) {
         const timeDelta = time - this.lastTime;
         this.engine.tick(timeDelta);
+        this.levelDesigner.animate(timeDelta);
+        this.animationView.animate(timeDelta);
         this.lastTime = time;
         // every call to animate requests causes another call to animate
-        requestAnimationFrame(this.animate.bind(this));
+        requestAnimationFrame(this.animate);
     }
 }
 
@@ -6744,12 +8024,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const ctx = canvasEl.getContext("2d");
     const gameEngine = new _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_2__.GameEngine(ctx);
-    const animationWindow = document.getElementsByTagName("canvas")[1];
-    const animationView = new _AnimationView__WEBPACK_IMPORTED_MODULE_4__.AnimationView(animationWindow.getContext("2d"));
-    new _game_engine_Levels_levelDesigner__WEBPACK_IMPORTED_MODULE_3__.LevelDesigner(gameEngine, animationView);
+    const animationWindow = document.getElementsByTagName("canvas")[1].getContext("2d");
+    const levelDesignerCanvas = document.getElementsByTagName("canvas")[2];
+    const levelDesignerCtx = levelDesignerCanvas.getContext("2d");
+    const animationView = new _AnimationView__WEBPACK_IMPORTED_MODULE_4__.AnimationView(animationWindow);
+    const levelDesigner = new _game_engine_Levels_levelDesigner__WEBPACK_IMPORTED_MODULE_3__.LevelDesigner(gameEngine, animationView, levelDesignerCtx);
 
-    animationView.start();
-    new _game_view__WEBPACK_IMPORTED_MODULE_1__.GameView(gameEngine, ctx, canvasEl).start();
+    new _game_view__WEBPACK_IMPORTED_MODULE_1__.GameView(gameEngine, ctx, canvasEl, levelDesigner, animationView).start();
 });
 
 })();

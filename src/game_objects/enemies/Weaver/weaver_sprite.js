@@ -7,9 +7,10 @@ export class WeaverSprite extends LineSprite {
     }
 
     draw(ctx) {
-    // drawing this guy is taking waaay too much time.
-    // I took out the blurr factor and it's way better.
-    // doesn't look as nice, but it's a starting point
+        if(!this.visible) return;
+        // drawing this guy is taking waaay too much time.
+        // I took out the blurr factor and it's way better.
+        // doesn't look as nice, but it's a starting point
         const pos = this.transform.absolutePosition();
         const angle = this.transform.absoluteAngle();
         const spawningScale = this.spawningScale;
