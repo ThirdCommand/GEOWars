@@ -26,16 +26,15 @@ export class Scene {
 }
 
 export class SceneObject extends UIElement {
-    constructor(levelDesigner, sceneInfo, parentScene, position) {
-        super(levelDesigner, position);
+    constructor(levelDesigner, name, parentScene, position) {
+        super(levelDesigner, position, parentScene);
         // i'll have to create the game elements from the serialized data
-        this.gameElements = sceneInfo?.gameElements || [];
-        
-        this.parentScene = parentScene; // might be LevelDesigner
+        this.gameElements = [];
         
         this.expanded = false;
         this.widthHeight = [40,40];
-        this.addUIElementSprite(new SceneSprite(sceneInfo?.name, this.UITransform, this.widthHeight));
+        this.name = name || "Scene";
+        this.addUIElementSprite(new SceneSprite(name, this.UITransform, this.widthHeight));
         this.clickRadius = 20;
         this.addMouseClickListener();
         this.addMouseDoubleClickListener();
@@ -56,6 +55,10 @@ export class SceneObject extends UIElement {
 
     copy() {
         return this.levelDesigner.addToClipBoard(new SceneObject(this.levelDesigner, this.serialize()));
+    }
+
+    loadGameElements(gameElements) {
+        this.gameElements = this.levelDesigner.loadGameElements(gameElements, false, this);
     }
 
     serialize() {

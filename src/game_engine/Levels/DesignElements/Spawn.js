@@ -36,6 +36,9 @@ export class Spawn {
     }
 
     serialize() {
-
+        return {
+            type: "Spawn",
+            spawn: this.spawn
+        };
     }
 }

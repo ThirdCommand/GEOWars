@@ -67,8 +67,8 @@ export class LoopBeginning {
 
 // UIElement
 export class LoopBeginningObject extends UIElement {
-    constructor(levelDesigner, loop, position) {
-        super(levelDesigner, position);
+    constructor(levelDesigner, loop, position, parentScene) {
+        super(levelDesigner, position, parentScene);
         this.widthHeight = [10, 40];
         this.clickRadius = 5;
         this.addMouseClickListener();
@@ -105,10 +105,8 @@ export class LoopBeginningObject extends UIElement {
 }
 
 export class LoopEndObject extends UIElement {
-    constructor(levelDesigner, loop, position) {
-        // maybe I can give it a color when it's made by making both
-        // still 
-        super(levelDesigner, position);
+    constructor(levelDesigner, loop, position, parentScene) {
+        super(levelDesigner, position, parentScene);
         this.loop = loop;
         this.widthHeight = [30, 40];
         this.clickRadius = 15;
