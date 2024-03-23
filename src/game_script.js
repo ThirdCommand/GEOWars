@@ -51,7 +51,7 @@ export class GameScript {
         this.intervalTiming = 1;
         this.intervalTime = 0;
         this.hugeSequenceTime = 0;
-        this.sequenceCount = 0;
+        this.sequenceCount = 0; // START GAME HERE
         this.lives = 3;
         this.soundsToPlay = {};
         this.scoreMultiplier = 1;

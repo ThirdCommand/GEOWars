@@ -1,6 +1,7 @@
 export const Util = {
     // Normalize the length of the vector to 1, maintaining direction.
     dir(vec) {
+        if(vec[0] === 0 && vec[1] === 0) return [0, 0];
         const norm = Util.norm(vec);
         return Util.scale(vec, 1 / norm);
     },

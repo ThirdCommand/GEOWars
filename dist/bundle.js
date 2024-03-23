@@ -211,8 +211,8 @@ class Event {
 // this is what is created by the UI
 // but it will also have to be created by the serialized data
 class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
-    constructor(levelDesigner, eventToLoad, position) {
-        super(levelDesigner, position);
+    constructor(levelDesigner, eventToLoad, position, parentScene) {
+        super(levelDesigner, position, parentScene);
         this.spawns = [];
         this.enemyPlacers = [];
         this.selectedSpawns = [];
@@ -222,7 +222,7 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
         this.addMouseClickListener();
 
         if(eventToLoad) {
-            eventToLoad.spawns.forEach((spawn) => this.addSpawn(spawn));
+            eventToLoad.spawns.forEach((spawn) => this.addSpawn({spawn}));
         }
         this.addUIElementSprite(new EventObjectSprite(this.UITransform, this.spawnSprites, this.widthHeight));
     }
@@ -254,8 +254,12 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
     serialize() {  
         return {
             type: 'Event',
-            spawns: this.spawns.map((spawn) => spawn.serialize())
+            spawns: this.spawns
         };
+    }
+
+    loadEvent(event) {
+        event.spawns.forEach((spawn) => this.addSpawn({spawn}));
     }
 
     addSpawn(spawn) {
@@ -296,6 +300,7 @@ class EventObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UIL
     constructor(UITransform, spawnSprites, widthHeight) {
         super(UITransform);
         this.selected = true;
+        this.expanded = true;
         this.spawnSprites = spawnSprites;
         this.widthHeight = widthHeight;
 
@@ -474,8 +479,8 @@ class LoopBeginning {
 
 // UIElement
 class LoopBeginningObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
-    constructor(levelDesigner, loop, position) {
-        super(levelDesigner, position);
+    constructor(levelDesigner, loop, position, parentScene) {
+        super(levelDesigner, position, parentScene);
         this.widthHeight = [10, 40];
         this.clickRadius = 5;
         this.addMouseClickListener();
@@ -512,10 +517,8 @@ class LoopBeginningObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIEle
 }
 
 class LoopEndObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
-    constructor(levelDesigner, loop, position) {
-        // maybe I can give it a color when it's made by making both
-        // still 
-        super(levelDesigner, position);
+    constructor(levelDesigner, loop, position, parentScene) {
+        super(levelDesigner, position, parentScene);
         this.loop = loop;
         this.widthHeight = [30, 40];
         this.clickRadius = 15;
@@ -678,7 +681,10 @@ class Spawn {
     }
 
     serialize() {
-
+        return {
+            type: "Spawn",
+            spawn: this.spawn
+        };
     }
 }
 
@@ -737,8 +743,8 @@ class Time {
 
 // UIElement
 class TimeObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
-    constructor(levelDesigner, {waitTime}, position) {
-        super(levelDesigner, position);
+    constructor(levelDesigner, {waitTime}, position, parentScene) {
+        super(levelDesigner, position, parentScene);
         this.waitTime = waitTime;
         this.widthHeight = [50, 40];
         this.clickRadius = 20;
@@ -757,6 +763,7 @@ class TimeObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
 
     serialize() {
         return {
+            type: "Time",
             waitTime: this.waitTime,
         };
     }
@@ -848,16 +855,15 @@ class Scene {
 }
 
 class SceneObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_1__.UIElement {
-    constructor(levelDesigner, sceneInfo, parentScene, position) {
-        super(levelDesigner, position);
+    constructor(levelDesigner, name, parentScene, position) {
+        super(levelDesigner, position, parentScene);
         // i'll have to create the game elements from the serialized data
-        this.gameElements = sceneInfo?.gameElements || [];
-        
-        this.parentScene = parentScene; // might be LevelDesigner
+        this.gameElements = [];
         
         this.expanded = false;
         this.widthHeight = [40,40];
-        this.addUIElementSprite(new SceneSprite(sceneInfo?.name, this.UITransform, this.widthHeight));
+        this.name = name || "Scene";
+        this.addUIElementSprite(new SceneSprite(name, this.UITransform, this.widthHeight));
         this.clickRadius = 20;
         this.addMouseClickListener();
         this.addMouseDoubleClickListener();
@@ -878,6 +884,10 @@ class SceneObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_1__.UIElement {
 
     copy() {
         return this.levelDesigner.addToClipBoard(new SceneObject(this.levelDesigner, this.serialize()));
+    }
+
+    loadGameElements(gameElements) {
+        this.gameElements = this.levelDesigner.loadGameElements(gameElements, false, this);
     }
 
     serialize() {
@@ -1183,6 +1193,10 @@ __webpack_require__.r(__webpack_exports__);
 
 // I should collect placed enemies
 
+
+// for a tracker I can highlight the current game element
+// just like selecting it... but maybe the same color for 
+// all of them 
 class LevelDesigner {
     constructor(engine, animationView, levelDesignerCtx, animationWindow, serializedGame) {
         this.serializedGame = serializedGame;
@@ -1190,7 +1204,7 @@ class LevelDesigner {
 
         // duck typing for scene
         this.gameElements = []; // top level list of game elements
-        this.expandedScene = this; // starts as this
+        this.expandedScenes = [this];
         this.UITransform = {pos: [0,0]};
 
         this.widthHeight = [0,0];
@@ -1249,7 +1263,13 @@ class LevelDesigner {
         const moveLeft = document.getElementById("MoveLeft");
         const moveRight = document.getElementById("MoveRight");
 
+        const saveGameDesign = document.getElementById("saveGameDesign");
+
+        const loadGameDesign = document.getElementById("loadGameDesign");
+
         const sceneNameSubmit = document.getElementById("sceneNameSubmit");
+
+        const gameSequenceSubmit = document.getElementById("SequenceEnter");
        
         addGruntButton.onclick = (e) => {
             e.stopPropagation();
@@ -1306,10 +1326,20 @@ class LevelDesigner {
             this.UIActionsToRun.push(() => this.makeEvent());
         };
 
+        saveGameDesign.onclick = (e) => {  
+            e.stopPropagation();
+            this.saveGameDesign();
+        };
+
         sceneNameSubmit.onclick = (e) => {
             e.stopPropagation();
             const name = document.getElementById("sceneName").value;
             this.UIActionsToRun.push(() => this.makeScene(name));
+        };
+        loadGameDesign.onclick = (e) => {
+            e.stopPropagation();
+            const json = document.getElementById("loadGameDesignInput").value;
+            this.loadGameDesign(json);
         };
         addTime.onclick = (e) => {
             e.stopPropagation();
@@ -1341,6 +1371,18 @@ class LevelDesigner {
             );
         };
 
+        window.addEventListener("scroll", (e) => {
+            // get the current mouse position to know if it is within the 
+            // level editor
+            // then move the level editor up or down 
+        });
+
+        gameSequenceSubmit.onclick = (e) => {
+            e.stopPropagation();
+            const sequence = Number(document.getElementById("sequenceInput").value);
+            this.engine.gameScript.sequenceCount = sequence;
+        };
+
 
         // this.levelDesignerCtx.addEventListener("dblclick", (e) => {
         //     e.stopPropagation();
@@ -1350,10 +1392,11 @@ class LevelDesigner {
         // });
     }
 
-    makeTime(time) {
+    makeTime(time, parentScene) {
         const newElementPosition = this.getNewDrawPosition();
-        const timeObject = new _DesignElements_Time__WEBPACK_IMPORTED_MODULE_9__.TimeObject(this, {waitTime: time}, newElementPosition);
+        const timeObject = new _DesignElements_Time__WEBPACK_IMPORTED_MODULE_9__.TimeObject(this, {waitTime: time}, newElementPosition, parentScene);
         this.selectedGameElement = timeObject;
+        return timeObject;
     }
 
     mouseDoubleClicked(pos) {
@@ -1363,27 +1406,26 @@ class LevelDesigner {
     expandScene(scene) {
         this.selectedGameElement?.unSelected();
         this.selectedGameElement = undefined;
-        // if the scene is in the same scene as the currently expanded scene
-        if(this.expandedScene.parentScene === scene.parentScene) {
-            this.expandedScene.unExpandScene();
-        }
-        this.expandedScene = scene;
 
-        // I'll have to do something about the click listeners
-        // I could add a check that the scene it is in is expanded
+        const parentIndex = this.expandedScenes.indexOf(scene.parentScene);
+
+        this.expandedScenes[parentIndex + 1]?.unExpandScene();
+
         scene.gameElements.forEach((element) => {
             element.parentSceneExpanded();
             this.addUIElementSprite(element.UILineSprite);
         });
+        
+        this.expandedScenes.push(scene);
     }
 
-    // will eventually want stack of expanded scenes
-    // that way I can unexpand all the way back to the double clicked scene
     unExpandScene(scene) {
-        if(this.expandedScene === scene) {
-            this.removeExpandedElements();
-            this.expandedScene = scene.parentScene;
-        }
+        if(this.expandedScenes.length === 1) return console.log("can't unexpand the base scene");
+        if(this.expandedScenes.indexOf(scene) === -1) return console.log("scene not expanded");
+        const bottomExpandedScene = this.expandedScenes.pop();
+        if(scene !== bottomExpandedScene) bottomExpandedScene.unExpandScene();
+        this.removeExpandedElements(bottomExpandedScene);
+
     }
 
 
@@ -1393,13 +1435,21 @@ class LevelDesigner {
 
     }
 
-    makeLoop(loop) {
-        new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__.LoopBeginningObject(this, undefined, this.getNewDrawPosition());
-        new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__.LoopEndObject(this, loop, this.getNewDrawPosition());
+    makeLoop(loop, parentScene) {
+        new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__.LoopBeginningObject(this, undefined, this.getNewDrawPosition(), parentScene);
+        new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
+    }
+
+    makeLoopBeginning(loop, parentScene) {
+        return new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__.LoopBeginningObject(this, undefined, this.getNewDrawPosition(), parentScene);
+    }
+
+    makeLoopEnding(loop, parentScene) {
+        return new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
     }
 
     moveLeft(UIElement) {
-        const gameElements = this.expandedScene.gameElements;
+        const gameElements = this.expandedScenes[this.expandedScenes.length - 1].gameElements;
         for(let i = 0; i < gameElements.length; i++) {
             const element = gameElements[i];
             if(element === UIElement) {
@@ -1413,7 +1463,7 @@ class LevelDesigner {
     }
 
     moveRight(UIElement) {
-        const gameElements = this.expandedScene.gameElements;
+        const gameElements = this.expandedScenes[this.expandedScenes.length - 1].gameElements;
         for(let i = 0; i < gameElements.length; i++) {
             const currentElement = gameElements[i];
             if(currentElement === UIElement) {
@@ -1427,12 +1477,53 @@ class LevelDesigner {
         }
     }
 
-    makeEvent() {
+    saveGameDesign() {
+
+        const gameElements = this.gameElements.map(
+            (element) => element.serialize() 
+        );
+
+        this.serializedGame = {
+            gameName: "Game",
+            gameElements,
+        };
+        console.log(JSON.stringify(this.serializedGame));
+    }
+
+    loadGameDesign(json) {
+        const serializedGame = JSON.parse(json);
+        this.serializedGame = serializedGame;
+        this.loadGameElements(serializedGame.gameElements);
+    }
+
+    loadGameElements(gameElements, parentScene = this) {
+        return gameElements.map((element) => {
+            if(element.type === "Scene") {
+                const newScene = this.makeScene(element.name, parentScene);
+                this.expandedScenes.push(newScene);
+                newScene.gameElements = this.loadGameElements(element.gameElements, newScene) || [];
+                newScene.unExpandScene();
+                return newScene;
+            } else if(element.type === "Event") {
+                return this.makeEvent(element, parentScene);
+            } else if(element.type === "Time") {
+                return this.makeTime(element.waitTime, parentScene);
+            } else if(element.type === "LoopBeginning") {
+                return this.makeLoopBeginning(element, parentScene);
+            } else if (element.type === "LoopEnd") {
+                return this.makeLoopEnding(element, parentScene);
+            }
+        });
+    }
+
+    makeEvent(eventToLoad, parentScene = this.expandedScenes[this.expandedScenes.length - 1]) {
         // should provide this the current scene to know which array of elements to use
         const newElementPosition = this.getNewDrawPosition();
-        const event = new _DesignElements_Event__WEBPACK_IMPORTED_MODULE_8__.EventObject(this, null, newElementPosition);
+        
+        const event = new _DesignElements_Event__WEBPACK_IMPORTED_MODULE_8__.EventObject(this, eventToLoad, newElementPosition, parentScene);
         this.selectedGameElement?.unSelected();
         this.selectedGameElement = event;
+        return event;
     }
     
     swapAdjacentPositions(leftUIElement, rightUIElement) {
@@ -1440,26 +1531,29 @@ class LevelDesigner {
         const newRightX = newLeftX + rightUIElement?.widthHeight[0] + 4;
         leftUIElement.UITransform.pos[0] = newRightX;
         rightUIElement.UITransform.pos[0] = newLeftX;
-        
-        console.log(this.expandedScene.gameElements.map((element) => element.UITransform.pos[0]));
     }
 
     getNewDrawPosition() {
-        const expandedElements = this.expandedScene.gameElements;
+        const bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
+        const expandedElements = bottomExpandedScene.gameElements;
         const lastElement = expandedElements[expandedElements.length - 1];
         const lastXPosition = lastElement?.UITransform?.pos[0] || 0;
-        const lastYPosition = lastElement?.UITransform?.pos[1] || this.expandedScene.widthHeight[1] + this.expandedScene.UITransform.pos[1] + 4;
+        const lastYPosition = lastElement?.UITransform?.pos[1] || bottomExpandedScene.widthHeight[1] + bottomExpandedScene.UITransform.pos[1] + 4;
         const lastWidth = lastElement?.widthHeight[0] || 0;
   
         return [lastXPosition + lastWidth + 4, lastYPosition];
     }
 
-    makeScene(name) {
+    makeScene(name, visible = true, parentScene = this.expandedScenes[this.expandedScenes.length - 1]) {
         // this should add a box inside either the game sequence as a whole,
         // or inside the current scene
-        const newElementPosition = this.getNewDrawPosition();
+        let newElementPosition;
+        if(visible) {
+            newElementPosition = this.getNewDrawPosition();
+        }
+        
         // sprites are made and added automatically
-        const newScene  = new _DesignElements_scene__WEBPACK_IMPORTED_MODULE_6__.SceneObject(this, {name}, this.expandedScene, newElementPosition);
+        return(new _DesignElements_scene__WEBPACK_IMPORTED_MODULE_6__.SceneObject(this, name, parentScene, newElementPosition));
     }
 
     loopSelected(loop) {
@@ -1575,7 +1669,6 @@ class LevelDesigner {
     }
 
     animate(timeDelta) {
-
         // it might be cool to animate the tiny enemies in the spawn card
         // this.animateGameObjects(timeDelta);
 
@@ -1667,8 +1760,8 @@ class LevelDesigner {
         this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1);
     }
 
-    removeExpandedElements() {
-        const UIElements = this.expandedScene.gameElements;
+    removeExpandedElements(expandedScene) {
+        const UIElements = expandedScene.gameElements;
         UIElements.forEach((UIElement) => {
             UIElement.parentSceneUnexpanded();
             if(UIElement.UILineSprite) {
@@ -1681,13 +1774,14 @@ class LevelDesigner {
     }
 
     removeUIElement(UIElement) {
+        const bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
         if(UIElement.UILineSprite) {
             this.UIElementSprites.splice(
                 this.UIElementSprites.indexOf(UIElement.UILineSprite),
                 1
             );
         }
-        this.expandedScene.gameElements.splice(this.expandedScene.gameElements.indexOf(UIElement), 1);
+        bottomExpandedScene.gameElements.splice(bottomExpandedScene.gameElements.indexOf(UIElement), 1);
     }
 
     addUIElementSprite(UILineSprite) {
@@ -1695,7 +1789,8 @@ class LevelDesigner {
     }
 
     addUIElement(UIElement) {
-        this.expandedScene.gameElements.push(UIElement);
+        const bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
+        bottomExpandedScene.gameElements.push(UIElement);
     }
 
     addLineSprite(lineSprite) {
@@ -1723,7 +1818,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class UIElement {
-    constructor(levelDesigner, position) {
+    constructor(levelDesigner, position, parentScene) {
+        this.parentScene = parentScene;
         this.UITransform = new _transform__WEBPACK_IMPORTED_MODULE_0__.Transform(null, position);
         this.levelDesigner = levelDesigner; // this is level designer not the game engine
         this.levelDesigner.addUIElement(this);
@@ -1748,8 +1844,8 @@ class UIElement {
 
     parentSceneUnexpanded() {
         this.inExpandedScene = false;
-        this.removeMouseClickListener();
-        this.removeMouseDoubleClickListener();
+        // this.removeMouseClickListener();
+        // this.removeMouseDoubleClickListener();
     }
 
     parentSceneExpanded () {
@@ -3067,6 +3163,7 @@ __webpack_require__.r(__webpack_exports__);
 const Util = {
     // Normalize the length of the vector to 1, maintaining direction.
     dir(vec) {
+        if(vec[0] === 0 && vec[1] === 0) return [0, 0];
         const norm = Util.norm(vec);
         return Util.scale(vec, 1 / norm);
     },
@@ -4632,8 +4729,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.js");
 /* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./src/game_engine/sound.js");
-/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.js");
-/* harmony import */ var _grunt_sprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./grunt_sprite */ "./src/game_objects/enemies/Grunt/grunt_sprite.js");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.js");
+/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.js");
+/* harmony import */ var _grunt_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./grunt_sprite */ "./src/game_objects/enemies/Grunt/grunt_sprite.js");
+
 
 
 
@@ -4647,24 +4746,62 @@ class Grunt extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameOb
         this.shipTransform = shipTransform;
         this.radius = 5;
         this.points = 70;
+        this.speed = 1.5;
+        this.bumpAcceleration = 1.5;
+        this.bumpInfluencers = [];
+        this.bumpDirectionInfluenced = false;
         this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
         this.playSound(this.spawnSound);
-        this.addLineSprite(new _grunt_sprite__WEBPACK_IMPORTED_MODULE_3__.GruntSprite(this.transform));
-        this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_2__.EnemySpawn(this.gameEngine));
+        this.addLineSprite(new _grunt_sprite__WEBPACK_IMPORTED_MODULE_4__.GruntSprite(this.transform));
+        this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__.EnemySpawn(this.gameEngine));
     }
 
     exist() {
         this.exists = true;
         // leaving off subscriptions means that things will subscribe to it
         this.addCollider("General", this, this.radius);
+        this.addCollider("Bump", this, this.radius, ["Grunt", "Weaver"], ["General"]);
         // now it will move
         this.addPhysicsComponent();
     }
 
+    onCollision(collider, type){
+        if (type === "Bump" && collider.gameObject !== this) {
+            this.acceptBumpDirection(collider.gameObject.transform.pos);
+        }
+    }
+    
+
+    acceptBumpDirection(source) {
+        this.bumpDirectionInfluenced = true;
+        const dy = this.transform.pos[1] - source[1];
+        const dx = this.transform.pos[0] - source[0];
+        const unitVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.Util.dir([dx, dy]);
+        this.bumpInfluencers.push(unitVector);
+    // first 
+    }
+
+    influenceDirection(influencers) {
+        let directionVector = [0, 0];
+
+        influencers.forEach((influencer) => {
+            const dx = directionVector[0] + influencer[0];
+            const dy = directionVector[1] + influencer[1];
+            const newVector = [dx, dy];
+            directionVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.Util.dir(newVector);
+        });
+        const influencedDirection = Math.atan2(directionVector[1], directionVector[0]);
+        return influencedDirection;
+    }
+
+
+
+
+
     // ADDING MOVEMENT MECHANICS FOR GRUNT
 
     chase(timeDelta) {
-        const speed = 1.5;
+        const speed = this.speed; 
         const shipPos = this.shipTransform.pos;
         const pos = this.transform.pos;
         const dy = shipPos[1] - pos[1];
@@ -4691,12 +4828,22 @@ class Grunt extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameOb
 
     update(timeDelta) {
         if (this.exists) {
-            this.chase(timeDelta);
+            const bumpAcceleration = this.bumpAcceleration;
+
             this.animate(timeDelta);
+
+            if(this.bumpDirectionInfluenced) {
+                const direction = this.influenceDirection(this.bumpInfluencers);
+                this.transform.acc[0] += bumpAcceleration * Math.cos(direction) / 100;
+                this.transform.acc[1] += bumpAcceleration * Math.sin(direction) / 100;
+            } 
+            this.chase(timeDelta);
       
             if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
                 this.wallGraze();
             }
+            this.bumpInfluencers = [];
+            this.bumpDirectionInfluenced = false;
         }
     }
 
@@ -5403,12 +5550,19 @@ class Weaver extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         this.transform.pos[0] = pos[0];
         this.transform.pos[1] = pos[1];
         this.speed = 3;
+        
         this.points = 80;
         this.radius = 5;
-        this.weaverCloseHitBox = 20;
+        this.weaverCloseHitBox = 30;
         this.shipTransform = shipTransform;
-        this.directionInfluenced = false;
-        this.influencers = [];
+
+        this.bulletDirectionInfluenced = false;
+        this.bumpDirectionInfluenced = false;
+        this.bulletInfluencers = [];
+        this.bumpInfluencers = [];
+        this.bumpAcceleration = 1.5;
+        this.bulletDodgeSpeed = 6;
+
         this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("GEOWars/sounds/Enemy_spawn_green.wav", 0.5);
         this.playSound(this.spawnSound);
         this.addLineSprite(new _weaver_sprite__WEBPACK_IMPORTED_MODULE_4__.WeaverSprite(this.transform));
@@ -5421,21 +5575,34 @@ class Weaver extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
     // leaving off subscriptions means that things will subscribe to it
         this.addCollider("General", this, this.radius);
         this.addCollider("BulletDodge", this, this.weaverCloseHitBox, ["Bullet"], ["General"]);
+        this.addCollider("Bump", this, this.radius, ["Grunt", "Weaver"], ["General"]);
         // now it will move
         this.addPhysicsComponent();
         this.exists = true;
     }
 
+
     onCollision(collider, type){
         if (type === "BulletDodge") {
             this.acceptBulletDirection(collider.gameObject.transform.pos);
         }
+        if(type === "Bump" && collider.gameObject !== this) {
+            this.acceptBumpDirection(collider.gameObject.transform.pos);
+        }
     }
 
-    influenceDirection() {
+    acceptBumpDirection(source) {
+        this.bumpDirectionInfluenced = true;
+        const dy = this.transform.pos[1] - source[1];
+        const dx = this.transform.pos[0] - source[0];
+        const unitVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.Util.dir([dx, dy]);
+        this.bumpInfluencers.push(unitVector);
+    }
+
+    influenceDirection(influencers) {
         let directionVector = [0, 0];
 
-        this.influencers.forEach((influencer) => {
+        influencers.forEach((influencer) => {
             const dx = directionVector[0] + influencer[0];
             const dy = directionVector[1] + influencer[1];
             const newVector = [dx, dy];
@@ -5446,11 +5613,11 @@ class Weaver extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
     }
 
     acceptBulletDirection(source) {
-        this.directionInfluenced = true;
+        this.bulletDirectionInfluenced = true;
         const dy = this.transform.pos[1] - source[1];
         const dx = this.transform.pos[0] - source[0];
         const unitVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.Util.dir([dx, dy]);
-        this.influencers.push(unitVector);
+        this.bulletInfluencers.push(unitVector);
     // first 
     }
 
@@ -5461,21 +5628,29 @@ class Weaver extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
 
     update(timeDelta){
         if(this.exists){
-            const speed = this.speed;
+            const bumpAcceleration = this.bumpAcceleration;
+
             const velocityScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
 
             this.animate(timeDelta);
-      
-      
-            if (!this.directionInfluenced) {
-                this.chase(timeDelta);
+
+            if(this.bulletDirectionInfluenced) {
+                const direction = this.influenceDirection(this.bulletInfluencers);
+                this.transform.pos[0] += this.bulletDodgeSpeed * Math.cos(direction) * velocityScale;
+                this.transform.pos[1] += this.bulletDodgeSpeed * Math.sin(direction) * velocityScale;
             } else {
-                const direction = this.influenceDirection();
-                this.transform.pos[0] += speed * Math.cos(direction) * velocityScale;
-                this.transform.pos[1] += speed * Math.sin(direction) * velocityScale;
+                this.chase(timeDelta);
             }
+            if (this.bumpDirectionInfluenced) {
+                const direction = this.influenceDirection(this.bumpInfluencers);
+                this.transform.acc[0] += bumpAcceleration * Math.cos(direction) / 100;
+                this.transform.acc[1] += bumpAcceleration * Math.sin(direction) / 100;
+            } 
   
-            this.directionInfluenced = false;
+            this.bumpDirectionInfluenced = false;
+            this.bulletDirectionInfluenced = false;
+            this.bumpInfluencers = [];
+            this.bulletInfluencers = [];
   
             if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
                 this.wallGraze();
@@ -7140,7 +7315,7 @@ class GameScript {
         this.intervalTiming = 1;
         this.intervalTime = 0;
         this.hugeSequenceTime = 0;
-        this.sequenceCount = 0;
+        this.sequenceCount = 0; // START GAME HERE
         this.lives = 3;
         this.soundsToPlay = {};
         this.scoreMultiplier = 1;

@@ -37,8 +37,8 @@ export class Time {
 
 // UIElement
 export class TimeObject extends UIElement {
-    constructor(levelDesigner, {waitTime}, position) {
-        super(levelDesigner, position);
+    constructor(levelDesigner, {waitTime}, position, parentScene) {
+        super(levelDesigner, position, parentScene);
         this.waitTime = waitTime;
         this.widthHeight = [50, 40];
         this.clickRadius = 20;
@@ -57,6 +57,7 @@ export class TimeObject extends UIElement {
 
     serialize() {
         return {
+            type: "Time",
             waitTime: this.waitTime,
         };
     }

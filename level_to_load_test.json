@@ -1,0 +1,34 @@
+{
+  "gameName": "Game",
+  "gameElements": [
+    {
+      "type": "Scene",
+      "name": "firstStuff",
+      "gameElements": [
+        { "type": "LoopBeginning" },
+        { "type": "Time", "waitTime": "10" },
+        {
+          "type": "Event",
+          "spawns": [
+            { "type": "Arrow", "location": [309, 461, 0] },
+            { "type": "BoxBox", "location": [640, 433, 0] },
+            { "type": "Weaver", "location": [438, 513, 0] }
+          ]
+        },
+        { "type": "LoopEnd", "loopIdx": 0, "repeatTimes": 2 }
+      ]
+    },
+    {
+      "type": "Scene",
+      "name": "secondStuff",
+      "gameElements": [
+        { "type": "Time", "waitTime": "10" },
+        { "type": "Time", "waitTime": "10" },
+        {
+          "type": "Event",
+          "spawns": [{ "type": "Singularity", "location": [525, 495, 0] }]
+        }
+      ]
+    }
+  ]
+}

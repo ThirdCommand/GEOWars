@@ -24,6 +24,8 @@ gameSequence = [scene1, scene2]
 
 gameSequence = [scene1Start, event, event, wait, event, scene3End, scene2Start, scene1Start, event, event, wait, event, scene1End, event, event, wait, event, scene2End]
 
+this was determined to be an ugly idea
+
 ## check game script for types of scenes and find the best way to handle them
 
 ## UI
@@ -47,7 +49,7 @@ gameSequence = [scene1Start, event, event, wait, event, scene3End, scene2Start, 
 
 - [ ] need way to select normal game or level designed game
 
-- [ ] need to store the placed enemies so they can be serialized
+- [x] need to store the placed enemies so they can be serialized
 
 - [x] need UI for scene timeline (woof)
   - [x] scrolling behavior means I need update cycles
@@ -58,8 +60,9 @@ gameSequence = [scene1Start, event, event, wait, event, scene3End, scene2Start, 
     - [x] multiple of them
     - [x] selectable
     - [x] when selected show array of what is contained in it bellow
-    - [ ] unExpanding grandparent scene should work and note break things
-      - [ ] will need a stack of expanded scenes
+    - [x] unExpanding grandparent scene should work and note break things
+      - [x] will need a stack of expanded scenes
+    - [ ] scenes that are expanded should be double clickable to expand as well without having to unExpand and reExpand the parent scene first
   - [ ] Event
     - [ ] add game flags, like bullet upgrades... that might be it haha
     - [x] fix boxbox sprite for placing and placed
@@ -88,13 +91,21 @@ gameSequence = [scene1Start, event, event, wait, event, scene3End, scene2Start, 
       - [ ] position of ship
       - [ ] number of enemies on map
 
+- [x] Save
+  - [x] serialize game
+  - [x] each piece must be able to be serialized
+- [x] Load
+  - [x] load serialized game
+  - [x] each piece must be able to be loaded from its serialized version
+    - [x] scenes present that largest challenge
 - [ ] animation in level editor space: scroll-ability, vertical, horizontal
 
 - [ ] have following "animation" when actually playing the level so you know where in the sequence you are
 - [ ] allow pause and playbacks (maybe a real game could come from that somehow lol)
 - [ ] need way to move serialized levels to the game
 
-- [ ] need to not be zoomed in and not have ship
+- [x] need to not be zoomed in 
+- [ ] and not have ship
 
 enemy selector
 
@@ -118,19 +129,19 @@ I'm using nodist for version management... no memory of setting this up
 
 ## Star Parallax
 
-Camera will need a Z position
+- [x] Camera will need a Z position
 
-field will need a Z position
+- [x] field will need a Z position
 
-stars will need their own Z position
+- [x] stars will need their own Z position
 
 ## Particles Parallax
 
-add parallax
+- [x] add parallax
 
 ## Grid
 
-I could use the parallax with the grid and make it 3D and move in a way that looks better
+- [x] I could use the parallax with the grid and make it 3D and move in a way that looks better
 
 ## Wants
 
@@ -151,10 +162,10 @@ I could use the parallax with the grid and make it 3D and move in a way that loo
   - try having orbiting singularities
   - tweak grid spring/dampener values
 - weaver
-  - add mutual collision detection to prevent clumping with each other
+  - [x] add mutual collision detection to prevent clumping with each other
   - add 3D effect
 - grunt
-  - add mutual collision detection to prevent clumping with each other
+  - [x] add mutual collision detection to prevent clumping with each other
   - 3D effect
 - death animation
   - maybe add a portal effect with the grid
@@ -166,3 +177,6 @@ I could use the parallax with the grid and make it 3D and move in a way that loo
   - [x] bullet upgrade "bend" instead of spread
   - second upgrade?
   - change with trigger press?
+
+## Bugs
+- [ ] hide or disable buttons until game is started  

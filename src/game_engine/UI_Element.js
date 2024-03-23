@@ -2,7 +2,8 @@ import { Transform } from "./transform";
 import { Util } from "./util";
 
 export class UIElement {
-    constructor(levelDesigner, position) {
+    constructor(levelDesigner, position, parentScene) {
+        this.parentScene = parentScene;
         this.UITransform = new Transform(null, position);
         this.levelDesigner = levelDesigner; // this is level designer not the game engine
         this.levelDesigner.addUIElement(this);
@@ -27,8 +28,8 @@ export class UIElement {
 
     parentSceneUnexpanded() {
         this.inExpandedScene = false;
-        this.removeMouseClickListener();
-        this.removeMouseDoubleClickListener();
+        // this.removeMouseClickListener();
+        // this.removeMouseDoubleClickListener();
     }
 
     parentSceneExpanded () {

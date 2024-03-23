@@ -30,8 +30,8 @@ export class Event {
 // this is what is created by the UI
 // but it will also have to be created by the serialized data
 export class EventObject extends UIElement {
-    constructor(levelDesigner, eventToLoad, position) {
-        super(levelDesigner, position);
+    constructor(levelDesigner, eventToLoad, position, parentScene) {
+        super(levelDesigner, position, parentScene);
         this.spawns = [];
         this.enemyPlacers = [];
         this.selectedSpawns = [];
@@ -41,7 +41,7 @@ export class EventObject extends UIElement {
         this.addMouseClickListener();
 
         if(eventToLoad) {
-            eventToLoad.spawns.forEach((spawn) => this.addSpawn(spawn));
+            eventToLoad.spawns.forEach((spawn) => this.addSpawn({spawn}));
         }
         this.addUIElementSprite(new EventObjectSprite(this.UITransform, this.spawnSprites, this.widthHeight));
     }
@@ -73,8 +73,12 @@ export class EventObject extends UIElement {
     serialize() {  
         return {
             type: 'Event',
-            spawns: this.spawns.map((spawn) => spawn.serialize())
+            spawns: this.spawns
         };
+    }
+
+    loadEvent(event) {
+        event.spawns.forEach((spawn) => this.addSpawn({spawn}));
     }
 
     addSpawn(spawn) {
@@ -115,6 +119,7 @@ export class EventObjectSprite extends UILineSprite {
     constructor(UITransform, spawnSprites, widthHeight) {
         super(UITransform);
         this.selected = true;
+        this.expanded = true;
         this.spawnSprites = spawnSprites;
         this.widthHeight = widthHeight;
 
