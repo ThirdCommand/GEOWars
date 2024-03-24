@@ -15,7 +15,7 @@ export class LoopEnd {
         this.parentScene = parentScene; // scene the loop is in
         
         this.startingLoopValues = {
-            loopIdx: loop.loopIdx, // could probably default to 0. this is how many times it's looped
+            loopIdx: loop.loopIdx || 0, // could probably default to 0. this is how many times it's looped
             // during the level edit process, whenever a loop is added
             // it will increment the loopId. This way beginning loops and end loops will always 
             // have matching loopIds without collision
@@ -34,7 +34,7 @@ export class LoopEnd {
             this.endLoop();
         } else {
             this.loop.loopIdx++;
-            this.scene.goToLoopId(this.loop.loopId);
+            this.parentScene.goToLoopId(this.loop.loopId);
                 
         }
     }
@@ -49,17 +49,17 @@ export class LoopEnd {
 
     endLoop() {
         this.resetStartingValues();
-        this.scene.nextElement();
+        this.parentScene.nextElement();
     }
 }
 
 export class LoopBeginning {
-    constructor(scene) {
-        this.scene = scene;
-        this.loopId = this.scene.createLoopId();
+    constructor(parentScene) {
+        this.parentScene = parentScene;
+        this.loopId = this.parentScene.createLoopId();
     }
     update() {
-        this.scene.nextElement();
+        this.parentScene.nextElement();
         // this means the next step will be delayed by a frame waiting
         // for the next update call
     }

@@ -3,8 +3,8 @@ import { UILineSprite } from "../../UI_line_sprite";
 
 // wait times
 export class Time {
-    constructor(gameSequence, waitTime) {
-        this.gameSequence = gameSequence;
+    constructor(parentScene, waitTime) {
+        this.parentScene = parentScene;
         this.waitTime = waitTime;
         this.time = 0;
         this.startingValues = {
@@ -31,7 +31,7 @@ export class Time {
         this.resetStartingValues();
         
         // this will have to be the scene it's in I think
-        this.gameSequence.nextSequence();
+        this.parentScene.nextElement();
     }
 }
 

@@ -464,7 +464,7 @@ export class LevelDesigner {
 
     addSpawnToEvent(spawn, enemyPlacer) {
         if(this.selectedGameElement.enemyPlacers) {
-            this.selectedGameElement?.addSpawn(new Spawn(this.engine, spawn));
+            this.selectedGameElement?.addSpawn(new Spawn(spawn, this.engine));
             this.selectedGameElement?.addEnemyPlacer(enemyPlacer);
         }
     }

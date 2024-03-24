@@ -26,7 +26,7 @@ export class Event {
     }
     
     endEvent() {
-        this.parentScene.nextSequence();
+        this.parentScene.nextElement();
     }
 }
 
@@ -85,7 +85,6 @@ export class EventObject extends UIElement {
     }
 
     addSpawn(spawn) {
-        console.log('adding spawn', spawn.spawn);
         this.spawns.push(spawn.spawn);
         this.spawnSprites[spawn.spawn.type] += 1;
     }
