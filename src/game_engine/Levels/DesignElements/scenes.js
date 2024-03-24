@@ -276,7 +276,7 @@ export class Spawn {
             if(this.spawn.location === 'RANDOM') {
                 location = this.randomPosition();
             }
-            this.gameEngine.enemyCreatorList[mobToSpawn](location);
+            this.gameEngine.gameScript.enemyCreatorList[mobToSpawn](location);
         }
     }
 

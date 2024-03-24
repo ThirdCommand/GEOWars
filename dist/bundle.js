@@ -208,7 +208,7 @@ class Event {
     }
     
     endEvent() {
-        this.parentScene.nextSequence();
+        this.parentScene.nextElement();
     }
 }
 
@@ -267,7 +267,6 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
     }
 
     addSpawn(spawn) {
-        console.log('adding spawn', spawn.spawn);
         this.spawns.push(spawn.spawn);
         this.spawnSprites[spawn.spawn.type] += 1;
     }
@@ -431,7 +430,7 @@ class LoopEnd {
         this.parentScene = parentScene; // scene the loop is in
         
         this.startingLoopValues = {
-            loopIdx: loop.loopIdx, // could probably default to 0. this is how many times it's looped
+            loopIdx: loop.loopIdx || 0, // could probably default to 0. this is how many times it's looped
             // during the level edit process, whenever a loop is added
             // it will increment the loopId. This way beginning loops and end loops will always 
             // have matching loopIds without collision
@@ -450,7 +449,7 @@ class LoopEnd {
             this.endLoop();
         } else {
             this.loop.loopIdx++;
-            this.scene.goToLoopId(this.loop.loopId);
+            this.parentScene.goToLoopId(this.loop.loopId);
                 
         }
     }
@@ -465,17 +464,17 @@ class LoopEnd {
 
     endLoop() {
         this.resetStartingValues();
-        this.scene.nextElement();
+        this.parentScene.nextElement();
     }
 }
 
 class LoopBeginning {
-    constructor(scene) {
-        this.scene = scene;
-        this.loopId = this.scene.createLoopId();
+    constructor(parentScene) {
+        this.parentScene = parentScene;
+        this.loopId = this.parentScene.createLoopId();
     }
     update() {
-        this.scene.nextElement();
+        this.parentScene.nextElement();
         // this means the next step will be delayed by a frame waiting
         // for the next update call
     }
@@ -854,14 +853,16 @@ class Spawn {
 
         for(let i = 0; i < numberToGenerate; i++) {
             let mobToSpawn = this.spawn.type;
-            let location = this.spawn.location;
+            let location;
             if(mobToSpawn === 'RANDOM') {
                 mobToSpawn = this.randomMob(this.spawn.possibleSpawns);
             } 
-            if(location === 'RANDOM') {
+            if(this.spawn.location === 'RANDOM') {
                 location = this.randomPosition();
+            } else {
+                location = [this.spawn.location[0], this.spawn.location[1]];
             }
-            this.gameEngine.enemyCreatorList[mobToSpawn](location);
+            this.gameEngine.gameScript.enemyCreatorList[mobToSpawn](location);
         }
     }
 
@@ -894,8 +895,8 @@ __webpack_require__.r(__webpack_exports__);
 
 // wait times
 class Time {
-    constructor(gameSequence, waitTime) {
-        this.gameSequence = gameSequence;
+    constructor(parentScene, waitTime) {
+        this.parentScene = parentScene;
         this.waitTime = waitTime;
         this.time = 0;
         this.startingValues = {
@@ -922,7 +923,7 @@ class Time {
         this.resetStartingValues();
         
         // this will have to be the scene it's in I think
-        this.gameSequence.nextSequence();
+        this.parentScene.nextElement();
     }
 }
 
@@ -1852,7 +1853,7 @@ class LevelDesigner {
 
     addSpawnToEvent(spawn, enemyPlacer) {
         if(this.selectedGameElement.enemyPlacers) {
-            this.selectedGameElement?.addSpawn(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_7__.Spawn(this.engine, spawn));
+            this.selectedGameElement?.addSpawn(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_7__.Spawn(spawn, this.engine));
             this.selectedGameElement?.addEnemyPlacer(enemyPlacer);
         }
     }
@@ -7424,6 +7425,41 @@ class GameScript {
 
         this.spawnthing = false;
         this.explosionColorWheel = 0;
+
+        this.playFromRootScene = false;
+    }
+
+    nextElement() {
+        this.rootScene.currentElementIndex = 0;
+    }
+
+    startGame(serializedGame) {
+        this.serializedGame = serializedGame;
+        const game = JSON.parse(serializedGame);
+        console.log(game);
+        this.rootScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_15__.Scene(this, "Root");
+        this.rootScene.gameElements = this.loadGameElements(game.gameElements, this.rootScene);
+        this.playFromRootScene = true;
+    }
+
+    // will need to duck type what happens when the scene is done and the game is over
+
+    loadGameElements(gameElements, parentScene) {
+        return gameElements.map((element) => {
+            if(element.type === "Scene") {
+                const newScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_15__.Scene(parentScene, element.name);
+                newScene.gameElements = this.loadGameElements(element.gameElements, newScene) || [];
+                return newScene;
+            } else if(element.type === "Event") {
+                return new _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_16__.Event(element.spawns, parentScene, this.engine);
+            } else if(element.type === "Time") {
+                return new _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_17__.Time(parentScene, element.waitTime, parentScene);
+            } else if(element.type === "LoopBeginning") {
+                return new _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_18__.LoopBeginning(parentScene);
+            } else if (element.type === "LoopEnd") {
+                return new _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_18__.LoopEnd({loopIdx: element.loopIdx || 0, repeatTimes: element.repeatTimes}, parentScene);
+            }
+        });
     }
 
     createStars() {
@@ -7452,7 +7488,21 @@ class GameScript {
     }
 
     update(deltaTime) {
-        this.spawnSequence(deltaTime);
+        if (this.deathPaused) {
+            this.deathPausedTime += deltaTime;
+            if (this.deathPausedTime > this.deathPauseTime) {
+                this.deathPausedTime = 0;
+                this.deathPaused = false;
+            } else {
+                deltaTime = 0;
+            }
+        } 
+
+        if(this.playFromRootScene) {
+            this.rootScene.update(deltaTime);
+        } else {
+            this.spawnSequence(deltaTime);
+        }
         this.changeExplosionColor();
     }
 
@@ -7738,133 +7788,118 @@ class GameScript {
     }
 
     spawnSequence(delta) {
-        if (this.deathPaused) {
-            this.deathPausedTime += delta;
-            if (this.deathPausedTime > this.deathPauseTime) {
-                this.deathPausedTime = 0;
-                this.deathPaused = false;
-            }
-        } else {
-            this.intervalTime += delta;
+        this.intervalTime += delta;
+
+        this.gameTime += delta;
+
+        if (this.sequenceCount === 1) {
+            this.enemyCreatorList["Singularity"]([700, 300]);
+            this.sequenceCount += 1;
         }
 
-        this.testing = false;
-        if (this.testing) {
-            this.intervalTime += delta;
-            if (this.sequenceCount === 0 && this.intervalTime > 5000) {
-                this.sequenceTypes["BoxBoxesEverywhere"]();
-                this.sequenceCount += 1;
-            }
-        } else {
-            this.gameTime += delta;
-            if (this.sequenceCount === 1) {
-                this.enemyCreatorList["Singularity"]([700, 300]);
-                this.sequenceCount += 1;
-            }
-            // wait time              //parentIndex   // repeat count
-            if (
-                this.intervalTime > 2500 * this.intervalTiming &&
+        // wait time              //parentIndex   // repeat count
+        if (
+            this.intervalTime > 2500 * this.intervalTiming &&
         this.sequenceCount < 5
-            ) {
-                this.intervalTime = 0;
-                this.sequenceTypes["EasyGroups"](); // event
-                // this.randomSpawnEnemy();
-                this.sequenceCount += 1;
-            } else if (this.sequenceCount === 5 && this.intervalTime > 5000) {
-                this.sequenceCount += 1;
-            } else if (
-                this.intervalTime > 2500 * this.intervalTiming &&
+        ) {
+            this.intervalTime = 0;
+            this.sequenceTypes["EasyGroups"](); // event
+            // this.randomSpawnEnemy();
+            this.sequenceCount += 1;
+        } else if (this.sequenceCount === 5 && this.intervalTime > 5000) {
+            this.sequenceCount += 1;
+        } else if (
+            this.intervalTime > 2500 * this.intervalTiming &&
         this.sequenceCount > 5 &&
         this.sequenceCount < 10
-            ) {
-                this.sequenceCount += 1;
-                this.intervalTime = 0;
-                this.sequenceTypes["EasyGroupsArrows"]();
-            } else if (this.sequenceCount === 10 && this.intervalTime > 5000) {
-                this.sequenceCount += 1;
-            } else if (
-                this.intervalTime > 1500 * this.intervalTiming &&
+        ) {
+            this.sequenceCount += 1;
+            this.intervalTime = 0;
+            this.sequenceTypes["EasyGroupsArrows"]();
+        } else if (this.sequenceCount === 10 && this.intervalTime > 5000) {
+            this.sequenceCount += 1;
+        } else if (
+            this.intervalTime > 1500 * this.intervalTiming &&
         this.sequenceCount > 10 &&
         this.sequenceCount < 15
-            ) {
-                this.sequenceCount += 1;
-                this.intervalTime = 0;
-                this.sequenceTypes["GruntGroups"]();
-            } else if (this.sequenceCount === 15 && this.intervalTime > 2000) {
-                this.sequenceCount += 1;
-            } else if (
-                this.intervalTime > 2000 * this.intervalTiming &&
+        ) {
+            this.sequenceCount += 1;
+            this.intervalTime = 0;
+            this.sequenceTypes["GruntGroups"]();
+        } else if (this.sequenceCount === 15 && this.intervalTime > 2000) {
+            this.sequenceCount += 1;
+        } else if (
+            this.intervalTime > 2000 * this.intervalTiming &&
         this.sequenceCount > 15 &&
         this.sequenceCount < 20
-            ) {
-                this.sequenceCount += 1;
-                this.intervalTime = 0;
-                this.sequenceTypes["GreenGroups"]();
-            } else if (this.sequenceCount === 20 && this.intervalTime > 3000) {
-                this.sequenceCount += 1;
-            }
-            // else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 1) {
-            //   this.intervalTime = 0
-            //   this.sequenceCount += 1
-            //   let enemies_to_spawn = []
-            //   let randomPos = this.randomPosition();
-            //   for (let i = 0; i < 2; i++) {
-            //     for (let j = 0; j < 2; j++) {
-            //       this.enemyCreatorList["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
-            //     }
-            //   }
+        ) {
+            this.sequenceCount += 1;
+            this.intervalTime = 0;
+            this.sequenceTypes["GreenGroups"]();
+        } else if (this.sequenceCount === 20 && this.intervalTime > 3000) {
+            this.sequenceCount += 1;
+        }
+        // else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 1) {
+        //   this.intervalTime = 0
+        //   this.sequenceCount += 1
+        //   let enemies_to_spawn = []
+        //   let randomPos = this.randomPosition();
+        //   for (let i = 0; i < 2; i++) {
+        //     for (let j = 0; j < 2; j++) {
+        //       this.enemyCreatorList["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
+        //     }
+        //   }
 
-            // } else if (this.intervalTime > (5000 * this.intervalTiming) && this.sequenceCount === 11) {
-            //   this.intervalTime = 0;
-            //   this.sequenceCount += 1;
-            //}
-            else if (
-                this.intervalTime > 375 &&
+        // } else if (this.intervalTime > (5000 * this.intervalTiming) && this.sequenceCount === 11) {
+        //   this.intervalTime = 0;
+        //   this.sequenceCount += 1;
+        //}
+        else if (
+            this.intervalTime > 375 &&
         this.sequenceCount > 20 &&
         this.sequenceCount < 30 &&
         this.hugeSequenceTime % 2 === 0
-            ) {
-                this.ship.upgradeBullets();
-                this.intervalTime = 0;
-                this.sequenceCount += 1;
+        ) {
+            this.ship.upgradeBullets();
+            this.intervalTime = 0;
+            this.sequenceCount += 1;
 
-                const fourCorners = [
-                    [40, 40],
-                    [GameScript.DIM_X - 40, 40],
-                    [40, GameScript.DIM_Y - 40],
-                    [GameScript.DIM_X - 40, GameScript.DIM_Y - 40],
-                ];
-                fourCorners.forEach((corner) => {
-                    this.enemyCreatorList["Grunt"](corner);
-                });
-            } else if (
-                this.intervalTime > 375 &&
+            const fourCorners = [
+                [40, 40],
+                [GameScript.DIM_X - 40, 40],
+                [40, GameScript.DIM_Y - 40],
+                [GameScript.DIM_X - 40, GameScript.DIM_Y - 40],
+            ];
+            fourCorners.forEach((corner) => {
+                this.enemyCreatorList["Grunt"](corner);
+            });
+        } else if (
+            this.intervalTime > 375 &&
         this.sequenceCount > 20 &&
         this.sequenceCount < 30 &&
         this.hugeSequenceTime % 2 === 1
-            ) {
-                this.intervalTime = 0;
-                this.sequenceCount += 10;
-                const arrowWallPositions = [];
-                const arrowDirection = (Math.PI * 3) / 2 + Math.PI;
-                for (let i = 40; i < GameScript.DIM_X; i += 40) {
-                    arrowWallPositions.push([i, 50]);
-                }
+        ) {
+            this.intervalTime = 0;
+            this.sequenceCount += 10;
+            const arrowWallPositions = [];
+            const arrowDirection = (Math.PI * 3) / 2 + Math.PI;
+            for (let i = 40; i < GameScript.DIM_X; i += 40) {
+                arrowWallPositions.push([i, 50]);
+            }
 
-                arrowWallPositions.forEach((position) => {
-                    this.enemyCreatorList["Arrow"](position, arrowDirection);
-                });
+            arrowWallPositions.forEach((position) => {
+                this.enemyCreatorList["Arrow"](position, arrowDirection);
+            });
+        }
+        // this is the spawner event.
+        // it runs through all the child states
+        // for the event to be triggered
+        else if (this.sequenceCount >= 30) {
+            this.sequenceCount = 0;
+            if (!(this.intervalTiming < 0.5)) {
+                this.intervalTiming *= 0.9;
             }
-            // this is the spawner event.
-            // it runs through all the child states
-            // for the event to be triggered
-            else if (this.sequenceCount >= 30) {
-                this.sequenceCount = 0;
-                if (!(this.intervalTiming < 0.5)) {
-                    this.intervalTiming *= 0.9;
-                }
-                this.hugeSequenceTime += 1;
-            }
+            this.hugeSequenceTime += 1;
         }
 
     // if (this.gameTime % 2000 === 0){

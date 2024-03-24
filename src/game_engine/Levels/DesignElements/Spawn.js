@@ -31,14 +31,16 @@ export class Spawn {
 
         for(let i = 0; i < numberToGenerate; i++) {
             let mobToSpawn = this.spawn.type;
-            let location = this.spawn.location;
+            let location;
             if(mobToSpawn === 'RANDOM') {
                 mobToSpawn = this.randomMob(this.spawn.possibleSpawns);
             } 
-            if(location === 'RANDOM') {
+            if(this.spawn.location === 'RANDOM') {
                 location = this.randomPosition();
+            } else {
+                location = [this.spawn.location[0], this.spawn.location[1]];
             }
-            this.gameEngine.enemyCreatorList[mobToSpawn](location);
+            this.gameEngine.gameScript.enemyCreatorList[mobToSpawn](location);
         }
     }
 
