@@ -64,16 +64,19 @@ this was determined to be an ugly idea
       - [x] will need a stack of expanded scenes
     - [ ] scenes that are expanded should be double clickable to expand as well without having to unExpand and reExpand the parent scene first
   - [ ] Event
-    - [ ] add game flags, like bullet upgrades... that might be it haha
+
     - [x] fix boxbox sprite for placing and placed
     - [x] ship spawn symbols on square
     - [x] count of each
     - [x] add spawn
+    - [ ] continue placing same enemy after placing
     - [ ] delete spawn
+    - [ ] random position button (no need to hide the spawn when that's chosen)
+    - [ ] location edit
+    - [ ] randomly choose from list of possible (number has to be chosen too... hmm)
     - [ ] multi select
     - [ ] copy/paste
     - [ ] escape key for getting out of about to place element
-    - [ ] continue placing same enemy after placing
     - [ ] include ship position as a possible reference (spawn things around ship)
       - [ ] handle case where ship is close to edge
   - [x] Time
@@ -87,6 +90,7 @@ this was determined to be an ugly idea
     - [ ] something applied to selected elements
     - [ ] decrease the timing between spawns
     - [ ] increase a number
+    - [ ] add game flags, like bullet upgrades... that might be it haha
     - [ ] check a number and change any element value in reaction to it
       - [ ] position of ship
       - [ ] number of enemies on map
@@ -98,6 +102,9 @@ this was determined to be an ugly idea
   - [x] load serialized game
   - [x] each piece must be able to be loaded from its serialized version
     - [x] scenes present that largest challenge
+- [ ] Play Created Game
+  - [x] get it to work
+  - [ ] try nested scenes too
 - [ ] animation in level editor space: scroll-ability, vertical, horizontal
 
 - [ ] have following "animation" when actually playing the level so you know where in the sequence you are

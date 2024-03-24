@@ -224,7 +224,7 @@ export class GameScript {
             if (!this.engine.muted) {
                 this.engine.gameScript.gameOverSound.play();
             }
-            // this.playSoundthis.gameOverSound
+            // this.playSound(this.gameOverSound)
             window.setTimeout(this.resetGame.bind(this), 2000);
         }
     }

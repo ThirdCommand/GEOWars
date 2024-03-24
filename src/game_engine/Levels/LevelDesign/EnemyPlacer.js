@@ -69,6 +69,8 @@ export class EnemyPlacer extends GameObject {
         this.levelDesigner.enemyPlaced(spawn);
         this.removeMousePosListener();
         this.addMouseClickListener();
+        // this.levelDesigner.addEnemy(this.type);
+
     }
 
     eventUnselected() {

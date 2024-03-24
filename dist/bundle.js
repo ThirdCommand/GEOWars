@@ -679,7 +679,7 @@ class Scene {
 
 
     update(dT) {
-        this.gameElements[this.currentElementIndex].update(dT);
+        this.gameElements[this.currentElementIndex]?.update(dT);
     }
 
     nextElement() {
@@ -839,8 +839,8 @@ class Spawn {
 
     randomPosition() {
         return [
-            this.DIM_X * 0.70 * Math.random(),
-            this.DIM_Y * 0.70 * Math.random(),
+            this.gameEngine.DIM_X * 0.70 * Math.random(),
+            this.gameEngine.DIM_Y * 0.70 * Math.random(),
         ];
     }
 
@@ -1042,7 +1042,7 @@ class Scene {
 
 
     update(dT) {
-        this.gameElements[this.currentElementIndex].update(dT);
+        this.gameElements[this.currentElementIndex]?.update(dT);
     }
 
     nextElement() {
@@ -1264,6 +1264,8 @@ class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
         this.levelDesigner.enemyPlaced(spawn);
         this.removeMousePosListener();
         this.addMouseClickListener();
+        // this.levelDesigner.addEnemy(this.type);
+
     }
 
     eventUnselected() {
@@ -5640,7 +5642,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 class Weaver extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
     constructor(engine, pos, shipTransform) {
         super(engine);
@@ -5659,7 +5660,7 @@ class Weaver extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         this.bulletInfluencers = [];
         this.bumpInfluencers = [];
         this.bumpAcceleration = 1.5;
-        this.bulletDodgeSpeed = 6;
+        this.bulletDodgeSpeed = 4;
 
         this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Enemy_spawn_green.wav", 0.5);
         this.playSound(this.spawnSound);
@@ -7588,7 +7589,7 @@ class GameScript {
             if (!this.engine.muted) {
                 this.engine.gameScript.gameOverSound.play();
             }
-            // this.playSoundthis.gameOverSound
+            // this.playSound(this.gameOverSound)
             window.setTimeout(this.resetGame.bind(this), 2000);
         }
     }

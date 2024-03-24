@@ -27,7 +27,7 @@ export class Scene {
 
 
     update(dT) {
-        this.gameElements[this.currentElementIndex].update(dT);
+        this.gameElements[this.currentElementIndex]?.update(dT);
     }
 
     nextElement() {
