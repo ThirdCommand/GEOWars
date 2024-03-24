@@ -17,8 +17,8 @@ export class Spawn {
 
     randomPosition() {
         return [
-            this.DIM_X * 0.70 * Math.random(),
-            this.DIM_Y * 0.70 * Math.random(),
+            this.gameEngine.DIM_X * 0.70 * Math.random(),
+            this.gameEngine.DIM_Y * 0.70 * Math.random(),
         ];
     }
 

@@ -1,4 +1,3 @@
-
 import { GameObject } from "../../../game_engine/game_object";
 import { Sound } from "../../../game_engine/sound";
 import { Util } from "../../../game_engine/util";
@@ -24,7 +23,7 @@ export class Weaver extends GameObject {
         this.bulletInfluencers = [];
         this.bumpInfluencers = [];
         this.bumpAcceleration = 1.5;
-        this.bulletDodgeSpeed = 6;
+        this.bulletDodgeSpeed = 4;
 
         this.spawnSound = new Sound("sounds/Enemy_spawn_green.wav", 0.5);
         this.playSound(this.spawnSound);
