@@ -13,7 +13,7 @@ export class ShipExplosion extends GameObject {
             "hsla": [startingH, 100, 50, opacity]
         });
         this.particleNum = 400;
-        const explosionSound = new Sound("GEOWars/sounds/Enemy_explode.wav", 0.2);
+        const explosionSound = new Sound("sounds/Enemy_explode.wav", 0.2);
         this.playSound(explosionSound);
         this.createExplosionParticles();
     }

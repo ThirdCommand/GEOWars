@@ -15,7 +15,7 @@ export class BulletWallExplosion extends GameObject{
             "hsla": [startingH, 100, 50, opacity]
         });
         this.particleNum = 20;
-        const bulletWallHit = new Sound("GEOWars/sounds/bullet_hitwall.wav", 0.1);
+        const bulletWallHit = new Sound("sounds/bullet_hitwall.wav", 0.1);
         this.wallHit = this.whichWall();
         this.playSound(bulletWallHit);
         this.createParticles();

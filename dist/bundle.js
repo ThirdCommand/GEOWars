@@ -179,6 +179,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../UI_line_sprite */ "./src/game_engine/UI_line_sprite.js");
 /* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../transform */ "./src/game_engine/transform.js");
 /* harmony import */ var _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../LevelDesign/EnemyPlacer */ "./src/game_engine/Levels/LevelDesign/EnemyPlacer.js");
+/* harmony import */ var _Spawn__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.js");
+
 
 
 
@@ -187,24 +189,26 @@ __webpack_require__.r(__webpack_exports__);
 
 // maybe this is what is created from the serialized version
 class Event {
-    constructor(gameSequence, spawns) {
-        this.gameSequence = gameSequence;
-        this.spawns = spawns; // this is different than the single spawn thing I have in the mock data
+    constructor(spawns, parentScene, gameEngine) { 
+        // not sure what the type is for spawns here
+        this.parentScene = parentScene;
+        // I think I'll have to create the spawns from the serialized data given here
+        this.spawns = spawns.map((spawn) => new _Spawn__WEBPACK_IMPORTED_MODULE_4__.Spawn(spawn, gameEngine)); // this is different than the single spawn thing I have in the mock data
     }
-
-    // should find way to handle groups told to spawn at random locations
 
     update() {
         this.spawnEverything();
         this.endEvent();
     }
+
     spawnEverything() {
         this.spawns.forEach((spawn) => {
             spawn.spawnEvent();
         });
     }
+    
     endEvent() {
-        this.gameSequence.nextSequence();
+        this.parentScene.nextSequence();
     }
 }
 
@@ -423,15 +427,15 @@ __webpack_require__.r(__webpack_exports__);
 // if it is it will move on, if not it will go back to the beginning of the loop
 class LoopEnd {
     // can only loop if start and end of loop are in the same scene
-    constructor(scene, loop) {
-        this.scene = scene; // scene the loop is in
+    constructor(loop, parentScene) {
+        this.parentScene = parentScene; // scene the loop is in
         
         this.startingLoopValues = {
             loopIdx: loop.loopIdx, // could probably default to 0. this is how many times it's looped
             // during the level edit process, whenever a loop is added
             // it will increment the loopId. This way beginning loops and end loops will always 
             // have matching loopIds without collision
-            loopId: scene.getLoopId(),
+            loopId: parentScene.getLoopId(),
             repeatTimes: loop.repeatTimes
         };
         this.loop = { // {loopIdx, loopId, repeatTimes}
@@ -633,6 +637,180 @@ class LoopEndingObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1_
 
 /***/ }),
 
+/***/ "./src/game_engine/Levels/DesignElements/Scene.js":
+/*!********************************************************!*\
+  !*** ./src/game_engine/Levels/DesignElements/Scene.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Scene: () => (/* binding */ Scene),
+/* harmony export */   SceneObject: () => (/* binding */ SceneObject),
+/* harmony export */   SceneSprite: () => (/* binding */ SceneSprite)
+/* harmony export */ });
+/* harmony import */ var _UI_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../UI_line_sprite */ "./src/game_engine/UI_line_sprite.js");
+/* harmony import */ var _UI_Element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../UI_Element */ "./src/game_engine/UI_Element.js");
+
+
+
+// there will have to be an ancestor scene that holds all the scenes and stuffs
+class Scene {
+    constructor(parentScene, name, gameElements, currentElementIndex) {
+        this.parentScene = parentScene;
+        this.name = name || "";
+        this.gameElements = gameElements || [];
+        this.currentElementIndex = currentElementIndex || 0;
+        this.loopId = 0;
+        this.loopsToClose = [];
+    }
+    /*
+    stack works I believe
+    1 2 2 1 3 4 4 3
+    [ [ ] ] [ [ ] ]
+    */
+    createLoopId() {
+        this.loopId++;
+        this.loopsToClose.push(this.loopId);
+        return this.loopId;
+    }
+    getLoopId() {
+        return this.loopsToClose.pop();  
+    }
+
+
+    update(dT) {
+        this.gameElements[this.currentElementIndex].update(dT);
+    }
+
+    nextElement() {
+        if(this.currentElementIndex < this.gameElements.length - 1) {
+            this.currentElementIndex++;
+        } else {
+            this.currentElementIndex = 0;
+            this.parentScene.nextElement();
+        }
+    }
+
+    goToLoopId(loopId) {
+        this.gameElements.forEach((element, idx) => {
+            if(element.loopId === loopId) {
+                this.currentElementIndex = idx;
+            }
+        });
+    }
+}
+
+class SceneObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_1__.UIElement {
+    constructor(levelDesigner, name, parentScene, position) {
+        super(levelDesigner, position, parentScene);
+        // i'll have to create the game elements from the serialized data
+        this.gameElements = [];
+        
+        this.expanded = false;
+        this.widthHeight = [40,40];
+        this.name = name || "Scene";
+        this.addUIElementSprite(new SceneSprite(name, this.UITransform, this.widthHeight));
+        this.clickRadius = 20;
+        this.addMouseClickListener();
+        this.addMouseDoubleClickListener();
+        
+    }
+
+    expandScene() {
+        this.expanded = true;
+        this.UILineSprite.expanded = true;
+        this.levelDesigner.expandScene(this);
+    }
+
+    unExpandScene() {
+        this.expanded = false;
+        this.UILineSprite.expanded = false;
+        this.levelDesigner.unExpandScene(this);
+    }
+
+    copy() {
+        return this.levelDesigner.addToClipBoard(new SceneObject(this.levelDesigner, this.serialize()));
+    }
+
+    loadGameElements(gameElements) {
+        this.gameElements = this.levelDesigner.loadGameElements(gameElements, false, this);
+    }
+
+    serialize() {
+        return {
+            type: 'Scene',
+            name: this.name,
+            gameElements: this.gameElements.map((element) => element.serialize()),
+        };
+    }
+
+    onMouseClick() {
+        this.levelDesigner.sceneSelected(this);
+        this.UILineSprite.selected = true;
+    }
+    onMouseDoubleClicked() {
+        this.expanded ? this.unExpandScene() : this.expandScene();
+        
+    }
+
+    selected() {
+        this.UILineSprite.selected = true;
+    }
+
+    unSelected() {
+        this.UILineSprite.selected = false;
+    }
+
+}
+
+class SceneSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_0__.UILineSprite {
+    constructor(name, UITransform, widthHeight) {
+        super(UITransform);
+        this.name = name;
+        this.widthHeight = widthHeight;
+        this.selected = false;
+        this.expanded = false;
+    }
+
+    draw(ctx) {
+        const pos = this.UITransform.pos;
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+
+        this.drawFunction(ctx, pos);
+        ctx.restore();
+    }
+
+    drawFunction(ctx) {
+        const h = this.widthHeight[1];
+        const w = this.widthHeight[0];
+        ctx.fillStyle = "#d3d3d3";
+        if(this.selected) ctx.fillStyle = "#419ef0";
+        if(this.expanded) ctx.fillStyle = "#A020F0";
+        // I can add lines to the top and sides to show that it's expanded
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = "rgba(0, 0, 0, 1)";
+        ctx.font = "10px Arial";
+        ctx.fillText(this.name, 2, h/2);
+
+        if(this.expanded) {
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.beginPath();
+            ctx.moveTo(0, h);
+            ctx.lineTo(0, 0);
+            ctx.lineTo(w, 0);
+            ctx.lineTo(w, h);
+            ctx.stroke();
+        }
+    }
+}
+
+
+
+/***/ }),
+
 /***/ "./src/game_engine/Levels/DesignElements/Spawn.js":
 /*!********************************************************!*\
   !*** ./src/game_engine/Levels/DesignElements/Spawn.js ***!
@@ -645,8 +823,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 // a single enemy, and location
 class Spawn { 
-    constructor(gameEngine, spawn) { // spawn: {type, location: [x,y]} 
+    constructor(spawn, gameEngine) { // spawn: {type, location: [x,y]} 
         this.spawn = spawn;
+        //  spawn: {
+        //     type: 'RANDOM',
+        //     location: 'RANDOM',
+        //     possibleSpawns: ['Weaver', 'Grunt']
+        // }
         this.gameEngine = gameEngine;
     }
 
@@ -667,25 +850,27 @@ class Spawn {
     }
 
     spawnEvent() {
-        for(let i = 0; i < this.spawn.numberToGenerate; i++) {
+        const numberToGenerate = this.spawn.numberToGenerate || 1;
+
+        for(let i = 0; i < numberToGenerate; i++) {
             let mobToSpawn = this.spawn.type;
             let location = this.spawn.location;
-            if(this.spawn.type === 'RANDOM') {
+            if(mobToSpawn === 'RANDOM') {
                 mobToSpawn = this.randomMob(this.spawn.possibleSpawns);
             } 
-            if(this.spawn.location === 'RANDOM') {
+            if(location === 'RANDOM') {
                 location = this.randomPosition();
             }
             this.gameEngine.enemyCreatorList[mobToSpawn](location);
         }
     }
 
-    serialize() {
-        return {
-            type: "Spawn",
-            spawn: this.spawn
-        };
-    }
+    // serialize() {
+    //     return {
+    //         type: "Spawn",
+    //         spawn: this.spawn
+    //     };
+    // }
 }
 
 /***/ }),
@@ -837,12 +1022,27 @@ class Scene {
         this.name = name || "";
         this.gameElements = gameElements || [];
         this.currentElementIndex = currentElementIndex || 0;
+        this.loopId = 0;
+        this.loopsToClose = [];
     }
+    /*
+    stack works I believe
+    1 2 2 1 3 4 4 3
+    [ [ ] ] [ [ ] ]
+    */
+    createLoopId() {
+        this.loopId++;
+        this.loopsToClose.push(this.loopId);
+        return this.loopId;
+    }
+    getLoopId() {
+        return this.loopsToClose.pop();  
+    }
+
+
     update(dT) {
         this.gameElements[this.currentElementIndex].update(dT);
     }
-
-
 
     nextElement() {
         if(this.currentElementIndex < this.gameElements.length - 1) {
@@ -851,6 +1051,14 @@ class Scene {
             this.currentElementIndex = 0;
             this.parentScene.nextElement();
         }
+    }
+
+    goToLoopId(loopId) {
+        this.gameElements.forEach((element, idx) => {
+            if(element.loopId === loopId) {
+                this.currentElementIndex = idx;
+            }
+        });
     }
 }
 
@@ -1262,12 +1470,13 @@ class LevelDesigner {
         const addLoop = document.getElementById("LoopSubmit");
         const moveLeft = document.getElementById("MoveLeft");
         const moveRight = document.getElementById("MoveRight");
+        const sceneNameSubmit = document.getElementById("sceneNameSubmit");
 
         const saveGameDesign = document.getElementById("saveGameDesign");
 
         const loadGameDesign = document.getElementById("loadGameDesign");
 
-        const sceneNameSubmit = document.getElementById("sceneNameSubmit");
+        const startGame = document.getElementById("startGame");
 
         const gameSequenceSubmit = document.getElementById("SequenceEnter");
        
@@ -1383,6 +1592,24 @@ class LevelDesigner {
             this.engine.gameScript.sequenceCount = sequence;
         };
 
+        startGame.onclick = (e) => {
+            e.stopPropagation();
+            // serialize game, send to game script
+            this.serializedGame = {
+                gameName: "Game",
+                gameElements: this.gameElements.map(
+                    (element) => element.serialize()
+                ),
+            };
+            const serializedGame = JSON.stringify(this.serializedGame);
+            // I should unselect whatever is selected.
+            // events being the main issue since they have things
+            // on the game 
+            this.engine.gameScript.startGame(serializedGame);
+            this.engine.gameEditorOpened = false;
+            
+        };
+
 
         // this.levelDesignerCtx.addEventListener("dblclick", (e) => {
         //     e.stopPropagation();
@@ -1490,10 +1717,12 @@ class LevelDesigner {
         console.log(JSON.stringify(this.serializedGame));
     }
 
+    
+
     loadGameDesign(json) {
         const serializedGame = JSON.parse(json);
         this.serializedGame = serializedGame;
-        this.loadGameElements(serializedGame.gameElements);
+        this.gameElements = this.loadGameElements(serializedGame.gameElements);
     }
 
     loadGameElements(gameElements, parentScene = this) {
@@ -2195,6 +2424,7 @@ class GameEngine {
         const beforeScriptUpdate = performance.now();
         const renderTime = beforeScriptUpdate - beforeRender;
         this.updateControlListeners();
+        
         if (!this.gameEditorOpened) {
             this.updateGameScript(delta);
         }
@@ -2887,139 +3117,6 @@ class Sound {
 
 /***/ }),
 
-/***/ "./src/game_engine/state_machine.js":
-/*!******************************************!*\
-  !*** ./src/game_engine/state_machine.js ***!
-  \******************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   StateMachine: () => (/* binding */ StateMachine)
-/* harmony export */ });
-/* harmony import */ var _game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_object */ "./src/game_engine/game_object.js");
-
-
-class StateMachine extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
-    constructor(engine, {}) {
-        super(engine);
-        this.stateIndex = options.stateIndex || { i: 0 };
-        (this.parentState = options.parentState),
-        (waitTime = 0),
-        (stateQueue = []),
-        event,
-        (timesDo = 1),
-        (endCondition = true);
-        this.stateIndex = stateIndex;
-        this.parentIndex = parentIndex;
-        this.stateTime = 0;
-
-        this.waitTime = waitTime;
-        this.stateQueue = stateQueue;
-        this.event = event;
-        this.timesDo = timesDo;
-        this.endCondition = endCondition;
-        // if not null, it will repeat until the condition is met\
-        // but it will meet the repeatcondition first.
-        // end condition returns a bool. default true
-
-        // there is no "break" condition yet
-
-        this.repeatCount = 1; // do something 3 times. 1 index not 0 index
-
-        // first it waits,
-        // then it runs through state queue
-        // then it runs the event
-        //      state queue and event can be empty,
-        //        which means the state was just for waiting
-        // then it checks the repeat condition
-
-    // event is something that runs in one frame
-    }
-
-    addChilState(state) {
-        state.parentIndex = this;
-    }
-
-    // state queue is now done
-    onCompletion() {
-        this.event();
-        // 1 index not 0
-        if (this.repeatCount <= this.timesDo) {
-            this.stateIndex.i = 0;
-            this.currentTime = 0;
-        } else if (!this.endCondition) {
-            this.stateIndex.i = 0;
-            this.currentTime = 0;
-        } else {
-            this.parentIndex += 1;
-            this.remove();
-        }
-    }
-
-    // instances vs inheritance
-    // instance is built from the ground up,
-    // starting with the lowest level of the sequence
-    // inheritance is built from the top down,
-    // allowing each custom class to build thier individual statequeues
-    // inheritance gives access to all of the gameobject functions
-    // instances are simpler, everything is fed through the constuctor
-    // User gets to choose?
-
-    // singularity
-    // EasyGroups <-- childState
-    // wait: 2500 * timeScale (user can provide timescale functionality)
-    // event: spawnEasyGroups
-    // endCondition: x4 // repeats until end condition met
-    // parentIndex
-    // waitState <--childState
-    // EasyGroupsArrows
-    // wait: 2500 * timeScale (user can provide timescale functionality)
-    // event: spawnEasyGroupsArrows
-    // endCondition: x4 // repeats until end condition met
-    // event
-    // wait
-    // event
-    //
-
-    event() {
-        this.eventCondition();
-    }
-    //spawner
-    //easy wave
-    //
-
-    updateState(intervalTime) {
-        if (this.stateIndex > this.stateQueue.length) {
-            this.onCompletion();
-        } else {
-            this.stateTime += intervalTime;
-            if (intervalTime > this.waitTime) {
-                this.stateQueue[this.stateIndex.i].updateState(intervalTime);
-            }
-        }
-    }
-
-    remove() {
-        this.childObjects.forEach((obj) => {
-            obj.remove();
-        });
-        if (this.parentObject) {
-            this.parentObject.childObjects.splice(
-                this.parentObject.childObjects.indexOf(this),
-                1
-            );
-        }
-        this.stateQueue.forEach((obj) => {
-            obj.remove();
-        });
-
-        this.gameEngine.remove(this);
-    }
-}
-
-/***/ }),
-
 /***/ "./src/game_engine/transform.js":
 /*!**************************************!*\
   !*** ./src/game_engine/transform.js ***!
@@ -3260,7 +3357,7 @@ class Bullet extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         this.length = 12;
         this.radius = this.length / 4;
         this.wrap = false;
-        this.wallhit = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("GEOWars/sounds/bullet_hitwall.wav", 1);
+        this.wallhit = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/bullet_hitwall.wav", 1);
         this.addExplosionCollider();
         this.addPhysicsComponent();
         this.addLineSprite(new _bullet_sprite__WEBPACK_IMPORTED_MODULE_3__.BulletSprite(this.transform));
@@ -3649,7 +3746,7 @@ class Arrow extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameOb
         this.points = 50;
         this.transform.vel = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.Util.vectorCartesian(this.transform.angle, this.speed);
         this.radius = 6;
-        this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("GEOWars/sounds/Enemy_spawn_purple.wav", 0.5);
+        this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Enemy_spawn_purple.wav", 0.5);
         this.playSound(this.spawnSound);
         this.addLineSprite(new _arrow_sprite__WEBPACK_IMPORTED_MODULE_4__.ArrowSprite(this.transform));
         this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__.EnemySpawn(this.gameEngine));
@@ -4081,7 +4178,7 @@ const drawCoordinatesBottomLeft = {
 class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
     constructor(engine, pos) {
         super(engine);
-        this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
+        this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Enemy_spawn_blue.wav", 0.5);
         this.transform.pos = pos;
         this.radius = 10;
         this.points = 20;
@@ -4750,7 +4847,7 @@ class Grunt extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameOb
         this.bumpAcceleration = 1.5;
         this.bumpInfluencers = [];
         this.bumpDirectionInfluenced = false;
-        this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
+        this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Enemy_spawn_blue.wav", 0.5);
         this.playSound(this.spawnSound);
         this.addLineSprite(new _grunt_sprite__WEBPACK_IMPORTED_MODULE_4__.GruntSprite(this.transform));
         this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__.EnemySpawn(this.gameEngine));
@@ -4962,7 +5059,7 @@ class Pinwheel extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_2__.Gam
         this.points = 20;
         this.transform.pos = pos;
         this.transform.vel = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.Util.randomVec(speed);
-        this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("GEOWars/sounds/Enemy_spawn_blue.wav", 0.5);
+        this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Enemy_spawn_blue.wav", 0.5);
         this.playSound(this.spawnSound);
         this.addLineSprite(new _pinwheel_sprite__WEBPACK_IMPORTED_MODULE_4__.PinwheelSprite(this.transform));
         this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__.EnemySpawn(this.gameEngine));
@@ -5278,11 +5375,11 @@ class Singularity extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.
         this.alienSpawnAmount = 10;
         this.alienSpawnSpeed = 1.5;
         this.gravityPulsateScale = 1;
-        this.deathSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("GEOWars/sounds/Gravity_well_die.wav");
-        this.gravityWellHitSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("GEOWars/sounds/Gravity_well_hit.wav", 0.5);
-        this.openGateSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("GEOWars/sounds/Gravity_well_explode.wav");
+        this.deathSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Gravity_well_die.wav");
+        this.gravityWellHitSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Gravity_well_hit.wav", 0.5);
+        this.openGateSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Gravity_well_explode.wav");
         // this.id = options.id
-        this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("GEOWars/sounds/Enemy_spawn_red.wav", 1);
+        this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Enemy_spawn_red.wav", 1);
         this.playSound(this.spawnSound);
 
         this.increasing = true;
@@ -5563,7 +5660,7 @@ class Weaver extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         this.bumpAcceleration = 1.5;
         this.bulletDodgeSpeed = 6;
 
-        this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("GEOWars/sounds/Enemy_spawn_green.wav", 0.5);
+        this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Enemy_spawn_green.wav", 0.5);
         this.playSound(this.spawnSound);
         this.addLineSprite(new _weaver_sprite__WEBPACK_IMPORTED_MODULE_4__.WeaverSprite(this.transform));
         this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__.EnemySpawn(this.gameEngine));
@@ -6314,7 +6411,7 @@ class BulletWallExplosion extends _game_engine_game_object__WEBPACK_IMPORTED_MOD
             "hsla": [startingH, 100, 50, opacity]
         });
         this.particleNum = 20;
-        const bulletWallHit = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("GEOWars/sounds/bullet_hitwall.wav", 0.1);
+        const bulletWallHit = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/bullet_hitwall.wav", 0.1);
         this.wallHit = this.whichWall();
         this.playSound(bulletWallHit);
         this.createParticles();
@@ -6451,7 +6548,7 @@ class ParticleExplosion extends _game_engine_game_object__WEBPACK_IMPORTED_MODUL
             this.particleNum = 20;
         }
 
-        const explosionSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("GEOWars/sounds/Enemy_explode.wav", 0.2);
+        const explosionSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Enemy_explode.wav", 0.2);
         this.playSound(explosionSound);
         this.createExplosionParticles();
         engine.gameScript.grid.Explosion(pos);
@@ -6513,7 +6610,7 @@ class ShipExplosion extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1_
             "hsla": [startingH, 100, 50, opacity]
         });
         this.particleNum = 400;
-        const explosionSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("GEOWars/sounds/Enemy_explode.wav", 0.2);
+        const explosionSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Enemy_explode.wav", 0.2);
         this.playSound(explosionSound);
         this.createExplosionParticles();
     }
@@ -6586,7 +6683,7 @@ class SingularityHitExplosion extends _game_engine_game_object__WEBPACK_IMPORTED
             this.particleNum = 15;
         }
         // find singularity hit sound
-        const explosionSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("GEOWars/sounds/Enemy_explode.wav", 0.2);
+        const explosionSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Enemy_explode.wav", 0.2);
         this.playSound(explosionSound);
         this.createExplosionParticles();
     }
@@ -6649,7 +6746,7 @@ class SingularityParticles extends _game_engine_game_object__WEBPACK_IMPORTED_MO
 
         this.particleNum = 80;
         this.currentParticleCount = 0;
-        // let explosionSound = new Sound("GEOWars/sounds/Enemy_explode.wav", 0.2)
+        // let explosionSound = new Sound("sounds/Enemy_explode.wav", 0.2)
         this.createSingularityParticles();
     
     }
@@ -6809,8 +6906,8 @@ class Ship extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
         this.maxSpeed = 2.5; // 2.5
         this.mousePos = [0,0];
         this.fireAngle = 0;
-        this.bulletSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("GEOWars/sounds/Fire_normal.wav", 0.2);
-        this.upgradeBulletsSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("GEOWars/sounds/Hi_Score_achieved.wav");
+        this.bulletSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Fire_normal.wav", 0.2);
+        this.upgradeBulletsSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Hi_Score_achieved.wav");
         this.bulletTimeCheck = 0;
         this.bulletInterval = 120;
         this.controlsDirection = [0,0];
@@ -7245,23 +7342,27 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   GameScript: () => (/* binding */ GameScript)
 /* harmony export */ });
-/* harmony import */ var _game_objects_ship_ship__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_objects/ship/ship */ "./src/game_objects/ship/ship.js");
-/* harmony import */ var _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_objects/Walls/walls */ "./src/game_objects/Walls/walls.js");
-/* harmony import */ var _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game_objects/Overlay/overlay */ "./src/game_objects/Overlay/overlay.js");
-/* harmony import */ var _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./game_objects/particles/Grid/grid */ "./src/game_objects/particles/Grid/grid.js");
-/* harmony import */ var _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./game_objects/enemies/BoxBox/boxbox */ "./src/game_objects/enemies/BoxBox/boxbox.js");
-/* harmony import */ var _game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./game_objects/enemies/Pinwheel/pinwheel */ "./src/game_objects/enemies/Pinwheel/pinwheel.js");
-/* harmony import */ var _game_objects_enemies_Arrow_arrow__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./game_objects/enemies/Arrow/arrow */ "./src/game_objects/enemies/Arrow/arrow.js");
-/* harmony import */ var _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./game_objects/enemies/Grunt/grunt */ "./src/game_objects/enemies/Grunt/grunt.js");
-/* harmony import */ var _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./game_objects/enemies/Weaver/weaver */ "./src/game_objects/enemies/Weaver/weaver.js");
-/* harmony import */ var _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/singularity */ "./src/game_objects/enemies/Singularity/singularity.js");
-/* harmony import */ var _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/alien_ship */ "./src/game_objects/enemies/Singularity/alien_ship.js");
-/* harmony import */ var _game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./game_objects/particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.js");
-/* harmony import */ var _game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./game_objects/particles/ship_explosion */ "./src/game_objects/particles/ship_explosion.js");
-/* harmony import */ var _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./game_objects/particles/star */ "./src/game_objects/particles/star.js");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./game_engine/util */ "./src/game_engine/util.js");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./game_engine/sound */ "./src/game_engine/sound.js");
-/* harmony import */ var _game_engine_state_machine__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./game_engine/state_machine */ "./src/game_engine/state_machine.js");
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_engine/sound */ "./src/game_engine/sound.js");
+/* harmony import */ var _game_objects_ship_ship__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_objects/ship/ship */ "./src/game_objects/ship/ship.js");
+/* harmony import */ var _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game_objects/Walls/walls */ "./src/game_objects/Walls/walls.js");
+/* harmony import */ var _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./game_objects/Overlay/overlay */ "./src/game_objects/Overlay/overlay.js");
+/* harmony import */ var _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./game_objects/particles/Grid/grid */ "./src/game_objects/particles/Grid/grid.js");
+/* harmony import */ var _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./game_objects/enemies/BoxBox/boxbox */ "./src/game_objects/enemies/BoxBox/boxbox.js");
+/* harmony import */ var _game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./game_objects/enemies/Pinwheel/pinwheel */ "./src/game_objects/enemies/Pinwheel/pinwheel.js");
+/* harmony import */ var _game_objects_enemies_Arrow_arrow__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./game_objects/enemies/Arrow/arrow */ "./src/game_objects/enemies/Arrow/arrow.js");
+/* harmony import */ var _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./game_objects/enemies/Grunt/grunt */ "./src/game_objects/enemies/Grunt/grunt.js");
+/* harmony import */ var _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./game_objects/enemies/Weaver/weaver */ "./src/game_objects/enemies/Weaver/weaver.js");
+/* harmony import */ var _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/singularity */ "./src/game_objects/enemies/Singularity/singularity.js");
+/* harmony import */ var _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/alien_ship */ "./src/game_objects/enemies/Singularity/alien_ship.js");
+/* harmony import */ var _game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./game_objects/particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.js");
+/* harmony import */ var _game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./game_objects/particles/ship_explosion */ "./src/game_objects/particles/ship_explosion.js");
+/* harmony import */ var _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./game_objects/particles/star */ "./src/game_objects/particles/star.js");
+/* harmony import */ var _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Scene */ "./src/game_engine/Levels/DesignElements/Scene.js");
+/* harmony import */ var _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.js");
+/* harmony import */ var _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.js");
+/* harmony import */ var _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.js");
+
+
 
 
 
@@ -7283,10 +7384,11 @@ __webpack_require__.r(__webpack_exports__);
 
 class GameScript {
     constructor(engine) {
-        this.theme = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_15__.Sound("GEOWars/sounds/Geometry_OST.mp3", 1);
-        this.gameOverSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_15__.Sound("GEOWars/sounds/Game_over.wav");
-        this.gameStartSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_15__.Sound("GEOWars/sounds/Game_start.wav");
-        this.shipDeathSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_15__.Sound("GEOWars/sounds/Ship_explode.wav");
+        this.serializedGame = "";
+        this.theme = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Geometry_OST.mp3", 1);
+        this.gameOverSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Game_over.wav");
+        this.gameStartSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Game_start.wav");
+        this.shipDeathSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Ship_explode.wav");
         this.DIM_X = 1000;
         this.DIM_Y = 600;
         this.BG_COLOR = "#000000";
@@ -7309,7 +7411,7 @@ class GameScript {
         this.deathPausedTime = 0;
         this.deathPaused = true;
         this.deathPauseTime = 2500;
-        // this.deathSound = new Audio("GEOWars/sounds/Enemy_explode.wav")
+        // this.deathSound = new Audio("sounds/Enemy_explode.wav")
         // this.deathSound.volume = 0.5;
 
         this.intervalTiming = 1;
@@ -7331,7 +7433,7 @@ class GameScript {
             const Y = (runoffFactor * Math.random() - runoffFactor/2) * this.DIM_Y;
             // const Z = -this.initialCameraZPos * 0.25 + -this.initialCameraZPos * 2 * Math.random();
             const Z = -this.initialCameraZPos * (0.5 + 2* Math.random());
-            new _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_13__.Star(this.engine, [X, Y, Z], this.ship.cameraTransform);
+            new _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_14__.Star(this.engine, [X, Y, Z], this.ship.cameraTransform);
         }
     }
 
@@ -7460,14 +7562,14 @@ class GameScript {
             if (object.constructor.name === "Ship") {
                 const objectTransform = object.transform;
                 const pos = objectTransform.absolutePosition();
-                new _game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_12__.ShipExplosion(this.engine, pos, [0, 0]);
+                new _game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_13__.ShipExplosion(this.engine, pos, [0, 0]);
             } else if (object.constructor.name === "Bullet") {
                 removeList.push(object);
             } else if (typesToRemove.includes(object.constructor.name)) {
                 const objectTransform = object.transform;
                 const pos = objectTransform.absolutePosition();
                 const vel = objectTransform.absoluteVelocity();
-                new _game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_11__.ParticleExplosion(this.engine, pos);
+                new _game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_12__.ParticleExplosion(this.engine, pos);
                 removeList.push(object);
             }
         });
@@ -7476,9 +7578,9 @@ class GameScript {
         });
     }
 
-    levelDesigner() {
-        const modal = document.getElementById("levelDesignerModal");
-    }
+    // levelDesigner() {
+    //     const modal = document.getElementById("levelDesignerModal");
+    // }
 
     onPause() {
         try {
@@ -7506,14 +7608,14 @@ class GameScript {
     createEnemyCreatorList() {
         const engine = this.engine;
         return {
-            BoxBox: (pos) => new _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_4__.BoxBox(engine, pos),
-            Pinwheel: (pos) => new _game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_5__.Pinwheel(engine, pos),
-            Arrow: (pos, angle) => new _game_objects_enemies_Arrow_arrow__WEBPACK_IMPORTED_MODULE_6__.Arrow(engine, pos, angle),
-            Grunt: (pos) => new _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_7__.Grunt(engine, pos, this.ship.transform),
-            Weaver: (pos) => new _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_8__.Weaver(engine, pos, this.ship.transform),
-            Singularity: (pos) => new _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_9__.Singularity(engine, pos),
+            BoxBox: (pos) => new _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_5__.BoxBox(engine, pos),
+            Pinwheel: (pos) => new _game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_6__.Pinwheel(engine, pos),
+            Arrow: (pos, angle) => new _game_objects_enemies_Arrow_arrow__WEBPACK_IMPORTED_MODULE_7__.Arrow(engine, pos, angle),
+            Grunt: (pos) => new _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_8__.Grunt(engine, pos, this.ship.transform),
+            Weaver: (pos) => new _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_9__.Weaver(engine, pos, this.ship.transform),
+            Singularity: (pos) => new _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__.Singularity(engine, pos),
             AlienShip: (pos) =>
-                new _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_10__.AlienShip(engine, pos, [0, 0], this.ship.transform),
+                new _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_11__.AlienShip(engine, pos, [0, 0], this.ship.transform),
         };
     }
 
@@ -7771,19 +7873,19 @@ class GameScript {
     }
 
     createShip() {
-        return new _game_objects_ship_ship__WEBPACK_IMPORTED_MODULE_0__.Ship(this.engine, this.startPosition, this.initialCameraZPos);
+        return new _game_objects_ship_ship__WEBPACK_IMPORTED_MODULE_1__.Ship(this.engine, this.startPosition, this.initialCameraZPos);
     }
 
     createWalls() {
-        return new _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_1__.Walls(this.engine, this);
+        return new _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_2__.Walls(this.engine, this);
     }
 
     createGrid(cameraTransform) {
-        return new _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_3__.Grid(this.engine, this, cameraTransform);
+        return new _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_4__.Grid(this.engine, this, cameraTransform);
     }
 
     createOverlay() {
-        return new _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_2__.Overlay(this.engine, this, this.ship.transform);
+        return new _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_3__.Overlay(this.engine, this, this.ship.transform);
     }
 
     isOutOfBounds(pos, radius) {

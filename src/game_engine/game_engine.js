@@ -96,6 +96,7 @@ export class GameEngine {
         const beforeScriptUpdate = performance.now();
         const renderTime = beforeScriptUpdate - beforeRender;
         this.updateControlListeners();
+        
         if (!this.gameEditorOpened) {
             this.updateGameScript(delta);
         }

@@ -25,7 +25,7 @@ export class ParticleExplosion extends GameObject{
             this.particleNum = 20;
         }
 
-        const explosionSound = new Sound("GEOWars/sounds/Enemy_explode.wav", 0.2);
+        const explosionSound = new Sound("sounds/Enemy_explode.wav", 0.2);
         this.playSound(explosionSound);
         this.createExplosionParticles();
         engine.gameScript.grid.Explosion(pos);

@@ -3,27 +3,30 @@ import { UILineSprite } from "../../UI_line_sprite";
 import { Transform } from "../../transform";
 
 import {EnemyPlacer, spriteMap} from "../LevelDesign/EnemyPlacer";
+import { Spawn } from "./Spawn";
 
 // maybe this is what is created from the serialized version
 export class Event {
-    constructor(gameSequence, spawns) {
-        this.gameSequence = gameSequence;
-        this.spawns = spawns; // this is different than the single spawn thing I have in the mock data
+    constructor(spawns, parentScene, gameEngine) { 
+        // not sure what the type is for spawns here
+        this.parentScene = parentScene;
+        // I think I'll have to create the spawns from the serialized data given here
+        this.spawns = spawns.map((spawn) => new Spawn(spawn, gameEngine)); // this is different than the single spawn thing I have in the mock data
     }
-
-    // should find way to handle groups told to spawn at random locations
 
     update() {
         this.spawnEverything();
         this.endEvent();
     }
+
     spawnEverything() {
         this.spawns.forEach((spawn) => {
             spawn.spawnEvent();
         });
     }
+    
     endEvent() {
-        this.gameSequence.nextSequence();
+        this.parentScene.nextSequence();
     }
 }
 
