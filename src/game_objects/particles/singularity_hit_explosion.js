@@ -23,7 +23,7 @@ export class SingularityHitExplosion extends GameObject {
             this.particleNum = 15;
         }
         // find singularity hit sound
-        const explosionSound = new Sound("GEOWars/sounds/Enemy_explode.wav", 0.2);
+        const explosionSound = new Sound("sounds/Enemy_explode.wav", 0.2);
         this.playSound(explosionSound);
         this.createExplosionParticles();
     }

@@ -11,15 +11,15 @@ import { UILineSprite } from "../../UI_line_sprite";
 // if it is it will move on, if not it will go back to the beginning of the loop
 export class LoopEnd {
     // can only loop if start and end of loop are in the same scene
-    constructor(scene, loop) {
-        this.scene = scene; // scene the loop is in
+    constructor(loop, parentScene) {
+        this.parentScene = parentScene; // scene the loop is in
         
         this.startingLoopValues = {
             loopIdx: loop.loopIdx, // could probably default to 0. this is how many times it's looped
             // during the level edit process, whenever a loop is added
             // it will increment the loopId. This way beginning loops and end loops will always 
             // have matching loopIds without collision
-            loopId: scene.getLoopId(),
+            loopId: parentScene.getLoopId(),
             repeatTimes: loop.repeatTimes
         };
         this.loop = { // {loopIdx, loopId, repeatTimes}

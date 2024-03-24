@@ -82,12 +82,13 @@ export class LevelDesigner {
         const addLoop = document.getElementById("LoopSubmit");
         const moveLeft = document.getElementById("MoveLeft");
         const moveRight = document.getElementById("MoveRight");
+        const sceneNameSubmit = document.getElementById("sceneNameSubmit");
 
         const saveGameDesign = document.getElementById("saveGameDesign");
 
         const loadGameDesign = document.getElementById("loadGameDesign");
 
-        const sceneNameSubmit = document.getElementById("sceneNameSubmit");
+        const startGame = document.getElementById("startGame");
 
         const gameSequenceSubmit = document.getElementById("SequenceEnter");
        
@@ -203,6 +204,24 @@ export class LevelDesigner {
             this.engine.gameScript.sequenceCount = sequence;
         };
 
+        startGame.onclick = (e) => {
+            e.stopPropagation();
+            // serialize game, send to game script
+            this.serializedGame = {
+                gameName: "Game",
+                gameElements: this.gameElements.map(
+                    (element) => element.serialize()
+                ),
+            };
+            const serializedGame = JSON.stringify(this.serializedGame);
+            // I should unselect whatever is selected.
+            // events being the main issue since they have things
+            // on the game 
+            this.engine.gameScript.startGame(serializedGame);
+            this.engine.gameEditorOpened = false;
+            
+        };
+
 
         // this.levelDesignerCtx.addEventListener("dblclick", (e) => {
         //     e.stopPropagation();
@@ -310,10 +329,12 @@ export class LevelDesigner {
         console.log(JSON.stringify(this.serializedGame));
     }
 
+    
+
     loadGameDesign(json) {
         const serializedGame = JSON.parse(json);
         this.serializedGame = serializedGame;
-        this.loadGameElements(serializedGame.gameElements);
+        this.gameElements = this.loadGameElements(serializedGame.gameElements);
     }
 
     loadGameElements(gameElements, parentScene = this) {

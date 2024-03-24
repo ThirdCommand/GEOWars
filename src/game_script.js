@@ -1,3 +1,4 @@
+import { Sound } from "./game_engine/sound";
 import { Ship } from "./game_objects/ship/ship";
 import { Walls } from "./game_objects/Walls/walls";
 import { Overlay } from "./game_objects/Overlay/overlay";
@@ -13,16 +14,18 @@ import { ParticleExplosion } from "./game_objects/particles/particle_explosion";
 import { ShipExplosion } from "./game_objects/particles/ship_explosion";
 import {Star} from "./game_objects/particles/star";
 
-import { Util } from "./game_engine/util";
-import { Sound } from "./game_engine/sound";
-import { StateMachine } from "./game_engine/state_machine";
+import { Scene } from "./game_engine/Levels/DesignElements/Scene";
+import { Event } from "./game_engine/Levels/DesignElements/Event";
+import { Time } from "./game_engine/Levels/DesignElements/Time";
+import { LoopBeginning, LoopEnd } from "./game_engine/Levels/DesignElements/Loop";
 
 export class GameScript {
     constructor(engine) {
-        this.theme = new Sound("GEOWars/sounds/Geometry_OST.mp3", 1);
-        this.gameOverSound = new Sound("GEOWars/sounds/Game_over.wav");
-        this.gameStartSound = new Sound("GEOWars/sounds/Game_start.wav");
-        this.shipDeathSound = new Sound("GEOWars/sounds/Ship_explode.wav");
+        this.serializedGame = "";
+        this.theme = new Sound("sounds/Geometry_OST.mp3", 1);
+        this.gameOverSound = new Sound("sounds/Game_over.wav");
+        this.gameStartSound = new Sound("sounds/Game_start.wav");
+        this.shipDeathSound = new Sound("sounds/Ship_explode.wav");
         this.DIM_X = 1000;
         this.DIM_Y = 600;
         this.BG_COLOR = "#000000";
@@ -45,7 +48,7 @@ export class GameScript {
         this.deathPausedTime = 0;
         this.deathPaused = true;
         this.deathPauseTime = 2500;
-        // this.deathSound = new Audio("GEOWars/sounds/Enemy_explode.wav")
+        // this.deathSound = new Audio("sounds/Enemy_explode.wav")
         // this.deathSound.volume = 0.5;
 
         this.intervalTiming = 1;
@@ -212,9 +215,9 @@ export class GameScript {
         });
     }
 
-    levelDesigner() {
-        const modal = document.getElementById("levelDesignerModal");
-    }
+    // levelDesigner() {
+    //     const modal = document.getElementById("levelDesignerModal");
+    // }
 
     onPause() {
         try {

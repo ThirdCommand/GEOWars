@@ -8,12 +8,27 @@ export class Scene {
         this.name = name || "";
         this.gameElements = gameElements || [];
         this.currentElementIndex = currentElementIndex || 0;
+        this.loopId = 0;
+        this.loopsToClose = [];
     }
+    /*
+    stack works I believe
+    1 2 2 1 3 4 4 3
+    [ [ ] ] [ [ ] ]
+    */
+    createLoopId() {
+        this.loopId++;
+        this.loopsToClose.push(this.loopId);
+        return this.loopId;
+    }
+    getLoopId() {
+        return this.loopsToClose.pop();  
+    }
+
+
     update(dT) {
         this.gameElements[this.currentElementIndex].update(dT);
     }
-
-
 
     nextElement() {
         if(this.currentElementIndex < this.gameElements.length - 1) {
@@ -22,6 +37,14 @@ export class Scene {
             this.currentElementIndex = 0;
             this.parentScene.nextElement();
         }
+    }
+
+    goToLoopId(loopId) {
+        this.gameElements.forEach((element, idx) => {
+            if(element.loopId === loopId) {
+                this.currentElementIndex = idx;
+            }
+        });
     }
 }
 

@@ -1,7 +1,12 @@
 // a single enemy, and location
 export class Spawn { 
-    constructor(gameEngine, spawn) { // spawn: {type, location: [x,y]} 
+    constructor(spawn, gameEngine) { // spawn: {type, location: [x,y]} 
         this.spawn = spawn;
+        //  spawn: {
+        //     type: 'RANDOM',
+        //     location: 'RANDOM',
+        //     possibleSpawns: ['Weaver', 'Grunt']
+        // }
         this.gameEngine = gameEngine;
     }
 
@@ -22,23 +27,25 @@ export class Spawn {
     }
 
     spawnEvent() {
-        for(let i = 0; i < this.spawn.numberToGenerate; i++) {
+        const numberToGenerate = this.spawn.numberToGenerate || 1;
+
+        for(let i = 0; i < numberToGenerate; i++) {
             let mobToSpawn = this.spawn.type;
             let location = this.spawn.location;
-            if(this.spawn.type === 'RANDOM') {
+            if(mobToSpawn === 'RANDOM') {
                 mobToSpawn = this.randomMob(this.spawn.possibleSpawns);
             } 
-            if(this.spawn.location === 'RANDOM') {
+            if(location === 'RANDOM') {
                 location = this.randomPosition();
             }
             this.gameEngine.enemyCreatorList[mobToSpawn](location);
         }
     }
 
-    serialize() {
-        return {
-            type: "Spawn",
-            spawn: this.spawn
-        };
-    }
+    // serialize() {
+    //     return {
+    //         type: "Spawn",
+    //         spawn: this.spawn
+    //     };
+    // }
 }
