@@ -112,13 +112,12 @@ export class AnimationView {
 
     remove(gameObject) {
         if (gameObject.lineSprite) {
-            this.lineSprites.splice(
-                this.lineSprites.indexOf(gameObject.lineSprite),
-                1
-            );
+            const lineSpriteIndex = this.lineSprites.indexOf(gameObject.lineSprite);
+            if (lineSpriteIndex !== -1) this.lineSprites.splice(lineSpriteIndex, 1);
         }
-
-        this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1);
+        const index = this.gameObjects.indexOf(gameObject);
+        if (index !== -1) this.gameObjects.splice(index, 1);
+       
     }
 
     addLineSprite(lineSprite) {

@@ -13,9 +13,8 @@ export class PlacingAnimation extends GameObject {
     placeEnemy() {
         this.parentObject.place();
         this.parentObject.lineSprite.spawningScale = 1;
-        this.removeClickListener();
-        this.removeMousePosListener();
         this.remove();
+        this.parentObject.levelDesigner.addAnotherEnemy(this.parentObject.type);
     }
 
     updateMousePos(mousePos) {

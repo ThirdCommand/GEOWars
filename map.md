@@ -69,8 +69,10 @@ this was determined to be an ugly idea
     - [x] ship spawn symbols on square
     - [x] count of each
     - [x] add spawn
-    - [ ] continue placing same enemy after placing
+    - [x] continue placing same enemy after placing
+    - [x] escape key stop placing enemy
     - [ ] delete spawn
+    - [x] get click placed enemy working again
     - [ ] random position button (no need to hide the spawn when that's chosen)
     - [ ] location edit
     - [ ] randomly choose from list of possible (number has to be chosen too... hmm)
