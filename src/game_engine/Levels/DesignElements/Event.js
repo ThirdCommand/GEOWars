@@ -94,8 +94,11 @@ export class EventObject extends UIElement {
     }
 
     deleteSpawn(spawn) {
-        this.spawns.splice(this.spawns.indexOf(spawn), 1);
-        this.spawnSprites[spawn.type] -= 1;
+        const index = this.spawns.indexOf(spawn);
+        if(index !== -1)  {
+            this.spawns.splice(this.spawns.indexOf(spawn), 1);
+            this.spawnSprites[spawn.type] -= 1;
+        }
     }
 
     onMouseClick(mousePos) {
@@ -107,6 +110,7 @@ export class EventObject extends UIElement {
 
     unSelected() {
         this.enemyPlacers.forEach((enemyPlacer) => enemyPlacer.eventUnselected());
+        this.levelDesigner.eventUnselected();
         this.UILineSprite.selected = false;
     }
     onMouseDoubleClicked(mousePos) {

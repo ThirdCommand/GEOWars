@@ -62,6 +62,8 @@ export class LevelDesigner {
 
         // can be scene, time, event, or loop
         this.selectedGameElement;
+
+        this.currentEnemyPlacer;
  
 
         // main game array is the main list of sequence objects
@@ -196,6 +198,13 @@ export class LevelDesigner {
             // get the current mouse position to know if it is within the 
             // level editor
             // then move the level editor up or down 
+        });
+
+        window.addEventListener("keydown", (e) => {
+            e.stopPropagation();
+            if(e.key === "Escape") {
+                this.escapePressed();
+            }
         });
 
         gameSequenceSubmit.onclick = (e) => {
@@ -412,6 +421,11 @@ export class LevelDesigner {
         this.selectedGameElement = event;
     }
 
+    eventUnselected() {
+        this.currentEnemyPlacer?.remove();
+        this.currentEnemyPlacer = undefined;
+    }
+
     enemyPlacerClicked(enemyPlacer) {
         this.animationView.clear();
         this.animationView.addEnemy(enemyPlacer.type);
@@ -441,11 +455,19 @@ export class LevelDesigner {
         this.animationView.enemySelected(spawn);
     }
 
+    escapePressed() {
+
+        this.currentEnemyPlacer?.remove();
+        this.currentEnemyPlacer = undefined;
+    }
+
     addEnemy(type) {
-        new EnemyPlacer(this.engine, type, this);
-        
-        // add this to the list of spawns for 
-        // the event that is being constructed
+        this.currentEnemyPlacer?.remove();
+        this.currentEnemyPlacer = new EnemyPlacer(this.engine, type, this);
+    }
+
+    addAnotherEnemy(type) {
+        this.currentEnemyPlacer = new EnemyPlacer(this.engine, type, this);
     }
 
     addMouseClickListener(object) {
@@ -592,13 +614,11 @@ export class LevelDesigner {
 
     remove(gameObject) {
         if (gameObject.lineSprite) {
-            this.lineSprites.splice(
-                this.lineSprites.indexOf(gameObject.lineSprite),
-                1
-            );
+            const lineSpriteIndex = this.lineSprites.indexOf(gameObject.lineSprite);
+            if (lineSpriteIndex > -1) this.lineSprites.splice(lineSpriteIndex, 1); 
         }
-
-        this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1);
+        const index = this.gameObjects.indexOf(gameObject);
+        if (index !== -1) this.gameObjects.splice(index, 1);
     }
 
     removeExpandedElements(expandedScene) {
@@ -606,23 +626,20 @@ export class LevelDesigner {
         UIElements.forEach((UIElement) => {
             UIElement.parentSceneUnexpanded();
             if(UIElement.UILineSprite) {
-                this.UIElementSprites.splice(
-                    this.UIElementSprites.indexOf(UIElement.UILineSprite),
-                    1
-                );
+                const index = this.UIElementSprites.indexOf(UIElement.UILineSprite);
+                if(index !== -1) this.UIElementSprites.splice(index, 1);
             }
         });
     }
 
     removeUIElement(UIElement) {
         const bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
-        if(UIElement.UILineSprite) {
-            this.UIElementSprites.splice(
-                this.UIElementSprites.indexOf(UIElement.UILineSprite),
-                1
-            );
+        if (UIElement.UILineSprite) {
+            const index = this.UIElementSprites.indexOf(UIElement.UILineSprite);
+            if (index !== -1) this.UIElementSprites.splice(index, 1);
         }
-        bottomExpandedScene.gameElements.splice(bottomExpandedScene.gameElements.indexOf(UIElement), 1);
+        const bottomExpandedSceneIndex = bottomExpandedScene.gameElements.indexOf(UIElement);
+        if (bottomExpandedSceneIndex !== -1) bottomExpandedScene.gameElements.splice(bottomExpandedSceneIndex, 1);
     }
 
     addUIElementSprite(UILineSprite) {

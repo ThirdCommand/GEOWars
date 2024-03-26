@@ -112,6 +112,12 @@ export class GameObject {
     // overwritten by child class for handler
     }
 
+    removeMouseListeners() {
+        this.gameEngine.removeMouseListener(this);
+        this.gameEngine.removeClickListener(this);
+        this.gameEngine.removeDoubleClickListener(this);
+    }
+
     // remove is the issue
     // i need a remove queue!!!
     // ... I think
@@ -120,10 +126,8 @@ export class GameObject {
             obj.remove();
         });
         if (this.parentObject) {
-            this.parentObject.childObjects.splice(
-                this.parentObject.childObjects.indexOf(this),
-                1
-            );
+            const index = this.parentObject.childObjects.indexOf(this);
+            if(index !== -1) this.parentObject.childObjects.splice(index, 1);
         }
         this.gameEngine.remove(this);
     }

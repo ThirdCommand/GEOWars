@@ -240,7 +240,8 @@ export class Ship extends GameObject {
                 // this.controlsDirection[1] += unitVector[1]
             } else {
                 if (this.keysPressed.includes(key)) {
-                    this.keysPressed.splice(this.keysPressed.indexOf(key), 1);
+                    const index = this.keysPressed.indexOf(key);
+                    if (index !== -1) this.keysPressed.splice(this.keysPressed.indexOf(key), 1);
                 }
 
                 // this.controlsDirection[0] -= unitVector[0]

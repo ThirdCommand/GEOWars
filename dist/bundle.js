@@ -133,13 +133,12 @@ class AnimationView {
 
     remove(gameObject) {
         if (gameObject.lineSprite) {
-            this.lineSprites.splice(
-                this.lineSprites.indexOf(gameObject.lineSprite),
-                1
-            );
+            const lineSpriteIndex = this.lineSprites.indexOf(gameObject.lineSprite);
+            if (lineSpriteIndex !== -1) this.lineSprites.splice(lineSpriteIndex, 1);
         }
-
-        this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1);
+        const index = this.gameObjects.indexOf(gameObject);
+        if (index !== -1) this.gameObjects.splice(index, 1);
+       
     }
 
     addLineSprite(lineSprite) {
@@ -276,8 +275,11 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
     }
 
     deleteSpawn(spawn) {
-        this.spawns.splice(this.spawns.indexOf(spawn), 1);
-        this.spawnSprites[spawn.type] -= 1;
+        const index = this.spawns.indexOf(spawn);
+        if(index !== -1)  {
+            this.spawns.splice(this.spawns.indexOf(spawn), 1);
+            this.spawnSprites[spawn.type] -= 1;
+        }
     }
 
     onMouseClick(mousePos) {
@@ -289,6 +291,7 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
 
     unSelected() {
         this.enemyPlacers.forEach((enemyPlacer) => enemyPlacer.eventUnselected());
+        this.levelDesigner.eventUnselected();
         this.UILineSprite.selected = false;
     }
     onMouseDoubleClicked(mousePos) {
@@ -1264,12 +1267,10 @@ class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
         this.levelDesigner.enemyPlaced(spawn);
         this.removeMousePosListener();
         this.addMouseClickListener();
-        // this.levelDesigner.addEnemy(this.type);
 
     }
 
     eventUnselected() {
-        this.gameEngine.removeClickListener(this);
         this.remove();
     }
 
@@ -1334,9 +1335,8 @@ class PlacingAnimation extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
     placeEnemy() {
         this.parentObject.place();
         this.parentObject.lineSprite.spawningScale = 1;
-        this.removeClickListener();
-        this.removeMousePosListener();
         this.remove();
+        this.parentObject.levelDesigner.addAnotherEnemy(this.parentObject.type);
     }
 
     updateMousePos(mousePos) {
@@ -1453,6 +1453,8 @@ class LevelDesigner {
 
         // can be scene, time, event, or loop
         this.selectedGameElement;
+
+        this.currentEnemyPlacer;
  
 
         // main game array is the main list of sequence objects
@@ -1587,6 +1589,13 @@ class LevelDesigner {
             // get the current mouse position to know if it is within the 
             // level editor
             // then move the level editor up or down 
+        });
+
+        window.addEventListener("keydown", (e) => {
+            e.stopPropagation();
+            if(e.key === "Escape") {
+                this.escapePressed();
+            }
         });
 
         gameSequenceSubmit.onclick = (e) => {
@@ -1803,6 +1812,11 @@ class LevelDesigner {
         this.selectedGameElement = event;
     }
 
+    eventUnselected() {
+        this.currentEnemyPlacer?.remove();
+        this.currentEnemyPlacer = undefined;
+    }
+
     enemyPlacerClicked(enemyPlacer) {
         this.animationView.clear();
         this.animationView.addEnemy(enemyPlacer.type);
@@ -1832,11 +1846,19 @@ class LevelDesigner {
         this.animationView.enemySelected(spawn);
     }
 
+    escapePressed() {
+
+        this.currentEnemyPlacer?.remove();
+        this.currentEnemyPlacer = undefined;
+    }
+
     addEnemy(type) {
-        new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.engine, type, this);
-        
-        // add this to the list of spawns for 
-        // the event that is being constructed
+        this.currentEnemyPlacer?.remove();
+        this.currentEnemyPlacer = new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.engine, type, this);
+    }
+
+    addAnotherEnemy(type) {
+        this.currentEnemyPlacer = new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.engine, type, this);
     }
 
     addMouseClickListener(object) {
@@ -1983,13 +2005,11 @@ class LevelDesigner {
 
     remove(gameObject) {
         if (gameObject.lineSprite) {
-            this.lineSprites.splice(
-                this.lineSprites.indexOf(gameObject.lineSprite),
-                1
-            );
+            const lineSpriteIndex = this.lineSprites.indexOf(gameObject.lineSprite);
+            if (lineSpriteIndex > -1) this.lineSprites.splice(lineSpriteIndex, 1); 
         }
-
-        this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1);
+        const index = this.gameObjects.indexOf(gameObject);
+        if (index !== -1) this.gameObjects.splice(index, 1);
     }
 
     removeExpandedElements(expandedScene) {
@@ -1997,23 +2017,20 @@ class LevelDesigner {
         UIElements.forEach((UIElement) => {
             UIElement.parentSceneUnexpanded();
             if(UIElement.UILineSprite) {
-                this.UIElementSprites.splice(
-                    this.UIElementSprites.indexOf(UIElement.UILineSprite),
-                    1
-                );
+                const index = this.UIElementSprites.indexOf(UIElement.UILineSprite);
+                if(index !== -1) this.UIElementSprites.splice(index, 1);
             }
         });
     }
 
     removeUIElement(UIElement) {
         const bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
-        if(UIElement.UILineSprite) {
-            this.UIElementSprites.splice(
-                this.UIElementSprites.indexOf(UIElement.UILineSprite),
-                1
-            );
+        if (UIElement.UILineSprite) {
+            const index = this.UIElementSprites.indexOf(UIElement.UILineSprite);
+            if (index !== -1) this.UIElementSprites.splice(index, 1);
         }
-        bottomExpandedScene.gameElements.splice(bottomExpandedScene.gameElements.indexOf(UIElement), 1);
+        const bottomExpandedSceneIndex = bottomExpandedScene.gameElements.indexOf(UIElement);
+        if (bottomExpandedSceneIndex !== -1) bottomExpandedScene.gameElements.splice(bottomExpandedSceneIndex, 1);
     }
 
     addUIElementSprite(UILineSprite) {
@@ -2543,7 +2560,7 @@ class GameEngine {
     
 
     mouseClicked(e) {
-        if(e.target.classList[0] === "level-editor-canvas") {
+        if (e.target.classList[0] === "level-editor-canvas") {
             this.levelDesignerClickListeners.forEach((object) => {
                 object.mouseClicked([e.offsetX, e.offsetY]);
             });
@@ -2556,7 +2573,7 @@ class GameEngine {
     }
 
     mouseDoubleClicked(e) {
-        if(e.target.classList[0] === "level-editor-canvas") {
+        if (e.target.classList[0] === "level-editor-canvas") {
             this.levelDesignerDoubleClickListeners.forEach((object) => {
                 object.mouseDoubleClicked([e.offsetX, e.offsetY]);
             });
@@ -2569,17 +2586,23 @@ class GameEngine {
     }
 
     removeClickListener(object) {
-        this.gameClickListeners.splice(this.gameClickListeners.indexOf(object), 1);
+        const index = this.gameClickListeners.indexOf(object);
+        if (index !== -1) this.gameClickListeners.splice(index, 1);
     }
+
     removeDoubleClickListener(object) {
-        this.gameDoubleClickListeners.splice(this.gameDoubleClickListeners.indexOf(object), 1);
+        const index = this.gameDoubleClickListeners.indexOf(object);
+        if (index !== -1) this.gameDoubleClickListeners.splice(index, 1);
     }
 
     removeLevelDesignerClickListener(object) {
-        this.levelDesignerClickListeners.splice(this.levelDesignerClickListeners.indexOf(object), 1);
+        const index = this.levelDesignerClickListeners.indexOf(object);
+        if (index !== -1) this.levelDesignerClickListeners.splice(index, 1);
     }
+
     removeLevelDesignerDoubleClickListener(object) {
-        this.levelDesignerDoubleClickListeners.splice(this.levelDesignerDoubleClickListeners.indexOf(object), 1);
+        const index = this.levelDesignerDoubleClickListeners.indexOf(object);
+        if (index !== -1) this.levelDesignerDoubleClickListeners.splice(index, 1);
     }
 
     // ******** end of mouse stuff *******
@@ -2619,7 +2642,8 @@ class GameEngine {
     }
 
     removeMouseListener(object) {
-        this.mouseListeners.splice(this.mouseListeners.indexOf(object), 1);
+        const index = this.mouseListeners.indexOf(object);
+        if(index !== -1) this.mouseListeners.splice(index, 1);
     }
 
     updateControlListeners() {
@@ -2783,34 +2807,37 @@ class GameEngine {
 
     remove(gameObject) {
         if (gameObject.physicsComponent) {
-            this.physicsComponents.splice(
-                this.physicsComponents.indexOf(gameObject.physicsComponent),
-                1
-            );
+            const physicsComponentIndex = this.physicsComponents.indexOf(gameObject.physicsComponent);
+            if (physicsComponentIndex !== -1) this.physicsComponents.splice(physicsComponentIndex, 1);
         }
-        if (gameObject.lineSprite) {
-            this.lineSprites.splice(
-                this.lineSprites.indexOf(gameObject.lineSprite),
-                1
-            );
-        }
-        this.removeColliders(gameObject.colliders);
 
-        this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1);
+        if (gameObject.lineSprite) {
+            const lineSpriteIndex = this.lineSprites.indexOf(gameObject.lineSprite);
+            if(lineSpriteIndex !== -1) this.lineSprites.splice(lineSpriteIndex, 1);
+        }
+        this.removeMouseListeners(gameObject);
+        this.removeColliders(gameObject.colliders);
+        const gameObjectIndex = this.gameObjects.indexOf(gameObject);
+        if (gameObjectIndex !== -1) this.gameObjects.splice(gameObjectIndex, 1);
+    }
+
+    removeMouseListeners(gameObject) {
+        this.removeMouseListener(gameObject);
+        this.removeClickListener(gameObject);
+        this.removeDoubleClickListener(gameObject);
     }
 
     removeColliders(colliders) {
         colliders.forEach((collider) => {
             if (collider.subscriptions) {
-                this.subscribers.splice(this.subscribers.indexOf(collider), 1);
+                const colliderSubscriptionsIndex = this.subscribers.indexOf(collider);
+                if(colliderSubscriptionsIndex !== -1) this.subscribers.splice(colliderSubscriptionsIndex, 1);
             }
 
             const objectAndColliderTypeList =
-        this.colliders[collider.objectType][collider.type];
-            objectAndColliderTypeList.splice(
-                objectAndColliderTypeList.indexOf(collider),
-                1
-            );
+            this.colliders[collider.objectType][collider.type];
+            const colliderIndex = objectAndColliderTypeList.indexOf(collider);
+            if(colliderIndex !== -1) objectAndColliderTypeList.splice(colliderIndex, 1);
         });
     }
 }
@@ -2957,6 +2984,12 @@ class GameObject {
     // overwritten by child class for handler
     }
 
+    removeMouseListeners() {
+        this.gameEngine.removeMouseListener(this);
+        this.gameEngine.removeClickListener(this);
+        this.gameEngine.removeDoubleClickListener(this);
+    }
+
     // remove is the issue
     // i need a remove queue!!!
     // ... I think
@@ -2965,10 +2998,8 @@ class GameObject {
             obj.remove();
         });
         if (this.parentObject) {
-            this.parentObject.childObjects.splice(
-                this.parentObject.childObjects.indexOf(this),
-                1
-            );
+            const index = this.parentObject.childObjects.indexOf(this);
+            if(index !== -1) this.parentObject.childObjects.splice(index, 1);
         }
         this.gameEngine.remove(this);
     }
@@ -7125,7 +7156,8 @@ class Ship extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
                 // this.controlsDirection[1] += unitVector[1]
             } else {
                 if (this.keysPressed.includes(key)) {
-                    this.keysPressed.splice(this.keysPressed.indexOf(key), 1);
+                    const index = this.keysPressed.indexOf(key);
+                    if (index !== -1) this.keysPressed.splice(this.keysPressed.indexOf(key), 1);
                 }
 
                 // this.controlsDirection[0] -= unitVector[0]

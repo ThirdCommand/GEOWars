@@ -212,7 +212,7 @@ export class GameEngine {
     
 
     mouseClicked(e) {
-        if(e.target.classList[0] === "level-editor-canvas") {
+        if (e.target.classList[0] === "level-editor-canvas") {
             this.levelDesignerClickListeners.forEach((object) => {
                 object.mouseClicked([e.offsetX, e.offsetY]);
             });
@@ -225,7 +225,7 @@ export class GameEngine {
     }
 
     mouseDoubleClicked(e) {
-        if(e.target.classList[0] === "level-editor-canvas") {
+        if (e.target.classList[0] === "level-editor-canvas") {
             this.levelDesignerDoubleClickListeners.forEach((object) => {
                 object.mouseDoubleClicked([e.offsetX, e.offsetY]);
             });
@@ -238,17 +238,23 @@ export class GameEngine {
     }
 
     removeClickListener(object) {
-        this.gameClickListeners.splice(this.gameClickListeners.indexOf(object), 1);
+        const index = this.gameClickListeners.indexOf(object);
+        if (index !== -1) this.gameClickListeners.splice(index, 1);
     }
+
     removeDoubleClickListener(object) {
-        this.gameDoubleClickListeners.splice(this.gameDoubleClickListeners.indexOf(object), 1);
+        const index = this.gameDoubleClickListeners.indexOf(object);
+        if (index !== -1) this.gameDoubleClickListeners.splice(index, 1);
     }
 
     removeLevelDesignerClickListener(object) {
-        this.levelDesignerClickListeners.splice(this.levelDesignerClickListeners.indexOf(object), 1);
+        const index = this.levelDesignerClickListeners.indexOf(object);
+        if (index !== -1) this.levelDesignerClickListeners.splice(index, 1);
     }
+
     removeLevelDesignerDoubleClickListener(object) {
-        this.levelDesignerDoubleClickListeners.splice(this.levelDesignerDoubleClickListeners.indexOf(object), 1);
+        const index = this.levelDesignerDoubleClickListeners.indexOf(object);
+        if (index !== -1) this.levelDesignerDoubleClickListeners.splice(index, 1);
     }
 
     // ******** end of mouse stuff *******
@@ -288,7 +294,8 @@ export class GameEngine {
     }
 
     removeMouseListener(object) {
-        this.mouseListeners.splice(this.mouseListeners.indexOf(object), 1);
+        const index = this.mouseListeners.indexOf(object);
+        if(index !== -1) this.mouseListeners.splice(index, 1);
     }
 
     updateControlListeners() {
@@ -452,34 +459,37 @@ export class GameEngine {
 
     remove(gameObject) {
         if (gameObject.physicsComponent) {
-            this.physicsComponents.splice(
-                this.physicsComponents.indexOf(gameObject.physicsComponent),
-                1
-            );
+            const physicsComponentIndex = this.physicsComponents.indexOf(gameObject.physicsComponent);
+            if (physicsComponentIndex !== -1) this.physicsComponents.splice(physicsComponentIndex, 1);
         }
-        if (gameObject.lineSprite) {
-            this.lineSprites.splice(
-                this.lineSprites.indexOf(gameObject.lineSprite),
-                1
-            );
-        }
-        this.removeColliders(gameObject.colliders);
 
-        this.gameObjects.splice(this.gameObjects.indexOf(gameObject), 1);
+        if (gameObject.lineSprite) {
+            const lineSpriteIndex = this.lineSprites.indexOf(gameObject.lineSprite);
+            if(lineSpriteIndex !== -1) this.lineSprites.splice(lineSpriteIndex, 1);
+        }
+        this.removeMouseListeners(gameObject);
+        this.removeColliders(gameObject.colliders);
+        const gameObjectIndex = this.gameObjects.indexOf(gameObject);
+        if (gameObjectIndex !== -1) this.gameObjects.splice(gameObjectIndex, 1);
+    }
+
+    removeMouseListeners(gameObject) {
+        this.removeMouseListener(gameObject);
+        this.removeClickListener(gameObject);
+        this.removeDoubleClickListener(gameObject);
     }
 
     removeColliders(colliders) {
         colliders.forEach((collider) => {
             if (collider.subscriptions) {
-                this.subscribers.splice(this.subscribers.indexOf(collider), 1);
+                const colliderSubscriptionsIndex = this.subscribers.indexOf(collider);
+                if(colliderSubscriptionsIndex !== -1) this.subscribers.splice(colliderSubscriptionsIndex, 1);
             }
 
             const objectAndColliderTypeList =
-        this.colliders[collider.objectType][collider.type];
-            objectAndColliderTypeList.splice(
-                objectAndColliderTypeList.indexOf(collider),
-                1
-            );
+            this.colliders[collider.objectType][collider.type];
+            const colliderIndex = objectAndColliderTypeList.indexOf(collider);
+            if(colliderIndex !== -1) objectAndColliderTypeList.splice(colliderIndex, 1);
         });
     }
 }
