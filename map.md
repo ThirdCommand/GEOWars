@@ -70,15 +70,17 @@ this was determined to be an ugly idea
     - [x] count of each
     - [x] add spawn
     - [x] continue placing same enemy after placing
-    - [x] escape key stop placing enemy
-    - [ ] delete spawn
     - [x] get click placed enemy working again
-    - [ ] random position button (no need to hide the spawn when that's chosen)
-    - [ ] location edit
-    - [ ] randomly choose from list of possible (number has to be chosen too... hmm)
+    - [x] random position button (no need to hide the spawn when that's chosen)
+    - [x] location edit
+    - [x] randomly choose from list of possible (number has to be chosen too... hmm)
+    - [x] escape key for getting out of about to place element
+    - [x] angle of the Arrows
+    - [ ] delete spawn
     - [ ] multi select
     - [ ] copy/paste
-    - [ ] escape key for getting out of about to place element
+    - [ ] angle of... everything?
+    - [ ] make it so you don't have to reselect to see the new overlay data in the animation view
     - [ ] include ship position as a possible reference (spawn things around ship)
       - [ ] handle case where ship is close to edge
   - [x] Time

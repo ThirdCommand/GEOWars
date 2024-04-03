@@ -16,6 +16,7 @@ import { GruntSprite } from "../../../game_objects/enemies/Grunt/grunt_sprite";
 import { PinwheelSprite } from "../../../game_objects/enemies/Pinwheel/pinwheel_sprite";
 import { WeaverSprite } from "../../../game_objects/enemies/Weaver/weaver_sprite";
 import { SingularitySprite } from "../../../game_objects/enemies/Singularity/singularity_sprite";
+import { RandomRandomSprite } from "../../../game_objects/enemies/RandomRandom";
 import { Util } from "../../util";
 
 // should add Alien too
@@ -30,6 +31,7 @@ export const spriteMap = {
     Pinwheel: (transform) => new PinwheelSprite(transform),
     Weaver: (transform) => new WeaverSprite(transform),
     Singularity: (transform) => new SingularitySprite(transform),
+    RANDOM: (transform) => new RandomRandomSprite(transform),
 };
 
 // if trying to spawn multiple things on top of each other, I should only grab the first placer that is found in the click colission
@@ -40,26 +42,35 @@ const getClickRadius = {
     Pinwheel: 10,
     Weaver: 10,
     Singularity: 10,
+    RANDOM: 10,
 };
 
 export class EnemyPlacer extends GameObject {
-    constructor(engine, type, levelDesigner, loadingEvent, position) {
+    constructor(engine, spawn, levelDesigner, loadingEvent) {
         super(engine);
+        const {type, location, numberToGenerate, possibleSpawns, angle} = spawn;
         this.addLineSprite(spriteMap[type](this.transform));
         this.levelDesigner = levelDesigner;
         this.clickRadius = getClickRadius[type];
         this.type = type;
         
-
-        if(!loadingEvent) {
+        if(loadingEvent) {
+            if(location === "RANDOM") {
+                this.transform.pos[0] = 500;
+                this.transform.pos[1] = 500;
+                this.spawn = {type: "RANDOM", location: "RANDOM", numberToGenerate, possibleSpawns};
+                this.addMouseClickListener();
+            } else {
+                this.transform.pos[0] = location[0];
+                this.transform.pos[1] = location[1];
+                this.transform.angle = angle;
+                this.spawn = spawn;
+            }   
+            this.originalClickComplete = true;
+        } else {
             this.originalClickComplete = false;
             this.addChildGameObject(new PlacingAnimation(this.gameEngine));
-        } else {
-            this.transform.pos[0] = position[0];
-            this.transform.pos[1] = position[1];
-            this.originalClickComplete = true;
         }
-        // click collider should be added after placed
     }
 
     place() {
@@ -69,7 +80,21 @@ export class EnemyPlacer extends GameObject {
         this.levelDesigner.enemyPlaced(spawn);
         this.removeMousePosListener();
         this.addMouseClickListener();
+    }
 
+    setCoordinates(x, y, angle) {
+        const radiansAngle = angle * Math.PI / 180;
+        this.transform.pos[0] = x || this.transform.pos[0];
+        this.transform.pos[1] = y || this.transform.pos[1];
+        this.transform.angle = radiansAngle || this.transform.angle;
+        this.spawn.angle = radiansAngle || this.spawn.angle;
+    }
+
+    setRandomCoordinates() {
+        this.transform.pos[0] = this.gameEngine.gameScript.DIM_X * 0.85 * Math.random();
+        this.transform.pos[1] = this.gameEngine.gameScript.DIM_Y * 0.85 * Math.random();
+        this.transform.angle = Math.random() * Math.PI * 2;
+        this.spawn.angle = this.transform.angle;
     }
 
     eventUnselected() {
@@ -91,8 +116,6 @@ export class EnemyPlacer extends GameObject {
         if (centerDist < this.clickRadius) {
             this.onMouseClick(mousePos);
         }
-
-
     }
 
     onMouseClick(mousePos) {

@@ -294,13 +294,13 @@ export class GameScript {
     createEnemyCreatorList() {
         const engine = this.engine;
         return {
-            BoxBox: (pos) => new BoxBox(engine, pos),
-            Pinwheel: (pos) => new Pinwheel(engine, pos),
+            BoxBox: (pos, angle) => new BoxBox(engine, pos),
+            Pinwheel: (pos, angle) => new Pinwheel(engine, pos),
             Arrow: (pos, angle) => new Arrow(engine, pos, angle),
-            Grunt: (pos) => new Grunt(engine, pos, this.ship.transform),
-            Weaver: (pos) => new Weaver(engine, pos, this.ship.transform),
-            Singularity: (pos) => new Singularity(engine, pos),
-            AlienShip: (pos) =>
+            Grunt: (pos, angle) => new Grunt(engine, pos, this.ship.transform),
+            Weaver: (pos, angle) => new Weaver(engine, pos, this.ship.transform),
+            Singularity: (pos, angle) => new Singularity(engine, pos),
+            AlienShip: (pos, angle) =>
                 new AlienShip(engine, pos, [0, 0], this.ship.transform),
         };
     }

@@ -6,6 +6,7 @@ export class Spawn {
         //     type: 'RANDOM',
         //     location: 'RANDOM',
         //     possibleSpawns: ['Weaver', 'Grunt']
+        //     angle: 'PI/3'
         // }
         this.gameEngine = gameEngine;
     }
@@ -17,8 +18,8 @@ export class Spawn {
 
     randomPosition() {
         return [
-            this.gameEngine.DIM_X * 0.70 * Math.random(),
-            this.gameEngine.DIM_Y * 0.70 * Math.random(),
+            this.gameEngine.gameScript.DIM_X * 0.95 * Math.random(),
+            this.gameEngine.gameScript.DIM_Y * 0.90 * Math.random(),
         ];
     }
 
@@ -34,11 +35,11 @@ export class Spawn {
             let location;
             if(mobToSpawn === 'RANDOM') {
                 mobToSpawn = this.randomMob(this.spawn.possibleSpawns);
-            } 
+            }
             if(this.spawn.location === 'RANDOM') {
                 location = this.randomPosition();
             } else {
-                location = [this.spawn.location[0], this.spawn.location[1]];
+                location = [Number(this.spawn.location[0]), Number(this.spawn.location[1])];
             }
             this.gameEngine.gameScript.enemyCreatorList[mobToSpawn](location);
         }

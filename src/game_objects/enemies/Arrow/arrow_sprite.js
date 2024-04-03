@@ -17,10 +17,16 @@ export class ArrowSprite extends LineSprite {
         const l = shipLength;
         const w = shipWidth * this.widthScaleForRotation;
         const z = shipWidth * this.zScaleForRotation;
-        const movementDirection = Math.atan2(
-            this.transform.vel[0],
-            -this.transform.vel[1]
-        );
+        let movementDirection = 0;
+        if(this.transform.vel[0] === 0 && this.transform.vel[1] === 0) {
+            movementDirection = this.transform.angle;
+        } else {
+            movementDirection = Math.atan2(
+                this.transform.vel[0],
+                -this.transform.vel[1]
+            );
+        }
+        
 
         const r = 255;
         const g = 255;

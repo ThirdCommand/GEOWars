@@ -19,8 +19,8 @@ export const Util = {
     // Find distance between two points.
     dist(pos1, pos2) {
         let answer;
-        if(isNaN(pos1[2])) pos1[2] = 0;
-        if(isNaN(pos2[2])) pos2[2] = 0;
+        if(isNaN(pos1[2]) || typeof pos1[2] !== 'number') pos1[2] = 0;
+        if(isNaN(pos2[2]) || typeof pos2[2] !== 'number') pos2[2] = 0;
         if(pos1.length === 3 && pos2.length === 3) {
 
             answer =  Math.sqrt(

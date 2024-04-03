@@ -19,6 +19,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./game_objects/enemies/Weaver/weaver */ "./src/game_objects/enemies/Weaver/weaver.js");
 /* harmony import */ var _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/singularity */ "./src/game_objects/enemies/Singularity/singularity.js");
 /* harmony import */ var _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/alien_ship */ "./src/game_objects/enemies/Singularity/alien_ship.js");
+/* harmony import */ var _game_objects_enemies_RandomRandom__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./game_objects/enemies/RandomRandom */ "./src/game_objects/enemies/RandomRandom.js");
+
 
 
 
@@ -49,13 +51,17 @@ class AnimationView {
         this.overlayTextCleared = true;
     }
 
-    enemySelected({ type, location}) {
+    enemySelected({type, location, numberToGenerate, possibleSpawns, angle}) {
+        possibleSpawns = possibleSpawns || [];
         this.overlayTextCleared = false;
+        const locationText = [Math.trunc(location[0].toString()), Math.trunc(location[1]).toString()];
         this.overlayText = {
-            Location: [location[0], location[1]],
+            Location: locationText,
             Time: 0,
             Type: type,
-            StartingAngle: 0,
+            StartingAngle: angle,
+            RandomCount: numberToGenerate,
+            RandomSelection: [...possibleSpawns]
         };
     }
 
@@ -73,6 +79,14 @@ class AnimationView {
         this.ctx.fillStyle = "white";
         const typeText = "Type: " + this.overlayText.Type;
         const positionText = "Location: " + this.overlayText.Location;
+        const angleText = "Starting Angle: " + Math.round(this.overlayText.StartingAngle * 360 / (2 * Math.PI));
+        let randomCountText = false;
+        let randomSelectionText = false;
+        if(this.overlayText.RandomCount) {
+            randomCountText = "Random Count: " + this.overlayText.RandomCount;
+            randomSelectionText = "Random Selections: ";
+        }
+        
         this.ctx.fillText(
             typeText,
             10,
@@ -83,6 +97,31 @@ class AnimationView {
             10,
             38
         );
+        this.ctx.fillText(
+            angleText,
+            10,
+            56
+        );
+        if (randomCountText) {
+            this.ctx.fillText(
+                randomCountText,
+                10,
+                125
+            );
+            this.ctx.font = "7px Arial";
+            this.ctx.fillText(
+                randomSelectionText,
+                10,
+                143
+            );
+            for (let i = 0; i < this.overlayText.RandomSelection.length; i++) {
+                this.ctx.fillText(
+                    this.overlayText.RandomSelection[i].toString(),
+                    10,
+                    150 + i * 7
+                );
+            }
+        }
         this.ctx.restore();
     }
 
@@ -154,6 +193,7 @@ class AnimationView {
             Weaver: (pos) => new _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_4__.Weaver(this, pos, this.ship.transform),
             Singularity: (pos) => new _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_5__.Singularity(this, pos),
             AlienShip: (pos) => new _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_6__.AlienShip(this, pos, [0, 0], this.ship.transform),
+            RANDOM: (pos) => new _game_objects_enemies_RandomRandom__WEBPACK_IMPORTED_MODULE_7__.RandomRandom(this, pos)
         };
         enemyMap[type]([100, 100]);
     }
@@ -174,11 +214,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   EventObject: () => (/* binding */ EventObject),
 /* harmony export */   EventObjectSprite: () => (/* binding */ EventObjectSprite)
 /* harmony export */ });
-/* harmony import */ var _UI_Element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../UI_Element */ "./src/game_engine/UI_Element.js");
-/* harmony import */ var _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../UI_line_sprite */ "./src/game_engine/UI_line_sprite.js");
-/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../transform */ "./src/game_engine/transform.js");
-/* harmony import */ var _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../LevelDesign/EnemyPlacer */ "./src/game_engine/Levels/LevelDesign/EnemyPlacer.js");
-/* harmony import */ var _Spawn__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.js");
+/* harmony import */ var _game_objects_enemies_RandomRandom__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_objects/enemies/RandomRandom */ "./src/game_objects/enemies/RandomRandom.js");
+/* harmony import */ var _UI_Element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../UI_Element */ "./src/game_engine/UI_Element.js");
+/* harmony import */ var _UI_line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../UI_line_sprite */ "./src/game_engine/UI_line_sprite.js");
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../transform */ "./src/game_engine/transform.js");
+/* harmony import */ var _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../LevelDesign/EnemyPlacer */ "./src/game_engine/Levels/LevelDesign/EnemyPlacer.js");
+/* harmony import */ var _Spawn__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.js");
+
 
 
 
@@ -192,7 +234,7 @@ class Event {
         // not sure what the type is for spawns here
         this.parentScene = parentScene;
         // I think I'll have to create the spawns from the serialized data given here
-        this.spawns = spawns.map((spawn) => new _Spawn__WEBPACK_IMPORTED_MODULE_4__.Spawn(spawn, gameEngine)); // this is different than the single spawn thing I have in the mock data
+        this.spawns = spawns.map((spawn) => new _Spawn__WEBPACK_IMPORTED_MODULE_5__.Spawn(spawn, gameEngine)); // this is different than the single spawn thing I have in the mock data
     }
 
     update() {
@@ -213,13 +255,13 @@ class Event {
 
 // this is what is created by the UI
 // but it will also have to be created by the serialized data
-class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
+class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_1__.UIElement {
     constructor(levelDesigner, eventToLoad, position, parentScene) {
         super(levelDesigner, position, parentScene);
         this.spawns = [];
         this.enemyPlacers = [];
         this.selectedSpawns = [];
-        this.spawnSprites = {Pinwheel: 0, BoxBox: 0, Arrow: 0, Grunt: 0, Weaver: 0, Singularity: 0, AlienShip: 0};
+        this.spawnSprites = {Pinwheel: 0, BoxBox: 0, Arrow: 0, Grunt: 0, Weaver: 0, Singularity: 0, AlienShip: 0, RANDOM: 0};
         this.widthHeight = [80, 40];
         this.clickRadius = 20;
         this.addMouseClickListener();
@@ -245,7 +287,10 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
 
     loadSpawns() {
         this.spawns.forEach((spawn) => {
-            this.enemyPlacers.push(new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.levelDesigner.engine, spawn.type, this.levelDesigner, true, spawn.location));
+            // pretty sure this is a serialized spawn....
+            const enemyPlacer = new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.EnemyPlacer(this.levelDesigner.engine, spawn, this.levelDesigner, true);
+            enemyPlacer.addMouseClickListener();
+            this.enemyPlacers.push(enemyPlacer);
         });
     }
 
@@ -268,6 +313,32 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
     addSpawn(spawn) {
         this.spawns.push(spawn.spawn);
         this.spawnSprites[spawn.spawn.type] += 1;
+    }
+
+    addRandomRandom(spawn) {
+        const randomRandomAdded = this.spawns.find((spawny) => spawny.type === 'RANDOM');
+        if(randomRandomAdded) {
+            randomRandomAdded.possibleSpawns = spawn.spawn.possibleSpawns;
+            randomRandomAdded.numberToGenerate = spawn.spawn.numberToGenerate;
+            const enemyPlacer = this.enemyPlacers.find((enemyPlacer) => (enemyPlacer.type === 'RANDOM'));
+            enemyPlacer.spawn.numberToGenerate = spawn.spawn.numberToGenerate;
+            enemyPlacer.spawn.possibleSpawns = spawn.spawn.possibleSpawns;
+        } else {
+            this.spawns.push(spawn.spawn);
+            const enemyPlacer = new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.EnemyPlacer(
+                this.levelDesigner.engine, 
+                {
+                    location: 'RANDOM', 
+                    type: 'RANDOM', 
+                    numberToGenerate: spawn.spawn.numberToGenerate, 
+                    possibleSpawns: spawn.spawn.possibleSpawns
+                }, 
+                this.levelDesigner, 
+                true
+            );
+            this.spawnSprites[spawn.spawn.type] += 1;
+            this.addEnemyPlacer(enemyPlacer);
+        }
     }
 
     addEnemyPlacer(enemyPlacer) {
@@ -294,6 +365,7 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
         this.levelDesigner.eventUnselected();
         this.UILineSprite.selected = false;
     }
+
     onMouseDoubleClicked(mousePos) {
         console.log('yay mouse double clicked here');
     }
@@ -302,7 +374,7 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
     }
 }
 
-class EventObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UILineSprite {
+class EventObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_2__.UILineSprite {
     constructor(UITransform, spawnSprites, widthHeight) {
         super(UITransform);
         this.selected = true;
@@ -318,14 +390,17 @@ class EventObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UIL
         this.fifthPosition = [30,30];
         this.sixthPosition = [50,30];
 
-        this.spawnSpriteMap = {
-            BoxBox: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['BoxBox'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.firstPosition)),
-            Arrow: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Arrow'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.secondPosition)),
-            Grunt: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Grunt'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.thirdPosition)),
+        this.seventhPosition = [70,10];
 
-            Pinwheel: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Pinwheel'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.fourthPosition)),
-            Weaver: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Weaver'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.fifthPosition)),
-            Singularity: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Singularity'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.sixthPosition)),
+        this.spawnSpriteMap = {
+            BoxBox: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['BoxBox'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.firstPosition)),
+            Arrow: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['Arrow'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.secondPosition)),
+            Grunt: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['Grunt'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.thirdPosition)),
+
+            Pinwheel: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['Pinwheel'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.fourthPosition)),
+            Weaver: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['Weaver'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.fifthPosition)),
+            Singularity: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['Singularity'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.sixthPosition)),
+            RANDOM: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['RANDOM'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.seventhPosition)),
         };
 
         // change the sprites to have spawning scale be 0.5
@@ -333,8 +408,6 @@ class EventObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UIL
             this.spawnSpriteMap[key].spawningScale = 0.5;
         });
     }
-
-
 
     draw(ctx) {
         const pos = this.UITransform.pos;
@@ -376,6 +449,7 @@ class EventObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UIL
         const PinwheelSprite = this.spawnSpriteMap['Pinwheel'];
         const WeaverSprite = this.spawnSpriteMap['Weaver'];
         const SingularitySprite = this.spawnSpriteMap['Singularity'];
+        const RandomRandomSprite = this.spawnSpriteMap['RANDOM'];
 
         this.spawnSprites.BoxBox > 0 ? BoxBoxSprite.makeVisible() : BoxBoxSprite.makeInvisible();
         this.spawnSprites.Arrow > 0 ? ArrowSprite.makeVisible() : ArrowSprite.makeInvisible();
@@ -385,6 +459,9 @@ class EventObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UIL
         this.spawnSprites.Weaver > 0 ? WeaverSprite.makeVisible() : WeaverSprite.makeInvisible();
         this.spawnSprites.Singularity > 0 ? SingularitySprite.makeVisible() : SingularitySprite.makeInvisible();
 
+        this.spawnSprites.RANDOM > 0 ? RandomRandomSprite.makeVisible() : RandomRandomSprite.makeInvisible();
+
+
         BoxBoxSprite.draw(ctx);
         ArrowSprite.draw(ctx);
         GruntSprite.draw(ctx);
@@ -392,6 +469,8 @@ class EventObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UIL
         PinwheelSprite.draw(ctx);
         WeaverSprite.draw(ctx);
         SingularitySprite.draw(ctx);
+
+        RandomRandomSprite.draw(ctx);
     }
 }
 
@@ -831,6 +910,7 @@ class Spawn {
         //     type: 'RANDOM',
         //     location: 'RANDOM',
         //     possibleSpawns: ['Weaver', 'Grunt']
+        //     angle: 'PI/3'
         // }
         this.gameEngine = gameEngine;
     }
@@ -842,8 +922,8 @@ class Spawn {
 
     randomPosition() {
         return [
-            this.gameEngine.DIM_X * 0.70 * Math.random(),
-            this.gameEngine.DIM_Y * 0.70 * Math.random(),
+            this.gameEngine.gameScript.DIM_X * 0.95 * Math.random(),
+            this.gameEngine.gameScript.DIM_Y * 0.90 * Math.random(),
         ];
     }
 
@@ -859,11 +939,11 @@ class Spawn {
             let location;
             if(mobToSpawn === 'RANDOM') {
                 mobToSpawn = this.randomMob(this.spawn.possibleSpawns);
-            } 
+            }
             if(this.spawn.location === 'RANDOM') {
                 location = this.randomPosition();
             } else {
-                location = [this.spawn.location[0], this.spawn.location[1]];
+                location = [Number(this.spawn.location[0]), Number(this.spawn.location[1])];
             }
             this.gameEngine.gameScript.enemyCreatorList[mobToSpawn](location);
         }
@@ -1195,7 +1275,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_objects_enemies_Pinwheel_pinwheel_sprite__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../game_objects/enemies/Pinwheel/pinwheel_sprite */ "./src/game_objects/enemies/Pinwheel/pinwheel_sprite.js");
 /* harmony import */ var _game_objects_enemies_Weaver_weaver_sprite__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../game_objects/enemies/Weaver/weaver_sprite */ "./src/game_objects/enemies/Weaver/weaver_sprite.js");
 /* harmony import */ var _game_objects_enemies_Singularity_singularity_sprite__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../game_objects/enemies/Singularity/singularity_sprite */ "./src/game_objects/enemies/Singularity/singularity_sprite.js");
-/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../util */ "./src/game_engine/util.js");
+/* harmony import */ var _game_objects_enemies_RandomRandom__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../game_objects/enemies/RandomRandom */ "./src/game_objects/enemies/RandomRandom.js");
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../util */ "./src/game_engine/util.js");
 // while placing, could do spawning animation over mouse position
 // once placed, draw it at the placed location
 // store the location
@@ -1205,6 +1286,7 @@ __webpack_require__.r(__webpack_exports__);
 // load spawn event
 // save spawn event
 // create spawn event
+
 
 
 
@@ -1228,6 +1310,7 @@ const spriteMap = {
     Pinwheel: (transform) => new _game_objects_enemies_Pinwheel_pinwheel_sprite__WEBPACK_IMPORTED_MODULE_5__.PinwheelSprite(transform),
     Weaver: (transform) => new _game_objects_enemies_Weaver_weaver_sprite__WEBPACK_IMPORTED_MODULE_6__.WeaverSprite(transform),
     Singularity: (transform) => new _game_objects_enemies_Singularity_singularity_sprite__WEBPACK_IMPORTED_MODULE_7__.SingularitySprite(transform),
+    RANDOM: (transform) => new _game_objects_enemies_RandomRandom__WEBPACK_IMPORTED_MODULE_8__.RandomRandomSprite(transform),
 };
 
 // if trying to spawn multiple things on top of each other, I should only grab the first placer that is found in the click colission
@@ -1238,26 +1321,35 @@ const getClickRadius = {
     Pinwheel: 10,
     Weaver: 10,
     Singularity: 10,
+    RANDOM: 10,
 };
 
 class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
-    constructor(engine, type, levelDesigner, loadingEvent, position) {
+    constructor(engine, spawn, levelDesigner, loadingEvent) {
         super(engine);
+        const {type, location, numberToGenerate, possibleSpawns, angle} = spawn;
         this.addLineSprite(spriteMap[type](this.transform));
         this.levelDesigner = levelDesigner;
         this.clickRadius = getClickRadius[type];
         this.type = type;
         
-
-        if(!loadingEvent) {
+        if(loadingEvent) {
+            if(location === "RANDOM") {
+                this.transform.pos[0] = 500;
+                this.transform.pos[1] = 500;
+                this.spawn = {type: "RANDOM", location: "RANDOM", numberToGenerate, possibleSpawns};
+                this.addMouseClickListener();
+            } else {
+                this.transform.pos[0] = location[0];
+                this.transform.pos[1] = location[1];
+                this.transform.angle = angle;
+                this.spawn = spawn;
+            }   
+            this.originalClickComplete = true;
+        } else {
             this.originalClickComplete = false;
             this.addChildGameObject(new _PlacingAnimation__WEBPACK_IMPORTED_MODULE_1__.PlacingAnimation(this.gameEngine));
-        } else {
-            this.transform.pos[0] = position[0];
-            this.transform.pos[1] = position[1];
-            this.originalClickComplete = true;
         }
-        // click collider should be added after placed
     }
 
     place() {
@@ -1267,7 +1359,21 @@ class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
         this.levelDesigner.enemyPlaced(spawn);
         this.removeMousePosListener();
         this.addMouseClickListener();
+    }
 
+    setCoordinates(x, y, angle) {
+        const radiansAngle = angle * Math.PI / 180;
+        this.transform.pos[0] = x || this.transform.pos[0];
+        this.transform.pos[1] = y || this.transform.pos[1];
+        this.transform.angle = radiansAngle || this.transform.angle;
+        this.spawn.angle = radiansAngle || this.spawn.angle;
+    }
+
+    setRandomCoordinates() {
+        this.transform.pos[0] = this.gameEngine.gameScript.DIM_X * 0.85 * Math.random();
+        this.transform.pos[1] = this.gameEngine.gameScript.DIM_Y * 0.85 * Math.random();
+        this.transform.angle = Math.random() * Math.PI * 2;
+        this.spawn.angle = this.transform.angle;
     }
 
     eventUnselected() {
@@ -1282,15 +1388,13 @@ class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
 
 
     mouseClicked(mousePos) {
-        const centerDist = _util__WEBPACK_IMPORTED_MODULE_8__.Util.dist(
+        const centerDist = _util__WEBPACK_IMPORTED_MODULE_9__.Util.dist(
             this.transform.pos,
             mousePos
         );
         if (centerDist < this.clickRadius) {
             this.onMouseClick(mousePos);
         }
-
-
     }
 
     onMouseClick(mousePos) {
@@ -1477,13 +1581,49 @@ class LevelDesigner {
         const moveRight = document.getElementById("MoveRight");
         const sceneNameSubmit = document.getElementById("sceneNameSubmit");
 
+        const setCoordinate = document.getElementById("changeCoordinates");
+        const setRandomCoordinates = document.getElementById("setRandomCoordinates");
+
+        const randomSpawnCoordinate = document.getElementById("randomSpawnCoordinate");
+
+
         const saveGameDesign = document.getElementById("saveGameDesign");
 
         const loadGameDesign = document.getElementById("loadGameDesign");
 
         const startGame = document.getElementById("startGame");
 
-        const gameSequenceSubmit = document.getElementById("SequenceEnter");
+        setCoordinate.onclick = (e) => {
+            e.stopPropagation();
+            const x = Number(document.getElementById("xCoordinate").value);
+            const y = Number(document.getElementById("yCoordinate").value);
+            const angle = Number(document.getElementById("angle").value);
+            this.currentEnemyPlacer?.setCoordinates(x, y, angle);
+        };
+
+        setRandomCoordinates.onclick = (e) => {
+            e.stopPropagation();
+            this.currentEnemyPlacer?.setRandomCoordinates();
+        };
+
+        randomSpawnCoordinate.onclick = (e) => {
+            // should make it so you can only make one
+            // this would allow me to find the spawn and change it's value here as well
+            e.stopPropagation();
+            this.currentEnemyPlacer?.type === "RANDOM";
+
+            const selectedEnemies = Array.from(document.getElementById('possibleSpawns').selectedOptions).map(({ value }) => value);
+            const numberToGenerate = document.getElementById('numberToGenerate').value;
+
+            const newSpawn = {
+                location: 'RANDOM',
+                type: 'RANDOM',
+                possibleSpawns: selectedEnemies,
+                numberToGenerate: numberToGenerate,
+            };
+            
+            this.addRandomRandomSpawnToEvent(newSpawn);
+        };
        
         addGruntButton.onclick = (e) => {
             e.stopPropagation();
@@ -1597,12 +1737,6 @@ class LevelDesigner {
                 this.escapePressed();
             }
         });
-
-        gameSequenceSubmit.onclick = (e) => {
-            e.stopPropagation();
-            const sequence = Number(document.getElementById("sequenceInput").value);
-            this.engine.gameScript.sequenceCount = sequence;
-        };
 
         startGame.onclick = (e) => {
             e.stopPropagation();
@@ -1821,6 +1955,7 @@ class LevelDesigner {
         this.animationView.clear();
         this.animationView.addEnemy(enemyPlacer.type);
         this.animationView.enemySelected(enemyPlacer.spawn);
+        this.currentEnemyPlacer = enemyPlacer;
     }
 
     sceneDoubleClicked(scene) {
@@ -1854,11 +1989,11 @@ class LevelDesigner {
 
     addEnemy(type) {
         this.currentEnemyPlacer?.remove();
-        this.currentEnemyPlacer = new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.engine, type, this);
+        this.currentEnemyPlacer = new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.engine, {type}, this);
     }
 
     addAnotherEnemy(type) {
-        this.currentEnemyPlacer = new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.engine, type, this);
+        this.currentEnemyPlacer = new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.engine, {type}, this);
     }
 
     addMouseClickListener(object) {
@@ -1875,10 +2010,16 @@ class LevelDesigner {
         this.engine.removeLevelDesignerDoubleClickListener(object);
     }
 
+    addRandomRandomSpawnToEvent(spawn, ) {
+        if(this.selectedGameElement.enemyPlacers) {
+            this.selectedGameElement?.addRandomRandom(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_7__.Spawn(spawn, this.engine));
+        }
+    }
+
     addSpawnToEvent(spawn, enemyPlacer) {
         if(this.selectedGameElement.enemyPlacers) {
             this.selectedGameElement?.addSpawn(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_7__.Spawn(spawn, this.engine));
-            this.selectedGameElement?.addEnemyPlacer(enemyPlacer);
+            if(enemyPlacer) this.selectedGameElement?.addEnemyPlacer(enemyPlacer);
         }
     }
 
@@ -3312,8 +3453,8 @@ const Util = {
     // Find distance between two points.
     dist(pos1, pos2) {
         let answer;
-        if(isNaN(pos1[2])) pos1[2] = 0;
-        if(isNaN(pos2[2])) pos2[2] = 0;
+        if(isNaN(pos1[2]) || typeof pos1[2] !== 'number') pos1[2] = 0;
+        if(isNaN(pos2[2]) || typeof pos2[2] !== 'number') pos2[2] = 0;
         if(pos1.length === 3 && pos2.length === 3) {
 
             answer =  Math.sqrt(
@@ -3772,7 +3913,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class Arrow extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
-    constructor(engine, pos, angle = Math.PI / 3) {
+    constructor(engine, pos, angle = Math.random() * Math.PI * 2) {
         super(engine);
         this.transform.pos = pos;
         this.transform.angle = angle;
@@ -3800,7 +3941,7 @@ class Arrow extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameOb
         this.time += delta;
         const cycleSpeedScale = delta / NORMAL_FRAME_TIME_DELTA;
         const cycleSpeed = 0.004;
-        const widthRotate = Math.sin(this.time * cycleSpeedScale * cycleSpeed);
+        // const widthRotate = Math.sin(this.time * cycleSpeedScale * cycleSpeed);
         const twoFullRotationCheck = this.time * cycleSpeedScale * cycleSpeed;
 
         if (twoFullRotationCheck >= Math.PI * 2 * 4) {
@@ -3861,10 +4002,16 @@ class ArrowSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.
         const l = shipLength;
         const w = shipWidth * this.widthScaleForRotation;
         const z = shipWidth * this.zScaleForRotation;
-        const movementDirection = Math.atan2(
-            this.transform.vel[0],
-            -this.transform.vel[1]
-        );
+        let movementDirection = 0;
+        if(this.transform.vel[0] === 0 && this.transform.vel[1] === 0) {
+            movementDirection = this.transform.angle;
+        } else {
+            movementDirection = Math.atan2(
+                this.transform.vel[0],
+                -this.transform.vel[1]
+            );
+        }
+        
 
         const r = 255;
         const g = 255;
@@ -5211,6 +5358,64 @@ class PinwheelSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0
 
 }
 
+
+/***/ }),
+
+/***/ "./src/game_objects/enemies/RandomRandom.js":
+/*!**************************************************!*\
+  !*** ./src/game_objects/enemies/RandomRandom.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   RandomRandom: () => (/* binding */ RandomRandom),
+/* harmony export */   RandomRandomSprite: () => (/* binding */ RandomRandomSprite)
+/* harmony export */ });
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.js");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.js");
+
+
+class RandomRandom extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
+    constructor(engine, pos) {
+        super(engine);
+        this.transform.pos = pos;
+        this.addLineSprite(new RandomRandomSprite(this.transform));
+    }
+}
+class RandomRandomSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite {
+    constructor(transform) {
+        super(transform);
+        this.widthHeight = [20,20];
+        this.spawningScale = 1;
+        // center is in the corning since I don't want to deal   
+    }
+
+    draw(ctx) {
+        if(!this.visible) return;
+        const pos = this.transform.absolutePosition();
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+
+        this.drawRandomRandom(ctx, this.radius);
+        
+        ctx.restore();
+    }
+
+    drawRandomRandom(ctx) {
+        const h = this.widthHeight[1] * this.spawningScale;
+        const w = this.widthHeight[0] * this.spawningScale;
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.beginPath();
+        ctx.moveTo(-w/2,-h/2);
+        ctx.lineTo(w/2,-h/2);
+        ctx.lineTo(w/2,h/2);
+        ctx.lineTo(-w/2,h/2);
+        ctx.closePath();
+        ctx.stroke();
+    }
+}
 
 /***/ }),
 
@@ -7691,13 +7896,13 @@ class GameScript {
     createEnemyCreatorList() {
         const engine = this.engine;
         return {
-            BoxBox: (pos) => new _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_5__.BoxBox(engine, pos),
-            Pinwheel: (pos) => new _game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_6__.Pinwheel(engine, pos),
+            BoxBox: (pos, angle) => new _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_5__.BoxBox(engine, pos),
+            Pinwheel: (pos, angle) => new _game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_6__.Pinwheel(engine, pos),
             Arrow: (pos, angle) => new _game_objects_enemies_Arrow_arrow__WEBPACK_IMPORTED_MODULE_7__.Arrow(engine, pos, angle),
-            Grunt: (pos) => new _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_8__.Grunt(engine, pos, this.ship.transform),
-            Weaver: (pos) => new _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_9__.Weaver(engine, pos, this.ship.transform),
-            Singularity: (pos) => new _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__.Singularity(engine, pos),
-            AlienShip: (pos) =>
+            Grunt: (pos, angle) => new _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_8__.Grunt(engine, pos, this.ship.transform),
+            Weaver: (pos, angle) => new _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_9__.Weaver(engine, pos, this.ship.transform),
+            Singularity: (pos, angle) => new _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__.Singularity(engine, pos),
+            AlienShip: (pos, angle) =>
                 new _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_11__.AlienShip(engine, pos, [0, 0], this.ship.transform),
         };
     }

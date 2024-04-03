@@ -2,7 +2,6 @@
   <head>
     <title>GEOWars</title>
   </head>
-
 <body class="gameArea">
     <div class="title"></div>
     <canvas id="canvas" class="gameCanvas" width="1000" height="600"></canvas>
@@ -12,54 +11,81 @@
     <div class="footer">Mute/Unmute With M</div> -->
     <div id="pallet" class="pallet">
         <form class="formContainer">
-            <div>
-                <input type="button" id="LevelEditor" value="Create a Level">
-                <input type="button" id="SequenceEnter" value="Game Moment: ">
-                <input type="text" id="sequenceInput" >
+            <h1 class="editor-heading">Level Creator</h1>
+            <div class="formContainer">
+                <div>
+                    <input type="button" id="LevelEditor" value="Create a Level">
+                    <input type="button" id="saveGameDesign" value="Save Level">
+                    <input type="button" id="startGame" value="Start Game">
+                </div>
+                <div>
+                    <input type="text" id="loadGameDesignInput" >
+                    <input type="button" id="loadGameDesign" value="Load Level">
+                </div>
             </div>
-            <div>
-                <input type="button" id="saveGameDesign" value="Save Level">
-                <input type="button" id="loadGameDesign" value="Load Level">
-                <input type="text" id="loadGameDesignInput" >
-                <input type="button" id="startGame" value="Start Game">
-            </div>
-            <label for="sceneName">Scene Name:</label>
-            <div class="scene-name-input-submit-container">
-                <input type="text" id="sceneName" >
-                <input type="button" id="sceneNameSubmit" value="Add Scene">
-            </div>
-            <label for="TimeSubmit">Time:</label>
-            <div class="scene-name-input-submit-container">
-                <input type="text" id="Time" >
-                <input type="button" id="TimeSubmit" value="Add Time">
-            </div>
-            <label for="LoopSubmit">Loop:</label>
-            <div class="scene-name-input-submit-container">
-                <label for="Repeats">Repeats:</label>
-                <input type="text" id="Repeats" >
-                <label for="StartingIndex">Starting Index:</label>
-                <input type="text" id="StartingIndex" >
-                <input type="button" id="LoopSubmit" value="Add Loop">
-            </div>
-            <label for="Movement">Move:</label>
-            <div class="scene-name-input-submit-container">
-                <input type="button" id="MoveLeft" value="Left">
-                <input type="button" id="MoveRight" value="Right">
+            <hr class="spacer" width="100%" size="3" color="purple"></hr>
+            <div class="formContainer">
+                <div class="scene-name-input-submit-container">
+                    <input type="text" id="sceneName" class="name-text-input" placeholder="Scene Name" >
+                    <input type="button" id="sceneNameSubmit" value="Add Scene">
+                </div>
+                <div class="scene-name-input-submit-container">
+                    <input type="text" id="Time" class="name-text-input" placeholder="Time">
+                    <input type="button" id="TimeSubmit" value="Add Time">
+                </div>
+                <div class="scene-name-input-submit-container">
+                    <label for="Repeats">Repeats:</label>
+                    <input class="integer-input" type="text" id="Repeats" >
+                    <label for="StartingIndex">Starting Index:</label>
+                    <input type="text" id="StartingIndex" class="integer-input">
+                    <input type="button" id="LoopSubmit" value="Add Loop">
+                </div>
+                <label for="Movement">Move:</label>
+                <div class="scene-name-input-submit-container">
+                    <input type="button" id="MoveLeft" value="Left">
+                    <input type="button" id="MoveRight" value="Right">
+                </div>
             </div>
         </form>
-        <div class="space-between-form-and-button-panel"></div>
-        <div class="modal-content">
+        <div class="button-column">
             <button id="MakeEvent">Create Event</button>
+            <div class="spacer"></div>
             <button id="Arrow">Arrow</button>
             <button id="BoxBox">BoxBox</button>
             <button id="Pinwheel">Pinwheel</button>
             <button id="Weaver">Weaver</button>
             <button id="Grunt">Grunt</button>
             <button id="Singularity">Singularity</button>
-            
         </div>
+            
         <div id="animationTestBox">
             <canvas id="animationTestCanvas" class="animationCanvas" width="200" height="200"></canvas>
+        </div>
+        <div class="coordinate-section">
+            <div>
+                <label for="xCoordinate" class="label-text-event">X:</label>
+                <input type="text" id="xCoordinate" class="coordinate-text">
+                <label for="yCoordinate" class="label-text-event">Y:</label>
+                <input type="text" id="yCoordinate" class="coordinate-text">
+                <label for="angle" class="label-text-event">angle:</label>
+                <input type="text" id="angle" class="coordinate-text">
+            </div>
+            <button id="changeCoordinates" >Change Coordinates</button>
+            <button id="setRandomCoordinates" >Random Change</button>
+            <hr class="spacer" width="100%" size="3" color="tomato"></hr>
+            <div>
+                <label for="numberToSpawn" class="label-text-event">Randomly Count:</label>
+                <input type="text" class="integer-input" id="numberToGenerate">
+            </div>
+            <button id="randomSpawnCoordinate">Random Spawn Coordinates</button>
+            <select name="Enemies" id="possibleSpawns" multiple class="multi-select">
+                <option value="Arrow">Arrow</option>
+                <option value="BoxBox">BoxBox</option>
+                <option value="Pinwheel">Pinwheel</option>
+                <option value="Weaver">Weaver</option>
+                <option value="Grunt">Grunt</option>
+                <option value="Singularity">Singularity</option>
+            </select>
         </div>
     </div>
     <canvas id="LevelEditorCanvas" class="level-editor-canvas" width="1200" height="300"></canvas>

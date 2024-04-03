@@ -86,13 +86,49 @@ export class LevelDesigner {
         const moveRight = document.getElementById("MoveRight");
         const sceneNameSubmit = document.getElementById("sceneNameSubmit");
 
+        const setCoordinate = document.getElementById("changeCoordinates");
+        const setRandomCoordinates = document.getElementById("setRandomCoordinates");
+
+        const randomSpawnCoordinate = document.getElementById("randomSpawnCoordinate");
+
+
         const saveGameDesign = document.getElementById("saveGameDesign");
 
         const loadGameDesign = document.getElementById("loadGameDesign");
 
         const startGame = document.getElementById("startGame");
 
-        const gameSequenceSubmit = document.getElementById("SequenceEnter");
+        setCoordinate.onclick = (e) => {
+            e.stopPropagation();
+            const x = Number(document.getElementById("xCoordinate").value);
+            const y = Number(document.getElementById("yCoordinate").value);
+            const angle = Number(document.getElementById("angle").value);
+            this.currentEnemyPlacer?.setCoordinates(x, y, angle);
+        };
+
+        setRandomCoordinates.onclick = (e) => {
+            e.stopPropagation();
+            this.currentEnemyPlacer?.setRandomCoordinates();
+        };
+
+        randomSpawnCoordinate.onclick = (e) => {
+            // should make it so you can only make one
+            // this would allow me to find the spawn and change it's value here as well
+            e.stopPropagation();
+            this.currentEnemyPlacer?.type === "RANDOM";
+
+            const selectedEnemies = Array.from(document.getElementById('possibleSpawns').selectedOptions).map(({ value }) => value);
+            const numberToGenerate = document.getElementById('numberToGenerate').value;
+
+            const newSpawn = {
+                location: 'RANDOM',
+                type: 'RANDOM',
+                possibleSpawns: selectedEnemies,
+                numberToGenerate: numberToGenerate,
+            };
+            
+            this.addRandomRandomSpawnToEvent(newSpawn);
+        };
        
         addGruntButton.onclick = (e) => {
             e.stopPropagation();
@@ -206,12 +242,6 @@ export class LevelDesigner {
                 this.escapePressed();
             }
         });
-
-        gameSequenceSubmit.onclick = (e) => {
-            e.stopPropagation();
-            const sequence = Number(document.getElementById("sequenceInput").value);
-            this.engine.gameScript.sequenceCount = sequence;
-        };
 
         startGame.onclick = (e) => {
             e.stopPropagation();
@@ -430,6 +460,7 @@ export class LevelDesigner {
         this.animationView.clear();
         this.animationView.addEnemy(enemyPlacer.type);
         this.animationView.enemySelected(enemyPlacer.spawn);
+        this.currentEnemyPlacer = enemyPlacer;
     }
 
     sceneDoubleClicked(scene) {
@@ -463,11 +494,11 @@ export class LevelDesigner {
 
     addEnemy(type) {
         this.currentEnemyPlacer?.remove();
-        this.currentEnemyPlacer = new EnemyPlacer(this.engine, type, this);
+        this.currentEnemyPlacer = new EnemyPlacer(this.engine, {type}, this);
     }
 
     addAnotherEnemy(type) {
-        this.currentEnemyPlacer = new EnemyPlacer(this.engine, type, this);
+        this.currentEnemyPlacer = new EnemyPlacer(this.engine, {type}, this);
     }
 
     addMouseClickListener(object) {
@@ -484,10 +515,16 @@ export class LevelDesigner {
         this.engine.removeLevelDesignerDoubleClickListener(object);
     }
 
+    addRandomRandomSpawnToEvent(spawn, ) {
+        if(this.selectedGameElement.enemyPlacers) {
+            this.selectedGameElement?.addRandomRandom(new Spawn(spawn, this.engine));
+        }
+    }
+
     addSpawnToEvent(spawn, enemyPlacer) {
         if(this.selectedGameElement.enemyPlacers) {
             this.selectedGameElement?.addSpawn(new Spawn(spawn, this.engine));
-            this.selectedGameElement?.addEnemyPlacer(enemyPlacer);
+            if(enemyPlacer) this.selectedGameElement?.addEnemyPlacer(enemyPlacer);
         }
     }
 

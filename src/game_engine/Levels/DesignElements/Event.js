@@ -1,3 +1,4 @@
+import { RandomRandomSprite } from "../../../game_objects/enemies/RandomRandom";
 import { UIElement } from "../../UI_Element";
 import { UILineSprite } from "../../UI_line_sprite";
 import { Transform } from "../../transform";
@@ -38,7 +39,7 @@ export class EventObject extends UIElement {
         this.spawns = [];
         this.enemyPlacers = [];
         this.selectedSpawns = [];
-        this.spawnSprites = {Pinwheel: 0, BoxBox: 0, Arrow: 0, Grunt: 0, Weaver: 0, Singularity: 0, AlienShip: 0};
+        this.spawnSprites = {Pinwheel: 0, BoxBox: 0, Arrow: 0, Grunt: 0, Weaver: 0, Singularity: 0, AlienShip: 0, RANDOM: 0};
         this.widthHeight = [80, 40];
         this.clickRadius = 20;
         this.addMouseClickListener();
@@ -64,7 +65,10 @@ export class EventObject extends UIElement {
 
     loadSpawns() {
         this.spawns.forEach((spawn) => {
-            this.enemyPlacers.push(new EnemyPlacer(this.levelDesigner.engine, spawn.type, this.levelDesigner, true, spawn.location));
+            // pretty sure this is a serialized spawn....
+            const enemyPlacer = new EnemyPlacer(this.levelDesigner.engine, spawn, this.levelDesigner, true);
+            enemyPlacer.addMouseClickListener();
+            this.enemyPlacers.push(enemyPlacer);
         });
     }
 
@@ -87,6 +91,32 @@ export class EventObject extends UIElement {
     addSpawn(spawn) {
         this.spawns.push(spawn.spawn);
         this.spawnSprites[spawn.spawn.type] += 1;
+    }
+
+    addRandomRandom(spawn) {
+        const randomRandomAdded = this.spawns.find((spawny) => spawny.type === 'RANDOM');
+        if(randomRandomAdded) {
+            randomRandomAdded.possibleSpawns = spawn.spawn.possibleSpawns;
+            randomRandomAdded.numberToGenerate = spawn.spawn.numberToGenerate;
+            const enemyPlacer = this.enemyPlacers.find((enemyPlacer) => (enemyPlacer.type === 'RANDOM'));
+            enemyPlacer.spawn.numberToGenerate = spawn.spawn.numberToGenerate;
+            enemyPlacer.spawn.possibleSpawns = spawn.spawn.possibleSpawns;
+        } else {
+            this.spawns.push(spawn.spawn);
+            const enemyPlacer = new EnemyPlacer(
+                this.levelDesigner.engine, 
+                {
+                    location: 'RANDOM', 
+                    type: 'RANDOM', 
+                    numberToGenerate: spawn.spawn.numberToGenerate, 
+                    possibleSpawns: spawn.spawn.possibleSpawns
+                }, 
+                this.levelDesigner, 
+                true
+            );
+            this.spawnSprites[spawn.spawn.type] += 1;
+            this.addEnemyPlacer(enemyPlacer);
+        }
     }
 
     addEnemyPlacer(enemyPlacer) {
@@ -113,6 +143,7 @@ export class EventObject extends UIElement {
         this.levelDesigner.eventUnselected();
         this.UILineSprite.selected = false;
     }
+
     onMouseDoubleClicked(mousePos) {
         console.log('yay mouse double clicked here');
     }
@@ -137,6 +168,8 @@ export class EventObjectSprite extends UILineSprite {
         this.fifthPosition = [30,30];
         this.sixthPosition = [50,30];
 
+        this.seventhPosition = [70,10];
+
         this.spawnSpriteMap = {
             BoxBox: spriteMap['BoxBox'](new Transform(null, this.firstPosition)),
             Arrow: spriteMap['Arrow'](new Transform(null, this.secondPosition)),
@@ -145,6 +178,7 @@ export class EventObjectSprite extends UILineSprite {
             Pinwheel: spriteMap['Pinwheel'](new Transform(null, this.fourthPosition)),
             Weaver: spriteMap['Weaver'](new Transform(null, this.fifthPosition)),
             Singularity: spriteMap['Singularity'](new Transform(null, this.sixthPosition)),
+            RANDOM: spriteMap['RANDOM'](new Transform(null, this.seventhPosition)),
         };
 
         // change the sprites to have spawning scale be 0.5
@@ -152,8 +186,6 @@ export class EventObjectSprite extends UILineSprite {
             this.spawnSpriteMap[key].spawningScale = 0.5;
         });
     }
-
-
 
     draw(ctx) {
         const pos = this.UITransform.pos;
@@ -195,6 +227,7 @@ export class EventObjectSprite extends UILineSprite {
         const PinwheelSprite = this.spawnSpriteMap['Pinwheel'];
         const WeaverSprite = this.spawnSpriteMap['Weaver'];
         const SingularitySprite = this.spawnSpriteMap['Singularity'];
+        const RandomRandomSprite = this.spawnSpriteMap['RANDOM'];
 
         this.spawnSprites.BoxBox > 0 ? BoxBoxSprite.makeVisible() : BoxBoxSprite.makeInvisible();
         this.spawnSprites.Arrow > 0 ? ArrowSprite.makeVisible() : ArrowSprite.makeInvisible();
@@ -204,6 +237,9 @@ export class EventObjectSprite extends UILineSprite {
         this.spawnSprites.Weaver > 0 ? WeaverSprite.makeVisible() : WeaverSprite.makeInvisible();
         this.spawnSprites.Singularity > 0 ? SingularitySprite.makeVisible() : SingularitySprite.makeInvisible();
 
+        this.spawnSprites.RANDOM > 0 ? RandomRandomSprite.makeVisible() : RandomRandomSprite.makeInvisible();
+
+
         BoxBoxSprite.draw(ctx);
         ArrowSprite.draw(ctx);
         GruntSprite.draw(ctx);
@@ -211,6 +247,8 @@ export class EventObjectSprite extends UILineSprite {
         PinwheelSprite.draw(ctx);
         WeaverSprite.draw(ctx);
         SingularitySprite.draw(ctx);
+
+        RandomRandomSprite.draw(ctx);
     }
 }
 
