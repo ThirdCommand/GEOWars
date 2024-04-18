@@ -18,6 +18,7 @@ import { Scene } from "./game_engine/Levels/DesignElements/Scene";
 import { Event } from "./game_engine/Levels/DesignElements/Event";
 import { Time } from "./game_engine/Levels/DesignElements/Time";
 import { LoopBeginning, LoopEnd } from "./game_engine/Levels/DesignElements/Loop";
+import {Operation} from "./game_engine/Levels/DesignElements/Operation";
 
 export class GameScript {
     constructor(engine) {
@@ -87,13 +88,15 @@ export class GameScript {
                 newScene.gameElements = this.loadGameElements(element.gameElements, newScene) || [];
                 return newScene;
             } else if(element.type === "Event") {
-                return new Event(element.spawns, parentScene, this.engine);
+                return new Event(element.spawns, parentScene, element.isShipRelative ,this.engine);
             } else if(element.type === "Time") {
                 return new Time(parentScene, element.waitTime, parentScene);
             } else if(element.type === "LoopBeginning") {
                 return new LoopBeginning(parentScene);
             } else if (element.type === "LoopEnd") {
                 return new LoopEnd({loopIdx: element.loopIdx || 0, repeatTimes: element.repeatTimes}, parentScene);
+            } else if (element.type === "Operation") {
+                return new Operation(element.operand, parentScene, this.engine, this);
             }
         });
     }
@@ -294,13 +297,13 @@ export class GameScript {
     createEnemyCreatorList() {
         const engine = this.engine;
         return {
-            BoxBox: (pos) => new BoxBox(engine, pos),
-            Pinwheel: (pos) => new Pinwheel(engine, pos),
+            BoxBox: (pos, angle) => new BoxBox(engine, pos),
+            Pinwheel: (pos, angle) => new Pinwheel(engine, pos),
             Arrow: (pos, angle) => new Arrow(engine, pos, angle),
-            Grunt: (pos) => new Grunt(engine, pos, this.ship.transform),
-            Weaver: (pos) => new Weaver(engine, pos, this.ship.transform),
-            Singularity: (pos) => new Singularity(engine, pos),
-            AlienShip: (pos) =>
+            Grunt: (pos, angle) => new Grunt(engine, pos, this.ship.transform),
+            Weaver: (pos, angle) => new Weaver(engine, pos, this.ship.transform),
+            Singularity: (pos, angle) => new Singularity(engine, pos),
+            AlienShip: (pos, angle) =>
                 new AlienShip(engine, pos, [0, 0], this.ship.transform),
         };
     }

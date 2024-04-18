@@ -1,15 +1,19 @@
 import { UIElement } from "../../UI_Element";
 import { UILineSprite } from "../../UI_line_sprite";
+import { Transform } from "../../transform";
 
 // wait times
 export class Time {
     constructor(parentScene, waitTime) {
+        this.type = "Time";
         this.parentScene = parentScene;
         this.waitTime = waitTime;
+        this.timeFactor = 1;
         this.time = 0;
         this.startingValues = {
             time: 0,
             waitTime: waitTime,
+            timeFactor: 1,
         };
     }
 
@@ -17,22 +21,34 @@ export class Time {
     update(dT) {
         // maybe I just check if it's paused?
         this.time += dT;
-        if(this.time >= this.waitTime) {
+        if(this.time >= this.waitTime * this.timeFactor) {
             this.endOperation();
         }
     }
 
-    resetStartingValues() {
+    applyNewTimeFactor(factor) {
+        this.timeFactor *= factor;
+    }
+
+    resetToStartingValues() {
         this.time = this.startingValues.time;
         this.waitTime = this.startingValues.waitTime;
+        this.timeFactor = this.startingValues.timeFactor;
+    }
+
+    endOperationReset() {
+        this.time = this.startingValues.time;
+        this.waitTime = this.startingValues.waitTime;
+        // keep time factor
     }
 
     endOperation() {
-        this.resetStartingValues();
+        this.endOperationReset();
         
         // this will have to be the scene it's in I think
         this.parentScene.nextElement();
     }
+
 }
 
 // UIElement
@@ -43,7 +59,6 @@ export class TimeObject extends UIElement {
         this.widthHeight = [50, 40];
         this.clickRadius = 20;
         this.addMouseClickListener();
-        this.timeConstruct = new Time(levelDesigner.gameSequence, waitTime);
         this.addUIElementSprite(new TimeObjectSprite(this.UITransform, this.waitTime, this.widthHeight));
     }
 
@@ -55,6 +70,10 @@ export class TimeObject extends UIElement {
         return this.levelDesigner.addToClipBoard(new TimeObject(this.levelDesigner, this.serialize()));
     }
 
+    copyLineSpriteForDragging() {
+        const draggingSpriteTransform = new Transform(null, [this.UITransform.pos[0], this.UITransform.pos[1]]);
+        return new TimeObjectSprite(draggingSpriteTransform, this.waitTime, this.widthHeight);
+    }
     serialize() {
         return {
             type: "Time",
@@ -64,7 +83,6 @@ export class TimeObject extends UIElement {
 
     changeTime(newTime) {
         this.waitTime = newTime;
-        this.timeConstruct.waitTime = newTime;
         this.UILineSprite.waitTime = newTime;
     
     }
@@ -88,7 +106,7 @@ export class TimeObjectSprite extends UILineSprite {
         ctx.save();
         ctx.translate(pos[0], pos[1]);
 
-        this.drawFunction(ctx, pos);
+        this.drawFunction(ctx);
         ctx.restore();
     }
 

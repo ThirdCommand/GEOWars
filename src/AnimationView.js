@@ -5,6 +5,7 @@ import { Grunt } from "./game_objects/enemies/Grunt/grunt";
 import { Weaver } from "./game_objects/enemies/Weaver/weaver";
 import { Singularity } from "./game_objects/enemies/Singularity/singularity";
 import { AlienShip } from "./game_objects/enemies/Singularity/alien_ship";
+import { RandomRandom } from "./game_objects/enemies/RandomRandom";
 
 export class AnimationView {
     constructor(ctx) {
@@ -28,13 +29,17 @@ export class AnimationView {
         this.overlayTextCleared = true;
     }
 
-    enemySelected({ type, location}) {
+    enemySelected({type, location, numberToGenerate, possibleSpawns, angle}) {
+        possibleSpawns = possibleSpawns || [];
         this.overlayTextCleared = false;
+        const locationText = [Math.trunc(location[0].toString()), Math.trunc(location[1]).toString()];
         this.overlayText = {
-            Location: [location[0], location[1]],
+            Location: locationText,
             Time: 0,
             Type: type,
-            StartingAngle: 0,
+            StartingAngle: angle,
+            RandomCount: numberToGenerate,
+            RandomSelection: [...possibleSpawns]
         };
     }
 
@@ -52,6 +57,14 @@ export class AnimationView {
         this.ctx.fillStyle = "white";
         const typeText = "Type: " + this.overlayText.Type;
         const positionText = "Location: " + this.overlayText.Location;
+        const angleText = "Starting Angle: " + Math.round(this.overlayText.StartingAngle * 360 / (2 * Math.PI));
+        let randomCountText = false;
+        let randomSelectionText = false;
+        if(this.overlayText.RandomCount) {
+            randomCountText = "Random Count: " + this.overlayText.RandomCount;
+            randomSelectionText = "Random Selections: ";
+        }
+        
         this.ctx.fillText(
             typeText,
             10,
@@ -62,6 +75,31 @@ export class AnimationView {
             10,
             38
         );
+        this.ctx.fillText(
+            angleText,
+            10,
+            56
+        );
+        if (randomCountText) {
+            this.ctx.fillText(
+                randomCountText,
+                10,
+                125
+            );
+            this.ctx.font = "7px Arial";
+            this.ctx.fillText(
+                randomSelectionText,
+                10,
+                143
+            );
+            for (let i = 0; i < this.overlayText.RandomSelection.length; i++) {
+                this.ctx.fillText(
+                    this.overlayText.RandomSelection[i].toString(),
+                    10,
+                    150 + i * 7
+                );
+            }
+        }
         this.ctx.restore();
     }
 
@@ -133,6 +171,7 @@ export class AnimationView {
             Weaver: (pos) => new Weaver(this, pos, this.ship.transform),
             Singularity: (pos) => new Singularity(this, pos),
             AlienShip: (pos) => new AlienShip(this, pos, [0, 0], this.ship.transform),
+            RANDOM: (pos) => new RandomRandom(this, pos)
         };
         enemyMap[type]([100, 100]);
     }

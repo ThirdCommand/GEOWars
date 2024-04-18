@@ -5,7 +5,7 @@ import { EnemySpawn } from "../../particles/enemy_spawn";
 import { ArrowSprite } from "./arrow_sprite";
 
 export class Arrow extends GameObject {
-    constructor(engine, pos, angle = Math.PI / 3) {
+    constructor(engine, pos, angle = Math.random() * Math.PI * 2) {
         super(engine);
         this.transform.pos = pos;
         this.transform.angle = angle;
@@ -33,7 +33,7 @@ export class Arrow extends GameObject {
         this.time += delta;
         const cycleSpeedScale = delta / NORMAL_FRAME_TIME_DELTA;
         const cycleSpeed = 0.004;
-        const widthRotate = Math.sin(this.time * cycleSpeedScale * cycleSpeed);
+        // const widthRotate = Math.sin(this.time * cycleSpeedScale * cycleSpeed);
         const twoFullRotationCheck = this.time * cycleSpeedScale * cycleSpeed;
 
         if (twoFullRotationCheck >= Math.PI * 2 * 4) {

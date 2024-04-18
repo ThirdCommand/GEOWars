@@ -19,6 +19,7 @@ export class UIElement {
     addMouseDoubleClickListener() {
         this.levelDesigner.addMouseDoubleClickListener(this);
     }
+
     removeMouseClickListener() {
         this.levelDesigner.removeMouseClickListener(this);
     }
@@ -28,8 +29,8 @@ export class UIElement {
 
     parentSceneUnexpanded() {
         this.inExpandedScene = false;
-        // this.removeMouseClickListener();
-        // this.removeMouseDoubleClickListener();
+        this.removeMouseClickListener();
+        this.removeMouseDoubleClickListener();
     }
 
     parentSceneExpanded () {
@@ -68,10 +69,60 @@ export class UIElement {
         }
     }
 
+    mouseDowned(mousePos) {
+        if(!this.inExpandedScene) return;
+        const centerPosition = [
+            this.UITransform.pos[0] + this.widthHeight[0] / 2,
+            this.UITransform.pos[1] + this.widthHeight[1] / 2
+        ];
+        const centerDist = Util.dist(
+            centerPosition,
+            mousePos
+        );
+        if (centerDist < this.clickRadius) {
+            this.draggingElement = true;
+            this.followMouse();
+        }
+    }
+
+    copyLineSpriteForDragging() {
+        // Abstract
+    }
+
+    elementLetGo() {
+        this.draggingElement = false;
+        this.levelDesigner.UIElementMouseFollower = null;
+        this.levelDesigner.removeUIElementSprite(this.levelDesigner.draggingLineSprite);
+        this.levelDesigner.draggingLineSprite = null;
+        // send to ghost position
+    }
+
     onMouseDoubleClick(mousePos) {
 
     }
+
     onMouseClick(mousePos) {
 
     }
+
+    followMouse() {
+        this.levelDesigner.UIElementMouseFollower = this;
+        this.levelDesigner.draggingLineSprite = this.copyLineSpriteForDragging();
+        this.levelDesigner.addUIElementSprite(this.levelDesigner.draggingLineSprite);
+    }
+
+    delete() {
+        this.removeMouseClickListener();
+        this.removeMouseDoubleClickListener();
+        this.levelDesigner.removeUIElementSprite(this.UILineSprite);
+        this.parentScene.removeUIElement(this);
+        this.deleteYourShit();
+    }
+
+    deleteYourShit() {
+        // Abstract for event I guess
+    }
+
+
+
 }

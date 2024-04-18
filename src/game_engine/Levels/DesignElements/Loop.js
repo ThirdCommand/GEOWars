@@ -1,5 +1,6 @@
 import { UIElement } from "../../UI_Element";
 import { UILineSprite } from "../../UI_line_sprite";
+import { Transform } from "../../transform";
 
 // loop, wait, 
 
@@ -12,6 +13,7 @@ import { UILineSprite } from "../../UI_line_sprite";
 export class LoopEnd {
     // can only loop if start and end of loop are in the same scene
     constructor(loop, parentScene) {
+        this.type === "LoopEnd";
         this.parentScene = parentScene; // scene the loop is in
         
         this.startingLoopValues = {
@@ -39,7 +41,7 @@ export class LoopEnd {
         }
     }
 
-    resetStartingValues() {
+    resetToStartingValues() {
         this.loop =  {
             loopIdx: this.startingLoopValues.loopIdx,
             loopId: this.startingLoopValues.loopId,
@@ -47,14 +49,16 @@ export class LoopEnd {
         };
     }
 
+
     endLoop() {
-        this.resetStartingValues();
+        this.resetToStartingValues();
         this.parentScene.nextElement();
     }
 }
 
 export class LoopBeginning {
     constructor(parentScene) {
+        this.type = "LoopBeginning";
         this.parentScene = parentScene;
         this.loopId = this.parentScene.createLoopId();
     }
@@ -63,6 +67,7 @@ export class LoopBeginning {
         // this means the next step will be delayed by a frame waiting
         // for the next update call
     }
+    resetToStartingValues() {}
 }
 
 // UIElement
@@ -73,6 +78,7 @@ export class LoopBeginningObject extends UIElement {
         this.clickRadius = 5;
         this.addMouseClickListener();
         this.addUIElementSprite(new LoopBeginningObjectSprite(this.UITransform, this.widthHeight));
+        this.endLoopObject = undefined;
     }
 
     moveLeft() {
@@ -88,6 +94,12 @@ export class LoopBeginningObject extends UIElement {
         return this.levelDesigner.addToClipBoard(new LoopBeginningObject(this.levelDesigner, this.serialize()));
     }
 
+    copyLineSpriteForDragging() {
+        const draggingSpriteTransform = new Transform(null, [this.UITransform.pos[0], this.UITransform.pos[1]]);
+        return new LoopBeginningObjectSprite(draggingSpriteTransform, this.widthHeight);
+    }
+    
+
     serialize() {
         return {
             type: "LoopBeginning"
@@ -102,6 +114,12 @@ export class LoopBeginningObject extends UIElement {
     unSelected() {
         this.UILineSprite.selected = false;
     }
+
+    deleteYourShit() {
+        const endObject = this.endLoopObject;
+        this.endLoopObject = undefined;
+        endObject?.delete();
+    }
 }
 
 export class LoopEndObject extends UIElement {
@@ -112,6 +130,7 @@ export class LoopEndObject extends UIElement {
         this.clickRadius = 15;
         this.addMouseClickListener();
         this.addUIElementSprite(new LoopEndingObjectSprite(this.UITransform, this.widthHeight, this.loop.repeatTimes));
+        this.beginningLoopObject = undefined;
     }
 
     // maybe I can have a button that moves it left or right for now
@@ -133,6 +152,12 @@ export class LoopEndObject extends UIElement {
         return this.levelDesigner.addToClipBoard(new LoopEndObject(this.levelDesigner, this.serialize()));
     }
 
+    copyLineSpriteForDragging() {
+        const draggingSpriteTransform = new Transform(null, [this.UITransform.pos[0], this.UITransform.pos[1]]);
+        return new LoopEndingObjectSprite(draggingSpriteTransform, this.widthHeight, this.loop.repeatTimes);
+    }
+    
+
     serialize() {
         return {
             type: "LoopEnd",
@@ -147,6 +172,12 @@ export class LoopEndObject extends UIElement {
     }
     unSelected() {
         this.UILineSprite.selected = false;
+    }
+
+    deleteYourShit() {
+        const beginningObject = this.beginningLoopObject;
+        this.beginningLoopObject = undefined;
+        beginningObject?.delete();
     }
 }
 

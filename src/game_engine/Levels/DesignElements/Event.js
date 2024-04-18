@@ -7,11 +7,16 @@ import { Spawn } from "./Spawn";
 
 // maybe this is what is created from the serialized version
 export class Event {
-    constructor(spawns, parentScene, gameEngine) { 
+    constructor(spawns, parentScene, isShipRelative, gameEngine) { 
         // not sure what the type is for spawns here
+        this.type = 'Event';
         this.parentScene = parentScene;
+        this.numberFactor = 1;
+        this.isShipRelative = isShipRelative;
         // I think I'll have to create the spawns from the serialized data given here
         this.spawns = spawns.map((spawn) => new Spawn(spawn, gameEngine)); // this is different than the single spawn thing I have in the mock data
+        // okay now I'm thoroughly confused. I think I have a plain javascript object as spawns, and also
+        // Spawn objects as spawns. 
     }
 
     update() {
@@ -21,12 +26,16 @@ export class Event {
 
     spawnEverything() {
         this.spawns.forEach((spawn) => {
-            spawn.spawnEvent();
+            spawn.spawnEvent(this.numberFactor, this.isShipRelative);
         });
     }
     
     endEvent() {
         this.parentScene.nextElement();
+    }
+
+    resetToStartingValues() {
+        this.numberFactor = 1;
     }
 }
 
@@ -38,15 +47,18 @@ export class EventObject extends UIElement {
         this.spawns = [];
         this.enemyPlacers = [];
         this.selectedSpawns = [];
-        this.spawnSprites = {Pinwheel: 0, BoxBox: 0, Arrow: 0, Grunt: 0, Weaver: 0, Singularity: 0, AlienShip: 0};
+        this.spawnSprites = {Pinwheel: 0, BoxBox: 0, Arrow: 0, Grunt: 0, Weaver: 0, Singularity: 0, AlienShip: 0, RANDOM: 0};
         this.widthHeight = [80, 40];
         this.clickRadius = 20;
         this.addMouseClickListener();
-
+        this.isShipRelative = false;
+        
         if(eventToLoad) {
             eventToLoad.spawns.forEach((spawn) => this.addSpawn({spawn}));
+            this.isShipRelative = eventToLoad.isShipRelative;
         }
         this.addUIElementSprite(new EventObjectSprite(this.UITransform, this.spawnSprites, this.widthHeight));
+        this.levelDesigner.eventLoadShipRelative(this.isShipRelative);
     }
 
     // copy and paste should be supported
@@ -58,13 +70,43 @@ export class EventObject extends UIElement {
         // I imagine shift click and then copy, and past
     }
 
-    deleteSelectedSpawns() {
+    copyLineSpriteForDragging() {
+        const draggingSpriteTransform = new Transform(null, [this.UITransform.pos[0], this.UITransform.pos[1]]);
+        return new EventObjectSprite(draggingSpriteTransform, this.spawnSprites, this.widthHeight);
+    }
 
+    // this shit needs work
+    deleteSelectedSpawns() {
+        this.selectedSpawns.forEach((spawn) => {
+            this.deleteSpawn(spawn);
+        });
+    }
+
+    deleteYourShit() {
+        this.spawns = [];
+        this.enemyPlacers.forEach((placer) => (placer.remove()));
+        this.enemyPlacers = [];
+    }
+
+    deleteSelectedEnemyPlacers() {
+    }
+
+    makeCoordinatesShipRelative() {
+        this.isShipRelative = true;
+        console.log(this.isShipRelative);
+    }
+
+    makeCoordinatesArenaRelative() {
+        this.isShipRelative = false;
+        console.log(this.isShipRelative);
     }
 
     loadSpawns() {
         this.spawns.forEach((spawn) => {
-            this.enemyPlacers.push(new EnemyPlacer(this.levelDesigner.engine, spawn.type, this.levelDesigner, true, spawn.location));
+            // pretty sure this is a serialized spawn....
+            const enemyPlacer = new EnemyPlacer(this.levelDesigner.engine, spawn, this.levelDesigner, true);
+            enemyPlacer.addMouseClickListener();
+            this.enemyPlacers.push(enemyPlacer);
         });
     }
 
@@ -76,7 +118,8 @@ export class EventObject extends UIElement {
     serialize() {  
         return {
             type: 'Event',
-            spawns: this.spawns
+            spawns: this.spawns,
+            isShipRelative: this.isShipRelative
         };
     }
 
@@ -89,6 +132,32 @@ export class EventObject extends UIElement {
         this.spawnSprites[spawn.spawn.type] += 1;
     }
 
+    addRandomRandom(spawn) {
+        const randomRandomAdded = this.spawns.find((spawny) => spawny.type === 'RANDOM');
+        if(randomRandomAdded) {
+            randomRandomAdded.possibleSpawns = spawn.spawn.possibleSpawns;
+            randomRandomAdded.numberToGenerate = spawn.spawn.numberToGenerate;
+            const enemyPlacer = this.enemyPlacers.find((enemyPlacer) => (enemyPlacer.type === 'RANDOM'));
+            enemyPlacer.spawn.numberToGenerate = spawn.spawn.numberToGenerate;
+            enemyPlacer.spawn.possibleSpawns = spawn.spawn.possibleSpawns;
+        } else {
+            this.spawns.push(spawn.spawn);
+            const enemyPlacer = new EnemyPlacer(
+                this.levelDesigner.engine, 
+                {
+                    location: 'RANDOM', 
+                    type: 'RANDOM', 
+                    numberToGenerate: spawn.spawn.numberToGenerate, 
+                    possibleSpawns: spawn.spawn.possibleSpawns
+                }, 
+                this.levelDesigner, 
+                true
+            );
+            this.spawnSprites[spawn.spawn.type] += 1;
+            this.addEnemyPlacer(enemyPlacer);
+        }
+    }
+
     addEnemyPlacer(enemyPlacer) {
         this.enemyPlacers.push(enemyPlacer);
     }
@@ -96,8 +165,15 @@ export class EventObject extends UIElement {
     deleteSpawn(spawn) {
         const index = this.spawns.indexOf(spawn);
         if(index !== -1)  {
-            this.spawns.splice(this.spawns.indexOf(spawn), 1);
+            this.spawns.splice(index, 1);
             this.spawnSprites[spawn.type] -= 1;
+        }
+    }
+
+    deleteEnemyPlacer(enemyPlacer) {
+        const index = this.enemyPlacers.indexOf(enemyPlacer);
+        if(index !== -1) {
+            this.enemyPlacers.splice(index, 1);
         }
     }
 
@@ -113,6 +189,7 @@ export class EventObject extends UIElement {
         this.levelDesigner.eventUnselected();
         this.UILineSprite.selected = false;
     }
+
     onMouseDoubleClicked(mousePos) {
         console.log('yay mouse double clicked here');
     }
@@ -137,6 +214,8 @@ export class EventObjectSprite extends UILineSprite {
         this.fifthPosition = [30,30];
         this.sixthPosition = [50,30];
 
+        this.seventhPosition = [70,10];
+
         this.spawnSpriteMap = {
             BoxBox: spriteMap['BoxBox'](new Transform(null, this.firstPosition)),
             Arrow: spriteMap['Arrow'](new Transform(null, this.secondPosition)),
@@ -145,6 +224,7 @@ export class EventObjectSprite extends UILineSprite {
             Pinwheel: spriteMap['Pinwheel'](new Transform(null, this.fourthPosition)),
             Weaver: spriteMap['Weaver'](new Transform(null, this.fifthPosition)),
             Singularity: spriteMap['Singularity'](new Transform(null, this.sixthPosition)),
+            RANDOM: spriteMap['RANDOM'](new Transform(null, this.seventhPosition)),
         };
 
         // change the sprites to have spawning scale be 0.5
@@ -152,8 +232,6 @@ export class EventObjectSprite extends UILineSprite {
             this.spawnSpriteMap[key].spawningScale = 0.5;
         });
     }
-
-
 
     draw(ctx) {
         const pos = this.UITransform.pos;
@@ -195,6 +273,7 @@ export class EventObjectSprite extends UILineSprite {
         const PinwheelSprite = this.spawnSpriteMap['Pinwheel'];
         const WeaverSprite = this.spawnSpriteMap['Weaver'];
         const SingularitySprite = this.spawnSpriteMap['Singularity'];
+        const RandomRandomSprite = this.spawnSpriteMap['RANDOM'];
 
         this.spawnSprites.BoxBox > 0 ? BoxBoxSprite.makeVisible() : BoxBoxSprite.makeInvisible();
         this.spawnSprites.Arrow > 0 ? ArrowSprite.makeVisible() : ArrowSprite.makeInvisible();
@@ -204,6 +283,9 @@ export class EventObjectSprite extends UILineSprite {
         this.spawnSprites.Weaver > 0 ? WeaverSprite.makeVisible() : WeaverSprite.makeInvisible();
         this.spawnSprites.Singularity > 0 ? SingularitySprite.makeVisible() : SingularitySprite.makeInvisible();
 
+        this.spawnSprites.RANDOM > 0 ? RandomRandomSprite.makeVisible() : RandomRandomSprite.makeInvisible();
+
+
         BoxBoxSprite.draw(ctx);
         ArrowSprite.draw(ctx);
         GruntSprite.draw(ctx);
@@ -211,6 +293,8 @@ export class EventObjectSprite extends UILineSprite {
         PinwheelSprite.draw(ctx);
         WeaverSprite.draw(ctx);
         SingularitySprite.draw(ctx);
+
+        RandomRandomSprite.draw(ctx);
     }
 }
 

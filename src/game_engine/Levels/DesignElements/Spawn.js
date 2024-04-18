@@ -6,6 +6,7 @@ export class Spawn {
         //     type: 'RANDOM',
         //     location: 'RANDOM',
         //     possibleSpawns: ['Weaver', 'Grunt']
+        //     angle: 'PI/3'
         // }
         this.gameEngine = gameEngine;
     }
@@ -17,8 +18,8 @@ export class Spawn {
 
     randomPosition() {
         return [
-            this.gameEngine.DIM_X * 0.70 * Math.random(),
-            this.gameEngine.DIM_Y * 0.70 * Math.random(),
+            this.gameEngine.gameScript.DIM_X * 0.95 * Math.random(),
+            this.gameEngine.gameScript.DIM_Y * 0.90 * Math.random(),
         ];
     }
 
@@ -26,19 +27,36 @@ export class Spawn {
         return possibleSpawns[Math.floor(Math.random() * possibleSpawns.length) % possibleSpawns.length];
     }
 
-    spawnEvent() {
-        const numberToGenerate = this.spawn.numberToGenerate || 1;
+    spawnEvent(numberFactor, isShipRelative) {
+        const numberToGenerate = Math.trunc(this.spawn.numberToGenerate * numberFactor) || 1;
 
         for(let i = 0; i < numberToGenerate; i++) {
             let mobToSpawn = this.spawn.type;
             let location;
             if(mobToSpawn === 'RANDOM') {
                 mobToSpawn = this.randomMob(this.spawn.possibleSpawns);
-            } 
+            }
             if(this.spawn.location === 'RANDOM') {
                 location = this.randomPosition();
             } else {
-                location = [this.spawn.location[0], this.spawn.location[1]];
+                location = [Number(this.spawn.location[0]), Number(this.spawn.location[1])];
+                if(isShipRelative) {
+                    location[0] += this.gameEngine.gameScript.ship.transform.pos[0] - this.gameEngine.gameScript.DIM_X / 2;
+                    location[1] += this.gameEngine.gameScript.ship.transform.pos[1] - this.gameEngine.gameScript.DIM_Y / 2;
+
+                    // check if off edge of map
+                    if(location[0] > this.gameEngine.gameScript.DIM_X  - 100) {
+                        location[0] = this.gameEngine.gameScript.DIM_X - 100;
+                    } else if(location[0] < 100) {
+                        location[0] = 100;
+                    }
+                    
+                    if( location[1] > this.gameEngine.gameScript.DIM_Y - 100)  {
+                        location[1] = this.gameEngine.gameScript.DIM_Y - 100;
+                    } else if(location[1] < 0 + 100) {
+                        location[1] = 0 + 100;
+                    }
+                }
             }
             this.gameEngine.gameScript.enemyCreatorList[mobToSpawn](location);
         }
