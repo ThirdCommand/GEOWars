@@ -1,4 +1,3 @@
-import { RandomRandomSprite } from "../../../game_objects/enemies/RandomRandom";
 import { UIElement } from "../../UI_Element";
 import { UILineSprite } from "../../UI_line_sprite";
 import { Transform } from "../../transform";
@@ -8,11 +7,16 @@ import { Spawn } from "./Spawn";
 
 // maybe this is what is created from the serialized version
 export class Event {
-    constructor(spawns, parentScene, gameEngine) { 
+    constructor(spawns, parentScene, isShipRelative, gameEngine) { 
         // not sure what the type is for spawns here
+        this.type = 'Event';
         this.parentScene = parentScene;
+        this.numberFactor = 1;
+        this.isShipRelative = isShipRelative;
         // I think I'll have to create the spawns from the serialized data given here
         this.spawns = spawns.map((spawn) => new Spawn(spawn, gameEngine)); // this is different than the single spawn thing I have in the mock data
+        // okay now I'm thoroughly confused. I think I have a plain javascript object as spawns, and also
+        // Spawn objects as spawns. 
     }
 
     update() {
@@ -22,12 +26,16 @@ export class Event {
 
     spawnEverything() {
         this.spawns.forEach((spawn) => {
-            spawn.spawnEvent();
+            spawn.spawnEvent(this.numberFactor, this.isShipRelative);
         });
     }
     
     endEvent() {
         this.parentScene.nextElement();
+    }
+
+    resetToStartingValues() {
+        this.numberFactor = 1;
     }
 }
 
@@ -43,11 +51,14 @@ export class EventObject extends UIElement {
         this.widthHeight = [80, 40];
         this.clickRadius = 20;
         this.addMouseClickListener();
-
+        this.isShipRelative = false;
+        
         if(eventToLoad) {
             eventToLoad.spawns.forEach((spawn) => this.addSpawn({spawn}));
+            this.isShipRelative = eventToLoad.isShipRelative;
         }
         this.addUIElementSprite(new EventObjectSprite(this.UITransform, this.spawnSprites, this.widthHeight));
+        this.levelDesigner.eventLoadShipRelative(this.isShipRelative);
     }
 
     // copy and paste should be supported
@@ -59,8 +70,35 @@ export class EventObject extends UIElement {
         // I imagine shift click and then copy, and past
     }
 
-    deleteSelectedSpawns() {
+    copyLineSpriteForDragging() {
+        const draggingSpriteTransform = new Transform(null, [this.UITransform.pos[0], this.UITransform.pos[1]]);
+        return new EventObjectSprite(draggingSpriteTransform, this.spawnSprites, this.widthHeight);
+    }
 
+    // this shit needs work
+    deleteSelectedSpawns() {
+        this.selectedSpawns.forEach((spawn) => {
+            this.deleteSpawn(spawn);
+        });
+    }
+
+    deleteYourShit() {
+        this.spawns = [];
+        this.enemyPlacers.forEach((placer) => (placer.remove()));
+        this.enemyPlacers = [];
+    }
+
+    deleteSelectedEnemyPlacers() {
+    }
+
+    makeCoordinatesShipRelative() {
+        this.isShipRelative = true;
+        console.log(this.isShipRelative);
+    }
+
+    makeCoordinatesArenaRelative() {
+        this.isShipRelative = false;
+        console.log(this.isShipRelative);
     }
 
     loadSpawns() {
@@ -80,7 +118,8 @@ export class EventObject extends UIElement {
     serialize() {  
         return {
             type: 'Event',
-            spawns: this.spawns
+            spawns: this.spawns,
+            isShipRelative: this.isShipRelative
         };
     }
 
@@ -126,8 +165,15 @@ export class EventObject extends UIElement {
     deleteSpawn(spawn) {
         const index = this.spawns.indexOf(spawn);
         if(index !== -1)  {
-            this.spawns.splice(this.spawns.indexOf(spawn), 1);
+            this.spawns.splice(index, 1);
             this.spawnSprites[spawn.type] -= 1;
+        }
+    }
+
+    deleteEnemyPlacer(enemyPlacer) {
+        const index = this.enemyPlacers.indexOf(enemyPlacer);
+        if(index !== -1) {
+            this.enemyPlacers.splice(index, 1);
         }
     }
 

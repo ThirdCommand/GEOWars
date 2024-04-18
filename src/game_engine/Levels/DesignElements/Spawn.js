@@ -27,8 +27,8 @@ export class Spawn {
         return possibleSpawns[Math.floor(Math.random() * possibleSpawns.length) % possibleSpawns.length];
     }
 
-    spawnEvent() {
-        const numberToGenerate = this.spawn.numberToGenerate || 1;
+    spawnEvent(numberFactor, isShipRelative) {
+        const numberToGenerate = Math.trunc(this.spawn.numberToGenerate * numberFactor) || 1;
 
         for(let i = 0; i < numberToGenerate; i++) {
             let mobToSpawn = this.spawn.type;
@@ -40,6 +40,23 @@ export class Spawn {
                 location = this.randomPosition();
             } else {
                 location = [Number(this.spawn.location[0]), Number(this.spawn.location[1])];
+                if(isShipRelative) {
+                    location[0] += this.gameEngine.gameScript.ship.transform.pos[0] - this.gameEngine.gameScript.DIM_X / 2;
+                    location[1] += this.gameEngine.gameScript.ship.transform.pos[1] - this.gameEngine.gameScript.DIM_Y / 2;
+
+                    // check if off edge of map
+                    if(location[0] > this.gameEngine.gameScript.DIM_X  - 100) {
+                        location[0] = this.gameEngine.gameScript.DIM_X - 100;
+                    } else if(location[0] < 100) {
+                        location[0] = 100;
+                    }
+                    
+                    if( location[1] > this.gameEngine.gameScript.DIM_Y - 100)  {
+                        location[1] = this.gameEngine.gameScript.DIM_Y - 100;
+                    } else if(location[1] < 0 + 100) {
+                        location[1] = 0 + 100;
+                    }
+                }
             }
             this.gameEngine.gameScript.enemyCreatorList[mobToSpawn](location);
         }

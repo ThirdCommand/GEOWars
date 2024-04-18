@@ -4,12 +4,13 @@ import { Grid } from "../../game_objects/particles/Grid/grid";
 import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
 import { GameScript } from "../../game_script";
 import { Transform } from "../transform";
-import { SceneObject } from "./DesignElements/scene";
+import { SceneObject } from "./DesignElements/Scene";
 import { Spawn } from "./DesignElements/Spawn";
 
 import { EventObject } from "./DesignElements/Event";
 import { TimeObject } from "./DesignElements/Time";
 import { LoopBeginningObject, LoopEndObject } from "./DesignElements/Loop";
+import { OperationObject } from "./DesignElements/Operation";
 
 // I should collect placed enemies
 
@@ -28,6 +29,8 @@ export class LevelDesigner {
         this.UITransform = {pos: [0,0]};
 
         this.widthHeight = [0,0];
+
+        this.loopBeginningObjectStackForLoading = [];
 
         this.DIM_X = 1200;
         this.DIM_Y = 300;
@@ -82,10 +85,10 @@ export class LevelDesigner {
         const makeEvent = document.getElementById("MakeEvent");
         const addTime = document.getElementById("TimeSubmit");
         const addLoop = document.getElementById("LoopSubmit");
-        const moveLeft = document.getElementById("MoveLeft");
-        const moveRight = document.getElementById("MoveRight");
+        const addOperation = document.getElementById("OperationSubmit");
         const sceneNameSubmit = document.getElementById("sceneNameSubmit");
-
+        const shipRelative = document.getElementById("shipRelative");
+        this.shipRelative = shipRelative;
         const setCoordinate = document.getElementById("changeCoordinates");
         const setRandomCoordinates = document.getElementById("setRandomCoordinates");
 
@@ -97,6 +100,20 @@ export class LevelDesigner {
         const loadGameDesign = document.getElementById("loadGameDesign");
 
         const startGame = document.getElementById("startGame");
+
+        shipRelative.onclick = (e) => {
+            e.stopPropagation();
+            const value = e.target.value;
+            console.log(value);
+            if(value === "on") {
+                e.target.value = "off";
+                this.makeCoordinatesShipRelative();
+            } else {
+                e.target.value = "on";
+                this.makeCoordinatesArenaRelative();
+            }
+
+        };
 
         setCoordinate.onclick = (e) => {
             e.stopPropagation();
@@ -205,6 +222,18 @@ export class LevelDesigner {
             const time = document.getElementById("Time").value;
             this.UIActionsToRun.push(() => this.makeTime(time));
         };
+        addOperation.onclick = (e) => {
+            e.stopPropagation(); 
+            const operationType = document.getElementById("OperationType").value;
+            const operationValue = document.getElementById("OperationFactor").value;
+            const operand = {
+                type: operationType,
+                factor: operationValue,
+            };
+            this.UIActionsToRun.push(() => this.makeOperation(operand));
+        };
+
+
         // should add a loop next to the currently selected element
         // once I have elements nested under scenes, I'm not sure how this will work
         // maybe it will make one next to the selected scene if nothing else is selected
@@ -215,19 +244,6 @@ export class LevelDesigner {
                 loopIdx: Number(document.getElementById("StartingIndex").value),
             };
             this.UIActionsToRun.push(() => this.makeLoop(loop));
-        };
-        moveLeft.onclick = (e) => {
-            e.stopPropagation();
-            this.UIActionsToRun.push(
-                () => this.moveLeft(this.selectedGameElement)
-            );
-        };
-        moveRight.onclick = (e) => {
-            e.stopPropagation();
-            // add action to queue for engine to process
-            this.UIActionsToRun.push(
-                () => this.moveRight(this.selectedGameElement)
-            );
         };
 
         window.addEventListener("scroll", (e) => {
@@ -241,7 +257,14 @@ export class LevelDesigner {
             if(e.key === "Escape") {
                 this.escapePressed();
             }
+            if(e.key === "Backspace") {
+                if(this.currentMousePos) {
+                    this.selectedGameElement?.delete();
+                    this.leftJustifyGameElements();
+                }
+            }
         });
+
 
         startGame.onclick = (e) => {
             e.stopPropagation();
@@ -270,11 +293,19 @@ export class LevelDesigner {
         // });
     }
 
-    makeTime(time, parentScene) {
+    makeTime(time, parentScene = this.expandedScenes[this.expandedScenes.length - 1]) {
         const newElementPosition = this.getNewDrawPosition();
         const timeObject = new TimeObject(this, {waitTime: time}, newElementPosition, parentScene);
         this.selectedGameElement = timeObject;
         return timeObject;
+    }
+
+    makeOperation(operand, parentScene = this.expandedScenes[this.expandedScenes.length - 1]) {
+        const newElementPosition = this.getNewDrawPosition();
+        const operationObject = new OperationObject(this, operand, newElementPosition, parentScene);
+        operationObject.onMouseClick();
+        this.selectedGameElement = operationObject;
+        return operationObject;
     }
 
     mouseDoubleClicked(pos) {
@@ -303,27 +334,108 @@ export class LevelDesigner {
         const bottomExpandedScene = this.expandedScenes.pop();
         if(scene !== bottomExpandedScene) bottomExpandedScene.unExpandScene();
         this.removeExpandedElements(bottomExpandedScene);
-
     }
 
+    mouseMoveEvent(e) {
+        if (e.target.classList[0] === "level-editor-canvas") {
+            
+            this.currentMousePos = [e.offsetX, e.offsetY];
+            if(this.UIElementMouseFollower) {
+
+                const moveToPosition = [e.offsetX - this.draggingLineSprite.widthHeight[0] / 2, e.offsetY - this.draggingLineSprite.widthHeight[1] / 2];
+                this.draggingLineSprite.UITransform.pos = [...moveToPosition];
+                // check if the element is overlapping with another element
+                const bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
+
+                const draggedElementSceneIndex = bottomExpandedScene.gameElements.indexOf(this.UIElementMouseFollower);
+                if(draggedElementSceneIndex === -1) return;
+
+
+                const leftElementIndex = draggedElementSceneIndex - 1;
+                const rightElementIndex = draggedElementSceneIndex + 1;
+
+                const draggedElementXPosition = this.draggingLineSprite.UITransform.pos[0];
+                const draggedElementWidth = this.draggingLineSprite.widthHeight[0];
+
+                // check left element:
+                let moved = false;
+                if(leftElementIndex >= 0) {
+                    const leftElement = bottomExpandedScene.gameElements[leftElementIndex];
+                    const leftElementWidth = leftElement.widthHeight[0];
+                    const leftElementX = leftElement.UITransform.pos[0];
+                    const leftElementMiddlePosition = leftElementX + leftElementWidth / 2;
+
+                    
+                    if (
+                        draggedElementXPosition < leftElementMiddlePosition &&
+                        draggedElementXPosition + draggedElementWidth > leftElementMiddlePosition
+                    ) {
+                        this.moveLeft(this.UIElementMouseFollower);
+                        moved = true;
+                        // swap position of ghost element and 
+                    }
+                        
+                    
+                }
+
+                // check right:
+                if( rightElementIndex < bottomExpandedScene.gameElements.length && moved === false) {
+                    const rightElement = bottomExpandedScene.gameElements[rightElementIndex];
+                    const rightElementWidth = rightElement.widthHeight[0];
+                    const rightElementX = rightElement.UITransform.pos[0];
+                    const rightElementMiddlePosition = rightElementX + rightElementWidth / 2;
+
+                    
+                    if (
+                        draggedElementXPosition < rightElementMiddlePosition &&
+                        draggedElementXPosition + draggedElementWidth > rightElementMiddlePosition
+                    ) {
+                        this.moveRight(this.UIElementMouseFollower);
+                        // swap position of ghost element and 
+                    }
+                }
+                
+            }
+        } else {
+            this.currentMousePos = undefined;
+        }
+    }
 
     getExpandedScenePosition() {
         // expands into next row
-        
-
     }
 
-    makeLoop(loop, parentScene) {
-        new LoopBeginningObject(this, undefined, this.getNewDrawPosition(), parentScene);
-        new LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
+    leftJustifyGameElements() {
+        const bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
+        const expandedElements = bottomExpandedScene.gameElements;
+        bottomExpandedScene.gameElements = [];
+
+        expandedElements.forEach((element) => {
+            const newPos = this.getNewDrawPosition();
+            element.UITransform.pos = newPos;
+            bottomExpandedScene.gameElements.push(element);
+        });
+    }
+
+    makeLoop(loop, parentScene = this.expandedScenes[this.expandedScenes.length - 1]) {
+        const beginningObject = new LoopBeginningObject(this, undefined, this.getNewDrawPosition(), parentScene);
+        const endObject = new LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
+        beginningObject.endLoopObject = endObject;
+        endObject.beginningLoopObject = beginningObject;
     }
 
     makeLoopBeginning(loop, parentScene) {
-        return new LoopBeginningObject(this, undefined, this.getNewDrawPosition(), parentScene);
+        const loopBeginning = new LoopBeginningObject(this, undefined, this.getNewDrawPosition(), parentScene);
+        this.loopBeginningObjectStackForLoading.push(loopBeginning);
+        return loopBeginning;
     }
 
     makeLoopEnding(loop, parentScene) {
-        return new LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
+        const loopEndObject = new LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
+        const matchingBeginning = this.loopBeginningObjectStackForLoading.pop();
+        matchingBeginning.endLoopObject = loopEndObject;
+        loopEndObject.beginningLoopObject = matchingBeginning;
+        return loopEndObject;
     }
 
     moveLeft(UIElement) {
@@ -392,6 +504,8 @@ export class LevelDesigner {
                 return this.makeLoopBeginning(element, parentScene);
             } else if (element.type === "LoopEnd") {
                 return this.makeLoopEnding(element, parentScene);
+            } else if (element.type === "Operation") {
+                return this.makeOperation(element.operand, parentScene);
             }
         });
     }
@@ -446,9 +560,15 @@ export class LevelDesigner {
         this.selectedGameElement = time;
     }
 
+    operationSelected(operation) {
+        this.selectedGameElement?.unSelected();
+        this.selectedGameElement = operation;
+    }
+
     eventSelected(event) {
         this.selectedGameElement?.unSelected();
         this.selectedGameElement = event;
+        this.shipRelative.checked = event.isShipRelative;
     }
 
     eventUnselected() {
@@ -499,6 +619,19 @@ export class LevelDesigner {
 
     addAnotherEnemy(type) {
         this.currentEnemyPlacer = new EnemyPlacer(this.engine, {type}, this);
+    }
+
+    // might be redundent and useless TODO
+    downClick() {
+        this.clickedDown = true;
+    }
+
+    unClicked() {
+        if(this.UIElementMouseFollower) {
+            this.UIElementMouseFollower.elementLetGo();
+            this.UIElementMouseFollower = undefined;
+        }
+        this.clickedDown = false;
     }
 
     addMouseClickListener(object) {
@@ -669,14 +802,14 @@ export class LevelDesigner {
         });
     }
 
-    removeUIElement(UIElement) {
-        const bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
-        if (UIElement.UILineSprite) {
-            const index = this.UIElementSprites.indexOf(UIElement.UILineSprite);
-            if (index !== -1) this.UIElementSprites.splice(index, 1);
-        }
-        const bottomExpandedSceneIndex = bottomExpandedScene.gameElements.indexOf(UIElement);
-        if (bottomExpandedSceneIndex !== -1) bottomExpandedScene.gameElements.splice(bottomExpandedSceneIndex, 1);
+    removeUIElementSprite(UILineSprite) {
+        const index = this.UIElementSprites.indexOf(UILineSprite);
+        if (index !== -1) this.UIElementSprites.splice(index, 1);
+    }
+
+    removeUIElement(element) {
+        const index = this.gameElements.indexOf(element);
+        if (index !== -1) this.gameElements.splice(index, 1);
     }
 
     addUIElementSprite(UILineSprite) {
@@ -690,6 +823,19 @@ export class LevelDesigner {
 
     addLineSprite(lineSprite) {
         this.lineSprites.push(lineSprite);
+    }
+
+    makeCoordinatesShipRelative() {
+        this.selectedGameElement?.makeCoordinatesShipRelative();
+    }
+
+    eventLoadShipRelative(isRelative) {
+        this.shipRelative.checked = isRelative;
+        console.log('loading ship',this.shipRelative);
+    }
+            
+    makeCoordinatesArenaRelative() {
+        this.selectedGameElement?.makeCoordinatesArenaRelative();
     }
 
 }

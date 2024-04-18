@@ -32,6 +32,7 @@ export class GameEngine {
         window.engine = this;
         this.gameEditorOpened = false;
         this.frameCountForPerformance = 0;
+        this.levelDesigner = null;
     }
 
     setupPerformance() {
@@ -209,7 +210,19 @@ export class GameEngine {
         this.levelDesignerDoubleClickListeners.push(object);
     }
 
-    
+    mouseDown(e) {
+        if (e.target.classList[0] === "level-editor-canvas") {
+            this.levelDesigner.downClick();
+            this.levelDesignerClickListeners.forEach((object) => {
+                object.mouseDowned([e.offsetX, e.offsetY]);
+            });
+        } else if(e.target.classList[0] === "gameCanvas") {
+            // const position = [e.layerX, e.layerY];
+            // this.gameClickListeners.forEach((object) => {
+            //     object.mouseClicked(position);
+            // });
+        }
+    }
 
     mouseClicked(e) {
         if (e.target.classList[0] === "level-editor-canvas") {
@@ -221,6 +234,12 @@ export class GameEngine {
             this.gameClickListeners.forEach((object) => {
                 object.mouseClicked(position);
             });
+        }
+    }
+
+    mouseUnClicked(e) { 
+        if (e.target.classList[0] === "level-editor-canvas") {
+            this.levelDesigner.unClicked();
         }
     }
 
@@ -421,7 +440,6 @@ export class GameEngine {
     }
 
     addMouseListener(object) {
-        console.log("hello, game engine");
         this.mouseListeners.push(object);
     }
 

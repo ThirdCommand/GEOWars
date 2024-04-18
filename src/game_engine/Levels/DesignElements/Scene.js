@@ -1,10 +1,12 @@
 import { UILineSprite } from "../../UI_line_sprite";
 import { UIElement } from "../../UI_Element";
+import { Transform } from "../../transform";
 
 // there will have to be an ancestor scene that holds all the scenes and stuffs
 export class Scene {
     constructor(parentScene, name, gameElements, currentElementIndex) {
         this.parentScene = parentScene;
+        this.type = "Scene";
         this.name = name || "";
         this.gameElements = gameElements || [];
         this.currentElementIndex = currentElementIndex || 0;
@@ -76,6 +78,11 @@ export class SceneObject extends UIElement {
         this.levelDesigner.unExpandScene(this);
     }
 
+    copyLineSpriteForDragging() {
+        const draggingSpriteTransform = new Transform(null, [this.UITransform.pos[0], this.UITransform.pos[1]]);
+        return new SceneSprite(this.name, draggingSpriteTransform, this.widthHeight);
+    }
+
     copy() {
         return this.levelDesigner.addToClipBoard(new SceneObject(this.levelDesigner, this.serialize()));
     }
@@ -107,6 +114,17 @@ export class SceneObject extends UIElement {
 
     unSelected() {
         this.UILineSprite.selected = false;
+    }
+
+    deleteYourShit() {
+        this.gameElements.forEach((element) => {
+            element.delete();
+        });
+    }
+
+    removeUIElement(element) {
+        const index = this.gameElements.indexOf(element);
+        if(index !== -1) this.gameElements.splice(index, 1);
     }
 
 }

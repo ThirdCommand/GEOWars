@@ -214,13 +214,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   EventObject: () => (/* binding */ EventObject),
 /* harmony export */   EventObjectSprite: () => (/* binding */ EventObjectSprite)
 /* harmony export */ });
-/* harmony import */ var _game_objects_enemies_RandomRandom__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_objects/enemies/RandomRandom */ "./src/game_objects/enemies/RandomRandom.js");
-/* harmony import */ var _UI_Element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../UI_Element */ "./src/game_engine/UI_Element.js");
-/* harmony import */ var _UI_line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../UI_line_sprite */ "./src/game_engine/UI_line_sprite.js");
-/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../transform */ "./src/game_engine/transform.js");
-/* harmony import */ var _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../LevelDesign/EnemyPlacer */ "./src/game_engine/Levels/LevelDesign/EnemyPlacer.js");
-/* harmony import */ var _Spawn__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.js");
-
+/* harmony import */ var _UI_Element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../UI_Element */ "./src/game_engine/UI_Element.js");
+/* harmony import */ var _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../UI_line_sprite */ "./src/game_engine/UI_line_sprite.js");
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../transform */ "./src/game_engine/transform.js");
+/* harmony import */ var _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../LevelDesign/EnemyPlacer */ "./src/game_engine/Levels/LevelDesign/EnemyPlacer.js");
+/* harmony import */ var _Spawn__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.js");
 
 
 
@@ -230,11 +228,16 @@ __webpack_require__.r(__webpack_exports__);
 
 // maybe this is what is created from the serialized version
 class Event {
-    constructor(spawns, parentScene, gameEngine) { 
+    constructor(spawns, parentScene, isShipRelative, gameEngine) { 
         // not sure what the type is for spawns here
+        this.type = 'Event';
         this.parentScene = parentScene;
+        this.numberFactor = 1;
+        this.isShipRelative = isShipRelative;
         // I think I'll have to create the spawns from the serialized data given here
-        this.spawns = spawns.map((spawn) => new _Spawn__WEBPACK_IMPORTED_MODULE_5__.Spawn(spawn, gameEngine)); // this is different than the single spawn thing I have in the mock data
+        this.spawns = spawns.map((spawn) => new _Spawn__WEBPACK_IMPORTED_MODULE_4__.Spawn(spawn, gameEngine)); // this is different than the single spawn thing I have in the mock data
+        // okay now I'm thoroughly confused. I think I have a plain javascript object as spawns, and also
+        // Spawn objects as spawns. 
     }
 
     update() {
@@ -244,18 +247,22 @@ class Event {
 
     spawnEverything() {
         this.spawns.forEach((spawn) => {
-            spawn.spawnEvent();
+            spawn.spawnEvent(this.numberFactor, this.isShipRelative);
         });
     }
     
     endEvent() {
         this.parentScene.nextElement();
     }
+
+    resetToStartingValues() {
+        this.numberFactor = 1;
+    }
 }
 
 // this is what is created by the UI
 // but it will also have to be created by the serialized data
-class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_1__.UIElement {
+class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
     constructor(levelDesigner, eventToLoad, position, parentScene) {
         super(levelDesigner, position, parentScene);
         this.spawns = [];
@@ -265,11 +272,14 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_1__.UIElement {
         this.widthHeight = [80, 40];
         this.clickRadius = 20;
         this.addMouseClickListener();
-
+        this.isShipRelative = false;
+        
         if(eventToLoad) {
             eventToLoad.spawns.forEach((spawn) => this.addSpawn({spawn}));
+            this.isShipRelative = eventToLoad.isShipRelative;
         }
         this.addUIElementSprite(new EventObjectSprite(this.UITransform, this.spawnSprites, this.widthHeight));
+        this.levelDesigner.eventLoadShipRelative(this.isShipRelative);
     }
 
     // copy and paste should be supported
@@ -281,14 +291,41 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_1__.UIElement {
         // I imagine shift click and then copy, and past
     }
 
-    deleteSelectedSpawns() {
+    copyLineSpriteForDragging() {
+        const draggingSpriteTransform = new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, [this.UITransform.pos[0], this.UITransform.pos[1]]);
+        return new EventObjectSprite(draggingSpriteTransform, this.spawnSprites, this.widthHeight);
+    }
 
+    // this shit needs work
+    deleteSelectedSpawns() {
+        this.selectedSpawns.forEach((spawn) => {
+            this.deleteSpawn(spawn);
+        });
+    }
+
+    deleteYourShit() {
+        this.spawns = [];
+        this.enemyPlacers.forEach((placer) => (placer.remove()));
+        this.enemyPlacers = [];
+    }
+
+    deleteSelectedEnemyPlacers() {
+    }
+
+    makeCoordinatesShipRelative() {
+        this.isShipRelative = true;
+        console.log(this.isShipRelative);
+    }
+
+    makeCoordinatesArenaRelative() {
+        this.isShipRelative = false;
+        console.log(this.isShipRelative);
     }
 
     loadSpawns() {
         this.spawns.forEach((spawn) => {
             // pretty sure this is a serialized spawn....
-            const enemyPlacer = new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.EnemyPlacer(this.levelDesigner.engine, spawn, this.levelDesigner, true);
+            const enemyPlacer = new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.levelDesigner.engine, spawn, this.levelDesigner, true);
             enemyPlacer.addMouseClickListener();
             this.enemyPlacers.push(enemyPlacer);
         });
@@ -302,7 +339,8 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_1__.UIElement {
     serialize() {  
         return {
             type: 'Event',
-            spawns: this.spawns
+            spawns: this.spawns,
+            isShipRelative: this.isShipRelative
         };
     }
 
@@ -325,7 +363,7 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_1__.UIElement {
             enemyPlacer.spawn.possibleSpawns = spawn.spawn.possibleSpawns;
         } else {
             this.spawns.push(spawn.spawn);
-            const enemyPlacer = new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.EnemyPlacer(
+            const enemyPlacer = new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(
                 this.levelDesigner.engine, 
                 {
                     location: 'RANDOM', 
@@ -348,8 +386,15 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_1__.UIElement {
     deleteSpawn(spawn) {
         const index = this.spawns.indexOf(spawn);
         if(index !== -1)  {
-            this.spawns.splice(this.spawns.indexOf(spawn), 1);
+            this.spawns.splice(index, 1);
             this.spawnSprites[spawn.type] -= 1;
+        }
+    }
+
+    deleteEnemyPlacer(enemyPlacer) {
+        const index = this.enemyPlacers.indexOf(enemyPlacer);
+        if(index !== -1) {
+            this.enemyPlacers.splice(index, 1);
         }
     }
 
@@ -374,7 +419,7 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_1__.UIElement {
     }
 }
 
-class EventObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_2__.UILineSprite {
+class EventObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UILineSprite {
     constructor(UITransform, spawnSprites, widthHeight) {
         super(UITransform);
         this.selected = true;
@@ -393,14 +438,14 @@ class EventObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_2__.UIL
         this.seventhPosition = [70,10];
 
         this.spawnSpriteMap = {
-            BoxBox: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['BoxBox'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.firstPosition)),
-            Arrow: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['Arrow'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.secondPosition)),
-            Grunt: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['Grunt'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.thirdPosition)),
+            BoxBox: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['BoxBox'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.firstPosition)),
+            Arrow: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Arrow'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.secondPosition)),
+            Grunt: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Grunt'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.thirdPosition)),
 
-            Pinwheel: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['Pinwheel'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.fourthPosition)),
-            Weaver: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['Weaver'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.fifthPosition)),
-            Singularity: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['Singularity'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.sixthPosition)),
-            RANDOM: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_4__.spriteMap['RANDOM'](new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, this.seventhPosition)),
+            Pinwheel: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Pinwheel'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.fourthPosition)),
+            Weaver: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Weaver'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.fifthPosition)),
+            Singularity: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['Singularity'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.sixthPosition)),
+            RANDOM: _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.spriteMap['RANDOM'](new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, this.seventhPosition)),
         };
 
         // change the sprites to have spawning scale be 0.5
@@ -495,6 +540,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _UI_Element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../UI_Element */ "./src/game_engine/UI_Element.js");
 /* harmony import */ var _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../UI_line_sprite */ "./src/game_engine/UI_line_sprite.js");
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../transform */ "./src/game_engine/transform.js");
+
 
 
 
@@ -509,6 +556,7 @@ __webpack_require__.r(__webpack_exports__);
 class LoopEnd {
     // can only loop if start and end of loop are in the same scene
     constructor(loop, parentScene) {
+        this.type === "LoopEnd";
         this.parentScene = parentScene; // scene the loop is in
         
         this.startingLoopValues = {
@@ -536,7 +584,7 @@ class LoopEnd {
         }
     }
 
-    resetStartingValues() {
+    resetToStartingValues() {
         this.loop =  {
             loopIdx: this.startingLoopValues.loopIdx,
             loopId: this.startingLoopValues.loopId,
@@ -544,14 +592,16 @@ class LoopEnd {
         };
     }
 
+
     endLoop() {
-        this.resetStartingValues();
+        this.resetToStartingValues();
         this.parentScene.nextElement();
     }
 }
 
 class LoopBeginning {
     constructor(parentScene) {
+        this.type = "LoopBeginning";
         this.parentScene = parentScene;
         this.loopId = this.parentScene.createLoopId();
     }
@@ -560,6 +610,7 @@ class LoopBeginning {
         // this means the next step will be delayed by a frame waiting
         // for the next update call
     }
+    resetToStartingValues() {}
 }
 
 // UIElement
@@ -570,6 +621,7 @@ class LoopBeginningObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIEle
         this.clickRadius = 5;
         this.addMouseClickListener();
         this.addUIElementSprite(new LoopBeginningObjectSprite(this.UITransform, this.widthHeight));
+        this.endLoopObject = undefined;
     }
 
     moveLeft() {
@@ -585,6 +637,12 @@ class LoopBeginningObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIEle
         return this.levelDesigner.addToClipBoard(new LoopBeginningObject(this.levelDesigner, this.serialize()));
     }
 
+    copyLineSpriteForDragging() {
+        const draggingSpriteTransform = new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, [this.UITransform.pos[0], this.UITransform.pos[1]]);
+        return new LoopBeginningObjectSprite(draggingSpriteTransform, this.widthHeight);
+    }
+    
+
     serialize() {
         return {
             type: "LoopBeginning"
@@ -599,6 +657,12 @@ class LoopBeginningObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIEle
     unSelected() {
         this.UILineSprite.selected = false;
     }
+
+    deleteYourShit() {
+        const endObject = this.endLoopObject;
+        this.endLoopObject = undefined;
+        endObject?.delete();
+    }
 }
 
 class LoopEndObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
@@ -609,6 +673,7 @@ class LoopEndObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
         this.clickRadius = 15;
         this.addMouseClickListener();
         this.addUIElementSprite(new LoopEndingObjectSprite(this.UITransform, this.widthHeight, this.loop.repeatTimes));
+        this.beginningLoopObject = undefined;
     }
 
     // maybe I can have a button that moves it left or right for now
@@ -630,6 +695,12 @@ class LoopEndObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
         return this.levelDesigner.addToClipBoard(new LoopEndObject(this.levelDesigner, this.serialize()));
     }
 
+    copyLineSpriteForDragging() {
+        const draggingSpriteTransform = new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, [this.UITransform.pos[0], this.UITransform.pos[1]]);
+        return new LoopEndingObjectSprite(draggingSpriteTransform, this.widthHeight, this.loop.repeatTimes);
+    }
+    
+
     serialize() {
         return {
             type: "LoopEnd",
@@ -644,6 +715,12 @@ class LoopEndObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
     }
     unSelected() {
         this.UILineSprite.selected = false;
+    }
+
+    deleteYourShit() {
+        const beginningObject = this.beginningLoopObject;
+        this.beginningLoopObject = undefined;
+        beginningObject?.delete();
     }
 }
 
@@ -718,6 +795,174 @@ class LoopEndingObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1_
 
 /***/ }),
 
+/***/ "./src/game_engine/Levels/DesignElements/Operation.js":
+/*!************************************************************!*\
+  !*** ./src/game_engine/Levels/DesignElements/Operation.js ***!
+  \************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Operation: () => (/* binding */ Operation),
+/* harmony export */   OperationObject: () => (/* binding */ OperationObject),
+/* harmony export */   OperationObjectSprite: () => (/* binding */ OperationObjectSprite)
+/* harmony export */ });
+/* harmony import */ var _UI_Element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../UI_Element */ "./src/game_engine/UI_Element.js");
+/* harmony import */ var _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../UI_line_sprite */ "./src/game_engine/UI_line_sprite.js");
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../transform */ "./src/game_engine/transform.js");
+
+
+
+
+class Operation {
+    constructor(operand, parentScene, gameEngine, gameScript) {
+        this.operand = operand;
+        this.parentScene = parentScene;
+        this.gameEngine = gameEngine;
+        this.gameScript = gameScript;
+    }
+
+    update() {
+        this.doOperation();
+    }
+
+    doOperation() {
+        if(this.operand.type === "SceneTimeFactor") {
+            this.parentScene.gameElements.forEach((element) => {
+                this.applyTimeFactor(element);
+            });
+        } else if(this.operand.type === "SceneNumberFactor") {
+            this.parentScene.gameElements.forEach((element) => {
+                this.applyNumberFactor(element);
+            });
+        } else if (this.operand.type === "ResetToStartingValues") {
+            this.parentScene.gameElements.forEach((element) => {
+                this.applyResetToStartingValues(element);
+            });
+        } else if (this.operand.type === "UpgradeBullets") {
+            this.gameScript.ship.upgradeBullets();
+        }
+
+        this.parentScene.nextElement();
+    }
+
+    applyNumberFactor(element) {
+        if(element.type === "Event") {
+            element.numberFactor *= this.operand.factor;
+        }
+        if(element.type === "Scene") {
+            element.gameElements.forEach((element) => {
+                this.applyNumberFactor(element);
+            });
+        }
+    }
+
+    applyTimeFactor(element) {
+        if(element.type === "Time") {
+            element.applyNewTimeFactor(this.operand.factor);
+        }
+        if(element.type === "Scene") {
+            element.gameElements.forEach((element) => {
+                this.applyTimeFactor(element);
+            });
+        }
+    }
+
+    applyResetToStartingValues(element) {
+        if(element.type === "Scene") {
+            element.gameElements.forEach((element) => {
+                this.applyResetToStartingValues(element);
+            });
+        }
+        if(element.type === "Time" || element.type === "Event" || element.type === "LoopEnd" || element.type === "LoopBeginning" || element.type === "Operation") {
+            element.resetToStartingValues();
+        }
+    }
+
+    resetToStartingValues() {
+        
+    }
+}
+
+class OperationObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
+    constructor(levelDesigner, operationToLoad, position, parentScene) {
+        super(levelDesigner, position, parentScene);
+        this.operand = operationToLoad;
+        this.widthHeight = [50, 40];
+        this.clickRadius = 20;
+        this.addMouseClickListener();
+        this.addUIElementSprite(new OperationObjectSprite(this.UITransform, this.widthHeight, this.operand));
+    }
+
+    unSelected() {
+        this.UILineSprite.selected = false;
+    }
+
+    copy() {
+        return this.levelDesigner.addToClipBoard(new OperationObject(this.levelDesigner, this.serialize()));
+    }
+
+    copyLineSpriteForDragging() {
+        const draggingSpriteTransform = new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, [this.UITransform.pos[0], this.UITransform.pos[1]]);
+        return new OperationObjectSprite(draggingSpriteTransform, this.widthHeight, this.operand);
+    }
+
+    serialize() {
+        return {
+            type: "Operation",
+            operand: {
+                type: this.operand.type,
+                factor: this.operand.factor
+            }
+        };
+    }
+
+    changeOperation(newOperand) {
+        this.operand = {
+            type: newOperand.type,
+            factor: newOperand.factor
+        };
+        this.UILineSprite.operand = this.operand;
+    }
+
+    onMouseClick() {
+        this.levelDesigner.operationSelected(this);
+        this.UILineSprite.selected = true;
+    }
+}
+
+class OperationObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UILineSprite {
+    constructor(UITransform, widthHeight, operand) {
+        super(UITransform);
+        this.operand = operand;
+        this.widthHeight = widthHeight;
+        this.selected = false;
+    }
+
+    draw(ctx) {
+        const pos = this.UITransform.pos;
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+        this.drawFunction(ctx, pos);
+        ctx.restore();
+    }
+
+    drawFunction(ctx) {
+        const h = this.widthHeight[1];
+        const w = this.widthHeight[0];
+        
+        ctx.fillStyle = "tomato";
+        if(this.selected) ctx.fillStyle = "#419ef0";
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = "rgba(0, 0, 0, 1)";
+        ctx.font = "10px Arial";
+        ctx.fillText(this.operand.type, 2, h/2);
+        ctx.fillText(this.operand.factor, 2, 4 * h / 4);
+    }
+}
+
+/***/ }),
+
 /***/ "./src/game_engine/Levels/DesignElements/Scene.js":
 /*!********************************************************!*\
   !*** ./src/game_engine/Levels/DesignElements/Scene.js ***!
@@ -732,6 +977,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _UI_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../UI_line_sprite */ "./src/game_engine/UI_line_sprite.js");
 /* harmony import */ var _UI_Element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../UI_Element */ "./src/game_engine/UI_Element.js");
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../transform */ "./src/game_engine/transform.js");
+
 
 
 
@@ -739,6 +986,7 @@ __webpack_require__.r(__webpack_exports__);
 class Scene {
     constructor(parentScene, name, gameElements, currentElementIndex) {
         this.parentScene = parentScene;
+        this.type = "Scene";
         this.name = name || "";
         this.gameElements = gameElements || [];
         this.currentElementIndex = currentElementIndex || 0;
@@ -810,6 +1058,11 @@ class SceneObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_1__.UIElement {
         this.levelDesigner.unExpandScene(this);
     }
 
+    copyLineSpriteForDragging() {
+        const draggingSpriteTransform = new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, [this.UITransform.pos[0], this.UITransform.pos[1]]);
+        return new SceneSprite(this.name, draggingSpriteTransform, this.widthHeight);
+    }
+
     copy() {
         return this.levelDesigner.addToClipBoard(new SceneObject(this.levelDesigner, this.serialize()));
     }
@@ -841,6 +1094,17 @@ class SceneObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_1__.UIElement {
 
     unSelected() {
         this.UILineSprite.selected = false;
+    }
+
+    deleteYourShit() {
+        this.gameElements.forEach((element) => {
+            element.delete();
+        });
+    }
+
+    removeUIElement(element) {
+        const index = this.gameElements.indexOf(element);
+        if(index !== -1) this.gameElements.splice(index, 1);
     }
 
 }
@@ -931,8 +1195,8 @@ class Spawn {
         return possibleSpawns[Math.floor(Math.random() * possibleSpawns.length) % possibleSpawns.length];
     }
 
-    spawnEvent() {
-        const numberToGenerate = this.spawn.numberToGenerate || 1;
+    spawnEvent(numberFactor, isShipRelative) {
+        const numberToGenerate = Math.trunc(this.spawn.numberToGenerate * numberFactor) || 1;
 
         for(let i = 0; i < numberToGenerate; i++) {
             let mobToSpawn = this.spawn.type;
@@ -944,6 +1208,23 @@ class Spawn {
                 location = this.randomPosition();
             } else {
                 location = [Number(this.spawn.location[0]), Number(this.spawn.location[1])];
+                if(isShipRelative) {
+                    location[0] += this.gameEngine.gameScript.ship.transform.pos[0] - this.gameEngine.gameScript.DIM_X / 2;
+                    location[1] += this.gameEngine.gameScript.ship.transform.pos[1] - this.gameEngine.gameScript.DIM_Y / 2;
+
+                    // check if off edge of map
+                    if(location[0] > this.gameEngine.gameScript.DIM_X  - 100) {
+                        location[0] = this.gameEngine.gameScript.DIM_X - 100;
+                    } else if(location[0] < 100) {
+                        location[0] = 100;
+                    }
+                    
+                    if( location[1] > this.gameEngine.gameScript.DIM_Y - 100)  {
+                        location[1] = this.gameEngine.gameScript.DIM_Y - 100;
+                    } else if(location[1] < 0 + 100) {
+                        location[1] = 0 + 100;
+                    }
+                }
             }
             this.gameEngine.gameScript.enemyCreatorList[mobToSpawn](location);
         }
@@ -973,18 +1254,23 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _UI_Element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../UI_Element */ "./src/game_engine/UI_Element.js");
 /* harmony import */ var _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../UI_line_sprite */ "./src/game_engine/UI_line_sprite.js");
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../transform */ "./src/game_engine/transform.js");
+
 
 
 
 // wait times
 class Time {
     constructor(parentScene, waitTime) {
+        this.type = "Time";
         this.parentScene = parentScene;
         this.waitTime = waitTime;
+        this.timeFactor = 1;
         this.time = 0;
         this.startingValues = {
             time: 0,
             waitTime: waitTime,
+            timeFactor: 1,
         };
     }
 
@@ -992,22 +1278,34 @@ class Time {
     update(dT) {
         // maybe I just check if it's paused?
         this.time += dT;
-        if(this.time >= this.waitTime) {
+        if(this.time >= this.waitTime * this.timeFactor) {
             this.endOperation();
         }
     }
 
-    resetStartingValues() {
+    applyNewTimeFactor(factor) {
+        this.timeFactor *= factor;
+    }
+
+    resetToStartingValues() {
         this.time = this.startingValues.time;
         this.waitTime = this.startingValues.waitTime;
+        this.timeFactor = this.startingValues.timeFactor;
+    }
+
+    endOperationReset() {
+        this.time = this.startingValues.time;
+        this.waitTime = this.startingValues.waitTime;
+        // keep time factor
     }
 
     endOperation() {
-        this.resetStartingValues();
+        this.endOperationReset();
         
         // this will have to be the scene it's in I think
         this.parentScene.nextElement();
     }
+
 }
 
 // UIElement
@@ -1018,7 +1316,6 @@ class TimeObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
         this.widthHeight = [50, 40];
         this.clickRadius = 20;
         this.addMouseClickListener();
-        this.timeConstruct = new Time(levelDesigner.gameSequence, waitTime);
         this.addUIElementSprite(new TimeObjectSprite(this.UITransform, this.waitTime, this.widthHeight));
     }
 
@@ -1030,6 +1327,10 @@ class TimeObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
         return this.levelDesigner.addToClipBoard(new TimeObject(this.levelDesigner, this.serialize()));
     }
 
+    copyLineSpriteForDragging() {
+        const draggingSpriteTransform = new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, [this.UITransform.pos[0], this.UITransform.pos[1]]);
+        return new TimeObjectSprite(draggingSpriteTransform, this.waitTime, this.widthHeight);
+    }
     serialize() {
         return {
             type: "Time",
@@ -1039,7 +1340,6 @@ class TimeObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
 
     changeTime(newTime) {
         this.waitTime = newTime;
-        this.timeConstruct.waitTime = newTime;
         this.UILineSprite.waitTime = newTime;
     
     }
@@ -1063,7 +1363,7 @@ class TimeObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UILi
         ctx.save();
         ctx.translate(pos[0], pos[1]);
 
-        this.drawFunction(ctx, pos);
+        this.drawFunction(ctx);
         ctx.restore();
     }
 
@@ -1079,180 +1379,6 @@ class TimeObjectSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_1__.UILi
         ctx.fillText(this.waitTime, 2, h/2);
     }
 }
-
-/***/ }),
-
-/***/ "./src/game_engine/Levels/DesignElements/scene.js":
-/*!********************************************************!*\
-  !*** ./src/game_engine/Levels/DesignElements/scene.js ***!
-  \********************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   Scene: () => (/* binding */ Scene),
-/* harmony export */   SceneObject: () => (/* binding */ SceneObject),
-/* harmony export */   SceneSprite: () => (/* binding */ SceneSprite)
-/* harmony export */ });
-/* harmony import */ var _UI_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../UI_line_sprite */ "./src/game_engine/UI_line_sprite.js");
-/* harmony import */ var _UI_Element__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../UI_Element */ "./src/game_engine/UI_Element.js");
-
-
-
-// there will have to be an ancestor scene that holds all the scenes and stuffs
-class Scene {
-    constructor(parentScene, name, gameElements, currentElementIndex) {
-        this.parentScene = parentScene;
-        this.name = name || "";
-        this.gameElements = gameElements || [];
-        this.currentElementIndex = currentElementIndex || 0;
-        this.loopId = 0;
-        this.loopsToClose = [];
-    }
-    /*
-    stack works I believe
-    1 2 2 1 3 4 4 3
-    [ [ ] ] [ [ ] ]
-    */
-    createLoopId() {
-        this.loopId++;
-        this.loopsToClose.push(this.loopId);
-        return this.loopId;
-    }
-    getLoopId() {
-        return this.loopsToClose.pop();  
-    }
-
-
-    update(dT) {
-        this.gameElements[this.currentElementIndex]?.update(dT);
-    }
-
-    nextElement() {
-        if(this.currentElementIndex < this.gameElements.length - 1) {
-            this.currentElementIndex++;
-        } else {
-            this.currentElementIndex = 0;
-            this.parentScene.nextElement();
-        }
-    }
-
-    goToLoopId(loopId) {
-        this.gameElements.forEach((element, idx) => {
-            if(element.loopId === loopId) {
-                this.currentElementIndex = idx;
-            }
-        });
-    }
-}
-
-class SceneObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_1__.UIElement {
-    constructor(levelDesigner, name, parentScene, position) {
-        super(levelDesigner, position, parentScene);
-        // i'll have to create the game elements from the serialized data
-        this.gameElements = [];
-        
-        this.expanded = false;
-        this.widthHeight = [40,40];
-        this.name = name || "Scene";
-        this.addUIElementSprite(new SceneSprite(name, this.UITransform, this.widthHeight));
-        this.clickRadius = 20;
-        this.addMouseClickListener();
-        this.addMouseDoubleClickListener();
-        
-    }
-
-    expandScene() {
-        this.expanded = true;
-        this.UILineSprite.expanded = true;
-        this.levelDesigner.expandScene(this);
-    }
-
-    unExpandScene() {
-        this.expanded = false;
-        this.UILineSprite.expanded = false;
-        this.levelDesigner.unExpandScene(this);
-    }
-
-    copy() {
-        return this.levelDesigner.addToClipBoard(new SceneObject(this.levelDesigner, this.serialize()));
-    }
-
-    loadGameElements(gameElements) {
-        this.gameElements = this.levelDesigner.loadGameElements(gameElements, false, this);
-    }
-
-    serialize() {
-        return {
-            type: 'Scene',
-            name: this.name,
-            gameElements: this.gameElements.map((element) => element.serialize()),
-        };
-    }
-
-    onMouseClick() {
-        this.levelDesigner.sceneSelected(this);
-        this.UILineSprite.selected = true;
-    }
-    onMouseDoubleClicked() {
-        this.expanded ? this.unExpandScene() : this.expandScene();
-        
-    }
-
-    selected() {
-        this.UILineSprite.selected = true;
-    }
-
-    unSelected() {
-        this.UILineSprite.selected = false;
-    }
-
-}
-
-class SceneSprite extends _UI_line_sprite__WEBPACK_IMPORTED_MODULE_0__.UILineSprite {
-    constructor(name, UITransform, widthHeight) {
-        super(UITransform);
-        this.name = name;
-        this.widthHeight = widthHeight;
-        this.selected = false;
-        this.expanded = false;
-    }
-
-    draw(ctx) {
-        const pos = this.UITransform.pos;
-        ctx.save();
-        ctx.translate(pos[0], pos[1]);
-
-        this.drawFunction(ctx, pos);
-        ctx.restore();
-    }
-
-    drawFunction(ctx) {
-        const h = this.widthHeight[1];
-        const w = this.widthHeight[0];
-        ctx.fillStyle = "#d3d3d3";
-        if(this.selected) ctx.fillStyle = "#419ef0";
-        if(this.expanded) ctx.fillStyle = "#A020F0";
-        // I can add lines to the top and sides to show that it's expanded
-        ctx.fillRect(0, 0, w, h);
-        ctx.fillStyle = "rgba(0, 0, 0, 1)";
-        ctx.font = "10px Arial";
-        ctx.fillText(this.name, 2, h/2);
-
-        if(this.expanded) {
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = "#FFFFFF";
-            ctx.beginPath();
-            ctx.moveTo(0, h);
-            ctx.lineTo(0, 0);
-            ctx.lineTo(w, 0);
-            ctx.lineTo(w, h);
-            ctx.stroke();
-        }
-    }
-}
-
-
 
 /***/ }),
 
@@ -1488,11 +1614,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./LevelDesign/EnemyPlacer */ "./src/game_engine/Levels/LevelDesign/EnemyPlacer.js");
 /* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.js");
 /* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.js");
-/* harmony import */ var _DesignElements_scene__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./DesignElements/scene */ "./src/game_engine/Levels/DesignElements/scene.js");
+/* harmony import */ var _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./DesignElements/Scene */ "./src/game_engine/Levels/DesignElements/Scene.js");
 /* harmony import */ var _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./DesignElements/Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.js");
 /* harmony import */ var _DesignElements_Event__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.js");
 /* harmony import */ var _DesignElements_Time__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.js");
 /* harmony import */ var _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.js");
+/* harmony import */ var _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./DesignElements/Operation */ "./src/game_engine/Levels/DesignElements/Operation.js");
+
 
 
 
@@ -1523,6 +1651,8 @@ class LevelDesigner {
         this.UITransform = {pos: [0,0]};
 
         this.widthHeight = [0,0];
+
+        this.loopBeginningObjectStackForLoading = [];
 
         this.DIM_X = 1200;
         this.DIM_Y = 300;
@@ -1577,10 +1707,10 @@ class LevelDesigner {
         const makeEvent = document.getElementById("MakeEvent");
         const addTime = document.getElementById("TimeSubmit");
         const addLoop = document.getElementById("LoopSubmit");
-        const moveLeft = document.getElementById("MoveLeft");
-        const moveRight = document.getElementById("MoveRight");
+        const addOperation = document.getElementById("OperationSubmit");
         const sceneNameSubmit = document.getElementById("sceneNameSubmit");
-
+        const shipRelative = document.getElementById("shipRelative");
+        this.shipRelative = shipRelative;
         const setCoordinate = document.getElementById("changeCoordinates");
         const setRandomCoordinates = document.getElementById("setRandomCoordinates");
 
@@ -1592,6 +1722,20 @@ class LevelDesigner {
         const loadGameDesign = document.getElementById("loadGameDesign");
 
         const startGame = document.getElementById("startGame");
+
+        shipRelative.onclick = (e) => {
+            e.stopPropagation();
+            const value = e.target.value;
+            console.log(value);
+            if(value === "on") {
+                e.target.value = "off";
+                this.makeCoordinatesShipRelative();
+            } else {
+                e.target.value = "on";
+                this.makeCoordinatesArenaRelative();
+            }
+
+        };
 
         setCoordinate.onclick = (e) => {
             e.stopPropagation();
@@ -1700,6 +1844,18 @@ class LevelDesigner {
             const time = document.getElementById("Time").value;
             this.UIActionsToRun.push(() => this.makeTime(time));
         };
+        addOperation.onclick = (e) => {
+            e.stopPropagation(); 
+            const operationType = document.getElementById("OperationType").value;
+            const operationValue = document.getElementById("OperationFactor").value;
+            const operand = {
+                type: operationType,
+                factor: operationValue,
+            };
+            this.UIActionsToRun.push(() => this.makeOperation(operand));
+        };
+
+
         // should add a loop next to the currently selected element
         // once I have elements nested under scenes, I'm not sure how this will work
         // maybe it will make one next to the selected scene if nothing else is selected
@@ -1710,19 +1866,6 @@ class LevelDesigner {
                 loopIdx: Number(document.getElementById("StartingIndex").value),
             };
             this.UIActionsToRun.push(() => this.makeLoop(loop));
-        };
-        moveLeft.onclick = (e) => {
-            e.stopPropagation();
-            this.UIActionsToRun.push(
-                () => this.moveLeft(this.selectedGameElement)
-            );
-        };
-        moveRight.onclick = (e) => {
-            e.stopPropagation();
-            // add action to queue for engine to process
-            this.UIActionsToRun.push(
-                () => this.moveRight(this.selectedGameElement)
-            );
         };
 
         window.addEventListener("scroll", (e) => {
@@ -1736,7 +1879,14 @@ class LevelDesigner {
             if(e.key === "Escape") {
                 this.escapePressed();
             }
+            if(e.key === "Backspace") {
+                if(this.currentMousePos) {
+                    this.selectedGameElement?.delete();
+                    this.leftJustifyGameElements();
+                }
+            }
         });
+
 
         startGame.onclick = (e) => {
             e.stopPropagation();
@@ -1765,11 +1915,19 @@ class LevelDesigner {
         // });
     }
 
-    makeTime(time, parentScene) {
+    makeTime(time, parentScene = this.expandedScenes[this.expandedScenes.length - 1]) {
         const newElementPosition = this.getNewDrawPosition();
         const timeObject = new _DesignElements_Time__WEBPACK_IMPORTED_MODULE_9__.TimeObject(this, {waitTime: time}, newElementPosition, parentScene);
         this.selectedGameElement = timeObject;
         return timeObject;
+    }
+
+    makeOperation(operand, parentScene = this.expandedScenes[this.expandedScenes.length - 1]) {
+        const newElementPosition = this.getNewDrawPosition();
+        const operationObject = new _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_11__.OperationObject(this, operand, newElementPosition, parentScene);
+        operationObject.onMouseClick();
+        this.selectedGameElement = operationObject;
+        return operationObject;
     }
 
     mouseDoubleClicked(pos) {
@@ -1798,27 +1956,108 @@ class LevelDesigner {
         const bottomExpandedScene = this.expandedScenes.pop();
         if(scene !== bottomExpandedScene) bottomExpandedScene.unExpandScene();
         this.removeExpandedElements(bottomExpandedScene);
-
     }
 
+    mouseMoveEvent(e) {
+        if (e.target.classList[0] === "level-editor-canvas") {
+            
+            this.currentMousePos = [e.offsetX, e.offsetY];
+            if(this.UIElementMouseFollower) {
+
+                const moveToPosition = [e.offsetX - this.draggingLineSprite.widthHeight[0] / 2, e.offsetY - this.draggingLineSprite.widthHeight[1] / 2];
+                this.draggingLineSprite.UITransform.pos = [...moveToPosition];
+                // check if the element is overlapping with another element
+                const bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
+
+                const draggedElementSceneIndex = bottomExpandedScene.gameElements.indexOf(this.UIElementMouseFollower);
+                if(draggedElementSceneIndex === -1) return;
+
+
+                const leftElementIndex = draggedElementSceneIndex - 1;
+                const rightElementIndex = draggedElementSceneIndex + 1;
+
+                const draggedElementXPosition = this.draggingLineSprite.UITransform.pos[0];
+                const draggedElementWidth = this.draggingLineSprite.widthHeight[0];
+
+                // check left element:
+                let moved = false;
+                if(leftElementIndex >= 0) {
+                    const leftElement = bottomExpandedScene.gameElements[leftElementIndex];
+                    const leftElementWidth = leftElement.widthHeight[0];
+                    const leftElementX = leftElement.UITransform.pos[0];
+                    const leftElementMiddlePosition = leftElementX + leftElementWidth / 2;
+
+                    
+                    if (
+                        draggedElementXPosition < leftElementMiddlePosition &&
+                        draggedElementXPosition + draggedElementWidth > leftElementMiddlePosition
+                    ) {
+                        this.moveLeft(this.UIElementMouseFollower);
+                        moved = true;
+                        // swap position of ghost element and 
+                    }
+                        
+                    
+                }
+
+                // check right:
+                if( rightElementIndex < bottomExpandedScene.gameElements.length && moved === false) {
+                    const rightElement = bottomExpandedScene.gameElements[rightElementIndex];
+                    const rightElementWidth = rightElement.widthHeight[0];
+                    const rightElementX = rightElement.UITransform.pos[0];
+                    const rightElementMiddlePosition = rightElementX + rightElementWidth / 2;
+
+                    
+                    if (
+                        draggedElementXPosition < rightElementMiddlePosition &&
+                        draggedElementXPosition + draggedElementWidth > rightElementMiddlePosition
+                    ) {
+                        this.moveRight(this.UIElementMouseFollower);
+                        // swap position of ghost element and 
+                    }
+                }
+                
+            }
+        } else {
+            this.currentMousePos = undefined;
+        }
+    }
 
     getExpandedScenePosition() {
         // expands into next row
-        
-
     }
 
-    makeLoop(loop, parentScene) {
-        new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__.LoopBeginningObject(this, undefined, this.getNewDrawPosition(), parentScene);
-        new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
+    leftJustifyGameElements() {
+        const bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
+        const expandedElements = bottomExpandedScene.gameElements;
+        bottomExpandedScene.gameElements = [];
+
+        expandedElements.forEach((element) => {
+            const newPos = this.getNewDrawPosition();
+            element.UITransform.pos = newPos;
+            bottomExpandedScene.gameElements.push(element);
+        });
+    }
+
+    makeLoop(loop, parentScene = this.expandedScenes[this.expandedScenes.length - 1]) {
+        const beginningObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__.LoopBeginningObject(this, undefined, this.getNewDrawPosition(), parentScene);
+        const endObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
+        beginningObject.endLoopObject = endObject;
+        endObject.beginningLoopObject = beginningObject;
     }
 
     makeLoopBeginning(loop, parentScene) {
-        return new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__.LoopBeginningObject(this, undefined, this.getNewDrawPosition(), parentScene);
+        const loopBeginning = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__.LoopBeginningObject(this, undefined, this.getNewDrawPosition(), parentScene);
+        this.loopBeginningObjectStackForLoading.push(loopBeginning);
+        return loopBeginning;
     }
 
     makeLoopEnding(loop, parentScene) {
-        return new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
+        const loopEndObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_10__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
+        const matchingBeginning = this.loopBeginningObjectStackForLoading.pop();
+        matchingBeginning.endLoopObject = loopEndObject;
+        loopEndObject.beginningLoopObject = matchingBeginning;
+        return loopEndObject;
     }
 
     moveLeft(UIElement) {
@@ -1887,6 +2126,8 @@ class LevelDesigner {
                 return this.makeLoopBeginning(element, parentScene);
             } else if (element.type === "LoopEnd") {
                 return this.makeLoopEnding(element, parentScene);
+            } else if (element.type === "Operation") {
+                return this.makeOperation(element.operand, parentScene);
             }
         });
     }
@@ -1928,7 +2169,7 @@ class LevelDesigner {
         }
         
         // sprites are made and added automatically
-        return(new _DesignElements_scene__WEBPACK_IMPORTED_MODULE_6__.SceneObject(this, name, parentScene, newElementPosition));
+        return(new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_6__.SceneObject(this, name, parentScene, newElementPosition));
     }
 
     loopSelected(loop) {
@@ -1941,9 +2182,15 @@ class LevelDesigner {
         this.selectedGameElement = time;
     }
 
+    operationSelected(operation) {
+        this.selectedGameElement?.unSelected();
+        this.selectedGameElement = operation;
+    }
+
     eventSelected(event) {
         this.selectedGameElement?.unSelected();
         this.selectedGameElement = event;
+        this.shipRelative.checked = event.isShipRelative;
     }
 
     eventUnselected() {
@@ -1994,6 +2241,19 @@ class LevelDesigner {
 
     addAnotherEnemy(type) {
         this.currentEnemyPlacer = new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.engine, {type}, this);
+    }
+
+    // might be redundent and useless TODO
+    downClick() {
+        this.clickedDown = true;
+    }
+
+    unClicked() {
+        if(this.UIElementMouseFollower) {
+            this.UIElementMouseFollower.elementLetGo();
+            this.UIElementMouseFollower = undefined;
+        }
+        this.clickedDown = false;
     }
 
     addMouseClickListener(object) {
@@ -2164,14 +2424,14 @@ class LevelDesigner {
         });
     }
 
-    removeUIElement(UIElement) {
-        const bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
-        if (UIElement.UILineSprite) {
-            const index = this.UIElementSprites.indexOf(UIElement.UILineSprite);
-            if (index !== -1) this.UIElementSprites.splice(index, 1);
-        }
-        const bottomExpandedSceneIndex = bottomExpandedScene.gameElements.indexOf(UIElement);
-        if (bottomExpandedSceneIndex !== -1) bottomExpandedScene.gameElements.splice(bottomExpandedSceneIndex, 1);
+    removeUIElementSprite(UILineSprite) {
+        const index = this.UIElementSprites.indexOf(UILineSprite);
+        if (index !== -1) this.UIElementSprites.splice(index, 1);
+    }
+
+    removeUIElement(element) {
+        const index = this.gameElements.indexOf(element);
+        if (index !== -1) this.gameElements.splice(index, 1);
     }
 
     addUIElementSprite(UILineSprite) {
@@ -2185,6 +2445,19 @@ class LevelDesigner {
 
     addLineSprite(lineSprite) {
         this.lineSprites.push(lineSprite);
+    }
+
+    makeCoordinatesShipRelative() {
+        this.selectedGameElement?.makeCoordinatesShipRelative();
+    }
+
+    eventLoadShipRelative(isRelative) {
+        this.shipRelative.checked = isRelative;
+        console.log('loading ship',this.shipRelative);
+    }
+            
+    makeCoordinatesArenaRelative() {
+        this.selectedGameElement?.makeCoordinatesArenaRelative();
     }
 
 }
@@ -2225,6 +2498,7 @@ class UIElement {
     addMouseDoubleClickListener() {
         this.levelDesigner.addMouseDoubleClickListener(this);
     }
+
     removeMouseClickListener() {
         this.levelDesigner.removeMouseClickListener(this);
     }
@@ -2234,8 +2508,8 @@ class UIElement {
 
     parentSceneUnexpanded() {
         this.inExpandedScene = false;
-        // this.removeMouseClickListener();
-        // this.removeMouseDoubleClickListener();
+        this.removeMouseClickListener();
+        this.removeMouseDoubleClickListener();
     }
 
     parentSceneExpanded () {
@@ -2274,12 +2548,62 @@ class UIElement {
         }
     }
 
+    mouseDowned(mousePos) {
+        if(!this.inExpandedScene) return;
+        const centerPosition = [
+            this.UITransform.pos[0] + this.widthHeight[0] / 2,
+            this.UITransform.pos[1] + this.widthHeight[1] / 2
+        ];
+        const centerDist = _util__WEBPACK_IMPORTED_MODULE_1__.Util.dist(
+            centerPosition,
+            mousePos
+        );
+        if (centerDist < this.clickRadius) {
+            this.draggingElement = true;
+            this.followMouse();
+        }
+    }
+
+    copyLineSpriteForDragging() {
+        // Abstract
+    }
+
+    elementLetGo() {
+        this.draggingElement = false;
+        this.levelDesigner.UIElementMouseFollower = null;
+        this.levelDesigner.removeUIElementSprite(this.levelDesigner.draggingLineSprite);
+        this.levelDesigner.draggingLineSprite = null;
+        // send to ghost position
+    }
+
     onMouseDoubleClick(mousePos) {
 
     }
+
     onMouseClick(mousePos) {
 
     }
+
+    followMouse() {
+        this.levelDesigner.UIElementMouseFollower = this;
+        this.levelDesigner.draggingLineSprite = this.copyLineSpriteForDragging();
+        this.levelDesigner.addUIElementSprite(this.levelDesigner.draggingLineSprite);
+    }
+
+    delete() {
+        this.removeMouseClickListener();
+        this.removeMouseDoubleClickListener();
+        this.levelDesigner.removeUIElementSprite(this.UILineSprite);
+        this.parentScene.removeUIElement(this);
+        this.deleteYourShit();
+    }
+
+    deleteYourShit() {
+        // Abstract for event I guess
+    }
+
+
+
 }
 
 /***/ }),
@@ -2521,6 +2845,7 @@ class GameEngine {
         window.engine = this;
         this.gameEditorOpened = false;
         this.frameCountForPerformance = 0;
+        this.levelDesigner = null;
     }
 
     setupPerformance() {
@@ -2698,7 +3023,19 @@ class GameEngine {
         this.levelDesignerDoubleClickListeners.push(object);
     }
 
-    
+    mouseDown(e) {
+        if (e.target.classList[0] === "level-editor-canvas") {
+            this.levelDesigner.downClick();
+            this.levelDesignerClickListeners.forEach((object) => {
+                object.mouseDowned([e.offsetX, e.offsetY]);
+            });
+        } else if(e.target.classList[0] === "gameCanvas") {
+            // const position = [e.layerX, e.layerY];
+            // this.gameClickListeners.forEach((object) => {
+            //     object.mouseClicked(position);
+            // });
+        }
+    }
 
     mouseClicked(e) {
         if (e.target.classList[0] === "level-editor-canvas") {
@@ -2710,6 +3047,12 @@ class GameEngine {
             this.gameClickListeners.forEach((object) => {
                 object.mouseClicked(position);
             });
+        }
+    }
+
+    mouseUnClicked(e) { 
+        if (e.target.classList[0] === "level-editor-canvas") {
+            this.levelDesigner.unClicked();
         }
     }
 
@@ -2910,7 +3253,6 @@ class GameEngine {
     }
 
     addMouseListener(object) {
-        console.log("hello, game engine");
         this.mouseListeners.push(object);
     }
 
@@ -7600,6 +7942,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.js");
 /* harmony import */ var _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.js");
 /* harmony import */ var _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.js");
+/* harmony import */ var _game_engine_Levels_DesignElements_Operation__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Operation */ "./src/game_engine/Levels/DesignElements/Operation.js");
+
 
 
 
@@ -7689,13 +8033,15 @@ class GameScript {
                 newScene.gameElements = this.loadGameElements(element.gameElements, newScene) || [];
                 return newScene;
             } else if(element.type === "Event") {
-                return new _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_16__.Event(element.spawns, parentScene, this.engine);
+                return new _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_16__.Event(element.spawns, parentScene, element.isShipRelative ,this.engine);
             } else if(element.type === "Time") {
                 return new _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_17__.Time(parentScene, element.waitTime, parentScene);
             } else if(element.type === "LoopBeginning") {
                 return new _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_18__.LoopBeginning(parentScene);
             } else if (element.type === "LoopEnd") {
                 return new _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_18__.LoopEnd({loopIdx: element.loopIdx || 0, repeatTimes: element.repeatTimes}, parentScene);
+            } else if (element.type === "Operation") {
+                return new _game_engine_Levels_DesignElements_Operation__WEBPACK_IMPORTED_MODULE_19__.Operation(element.operand, parentScene, this.engine, this);
             }
         });
     }
@@ -8386,11 +8732,20 @@ class GameView {
             const y = { y: e.layerY };
             const mousePos = [e.layerX, e.layerY];
             this.engine.updateMousePos(mousePos);
+            this.levelDesigner.mouseMoveEvent(e);
             // ship.setFireAngle(mousePos); add to game script event listener thing
         });
 
         window.addEventListener("click", (e) => {
             this.engine.mouseClicked(e);
+        });
+
+        window.addEventListener("mousedown", (e) => {
+            this.engine.mouseDown(e);
+        });
+
+        window.addEventListener("mouseup", (e) => {
+            this.engine.mouseUnClicked(e);
         });
 
         window.addEventListener("dblclick", (e) => {
@@ -8579,6 +8934,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const levelDesignerCtx = levelDesignerCanvas.getContext("2d");
     const animationView = new _AnimationView__WEBPACK_IMPORTED_MODULE_4__.AnimationView(animationWindow);
     const levelDesigner = new _game_engine_Levels_levelDesigner__WEBPACK_IMPORTED_MODULE_3__.LevelDesigner(gameEngine, animationView, levelDesignerCtx);
+    gameEngine.levelDesigner = levelDesigner;
 
     new _game_view__WEBPACK_IMPORTED_MODULE_1__.GameView(gameEngine, ctx, canvasEl, levelDesigner, animationView).start();
 });

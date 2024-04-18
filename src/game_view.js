@@ -84,11 +84,20 @@ export class GameView {
             const y = { y: e.layerY };
             const mousePos = [e.layerX, e.layerY];
             this.engine.updateMousePos(mousePos);
+            this.levelDesigner.mouseMoveEvent(e);
             // ship.setFireAngle(mousePos); add to game script event listener thing
         });
 
         window.addEventListener("click", (e) => {
             this.engine.mouseClicked(e);
+        });
+
+        window.addEventListener("mousedown", (e) => {
+            this.engine.mouseDown(e);
+        });
+
+        window.addEventListener("mouseup", (e) => {
+            this.engine.mouseUnClicked(e);
         });
 
         window.addEventListener("dblclick", (e) => {

@@ -18,6 +18,7 @@ import { Scene } from "./game_engine/Levels/DesignElements/Scene";
 import { Event } from "./game_engine/Levels/DesignElements/Event";
 import { Time } from "./game_engine/Levels/DesignElements/Time";
 import { LoopBeginning, LoopEnd } from "./game_engine/Levels/DesignElements/Loop";
+import {Operation} from "./game_engine/Levels/DesignElements/Operation";
 
 export class GameScript {
     constructor(engine) {
@@ -87,13 +88,15 @@ export class GameScript {
                 newScene.gameElements = this.loadGameElements(element.gameElements, newScene) || [];
                 return newScene;
             } else if(element.type === "Event") {
-                return new Event(element.spawns, parentScene, this.engine);
+                return new Event(element.spawns, parentScene, element.isShipRelative ,this.engine);
             } else if(element.type === "Time") {
                 return new Time(parentScene, element.waitTime, parentScene);
             } else if(element.type === "LoopBeginning") {
                 return new LoopBeginning(parentScene);
             } else if (element.type === "LoopEnd") {
                 return new LoopEnd({loopIdx: element.loopIdx || 0, repeatTimes: element.repeatTimes}, parentScene);
+            } else if (element.type === "Operation") {
+                return new Operation(element.operand, parentScene, this.engine, this);
             }
         });
     }

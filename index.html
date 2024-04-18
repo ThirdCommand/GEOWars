@@ -36,14 +36,19 @@
                 <div class="scene-name-input-submit-container">
                     <label for="Repeats">Repeats:</label>
                     <input class="integer-input" type="text" id="Repeats" >
-                    <label for="StartingIndex">Starting Index:</label>
-                    <input type="text" id="StartingIndex" class="integer-input">
+                    <!-- <label for="StartingIndex">Starting Index:</label>
+                    <input type="text" id="StartingIndex" class="integer-input"> -->
                     <input type="button" id="LoopSubmit" value="Add Loop">
                 </div>
-                <label for="Movement">Move:</label>
-                <div class="scene-name-input-submit-container">
-                    <input type="button" id="MoveLeft" value="Left">
-                    <input type="button" id="MoveRight" value="Right">
+                <div>
+                    <select name="OperationType" id="OperationType">
+                        <option value="SceneTimeFactor">Time Factor for Scene</option>
+                        <option value="SceneNumberFactor">Spawn Number Factor for Scene</option>
+                        <option value="ResetToStartingValues">Reset to Scene StartingValues</option>
+                        <option value="UpgradeBullets">Bullet Upgrade</option>
+                    </select>
+                    <input type="text" id="OperationFactor" class="name-text-input" placeholder="Factor">
+                    <input type="button" id="OperationSubmit" value="Add Operation">
                 </div>
             </div>
         </form>
@@ -70,7 +75,16 @@
                 <label for="angle" class="label-text-event">angle:</label>
                 <input type="text" id="angle" class="coordinate-text">
             </div>
-            <button id="changeCoordinates" >Change Coordinates</button>
+            <div style="color:tomato;">
+                <button id="changeCoordinates" >Change Coordinates</button>
+                <label class="switch">
+                    <input type="checkbox" id="shipRelative">
+                    <span class="slider round"></span>
+                </label>
+                ship relative
+                
+            </div>
+           
             <button id="setRandomCoordinates" >Random Change</button>
             <hr class="spacer" width="100%" size="3" color="tomato"></hr>
             <div>
