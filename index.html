@@ -14,13 +14,8 @@
             <h1 class="editor-heading">Level Creator</h1>
             <div class="formContainer">
                 <div>
-                    <input type="button" id="LevelEditor" value="Create a Level">
                     <input type="button" id="saveGameDesign" value="Save Level">
                     <input type="button" id="startGame" value="Start Game">
-                </div>
-                <div>
-                    <input type="text" id="loadGameDesignInput" >
-                    <input type="button" id="loadGameDesign" value="Load Level">
                 </div>
             </div>
             <hr class="spacer" width="100%" size="3" color="purple"></hr>
@@ -103,16 +98,22 @@
         </div>
     </div>
     <canvas id="LevelEditorCanvas" class="level-editor-canvas" width="1200" height="300"></canvas>
-
     <div id="myModal" class="modal">
-
-        
-
         <div class="modal-content">
             <span class="close">&times;</span>
             <div class="modalText">Control direction with left joystick / WASD</div>
             <div class="modalText">Control firing with right joystick / cursor</div>
             <div class="modalText">Mute/unmute with M</div>
+            <div>
+                <div>
+                    <input type="button" id="startGameModal" value="Start Game">
+                    <input type="button" id="LevelEditorModal" value="Create a Level">
+                </div>
+                <div>
+                    <input type="text" id="loadGameDesignInputModal" >
+                    <input type="button" id="loadGameDesignModal" value="Load Level">
+                </div>
+            </div>
             <!-- <div class="modalText">
             Avoid Enemy Shapes
             </div> -->

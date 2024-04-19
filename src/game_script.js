@@ -73,10 +73,11 @@ export class GameScript {
     startGame(serializedGame) {
         this.serializedGame = serializedGame;
         const game = JSON.parse(serializedGame);
-        console.log(game);
         this.rootScene = new Scene(this, "Root");
         this.rootScene.gameElements = this.loadGameElements(game.gameElements, this.rootScene);
         this.playFromRootScene = true;
+        this.intervalTime = 0;
+        this.ship.transform.pos = [this.startPosition[0], this.startPosition[1], this.startPosition[2]];
     }
 
     // will need to duck type what happens when the scene is done and the game is over

@@ -190,12 +190,12 @@ export class LevelDesigner {
             this.animationView.clear();
             this.animationView.addEnemy(type);
         };
-        makeGame.onclick = (e) => {
-            e.stopPropagation();
-            console.log("game editor opened clicked");
-            this.gameEditorOpened = !this.gameEditorOpened;
-            this.engine.gameEditorOpened = this.gameEditorOpened;
-        };
+        // makeGame.onclick = (e) => {
+        //     e.stopPropagation();
+        //     console.log("game editor opened clicked");
+        //     this.gameEditorOpened = !this.gameEditorOpened;
+        //     this.engine.gameEditorOpened = this.gameEditorOpened;
+        // };
         makeEvent.onclick = (e) => {
             e.stopPropagation();
             this.UIActionsToRun.push(() => this.makeEvent());
@@ -211,11 +211,11 @@ export class LevelDesigner {
             const name = document.getElementById("sceneName").value;
             this.UIActionsToRun.push(() => this.makeScene(name));
         };
-        loadGameDesign.onclick = (e) => {
-            e.stopPropagation();
-            const json = document.getElementById("loadGameDesignInput").value;
-            this.loadGameDesign(json);
-        };
+        // loadGameDesign.onclick = (e) => {
+        //     e.stopPropagation();
+        //     const json = document.getElementById("loadGameDesignInput").value;
+        //     this.loadGameDesign(json);
+        // };
         addTime.onclick = (e) => {
             e.stopPropagation();
             const time = document.getElementById("Time").value;
@@ -268,19 +268,7 @@ export class LevelDesigner {
         startGame.onclick = (e) => {
             e.stopPropagation();
             // serialize game, send to game script
-            this.serializedGame = {
-                gameName: "Game",
-                gameElements: this.gameElements.map(
-                    (element) => element.serialize()
-                ),
-            };
-            const serializedGame = JSON.stringify(this.serializedGame);
-            // I should unselect whatever is selected.
-            // events being the main issue since they have things
-            // on the game 
-            this.engine.gameScript.startGame(serializedGame);
-            this.engine.gameEditorOpened = false;
-            
+            this.startGame();
         };
 
 
@@ -290,6 +278,21 @@ export class LevelDesigner {
         //     const pos = [e.offsetX, e.offsetY];
         //     this.mouseDoubleClicked(pos);
         // });
+    }
+
+    startGame() {
+        this.serializedGame = {
+            gameName: "Game",
+            gameElements: this.gameElements.map(
+                (element) => element.serialize()
+            ),
+        };
+        const serializedGame = JSON.stringify(this.serializedGame);
+        // I should unselect whatever is selected.
+        // events being the main issue since they have things
+        // on the game 
+        this.engine.gameScript.startGame(serializedGame);
+        this.engine.gameEditorOpened = false;
     }
 
     makeTime(time, parentScene = this.expandedScenes[this.expandedScenes.length - 1]) {

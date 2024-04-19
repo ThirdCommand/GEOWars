@@ -13,6 +13,7 @@ export class GameView {
         this.gameEditorOpened = false;
         this.lastTime = 0;
         this.animate = this.animate.bind(this);
+        this.levelDesignLoaded = false;
     }
 
     bindKeyboardKeys() {
@@ -142,28 +143,73 @@ export class GameView {
         // var btn = document.getElementById("myBtn");
 
         // Get the <span> element that closes the modal
-        const xclose = document.getElementsByClassName("close")[0];
+        // const xclose = document.getElementsByClassName("close")[0];
 
         // When the user clicks on <span> (x), close the modal
-        xclose.onclick = (e) => {
-            e.stopPropagation();
-            modal.style.display = "none";
-            this.modelClosed = true;
-        };
+        // xclose.onclick = (e) => {
+        //     e.stopPropagation();
+        //     modal.style.display = "none";
+        //     this.modelClosed = true;
+        // };
 
         // When the user clicks anywhere outside of the modal, close it
         //  window.addEventListener('click', (e) => {
-        window.onclick = (event) => {
-            if (this.modelClosed && !this.gameStarted) {
-                this.gameStarted = true;
-                this.bindKeyboardKeys();
-                requestAnimationFrame(this.animate);
+        // window.onclick = (event) => {
+        //     if (this.modelClosed && !this.gameStarted) {
+        //         this.gameStarted = true;
+        //         this.bindKeyboardKeys();
+        //         requestAnimationFrame(this.animate);
+        //     }
+        //     if (event.target == modal) {
+        //         this.modelClosed = true;
+        //         modal.style.display = "none";
+        //     }
+        // };
+
+        // add listeners to buttons on the modal
+        // have them do the same things they do now.. 
+        // but without the strange order that's required 
+        // for starting the game after loading one, or starting the default one
+        const startButtonModal = document.getElementById("startGameModal");
+        // open the level editor
+        const levelEditorButton = document.getElementById("LevelEditorModal");
+        
+        // load a level either for level editor or for starting the game
+        const loadGameDesignButtonModal = document.getElementById("loadGameDesignModal");
+        // get the text from element: loadGameDesignInputModal
+
+        startButtonModal.onclick = (e) => {
+            e.stopPropagation();
+            this.gameStarted = true;
+            this.bindKeyboardKeys();
+            if(this.levelDesignLoaded){
+                this.levelDesigner.startGame();
             }
-            if (event.target == modal) {
-                this.modelClosed = true;
-                modal.style.display = "none";
-            }
+            requestAnimationFrame(this.animate);
+            modal.style.display = "none";
         };
+
+        levelEditorButton.onclick = (e) => {
+            e.stopPropagation();
+            this.gameStarted = true;
+            this.gameEditorOpened = true;
+            this.bindKeyboardKeys();
+            requestAnimationFrame(this.animate);
+            modal.style.display = "none";
+            this.modelClosed = true;
+            setTimeout(() => {
+                this.levelDesigner.gameEditorOpened = true;
+                this.engine.gameEditorOpened = true;
+            },50);
+        };
+
+        loadGameDesignButtonModal.onclick = (e) => {
+            e.stopPropagation();
+            const json = document.getElementById("loadGameDesignInputModal").value;
+            this.levelDesigner.loadGameDesign(json);
+            this.levelDesignLoaded = true;
+        };
+
     }
 
     animate(time) {

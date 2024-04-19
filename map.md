@@ -61,7 +61,7 @@ this was determined to be an ugly idea
     - [x] multiple of them
     - [x] selectable
     - [x] when selected show array of what is contained in it bellow
-    - [] unExpanding grandparent scene should work and not break things
+    - [ ] unExpanding grandparent scene should work and not break things
       - [x] will need a stack of expanded scenes
     - [x] scenes that are expanded should be double clickable to expand as well without having to unExpand and reExpand the parent scene first
   - [ ] Event
@@ -92,6 +92,7 @@ this was determined to be an ugly idea
       - [x] end
       - [ ] make sprite a little better
       - [ ] editable Loop
+      - [ ] display repeat number
       - [x] delete sister loop when deleting
       - [x] add sister loop when loading
       - [ ] reassign sister when flipped around (user doesn't know which beginning is for which loop)
@@ -104,11 +105,11 @@ this was determined to be an ugly idea
       - [ ] position of ship
       - [ ] number of enemies on map
 
-- [ ] Drag And Drop
-  - [ ] figure out way to capture drag event
-  - [ ] maybe add a placeholder to maintain the correct widths and prevent confusions?
-  - [ ] capture Left and Right events (mouse position while dragging relative to element that is left or right of the selected element)
-  - [ ] use multiple left/rights when shifting over a lot of stuff at once
+- [ ] ship fire direction messed up??
+- [x] Drag And Drop
+  - [x] figure out way to capture drag event
+  - [x] maybe add a placeholder to maintain the correct widths and prevent confusions?
+  - [x] capture Left and Right events (mouse position while dragging relative to element that is left or right of the selected element)
 
 - [x] Save
   - [x] serialize game
