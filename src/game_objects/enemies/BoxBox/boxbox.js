@@ -547,4 +547,3 @@ export class BoxBox extends GameObject {
         }
     }
 }
-console.log('how often is this called?');

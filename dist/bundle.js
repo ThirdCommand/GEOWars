@@ -1812,13 +1812,12 @@ class LevelDesigner {
             this.animationView.clear();
             this.animationView.addEnemy(type);
         };
-        makeGame.onclick = (e) => {
-            e.stopPropagation();
-            console.log("game editor opened clicked");
-            this.gameEditorOpened = !this.gameEditorOpened;
-            this.engine.gameEditorOpened = this.gameEditorOpened;
-            // change text to save or something. accidental click seems bad though
-        };
+        // makeGame.onclick = (e) => {
+        //     e.stopPropagation();
+        //     console.log("game editor opened clicked");
+        //     this.gameEditorOpened = !this.gameEditorOpened;
+        //     this.engine.gameEditorOpened = this.gameEditorOpened;
+        // };
         makeEvent.onclick = (e) => {
             e.stopPropagation();
             this.UIActionsToRun.push(() => this.makeEvent());
@@ -1834,11 +1833,11 @@ class LevelDesigner {
             const name = document.getElementById("sceneName").value;
             this.UIActionsToRun.push(() => this.makeScene(name));
         };
-        loadGameDesign.onclick = (e) => {
-            e.stopPropagation();
-            const json = document.getElementById("loadGameDesignInput").value;
-            this.loadGameDesign(json);
-        };
+        // loadGameDesign.onclick = (e) => {
+        //     e.stopPropagation();
+        //     const json = document.getElementById("loadGameDesignInput").value;
+        //     this.loadGameDesign(json);
+        // };
         addTime.onclick = (e) => {
             e.stopPropagation();
             const time = document.getElementById("Time").value;
@@ -1863,7 +1862,7 @@ class LevelDesigner {
             e.stopPropagation();
             const loop = {
                 repeatTimes: Number(document.getElementById("Repeats").value),
-                loopIdx: Number(document.getElementById("StartingIndex").value),
+                // loopIdx: Number(document.getElementById("StartingIndex").value),
             };
             this.UIActionsToRun.push(() => this.makeLoop(loop));
         };
@@ -1891,19 +1890,7 @@ class LevelDesigner {
         startGame.onclick = (e) => {
             e.stopPropagation();
             // serialize game, send to game script
-            this.serializedGame = {
-                gameName: "Game",
-                gameElements: this.gameElements.map(
-                    (element) => element.serialize()
-                ),
-            };
-            const serializedGame = JSON.stringify(this.serializedGame);
-            // I should unselect whatever is selected.
-            // events being the main issue since they have things
-            // on the game 
-            this.engine.gameScript.startGame(serializedGame);
-            this.engine.gameEditorOpened = false;
-            
+            this.startGame();
         };
 
 
@@ -1913,6 +1900,21 @@ class LevelDesigner {
         //     const pos = [e.offsetX, e.offsetY];
         //     this.mouseDoubleClicked(pos);
         // });
+    }
+
+    startGame() {
+        this.serializedGame = {
+            gameName: "Game",
+            gameElements: this.gameElements.map(
+                (element) => element.serialize()
+            ),
+        };
+        const serializedGame = JSON.stringify(this.serializedGame);
+        // I should unselect whatever is selected.
+        // events being the main issue since they have things
+        // on the game 
+        this.engine.gameScript.startGame(serializedGame);
+        this.engine.gameEditorOpened = false;
     }
 
     makeTime(time, parentScene = this.expandedScenes[this.expandedScenes.length - 1]) {
@@ -5092,7 +5094,6 @@ class BoxBox extends _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameO
         }
     }
 }
-console.log('how often is this called?');
 
 
 /***/ }),
@@ -8018,10 +8019,11 @@ class GameScript {
     startGame(serializedGame) {
         this.serializedGame = serializedGame;
         const game = JSON.parse(serializedGame);
-        console.log(game);
         this.rootScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_15__.Scene(this, "Root");
         this.rootScene.gameElements = this.loadGameElements(game.gameElements, this.rootScene);
         this.playFromRootScene = true;
+        this.intervalTime = 0;
+        this.ship.transform.pos = [this.startPosition[0], this.startPosition[1], this.startPosition[2]];
     }
 
     // will need to duck type what happens when the scene is done and the game is over
@@ -8661,6 +8663,7 @@ class GameView {
         this.gameEditorOpened = false;
         this.lastTime = 0;
         this.animate = this.animate.bind(this);
+        this.levelDesignLoaded = false;
     }
 
     bindKeyboardKeys() {
@@ -8790,28 +8793,73 @@ class GameView {
         // var btn = document.getElementById("myBtn");
 
         // Get the <span> element that closes the modal
-        const xclose = document.getElementsByClassName("close")[0];
+        // const xclose = document.getElementsByClassName("close")[0];
 
         // When the user clicks on <span> (x), close the modal
-        xclose.onclick = (e) => {
-            e.stopPropagation();
-            modal.style.display = "none";
-            this.modelClosed = true;
-        };
+        // xclose.onclick = (e) => {
+        //     e.stopPropagation();
+        //     modal.style.display = "none";
+        //     this.modelClosed = true;
+        // };
 
         // When the user clicks anywhere outside of the modal, close it
         //  window.addEventListener('click', (e) => {
-        window.onclick = (event) => {
-            if (this.modelClosed && !this.gameStarted) {
-                this.gameStarted = true;
-                this.bindKeyboardKeys();
-                requestAnimationFrame(this.animate);
+        // window.onclick = (event) => {
+        //     if (this.modelClosed && !this.gameStarted) {
+        //         this.gameStarted = true;
+        //         this.bindKeyboardKeys();
+        //         requestAnimationFrame(this.animate);
+        //     }
+        //     if (event.target == modal) {
+        //         this.modelClosed = true;
+        //         modal.style.display = "none";
+        //     }
+        // };
+
+        // add listeners to buttons on the modal
+        // have them do the same things they do now.. 
+        // but without the strange order that's required 
+        // for starting the game after loading one, or starting the default one
+        const startButtonModal = document.getElementById("startGameModal");
+        // open the level editor
+        const levelEditorButton = document.getElementById("LevelEditorModal");
+        
+        // load a level either for level editor or for starting the game
+        const loadGameDesignButtonModal = document.getElementById("loadGameDesignModal");
+        // get the text from element: loadGameDesignInputModal
+
+        startButtonModal.onclick = (e) => {
+            e.stopPropagation();
+            this.gameStarted = true;
+            this.bindKeyboardKeys();
+            if(this.levelDesignLoaded){
+                this.levelDesigner.startGame();
             }
-            if (event.target == modal) {
-                this.modelClosed = true;
-                modal.style.display = "none";
-            }
+            requestAnimationFrame(this.animate);
+            modal.style.display = "none";
         };
+
+        levelEditorButton.onclick = (e) => {
+            e.stopPropagation();
+            this.gameStarted = true;
+            this.gameEditorOpened = true;
+            this.bindKeyboardKeys();
+            requestAnimationFrame(this.animate);
+            modal.style.display = "none";
+            this.modelClosed = true;
+            setTimeout(() => {
+                this.levelDesigner.gameEditorOpened = true;
+                this.engine.gameEditorOpened = true;
+            },50);
+        };
+
+        loadGameDesignButtonModal.onclick = (e) => {
+            e.stopPropagation();
+            const json = document.getElementById("loadGameDesignInputModal").value;
+            this.levelDesigner.loadGameDesign(json);
+            this.levelDesignLoaded = true;
+        };
+
     }
 
     animate(time) {
