@@ -195,7 +195,6 @@ export class LevelDesigner {
             console.log("game editor opened clicked");
             this.gameEditorOpened = !this.gameEditorOpened;
             this.engine.gameEditorOpened = this.gameEditorOpened;
-            // change text to save or something. accidental click seems bad though
         };
         makeEvent.onclick = (e) => {
             e.stopPropagation();
@@ -241,7 +240,7 @@ export class LevelDesigner {
             e.stopPropagation();
             const loop = {
                 repeatTimes: Number(document.getElementById("Repeats").value),
-                loopIdx: Number(document.getElementById("StartingIndex").value),
+                // loopIdx: Number(document.getElementById("StartingIndex").value),
             };
             this.UIActionsToRun.push(() => this.makeLoop(loop));
         };
