@@ -237,7 +237,6 @@ class Event {
         // I think I'll have to create the spawns from the serialized data given here
         this.spawns = spawns.map((spawn) => new _Spawn__WEBPACK_IMPORTED_MODULE_4__.Spawn(spawn, gameEngine)); // this is different than the single spawn thing I have in the mock data
         // okay now I'm thoroughly confused. I think I have a plain javascript object as spawns, and also
-        // Spawn objects as spawns. 
     }
 
     update() {
@@ -282,6 +281,21 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
         this.levelDesigner.eventLoadShipRelative(this.isShipRelative);
     }
 
+    addAnotherEnemy(type) {
+        this.levelDesigner.addAnotherEnemy(type);
+    }
+
+    addSpawnToEvent(spawn, enemyPlacer) {
+        this.addSpawn(new _Spawn__WEBPACK_IMPORTED_MODULE_4__.Spawn(spawn, this.engine));
+        if(enemyPlacer) this.addEnemyPlacer(enemyPlacer);
+        this.levelDesigner.enemyPlaced(spawn);
+    }
+
+    removePlacer(enemyPlacer) {
+        this.spawns = this.spawns.filter((spawn) => spawn !== enemyPlacer.spawn);
+        this.enemyPlacers = this.enemyPlacers.filter((placer) => placer !== enemyPlacer);
+    }
+
     // copy and paste should be supported
     copy() {
         return this.levelDesigner.addToClipBoard(new EventObject(this.levelDesigner, this.serialize()));
@@ -314,12 +328,10 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
 
     makeCoordinatesShipRelative() {
         this.isShipRelative = true;
-        console.log(this.isShipRelative);
     }
 
     makeCoordinatesArenaRelative() {
         this.isShipRelative = false;
-        console.log(this.isShipRelative);
     }
 
     loadSpawns() {
@@ -353,6 +365,10 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
         this.spawnSprites[spawn.spawn.type] += 1;
     }
 
+    enemyPlacerClicked(enemyPlacer) {
+        this.levelDesigner.enemyPlacerClicked(enemyPlacer);
+    }
+
     addRandomRandom(spawn) {
         const randomRandomAdded = this.spawns.find((spawny) => spawny.type === 'RANDOM');
         if(randomRandomAdded) {
@@ -377,6 +393,10 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
             this.spawnSprites[spawn.spawn.type] += 1;
             this.addEnemyPlacer(enemyPlacer);
         }
+    }
+
+    createEnemyPlacer(type) {
+        return new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.levelDesigner.engine, {type}, this);
     }
 
     addEnemyPlacer(enemyPlacer) {
@@ -1451,11 +1471,11 @@ const getClickRadius = {
 };
 
 class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
-    constructor(engine, spawn, levelDesigner, loadingEvent) {
+    constructor(engine, spawn, event, loadingEvent) {
         super(engine);
         const {type, location, numberToGenerate, possibleSpawns, angle} = spawn;
         this.addLineSprite(spriteMap[type](this.transform));
-        this.levelDesigner = levelDesigner;
+        this.event = event;
         this.clickRadius = getClickRadius[type];
         this.type = type;
         
@@ -1481,8 +1501,7 @@ class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
     place() {
         this.spawn = {type: this.type, location: this.transform.pos};
         const spawn = this.spawn;
-        this.levelDesigner.addSpawnToEvent(spawn, this);
-        this.levelDesigner.enemyPlaced(spawn);
+        this.event.addSpawnToEvent(spawn, this);
         this.removeMousePosListener();
         this.addMouseClickListener();
     }
@@ -1506,6 +1525,13 @@ class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
         this.remove();
     }
 
+    removeFromEvent() {
+        if(this.event) {
+            this.event.removePlacer(this);
+        }
+        this.remove();
+    }
+
 
 
     addMouseClickListener() {
@@ -1525,7 +1551,7 @@ class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
 
     onMouseClick(mousePos) {
         if (this.originalClickComplete) {
-            this.levelDesigner.enemyPlacerClicked(this);
+            this.event.enemyPlacerClicked(this);
         } else {
             this.originalClickComplete = true;
         }
@@ -1566,7 +1592,7 @@ class PlacingAnimation extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
         this.parentObject.place();
         this.parentObject.lineSprite.spawningScale = 1;
         this.remove();
-        this.parentObject.levelDesigner.addAnotherEnemy(this.parentObject.type);
+        this.parentObject.event.addAnotherEnemy(this.parentObject.type);
     }
 
     updateMousePos(mousePos) {
@@ -1773,44 +1799,33 @@ class LevelDesigner {
             e.stopPropagation();
             const type = "Grunt";
             this.addEnemy(type);
-            this.animationView.clear();
-            this.animationView.addEnemy(type);
+            
         };
 
         addArrowButton.onclick = (e) => {
             e.stopPropagation();
             const type = "Arrow";
             this.addEnemy(type);
-            this.animationView.clear();
-            this.animationView.addEnemy(type);
         };
         addBoxBox.onclick = (e) => {
             e.stopPropagation();
             const type = "BoxBox";
             this.addEnemy(type);
-            this.animationView.clear();
-            this.animationView.addEnemy(type);
         };
         addPinwheel.onclick = (e) => {
             e.stopPropagation();
             const type = "Pinwheel";
             this.addEnemy(type);
-            this.animationView.clear();
-            this.animationView.addEnemy(type);
         };
         addWeaver.onclick = (e) => {
             e.stopPropagation();
             const type = "Weaver";
             this.addEnemy(type);
-            this.animationView.clear();
-            this.animationView.addEnemy(type);
         };
         addSingularity.onclick = (e) => {
             e.stopPropagation();
             const type = "Singularity";
             this.addEnemy(type);
-            this.animationView.clear();
-            this.animationView.addEnemy(type);
         };
         // makeGame.onclick = (e) => {
         //     e.stopPropagation();
@@ -1882,6 +1897,9 @@ class LevelDesigner {
                 if(this.currentMousePos) {
                     this.selectedGameElement?.delete();
                     this.leftJustifyGameElements();
+                } else if(this.currentEnemyPlacer) {
+                    this.currentEnemyPlacer.removeFromEvent();
+                    this.animationView.clear();
                 }
             }
         });
@@ -2233,14 +2251,18 @@ class LevelDesigner {
     }
 
     escapePressed() {
-
         this.currentEnemyPlacer?.remove();
         this.currentEnemyPlacer = undefined;
     }
 
     addEnemy(type) {
+        this.animationView.clear();
+        this.animationView.addEnemy(type);
+
         this.currentEnemyPlacer?.remove();
-        this.currentEnemyPlacer = new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.engine, {type}, this);
+        if(this.selectedGameElement.enemyPlacers) {
+            this.currentEnemyPlacer = this.selectedGameElement.createEnemyPlacer(type);
+        }
     }
 
     addAnotherEnemy(type) {
@@ -2285,6 +2307,7 @@ class LevelDesigner {
             this.selectedGameElement?.addSpawn(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_7__.Spawn(spawn, this.engine));
             if(enemyPlacer) this.selectedGameElement?.addEnemyPlacer(enemyPlacer);
         }
+        this.enemyPlaced(spawn);
     }
 
     update(deltaTime) {
