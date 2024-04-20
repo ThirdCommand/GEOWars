@@ -18,5 +18,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const levelDesigner = new LevelDesigner(gameEngine, animationView, levelDesignerCtx);
     gameEngine.levelDesigner = levelDesigner;
 
-    new GameView(gameEngine, ctx, canvasEl, levelDesigner, animationView).start();
+    const gameView = new GameView(gameEngine, ctx, canvasEl, levelDesigner, animationView).start();
+    levelDesigner.gameView = gameView;
 });

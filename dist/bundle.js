@@ -1956,8 +1956,10 @@ class LevelDesigner {
         if(this.expandedScenes.length === 1) return console.log("can't unexpand the base scene");
         if(this.expandedScenes.indexOf(scene) === -1) return console.log("scene not expanded");
         const bottomExpandedScene = this.expandedScenes.pop();
-        if(scene !== bottomExpandedScene) bottomExpandedScene.unExpandScene();
         this.removeExpandedElements(bottomExpandedScene);
+        bottomExpandedScene.expanded = false;
+        bottomExpandedScene.UILineSprite.expanded = false;
+        if(scene !== bottomExpandedScene) bottomExpandedScene.parentScene.unExpandScene();
     }
 
     mouseMoveEvent(e) {
@@ -8984,7 +8986,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const levelDesigner = new _game_engine_Levels_levelDesigner__WEBPACK_IMPORTED_MODULE_3__.LevelDesigner(gameEngine, animationView, levelDesignerCtx);
     gameEngine.levelDesigner = levelDesigner;
 
-    new _game_view__WEBPACK_IMPORTED_MODULE_1__.GameView(gameEngine, ctx, canvasEl, levelDesigner, animationView).start();
+    const gameView = new _game_view__WEBPACK_IMPORTED_MODULE_1__.GameView(gameEngine, ctx, canvasEl, levelDesigner, animationView).start();
+    levelDesigner.gameView = gameView;
 });
 
 })();

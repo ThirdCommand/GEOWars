@@ -334,8 +334,10 @@ export class LevelDesigner {
         if(this.expandedScenes.length === 1) return console.log("can't unexpand the base scene");
         if(this.expandedScenes.indexOf(scene) === -1) return console.log("scene not expanded");
         const bottomExpandedScene = this.expandedScenes.pop();
-        if(scene !== bottomExpandedScene) bottomExpandedScene.unExpandScene();
         this.removeExpandedElements(bottomExpandedScene);
+        bottomExpandedScene.expanded = false;
+        bottomExpandedScene.UILineSprite.expanded = false;
+        if(scene !== bottomExpandedScene) bottomExpandedScene.parentScene.unExpandScene();
     }
 
     mouseMoveEvent(e) {
