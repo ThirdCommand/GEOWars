@@ -3,7 +3,7 @@ import { UILineSprite } from "../../UI_line_sprite";
 import { Transform } from "../../transform";
 
 import {EnemyPlacer, spriteMap} from "../LevelDesign/EnemyPlacer";
-import { Spawn } from "./Spawn";
+import {Spawn} from "./Spawn";
 
 // maybe this is what is created from the serialized version
 export class Event {
@@ -16,7 +16,6 @@ export class Event {
         // I think I'll have to create the spawns from the serialized data given here
         this.spawns = spawns.map((spawn) => new Spawn(spawn, gameEngine)); // this is different than the single spawn thing I have in the mock data
         // okay now I'm thoroughly confused. I think I have a plain javascript object as spawns, and also
-        // Spawn objects as spawns. 
     }
 
     update() {
@@ -61,6 +60,21 @@ export class EventObject extends UIElement {
         this.levelDesigner.eventLoadShipRelative(this.isShipRelative);
     }
 
+    addAnotherEnemy(type) {
+        this.levelDesigner.addAnotherEnemy(type);
+    }
+
+    addSpawnToEvent(spawn, enemyPlacer) {
+        this.addSpawn(new Spawn(spawn, this.engine));
+        if(enemyPlacer) this.addEnemyPlacer(enemyPlacer);
+        this.levelDesigner.enemyPlaced(spawn);
+    }
+
+    removePlacer(enemyPlacer) {
+        this.spawns = this.spawns.filter((spawn) => spawn !== enemyPlacer.spawn);
+        this.enemyPlacers = this.enemyPlacers.filter((placer) => placer !== enemyPlacer);
+    }
+
     // copy and paste should be supported
     copy() {
         return this.levelDesigner.addToClipBoard(new EventObject(this.levelDesigner, this.serialize()));
@@ -93,12 +107,10 @@ export class EventObject extends UIElement {
 
     makeCoordinatesShipRelative() {
         this.isShipRelative = true;
-        console.log(this.isShipRelative);
     }
 
     makeCoordinatesArenaRelative() {
         this.isShipRelative = false;
-        console.log(this.isShipRelative);
     }
 
     loadSpawns() {
@@ -132,6 +144,10 @@ export class EventObject extends UIElement {
         this.spawnSprites[spawn.spawn.type] += 1;
     }
 
+    enemyPlacerClicked(enemyPlacer) {
+        this.levelDesigner.enemyPlacerClicked(enemyPlacer);
+    }
+
     addRandomRandom(spawn) {
         const randomRandomAdded = this.spawns.find((spawny) => spawny.type === 'RANDOM');
         if(randomRandomAdded) {
@@ -156,6 +172,10 @@ export class EventObject extends UIElement {
             this.spawnSprites[spawn.spawn.type] += 1;
             this.addEnemyPlacer(enemyPlacer);
         }
+    }
+
+    createEnemyPlacer(type) {
+        return new EnemyPlacer(this.levelDesigner.engine, {type}, this);
     }
 
     addEnemyPlacer(enemyPlacer) {

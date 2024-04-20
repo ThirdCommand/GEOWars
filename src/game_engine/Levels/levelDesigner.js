@@ -151,44 +151,33 @@ export class LevelDesigner {
             e.stopPropagation();
             const type = "Grunt";
             this.addEnemy(type);
-            this.animationView.clear();
-            this.animationView.addEnemy(type);
+            
         };
 
         addArrowButton.onclick = (e) => {
             e.stopPropagation();
             const type = "Arrow";
             this.addEnemy(type);
-            this.animationView.clear();
-            this.animationView.addEnemy(type);
         };
         addBoxBox.onclick = (e) => {
             e.stopPropagation();
             const type = "BoxBox";
             this.addEnemy(type);
-            this.animationView.clear();
-            this.animationView.addEnemy(type);
         };
         addPinwheel.onclick = (e) => {
             e.stopPropagation();
             const type = "Pinwheel";
             this.addEnemy(type);
-            this.animationView.clear();
-            this.animationView.addEnemy(type);
         };
         addWeaver.onclick = (e) => {
             e.stopPropagation();
             const type = "Weaver";
             this.addEnemy(type);
-            this.animationView.clear();
-            this.animationView.addEnemy(type);
         };
         addSingularity.onclick = (e) => {
             e.stopPropagation();
             const type = "Singularity";
             this.addEnemy(type);
-            this.animationView.clear();
-            this.animationView.addEnemy(type);
         };
         // makeGame.onclick = (e) => {
         //     e.stopPropagation();
@@ -260,6 +249,9 @@ export class LevelDesigner {
                 if(this.currentMousePos) {
                     this.selectedGameElement?.delete();
                     this.leftJustifyGameElements();
+                } else if(this.currentEnemyPlacer) {
+                    this.currentEnemyPlacer.removeFromEvent();
+                    this.animationView.clear();
                 }
             }
         });
@@ -611,14 +603,18 @@ export class LevelDesigner {
     }
 
     escapePressed() {
-
         this.currentEnemyPlacer?.remove();
         this.currentEnemyPlacer = undefined;
     }
 
     addEnemy(type) {
+        this.animationView.clear();
+        this.animationView.addEnemy(type);
+
         this.currentEnemyPlacer?.remove();
-        this.currentEnemyPlacer = new EnemyPlacer(this.engine, {type}, this);
+        if(this.selectedGameElement.enemyPlacers) {
+            this.currentEnemyPlacer = this.selectedGameElement.createEnemyPlacer(type);
+        }
     }
 
     addAnotherEnemy(type) {
@@ -663,6 +659,7 @@ export class LevelDesigner {
             this.selectedGameElement?.addSpawn(new Spawn(spawn, this.engine));
             if(enemyPlacer) this.selectedGameElement?.addEnemyPlacer(enemyPlacer);
         }
+        this.enemyPlaced(spawn);
     }
 
     update(deltaTime) {

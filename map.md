@@ -26,9 +26,37 @@ gameSequence = [scene1Start, event, event, wait, event, scene3End, scene2Start, 
 
 this was determined to be an ugly idea
 
-## check game script for types of scenes and find the best way to handle them
-
 ## UI
+
+- [ ] UI will need to handle screen resizing right
+  - [ ] When screen longer, canvas becomes wider and more 
+- [ ] need way to go from level designer to playing the game that was made
+- [ ] Pieces
+  - [ ] Scene
+    - [ ] Deleting parent scene works
+  - [ ] Event
+    - [ ] delete selected spawn
+    - [ ] multi select
+    - [ ] copy/paste
+    - [ ] angle of... everything?
+    - [ ] make it so you don't have to reselect to see the new overlay data in the animation view
+  - [ ] Time
+    - [ ] editable
+  - [ ] Loop
+    - [ ] make sprite a little better
+    - [ ] editable Loop
+    - [ ] display repeat number
+    - [ ] reassign sister when flipped around (user doesn't know which beginning is for which loop)
+  - [ ] Operation
+    - [ ] check a number and change any element value in reaction to it
+    - [ ] position of ship
+    - [ ] number of enemies on map
+- [ ] animation in level editor space: scroll-ability, vertical, horizontal
+
+- [ ] have following "animation" when actually playing the level so you know where in the sequence you are
+- [ ] allow pause and playbacks (maybe a real game could come from that somehow lol)
+
+## UI Completed
 
 - [x] added placing feature with a pallet
 - [x] double click event location
@@ -42,20 +70,19 @@ this was determined to be an ugly idea
   - [x] I'll have to either add vertical scrolling while selected nested elements, or have the canvas grow vertically
 - [x] fix regression where placing enemies fails
 - [x] fix regression where placing enemies works but animation window fails somehow lol
-- [ ] UI will need to handle screen resizing right
-  - [ ] When screen longer, canvas becomes wider and more elements are seen
+elements are seen
 
 - [x] need way to open level designer
 
 - [x] need way to select normal game or level designed game
-- [ ] need way to go from level designer to playing the game that was made
+
 
 - [x] need to store the placed enemies so they can be serialized
 
 - [x] need UI for scene timeline (woof)
   - [x] scrolling behavior means I need update cycles
 - [x] Get First Piece Done
-- [ ] Pieces:
+- [x] Pieces:
   - [x] Delete UI Elements
   - [x] Scene
     - [x] name
@@ -65,7 +92,7 @@ this was determined to be an ugly idea
     - [x] unExpanding grandparent scene should work and not break things
       - [x] will need a stack of expanded scenes
     - [x] scenes that are expanded should be double clickable to expand as well without having to unExpand and reExpand the parent scene first
-  - [ ] Event
+  - [x] Event
     - [x] fix boxbox sprite for placing and placed
     - [x] ship spawn symbols on square
     - [x] count of each
@@ -77,36 +104,23 @@ this was determined to be an ugly idea
     - [x] randomly choose from list of possible (number has to be chosen too... hmm)
     - [x] escape key for getting out of about to place element
     - [x] angle of the Arrows
-    - [ ] delete spawn
-    - [ ] multi select
-    - [ ] copy/paste
-    - [ ] angle of... everything?
-    - [ ] make it so you don't have to reselect to see the new overlay data in the animation view
     - [x] include ship position as a possible reference (spawn things around ship)
       - [x] handle case where ship is close to edge
   - [x] Time
     - [x] add UI for time
-    - [ ] editable time
-  - [ ] Loop
+  - [x] Loop
     - [x] add UI elements for loop type
       - [x] beginning
       - [x] end
-      - [ ] make sprite a little better
-      - [ ] editable Loop
-      - [ ] display repeat number
       - [x] delete sister loop when deleting
       - [x] add sister loop when loading
-      - [ ] reassign sister when flipped around (user doesn't know which beginning is for which loop)
   - [x] Operation: not fully baked yet. repeat "until" etc
     - [x] something applied to selected elements
     - [x] decrease the timing between spawns
     - [x] increase a number
     - [x] add game flags, like bullet upgrades... that might be it haha
-    - [ ] check a number and change any element value in reaction to it
-      - [ ] position of ship
-      - [ ] number of enemies on map
 
-- [ ] ship fire direction messed up??
+- [x] ship fire direction messed up??
 - [x] Drag And Drop
   - [x] figure out way to capture drag event
   - [x] maybe add a placeholder to maintain the correct widths and prevent confusions?
@@ -119,17 +133,10 @@ this was determined to be an ugly idea
   - [x] load serialized game
   - [x] each piece must be able to be loaded from its serialized version
     - [x] scenes present that largest challenge
-- [ ] Play Created Game
-  - [x] get it to work
-  - [ ] try nested scenes too
-- [ ] animation in level editor space: scroll-ability, vertical, horizontal
-
-- [ ] have following "animation" when actually playing the level so you know where in the sequence you are
-- [ ] allow pause and playbacks (maybe a real game could come from that somehow lol)
-- [ ] need way to move serialized levels to the game
+- [x] need way to move serialized levels to the game
 
 - [x] need to not be zoomed in 
-- [ ] and not have ship
+
 
 enemy selector
 
@@ -201,6 +208,3 @@ I'm using nodist for version management... no memory of setting this up
   - [x] bullet upgrade "bend" instead of spread
   - second upgrade?
   - change with trigger press?
-
-## Bugs
-- [ ] hide or disable buttons until game is started  

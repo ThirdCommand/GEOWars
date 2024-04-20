@@ -46,11 +46,11 @@ const getClickRadius = {
 };
 
 export class EnemyPlacer extends GameObject {
-    constructor(engine, spawn, levelDesigner, loadingEvent) {
+    constructor(engine, spawn, event, loadingEvent) {
         super(engine);
         const {type, location, numberToGenerate, possibleSpawns, angle} = spawn;
         this.addLineSprite(spriteMap[type](this.transform));
-        this.levelDesigner = levelDesigner;
+        this.event = event;
         this.clickRadius = getClickRadius[type];
         this.type = type;
         
@@ -76,8 +76,7 @@ export class EnemyPlacer extends GameObject {
     place() {
         this.spawn = {type: this.type, location: this.transform.pos};
         const spawn = this.spawn;
-        this.levelDesigner.addSpawnToEvent(spawn, this);
-        this.levelDesigner.enemyPlaced(spawn);
+        this.event.addSpawnToEvent(spawn, this);
         this.removeMousePosListener();
         this.addMouseClickListener();
     }
@@ -101,6 +100,13 @@ export class EnemyPlacer extends GameObject {
         this.remove();
     }
 
+    removeFromEvent() {
+        if(this.event) {
+            this.event.removePlacer(this);
+        }
+        this.remove();
+    }
+
 
 
     addMouseClickListener() {
@@ -120,7 +126,7 @@ export class EnemyPlacer extends GameObject {
 
     onMouseClick(mousePos) {
         if (this.originalClickComplete) {
-            this.levelDesigner.enemyPlacerClicked(this);
+            this.event.enemyPlacerClicked(this);
         } else {
             this.originalClickComplete = true;
         }
