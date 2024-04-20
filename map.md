@@ -45,9 +45,10 @@ this was determined to be an ugly idea
 - [ ] UI will need to handle screen resizing right
   - [ ] When screen longer, canvas becomes wider and more elements are seen
 
-- [ ] need way to open level designer
+- [x] need way to open level designer
 
-- [ ] need way to select normal game or level designed game
+- [x] need way to select normal game or level designed game
+- [ ] need way to go from level designer to playing the game that was made
 
 - [x] need to store the placed enemies so they can be serialized
 
@@ -61,7 +62,7 @@ this was determined to be an ugly idea
     - [x] multiple of them
     - [x] selectable
     - [x] when selected show array of what is contained in it bellow
-    - [ ] unExpanding grandparent scene should work and not break things
+    - [x] unExpanding grandparent scene should work and not break things
       - [x] will need a stack of expanded scenes
     - [x] scenes that are expanded should be double clickable to expand as well without having to unExpand and reExpand the parent scene first
   - [ ] Event
