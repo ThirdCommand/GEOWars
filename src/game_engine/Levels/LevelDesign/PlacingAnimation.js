@@ -12,9 +12,8 @@ export class PlacingAnimation extends GameObject {
     // Mouse handling should call this I think?
     placeEnemy() {
         this.parentObject.place();
-        this.parentObject.lineSprite.spawningScale = 1;
         this.remove();
-        this.parentObject.event.addAnotherEnemy(this.parentObject.type);
+
     }
 
     updateMousePos(mousePos) {

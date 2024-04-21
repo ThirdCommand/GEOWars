@@ -53,8 +53,11 @@ export class EnemyPlacer extends GameObject {
         this.event = event;
         this.clickRadius = getClickRadius[type];
         this.type = type;
+
+        this.placed = false;
         
         if(loadingEvent) {
+            this.placed = true;
             if(location === "RANDOM") {
                 this.transform.pos[0] = 500;
                 this.transform.pos[1] = 500;
@@ -66,19 +69,19 @@ export class EnemyPlacer extends GameObject {
                 this.transform.angle = angle;
                 this.spawn = spawn;
             }   
-            this.originalClickComplete = true;
         } else {
-            this.originalClickComplete = false;
             this.addChildGameObject(new PlacingAnimation(this.gameEngine));
         }
     }
 
     place() {
         this.spawn = {type: this.type, location: this.transform.pos};
+        this.lineSprite.spawningScale = 1;
         const spawn = this.spawn;
         this.event.addSpawnToEvent(spawn, this);
         this.removeMousePosListener();
         this.addMouseClickListener();
+        this.event.addAnotherEnemy(this.type);
     }
 
     setCoordinates(x, y, angle) {
@@ -125,11 +128,7 @@ export class EnemyPlacer extends GameObject {
     }
 
     onMouseClick(mousePos) {
-        if (this.originalClickComplete) {
-            this.event.enemyPlacerClicked(this);
-        } else {
-            this.originalClickComplete = true;
-        }
+        this.event.enemyPlacerClicked(this);
     }
 
 

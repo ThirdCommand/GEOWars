@@ -1478,8 +1478,11 @@ class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
         this.event = event;
         this.clickRadius = getClickRadius[type];
         this.type = type;
+
+        this.placed = false;
         
         if(loadingEvent) {
+            this.placed = true;
             if(location === "RANDOM") {
                 this.transform.pos[0] = 500;
                 this.transform.pos[1] = 500;
@@ -1491,19 +1494,19 @@ class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
                 this.transform.angle = angle;
                 this.spawn = spawn;
             }   
-            this.originalClickComplete = true;
         } else {
-            this.originalClickComplete = false;
             this.addChildGameObject(new _PlacingAnimation__WEBPACK_IMPORTED_MODULE_1__.PlacingAnimation(this.gameEngine));
         }
     }
 
     place() {
         this.spawn = {type: this.type, location: this.transform.pos};
+        this.lineSprite.spawningScale = 1;
         const spawn = this.spawn;
         this.event.addSpawnToEvent(spawn, this);
         this.removeMousePosListener();
         this.addMouseClickListener();
+        this.event.addAnotherEnemy(this.type);
     }
 
     setCoordinates(x, y, angle) {
@@ -1550,11 +1553,7 @@ class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
     }
 
     onMouseClick(mousePos) {
-        if (this.originalClickComplete) {
-            this.event.enemyPlacerClicked(this);
-        } else {
-            this.originalClickComplete = true;
-        }
+        this.event.enemyPlacerClicked(this);
     }
 
 
@@ -1590,9 +1589,8 @@ class PlacingAnimation extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
     // Mouse handling should call this I think?
     placeEnemy() {
         this.parentObject.place();
-        this.parentObject.lineSprite.spawningScale = 1;
         this.remove();
-        this.parentObject.event.addAnotherEnemy(this.parentObject.type);
+
     }
 
     updateMousePos(mousePos) {
@@ -1768,6 +1766,7 @@ class LevelDesigner {
             const x = Number(document.getElementById("xCoordinate").value);
             const y = Number(document.getElementById("yCoordinate").value);
             const angle = Number(document.getElementById("angle").value);
+            console.log({x, y, angle});
             this.currentEnemyPlacer?.setCoordinates(x, y, angle);
         };
 
@@ -2243,7 +2242,7 @@ class LevelDesigner {
 
     getPalletModal() {
         const modal = document.getElementById("pallet");
-    // add functions to buttons of the pallet
+        // add functions to buttons of the pallet
     }
 
     enemyPlaced(spawn) {
@@ -2251,7 +2250,11 @@ class LevelDesigner {
     }
 
     escapePressed() {
+        // I want this to stop placing an enemy
+        // or if there's nothing placing, then clear the animation view
+        // 
         this.currentEnemyPlacer?.remove();
+        this.animationView.clear();
         this.currentEnemyPlacer = undefined;
     }
 
@@ -2262,11 +2265,17 @@ class LevelDesigner {
         this.currentEnemyPlacer?.remove();
         if(this.selectedGameElement.enemyPlacers) {
             this.currentEnemyPlacer = this.selectedGameElement.createEnemyPlacer(type);
+        } else {
+            throw Error('event should be selected to add an enemy');
         }
     }
 
     addAnotherEnemy(type) {
-        this.currentEnemyPlacer = new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.engine, {type}, this);
+        if(this.selectedGameElement.enemyPlacers) {
+            this.currentEnemyPlacer = this.selectedGameElement.createEnemyPlacer(type);
+        } else {
+            throw Error('event should be selected to add another enemy');
+        }
     }
 
     // might be redundent and useless TODO

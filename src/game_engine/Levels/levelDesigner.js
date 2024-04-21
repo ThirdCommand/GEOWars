@@ -120,6 +120,7 @@ export class LevelDesigner {
             const x = Number(document.getElementById("xCoordinate").value);
             const y = Number(document.getElementById("yCoordinate").value);
             const angle = Number(document.getElementById("angle").value);
+            console.log({x, y, angle});
             this.currentEnemyPlacer?.setCoordinates(x, y, angle);
         };
 
@@ -595,7 +596,7 @@ export class LevelDesigner {
 
     getPalletModal() {
         const modal = document.getElementById("pallet");
-    // add functions to buttons of the pallet
+        // add functions to buttons of the pallet
     }
 
     enemyPlaced(spawn) {
@@ -603,7 +604,11 @@ export class LevelDesigner {
     }
 
     escapePressed() {
+        // I want this to stop placing an enemy
+        // or if there's nothing placing, then clear the animation view
+        // 
         this.currentEnemyPlacer?.remove();
+        this.animationView.clear();
         this.currentEnemyPlacer = undefined;
     }
 
@@ -614,11 +619,17 @@ export class LevelDesigner {
         this.currentEnemyPlacer?.remove();
         if(this.selectedGameElement.enemyPlacers) {
             this.currentEnemyPlacer = this.selectedGameElement.createEnemyPlacer(type);
+        } else {
+            throw Error('event should be selected to add an enemy');
         }
     }
 
     addAnotherEnemy(type) {
-        this.currentEnemyPlacer = new EnemyPlacer(this.engine, {type}, this);
+        if(this.selectedGameElement.enemyPlacers) {
+            this.currentEnemyPlacer = this.selectedGameElement.createEnemyPlacer(type);
+        } else {
+            throw Error('event should be selected to add another enemy');
+        }
     }
 
     // might be redundent and useless TODO
