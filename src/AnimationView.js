@@ -29,7 +29,13 @@ export class AnimationView {
         this.overlayTextCleared = true;
     }
 
-    enemySelected({type, location, numberToGenerate, possibleSpawns, angle}) {
+    enemyPlacerSelected(enemyPlacer) {
+        this.clear();
+        this.addEnemy(enemyPlacer.type);
+        this.addOverlayText(enemyPlacer.spawn);
+    }
+
+    addOverlayText({type, location, numberToGenerate, possibleSpawns, angle}) {
         possibleSpawns = possibleSpawns || [];
         this.overlayTextCleared = false;
         const locationText = [Math.trunc(location[0].toString()), Math.trunc(location[1]).toString()];
@@ -155,7 +161,6 @@ export class AnimationView {
         }
         const index = this.gameObjects.indexOf(gameObject);
         if (index !== -1) this.gameObjects.splice(index, 1);
-       
     }
 
     addLineSprite(lineSprite) {

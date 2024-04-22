@@ -35,10 +35,12 @@ this was determined to be an ugly idea
   - [ ] Scene
     - [ ] Deleting parent scene works
   - [ ] Event
-    - [ ] delete selected spawn
+    - [x] delete selected spawn
     - [ ] multi select
     - [ ] copy/paste
     - [ ] angle of... everything?
+    - [ ] edit just angle so I don't have to put the same coordinates in
+    - [ ] angle slider
     - [ ] make it so you don't have to reselect to see the new overlay data in the animation view
   - [ ] Time
     - [ ] editable

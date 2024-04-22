@@ -60,14 +60,10 @@ export class EventObject extends UIElement {
         this.levelDesigner.eventLoadShipRelative(this.isShipRelative);
     }
 
-    addAnotherEnemy(type) {
-        this.levelDesigner.addAnotherEnemy(type);
-    }
-
-    addSpawnToEvent(spawn, enemyPlacer) {
+    enemyPlaced(spawn, enemyPlacer) {
         this.addSpawn(new Spawn(spawn, this.engine));
-        if(enemyPlacer) this.addEnemyPlacer(enemyPlacer);
-        this.levelDesigner.enemyPlaced(spawn);
+        this.addEnemyPlacer(enemyPlacer);
+        this.levelDesigner.addingAnotherEnemy(this.createEnemyPlacer(spawn.type));
     }
 
     removePlacer(enemyPlacer) {
@@ -157,7 +153,6 @@ export class EventObject extends UIElement {
             enemyPlacer.spawn.numberToGenerate = spawn.spawn.numberToGenerate;
             enemyPlacer.spawn.possibleSpawns = spawn.spawn.possibleSpawns;
         } else {
-            this.spawns.push(spawn.spawn);
             const enemyPlacer = new EnemyPlacer(
                 this.levelDesigner.engine, 
                 {
@@ -169,7 +164,7 @@ export class EventObject extends UIElement {
                 this.levelDesigner, 
                 true
             );
-            this.spawnSprites[spawn.spawn.type] += 1;
+            this.addSpawn(spawn);
             this.addEnemyPlacer(enemyPlacer);
         }
     }

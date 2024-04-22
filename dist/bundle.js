@@ -51,7 +51,13 @@ class AnimationView {
         this.overlayTextCleared = true;
     }
 
-    enemySelected({type, location, numberToGenerate, possibleSpawns, angle}) {
+    enemyPlacerSelected(enemyPlacer) {
+        this.clear();
+        this.addEnemy(enemyPlacer.type);
+        this.addOverlayText(enemyPlacer.spawn);
+    }
+
+    addOverlayText({type, location, numberToGenerate, possibleSpawns, angle}) {
         possibleSpawns = possibleSpawns || [];
         this.overlayTextCleared = false;
         const locationText = [Math.trunc(location[0].toString()), Math.trunc(location[1]).toString()];
@@ -177,7 +183,6 @@ class AnimationView {
         }
         const index = this.gameObjects.indexOf(gameObject);
         if (index !== -1) this.gameObjects.splice(index, 1);
-       
     }
 
     addLineSprite(lineSprite) {
@@ -281,14 +286,10 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
         this.levelDesigner.eventLoadShipRelative(this.isShipRelative);
     }
 
-    addAnotherEnemy(type) {
-        this.levelDesigner.addAnotherEnemy(type);
-    }
-
-    addSpawnToEvent(spawn, enemyPlacer) {
+    enemyPlaced(spawn, enemyPlacer) {
         this.addSpawn(new _Spawn__WEBPACK_IMPORTED_MODULE_4__.Spawn(spawn, this.engine));
-        if(enemyPlacer) this.addEnemyPlacer(enemyPlacer);
-        this.levelDesigner.enemyPlaced(spawn);
+        this.addEnemyPlacer(enemyPlacer);
+        this.levelDesigner.addingAnotherEnemy(this.createEnemyPlacer(spawn.type));
     }
 
     removePlacer(enemyPlacer) {
@@ -378,7 +379,6 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
             enemyPlacer.spawn.numberToGenerate = spawn.spawn.numberToGenerate;
             enemyPlacer.spawn.possibleSpawns = spawn.spawn.possibleSpawns;
         } else {
-            this.spawns.push(spawn.spawn);
             const enemyPlacer = new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(
                 this.levelDesigner.engine, 
                 {
@@ -390,7 +390,7 @@ class EventObject extends _UI_Element__WEBPACK_IMPORTED_MODULE_0__.UIElement {
                 this.levelDesigner, 
                 true
             );
-            this.spawnSprites[spawn.spawn.type] += 1;
+            this.addSpawn(spawn);
             this.addEnemyPlacer(enemyPlacer);
         }
     }
@@ -1478,8 +1478,10 @@ class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
         this.event = event;
         this.clickRadius = getClickRadius[type];
         this.type = type;
+        this.placed = false;
         
         if(loadingEvent) {
+            this.placed = true;
             if(location === "RANDOM") {
                 this.transform.pos[0] = 500;
                 this.transform.pos[1] = 500;
@@ -1491,17 +1493,19 @@ class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
                 this.transform.angle = angle;
                 this.spawn = spawn;
             }   
-            this.originalClickComplete = true;
         } else {
-            this.originalClickComplete = false;
             this.addChildGameObject(new _PlacingAnimation__WEBPACK_IMPORTED_MODULE_1__.PlacingAnimation(this.gameEngine));
         }
     }
 
     place() {
+        if(this.placed) return;
         this.spawn = {type: this.type, location: this.transform.pos};
+        this.lineSprite.spawningScale = 1;
         const spawn = this.spawn;
-        this.event.addSpawnToEvent(spawn, this);
+        this.placed = true;
+        this.event.enemyPlaced(spawn, this);
+
         this.removeMousePosListener();
         this.addMouseClickListener();
     }
@@ -1512,6 +1516,7 @@ class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
         this.transform.pos[1] = y || this.transform.pos[1];
         this.transform.angle = radiansAngle || this.transform.angle;
         this.spawn.angle = radiansAngle || this.spawn.angle;
+        this.event.levelDesigner.updateAnimationViewAngle(radiansAngle);
     }
 
     setRandomCoordinates() {
@@ -1550,11 +1555,7 @@ class EnemyPlacer extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject {
     }
 
     onMouseClick(mousePos) {
-        if (this.originalClickComplete) {
-            this.event.enemyPlacerClicked(this);
-        } else {
-            this.originalClickComplete = true;
-        }
+        this.event.enemyPlacerClicked(this);
     }
 
 
@@ -1589,10 +1590,9 @@ class PlacingAnimation extends _game_object__WEBPACK_IMPORTED_MODULE_0__.GameObj
 
     // Mouse handling should call this I think?
     placeEnemy() {
+        this.removeMouseListeners();
         this.parentObject.place();
-        this.parentObject.lineSprite.spawningScale = 1;
         this.remove();
-        this.parentObject.event.addAnotherEnemy(this.parentObject.type);
     }
 
     updateMousePos(mousePos) {
@@ -1768,6 +1768,7 @@ class LevelDesigner {
             const x = Number(document.getElementById("xCoordinate").value);
             const y = Number(document.getElementById("yCoordinate").value);
             const angle = Number(document.getElementById("angle").value);
+            console.log({x, y, angle});
             this.currentEnemyPlacer?.setCoordinates(x, y, angle);
         };
 
@@ -1798,34 +1799,34 @@ class LevelDesigner {
         addGruntButton.onclick = (e) => {
             e.stopPropagation();
             const type = "Grunt";
-            this.addEnemy(type);
+            this.addEnemyButton(type);
             
         };
 
         addArrowButton.onclick = (e) => {
             e.stopPropagation();
             const type = "Arrow";
-            this.addEnemy(type);
+            this.addEnemyButton(type);
         };
         addBoxBox.onclick = (e) => {
             e.stopPropagation();
             const type = "BoxBox";
-            this.addEnemy(type);
+            this.addEnemyButton(type);
         };
         addPinwheel.onclick = (e) => {
             e.stopPropagation();
             const type = "Pinwheel";
-            this.addEnemy(type);
+            this.addEnemyButton(type);
         };
         addWeaver.onclick = (e) => {
             e.stopPropagation();
             const type = "Weaver";
-            this.addEnemy(type);
+            this.addEnemyButton(type);
         };
         addSingularity.onclick = (e) => {
             e.stopPropagation();
             const type = "Singularity";
-            this.addEnemy(type);
+            this.addEnemyButton(type);
         };
         // makeGame.onclick = (e) => {
         //     e.stopPropagation();
@@ -2221,9 +2222,7 @@ class LevelDesigner {
     }
 
     enemyPlacerClicked(enemyPlacer) {
-        this.animationView.clear();
-        this.animationView.addEnemy(enemyPlacer.type);
-        this.animationView.enemySelected(enemyPlacer.spawn);
+        this.animationView.enemyPlacerSelected(enemyPlacer);
         this.currentEnemyPlacer = enemyPlacer;
     }
 
@@ -2243,30 +2242,40 @@ class LevelDesigner {
 
     getPalletModal() {
         const modal = document.getElementById("pallet");
-    // add functions to buttons of the pallet
+        // add functions to buttons of the pallet
     }
 
-    enemyPlaced(spawn) {
-        this.animationView.enemySelected(spawn);
-    }
+    // enemyPlaced(spawn) {
+    //     this.animationView.enemyPlaced(spawn);
+    // }
 
     escapePressed() {
-        this.currentEnemyPlacer?.remove();
+        if(!this.currentEnemyPlacer.placed) {
+            this.currentEnemyPlacer?.remove();
+        }
+        
+        this.animationView.clear();
         this.currentEnemyPlacer = undefined;
     }
 
-    addEnemy(type) {
+    addEnemyButton(type) {
         this.animationView.clear();
         this.animationView.addEnemy(type);
 
         this.currentEnemyPlacer?.remove();
         if(this.selectedGameElement.enemyPlacers) {
             this.currentEnemyPlacer = this.selectedGameElement.createEnemyPlacer(type);
+        } else {
+            throw Error('event should be selected to add an enemy');
         }
     }
 
-    addAnotherEnemy(type) {
-        this.currentEnemyPlacer = new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer(this.engine, {type}, this);
+    updateAnimationViewAngle(radiansAngle) {
+        this.animationView.gameObjects[0].transform.angle = radiansAngle;
+    }
+
+    addingAnotherEnemy(enemyPlacer) {
+        this.currentEnemyPlacer = enemyPlacer;
     }
 
     // might be redundent and useless TODO
@@ -2300,14 +2309,6 @@ class LevelDesigner {
         if(this.selectedGameElement.enemyPlacers) {
             this.selectedGameElement?.addRandomRandom(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_7__.Spawn(spawn, this.engine));
         }
-    }
-
-    addSpawnToEvent(spawn, enemyPlacer) {
-        if(this.selectedGameElement.enemyPlacers) {
-            this.selectedGameElement?.addSpawn(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_7__.Spawn(spawn, this.engine));
-            if(enemyPlacer) this.selectedGameElement?.addEnemyPlacer(enemyPlacer);
-        }
-        this.enemyPlaced(spawn);
     }
 
     update(deltaTime) {
@@ -2851,9 +2852,16 @@ class GameEngine {
         this.subscribers = [];
         this.muted = true;
         this.mouseListeners = [];
+
         this.gameClickListeners = [];
-        this.levelDesignerClickListeners = [];
+        this.gameClickListenersToAdd = [];
+        this.gameClickListenersToRemove = [];
+
         this.gameDoubleClickListeners = [];
+        this.gameDoubleClickListenersToAdd = [];
+        this.gameDoubleClickListenersToRemove = [];
+
+        this.levelDesignerClickListeners = [];
         this.levelDesignerDoubleClickListeners = [];
         this.doubleClickListeners = [];
         this.leftControlStickListeners = [];
@@ -2952,6 +2960,11 @@ class GameEngine {
             renderTime,
             scriptTime,
         );
+
+        this.addClickListenersAfterTick();
+        this.addDoubleClickListenersAfterTick();
+        this.removeClickListenersAfterTick();
+        this.removeDoubleClickListenerAfterTick();
     }
 
     collectPerformanceData(
@@ -3035,12 +3048,28 @@ class GameEngine {
     // ******** mouse stuff *******
 
     addClickListener(object) {
-        this.gameClickListeners.push(object);
+        this.gameClickListenersToAdd.push(object);
+    }
+
+    addClickListenersAfterTick() {
+        this.gameClickListenersToAdd.forEach((object) => {
+            this.gameClickListeners.push(object);
+        });
+        this.gameClickListenersToAdd = [];
     }
 
     addDoubleClickListener(object) {
-        this.gameDoubleClickListeners.push(object);
+        this.gameDoubleClickListenersToAdd.push(object);
     }
+
+    addDoubleClickListenersAfterTick() {
+        this.gameDoubleClickListenersToAdd.forEach((object) => {
+            this.gameDoubleClickListeners.push(object);
+        });
+        this.gameDoubleClickListenersToAdd = [];
+    }
+
+
 
     addLevelDesignerClickListener(object) {
         this.levelDesignerClickListeners.push(object);
@@ -3097,13 +3126,27 @@ class GameEngine {
     }
 
     removeClickListener(object) {
-        const index = this.gameClickListeners.indexOf(object);
-        if (index !== -1) this.gameClickListeners.splice(index, 1);
+        this.gameClickListenersToRemove.push(object);
+    }
+
+    removeClickListenersAfterTick() {
+        this.gameClickListenersToRemove.forEach((object) => {
+            const index = this.gameClickListeners.indexOf(object);
+            if (index !== -1) this.gameClickListeners.splice(index, 1);
+        });
+        this.gameClickListenersToRemove = [];
     }
 
     removeDoubleClickListener(object) {
-        const index = this.gameDoubleClickListeners.indexOf(object);
-        if (index !== -1) this.gameDoubleClickListeners.splice(index, 1);
+        this.gameDoubleClickListenersToRemove.push(object);
+    }
+
+    removeDoubleClickListenerAfterTick() {
+        this.gameDoubleClickListenersToRemove.forEach((object) => {
+            const index = this.gameDoubleClickListeners.indexOf(object);
+            if (index !== -1) this.gameDoubleClickListeners.splice(index, 1);
+        });
+        this.gameDoubleClickListenersToRemove = [];
     }
 
     removeLevelDesignerClickListener(object) {

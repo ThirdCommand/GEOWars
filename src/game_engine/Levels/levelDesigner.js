@@ -120,6 +120,7 @@ export class LevelDesigner {
             const x = Number(document.getElementById("xCoordinate").value);
             const y = Number(document.getElementById("yCoordinate").value);
             const angle = Number(document.getElementById("angle").value);
+            console.log({x, y, angle});
             this.currentEnemyPlacer?.setCoordinates(x, y, angle);
         };
 
@@ -150,34 +151,34 @@ export class LevelDesigner {
         addGruntButton.onclick = (e) => {
             e.stopPropagation();
             const type = "Grunt";
-            this.addEnemy(type);
+            this.addEnemyButton(type);
             
         };
 
         addArrowButton.onclick = (e) => {
             e.stopPropagation();
             const type = "Arrow";
-            this.addEnemy(type);
+            this.addEnemyButton(type);
         };
         addBoxBox.onclick = (e) => {
             e.stopPropagation();
             const type = "BoxBox";
-            this.addEnemy(type);
+            this.addEnemyButton(type);
         };
         addPinwheel.onclick = (e) => {
             e.stopPropagation();
             const type = "Pinwheel";
-            this.addEnemy(type);
+            this.addEnemyButton(type);
         };
         addWeaver.onclick = (e) => {
             e.stopPropagation();
             const type = "Weaver";
-            this.addEnemy(type);
+            this.addEnemyButton(type);
         };
         addSingularity.onclick = (e) => {
             e.stopPropagation();
             const type = "Singularity";
-            this.addEnemy(type);
+            this.addEnemyButton(type);
         };
         // makeGame.onclick = (e) => {
         //     e.stopPropagation();
@@ -573,9 +574,7 @@ export class LevelDesigner {
     }
 
     enemyPlacerClicked(enemyPlacer) {
-        this.animationView.clear();
-        this.animationView.addEnemy(enemyPlacer.type);
-        this.animationView.enemySelected(enemyPlacer.spawn);
+        this.animationView.enemyPlacerSelected(enemyPlacer);
         this.currentEnemyPlacer = enemyPlacer;
     }
 
@@ -595,30 +594,40 @@ export class LevelDesigner {
 
     getPalletModal() {
         const modal = document.getElementById("pallet");
-    // add functions to buttons of the pallet
+        // add functions to buttons of the pallet
     }
 
-    enemyPlaced(spawn) {
-        this.animationView.enemySelected(spawn);
-    }
+    // enemyPlaced(spawn) {
+    //     this.animationView.enemyPlaced(spawn);
+    // }
 
     escapePressed() {
-        this.currentEnemyPlacer?.remove();
+        if(!this.currentEnemyPlacer.placed) {
+            this.currentEnemyPlacer?.remove();
+        }
+        
+        this.animationView.clear();
         this.currentEnemyPlacer = undefined;
     }
 
-    addEnemy(type) {
+    addEnemyButton(type) {
         this.animationView.clear();
         this.animationView.addEnemy(type);
 
         this.currentEnemyPlacer?.remove();
         if(this.selectedGameElement.enemyPlacers) {
             this.currentEnemyPlacer = this.selectedGameElement.createEnemyPlacer(type);
+        } else {
+            throw Error('event should be selected to add an enemy');
         }
     }
 
-    addAnotherEnemy(type) {
-        this.currentEnemyPlacer = new EnemyPlacer(this.engine, {type}, this);
+    updateAnimationViewAngle(radiansAngle) {
+        this.animationView.gameObjects[0].transform.angle = radiansAngle;
+    }
+
+    addingAnotherEnemy(enemyPlacer) {
+        this.currentEnemyPlacer = enemyPlacer;
     }
 
     // might be redundent and useless TODO
@@ -652,14 +661,6 @@ export class LevelDesigner {
         if(this.selectedGameElement.enemyPlacers) {
             this.selectedGameElement?.addRandomRandom(new Spawn(spawn, this.engine));
         }
-    }
-
-    addSpawnToEvent(spawn, enemyPlacer) {
-        if(this.selectedGameElement.enemyPlacers) {
-            this.selectedGameElement?.addSpawn(new Spawn(spawn, this.engine));
-            if(enemyPlacer) this.selectedGameElement?.addEnemyPlacer(enemyPlacer);
-        }
-        this.enemyPlaced(spawn);
     }
 
     update(deltaTime) {
