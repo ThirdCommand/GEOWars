@@ -11,9 +11,9 @@ export class PlacingAnimation extends GameObject {
 
     // Mouse handling should call this I think?
     placeEnemy() {
+        this.removeMouseListeners();
         this.parentObject.place();
         this.remove();
-
     }
 
     updateMousePos(mousePos) {

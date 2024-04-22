@@ -11,9 +11,16 @@ export class GameEngine {
         this.subscribers = [];
         this.muted = true;
         this.mouseListeners = [];
+
         this.gameClickListeners = [];
-        this.levelDesignerClickListeners = [];
+        this.gameClickListenersToAdd = [];
+        this.gameClickListenersToRemove = [];
+
         this.gameDoubleClickListeners = [];
+        this.gameDoubleClickListenersToAdd = [];
+        this.gameDoubleClickListenersToRemove = [];
+
+        this.levelDesignerClickListeners = [];
         this.levelDesignerDoubleClickListeners = [];
         this.doubleClickListeners = [];
         this.leftControlStickListeners = [];
@@ -112,6 +119,11 @@ export class GameEngine {
             renderTime,
             scriptTime,
         );
+
+        this.addClickListenersAfterTick();
+        this.addDoubleClickListenersAfterTick();
+        this.removeClickListenersAfterTick();
+        this.removeDoubleClickListenerAfterTick();
     }
 
     collectPerformanceData(
@@ -195,12 +207,28 @@ export class GameEngine {
     // ******** mouse stuff *******
 
     addClickListener(object) {
-        this.gameClickListeners.push(object);
+        this.gameClickListenersToAdd.push(object);
+    }
+
+    addClickListenersAfterTick() {
+        this.gameClickListenersToAdd.forEach((object) => {
+            this.gameClickListeners.push(object);
+        });
+        this.gameClickListenersToAdd = [];
     }
 
     addDoubleClickListener(object) {
-        this.gameDoubleClickListeners.push(object);
+        this.gameDoubleClickListenersToAdd.push(object);
     }
+
+    addDoubleClickListenersAfterTick() {
+        this.gameDoubleClickListenersToAdd.forEach((object) => {
+            this.gameDoubleClickListeners.push(object);
+        });
+        this.gameDoubleClickListenersToAdd = [];
+    }
+
+
 
     addLevelDesignerClickListener(object) {
         this.levelDesignerClickListeners.push(object);
@@ -257,13 +285,27 @@ export class GameEngine {
     }
 
     removeClickListener(object) {
-        const index = this.gameClickListeners.indexOf(object);
-        if (index !== -1) this.gameClickListeners.splice(index, 1);
+        this.gameClickListenersToRemove.push(object);
+    }
+
+    removeClickListenersAfterTick() {
+        this.gameClickListenersToRemove.forEach((object) => {
+            const index = this.gameClickListeners.indexOf(object);
+            if (index !== -1) this.gameClickListeners.splice(index, 1);
+        });
+        this.gameClickListenersToRemove = [];
     }
 
     removeDoubleClickListener(object) {
-        const index = this.gameDoubleClickListeners.indexOf(object);
-        if (index !== -1) this.gameDoubleClickListeners.splice(index, 1);
+        this.gameDoubleClickListenersToRemove.push(object);
+    }
+
+    removeDoubleClickListenerAfterTick() {
+        this.gameDoubleClickListenersToRemove.forEach((object) => {
+            const index = this.gameDoubleClickListeners.indexOf(object);
+            if (index !== -1) this.gameDoubleClickListeners.splice(index, 1);
+        });
+        this.gameDoubleClickListenersToRemove = [];
     }
 
     removeLevelDesignerClickListener(object) {

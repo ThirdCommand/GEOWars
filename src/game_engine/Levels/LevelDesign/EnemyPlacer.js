@@ -53,7 +53,6 @@ export class EnemyPlacer extends GameObject {
         this.event = event;
         this.clickRadius = getClickRadius[type];
         this.type = type;
-
         this.placed = false;
         
         if(loadingEvent) {
@@ -75,13 +74,15 @@ export class EnemyPlacer extends GameObject {
     }
 
     place() {
+        if(this.placed) return;
         this.spawn = {type: this.type, location: this.transform.pos};
         this.lineSprite.spawningScale = 1;
         const spawn = this.spawn;
-        this.event.addSpawnToEvent(spawn, this);
+        this.placed = true;
+        this.event.enemyPlaced(spawn, this);
+
         this.removeMousePosListener();
         this.addMouseClickListener();
-        this.event.addAnotherEnemy(this.type);
     }
 
     setCoordinates(x, y, angle) {
@@ -90,6 +91,7 @@ export class EnemyPlacer extends GameObject {
         this.transform.pos[1] = y || this.transform.pos[1];
         this.transform.angle = radiansAngle || this.transform.angle;
         this.spawn.angle = radiansAngle || this.spawn.angle;
+        this.event.levelDesigner.updateAnimationViewAngle(radiansAngle);
     }
 
     setRandomCoordinates() {
