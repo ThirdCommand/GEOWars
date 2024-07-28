@@ -1,0 +1,167 @@
+// import { Util } from "./util";
+// import { Sound } from "./sound";
+
+import { Transform } from "./transform";
+import { PhysicsComponent } from "./physics_component";
+import { type LineSprite } from "./line_sprite";
+import { Collider } from "./collider";
+import { Sound } from "./sound";
+import { GameEngine } from "./game_engine";
+import { AnimationView } from "../AnimationView";
+
+interface controllable {
+    updateXButtonListener: (pressed: boolean) => void;
+    updateRightControlStickInput: (direction: [number, number]) => void;
+    updateLeftControlStickInput: (direction: [number, number] | string) => void; // will accept WASD or controller left stick input
+    updateStartButtonListener: (pressed: boolean) => void;
+    updateMousePos: (mousePos: [number, number]) => void;
+}
+
+
+export abstract class GameObject implements controllable{
+    gameEngine: GameEngine | AnimationView;
+    transform: Transform;
+    childObjects: Array<GameObject> | null;
+    parentObject: GameObject | null;
+    physicsComponent: PhysicsComponent | null;
+    lineSprite: LineSprite | null;
+    colliders: Array<Collider>;
+
+    constructor(engine: GameEngine | AnimationView) {
+        this.gameEngine = engine;
+        this.gameEngine.addGameObject(this);
+        this.transform = new Transform();
+        this.childObjects = [];
+        this.physicsComponent = null;
+        this.lineSprite = null;
+        this.parentObject = null;
+        this.colliders = [];
+    }
+
+    animate?(dT: number): void 
+
+    addPhysicsComponent() {
+        this.physicsComponent = new PhysicsComponent(this.transform);
+        this.gameEngine.addPhysicsComponent(this.physicsComponent);
+    }
+
+    addLineSprite(lineSprite: LineSprite) {
+        this.lineSprite = lineSprite;
+        this.gameEngine.addLineSprite(this.lineSprite);
+    }
+
+    addMousePosListener() {
+        if(this.gameEngine instanceof GameEngine)
+            this.gameEngine.addMouseListener(this);
+    }
+
+    removeMousePosListener() {
+        if(this.gameEngine instanceof GameEngine)
+            this.gameEngine.removeMouseListener(this);
+    }
+
+    addLeftControlStickListener() {
+        if(this.gameEngine instanceof GameEngine)
+            this.gameEngine.addLeftControlStickListener(this);
+    }
+
+    addRightControlStickListener() {
+        if(this.gameEngine instanceof GameEngine)
+            this.gameEngine.addRightControlStickListener(this);
+    }
+
+    addXButtonListener() {
+        if(this.gameEngine instanceof GameEngine)
+            this.gameEngine.addXButtonListener(this);
+    }
+
+
+    addStartButtonListener() {
+        if(this.gameEngine instanceof GameEngine)
+            this.gameEngine.addStartButtonListener(this);
+    }
+
+    updateRightControlStickInput(direction: [number, number]){return console.log(direction, 'overwright updateRightControlStickInput');} // TODO include object name
+
+    updateLeftControlStickInput(direction: [number, number]){return console.log(direction, 'overwrite updateLeftControlStickInput');} // TODO include object name
+
+    updateXButtonListener(pressed: boolean){return console.log(pressed, `overwright updateXButtonListener`);} // TODO include object name
+
+    updateStartButtonListener(pressed: boolean) {return console.log(pressed, 'overwright updateStartButtonListener');} // TODO include object name
+
+    updateMousePos(mousePos: [number, number]){ return console.log(mousePos, 'overwrite updateMousePos');} // TODO include object name
+
+    addClickListener() {
+        if(this.gameEngine instanceof GameEngine) 
+            this.gameEngine.addClickListener(this);
+    }
+
+    removeClickListener() {
+        if(this.gameEngine instanceof GameEngine)
+            this.gameEngine.removeClickListener(this);
+    }
+
+    mouseClicked(mousePos: [number, number]){return console.log(mousePos, 'overwright mouseClicked'); }// TODO include object name
+    mouseDowned(mousePos: [number, number]){return console.log(mousePos, 'overwright mouseDowned'); }// TODO include object name
+    mouseDoubleClicked(mousePos: [number, number]){return console.log(mousePos, 'overwright mouseDoubleClicked'); }// TODO include object name
+
+    addCollider(type: string, gameObject: GameObject, radius: number): void;
+    addCollider(type: string, gameObject: GameObject, radius: number, subscriptionTypes: string[], subscriptions: string[]): void;
+    addCollider(
+        type: string, 
+        gameObject: GameObject, 
+        radius: number, 
+        subscriptionTypes?: string[], 
+        subscriptions?: string[]
+    ) {
+    // game engine checks every collider with it's subscription types
+        const newCollider = new Collider(
+            type,
+            gameObject,
+            radius,
+            subscriptionTypes,
+            subscriptions
+        );
+        this.colliders.push(newCollider);
+        this.gameEngine.addCollider(newCollider);
+    }
+
+    playSound(sound: Sound) {
+        this.gameEngine.queueSound(sound);
+    }
+
+    // relative motion needs to be fixed... FOR ANOTHER TIME
+    addChildGameObject(obj: GameObject) {
+        this.childObjects.push(obj);
+        // if (relative) {
+        //     obj.transform.parentTransform = this.transform;
+        // }
+        obj.parentObject = this;
+    }
+
+    abstract update(deltaTime: number): void
+
+    onCollision?(collider: Collider, type: string): void
+
+    removeMouseListeners() {
+        if(this.gameEngine instanceof GameEngine) {
+            this.gameEngine.removeMouseListener(this);
+            this.gameEngine.removeClickListener(this);
+            this.gameEngine.removeDoubleClickListener(this);
+        }
+    }
+
+    // remove is the issue
+    // i need a remove queue!!!
+    // ... I think
+    remove() {
+        this.childObjects.forEach((obj) => {
+            obj.remove();
+        });
+        if (this.parentObject) {
+            const index = this.parentObject.childObjects.indexOf(this);
+            if(index !== -1) this.parentObject.childObjects.splice(index, 1);
+        }
+        this.gameEngine.remove(this);
+    }
+}

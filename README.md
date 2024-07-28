@@ -54,7 +54,7 @@ class Grunt extends GameObject {
       this.lineSprite.stretchScale_W = this.lineSprite.stretchScale_W + -this.stretchDirection * cycleSpeed * cycleSpeedScale;
       this.lineSprite.stretchScale_L = this.lineSprite.stretchScale_L + this.stretchDirection * cycleSpeed * cycleSpeedScale;
 
-      if (this.gameEngine.gameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
+      if (GameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
         this.wallGraze()
       }
     }
@@ -121,8 +121,8 @@ class Bullet extends GameObject {
   onCollision(collider, type){  
     if (type === "bulletHit") {  
       let hitObjectTransform = collider.gameObject.transform    
-      let pos = hitObjectTransform.absolutePosition()     
-      let vel = hitObjectTransform.absoluteVelocity()    
+      let pos = hitObjectTransform.pos     
+      let vel = hitObjectTransform.vel    
       let explosion = new ParticleExplosion(this.gameEngine, pos, vel)    
       collider.gameObject.remove()    
     }    

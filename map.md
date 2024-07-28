@@ -36,6 +36,8 @@ this was determined to be an ugly idea
     - [ ] Deleting parent scene works
   - [ ] Event
     - [x] delete selected spawn
+    - [ ] bug: after an enemy is selected, clicking a new enemy button removes that selected enemy. whoopsies
+    - [ ] selecting another
     - [ ] multi select
     - [ ] copy/paste
     - [ ] angle of... everything?
