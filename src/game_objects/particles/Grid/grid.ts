@@ -13,7 +13,7 @@ export class Grid extends GameObject {
     elasticity: number;
     dampening: number;
     gridPoints: GridPoint[][];
-    constructor(engine: GameEngine, gameScript: GameScript, cameraTransform: Transform) {
+    constructor(engine: GameEngine, cameraTransform: Transform) {
         super(engine);
 
         this.transform.pos = [0,0];

@@ -1,6 +1,7 @@
 import { type AnimationView } from "./AnimationView";
 import { type LevelDesigner } from "./game_engine/Levels/levelDesigner";
 import { type GameEngine } from "./game_engine/game_engine";
+import {type DirectionKey} from "./game_objects/Ship/ship";
 
 
 export class GameView {
@@ -18,7 +19,7 @@ export class GameView {
     canvasEl: HTMLCanvasElement;
 
     MOVES: {
-        [key: string]: [number, number]
+        [key: DirectionKey]: [number, number]
     };
 
     constructor(
@@ -59,8 +60,10 @@ export class GameView {
     // TODO move game specific logic
     // TODO this is somehow supposed to handle both mouse and controller inputs
     // but I only see it being use as a string at the moment
-    updateMovementDirection(move: string, down: boolean) {
+
+    updateMovementDirection(move: DirectionKey, down: boolean) {
         if (!this.gameEditorOpened) {
+            // check this function
             this.engine.gameScript.ship.updateLeftControlStickInput(move, down);
         }
     }
@@ -239,7 +242,7 @@ export class GameView {
 
         loadGameDesignButtonModal.onclick = (e) => {
             e.stopPropagation();
-            const json = document.getElementById("loadGameDesignInputModal").value;
+            const json = (document.getElementById("loadGameDesignInputModal") as HTMLInputElement).value;
             this.levelDesigner.loadGameDesign(json);
             this.levelDesignLoaded = true;
         };
@@ -249,7 +252,7 @@ export class GameView {
     animate(time: number) {
         const timeDelta = time - this.lastTime;
         this.engine.tick(timeDelta);
-        this.levelDesigner.animate(timeDelta);
+        this.levelDesigner.animate();
         this.animationView.animate(timeDelta);
         this.lastTime = time;
         // every call to animate requests causes another call to animate

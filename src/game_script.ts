@@ -633,11 +633,11 @@ export class GameScript {
     }
 
     createWalls() {
-        return new Walls(this.engine, this);
+        return new Walls(this.engine);
     }
 
     createGrid(cameraTransform: Transform) {
-        return new Grid(this.engine, this, cameraTransform);
+        return new Grid(this.engine, cameraTransform);
     }
 
     createOverlay() {

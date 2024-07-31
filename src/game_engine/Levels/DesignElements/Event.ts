@@ -63,7 +63,7 @@ export class EventObject extends UIElement {
     enemyPlacers: EnemyPlacer[];
     isShipRelative: boolean;
     UILineSprite: EventObjectSprite;
-    constructor(levelDesigner: LevelDesigner, eventToLoad: {spawns: SpawnSerialized[], isShipRelative: boolean}, position: [number, number], parentScene: SceneObject) {
+    constructor(levelDesigner: LevelDesigner, eventToLoad?: EventSerialized, position?: [number, number], parentScene?: SceneObject) {
         super(levelDesigner, position, parentScene);
         this.spawns = [];
         this.enemyPlacers = [];

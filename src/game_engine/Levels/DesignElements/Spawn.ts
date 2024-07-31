@@ -1,7 +1,9 @@
 // a single enemy, and location
 import { type GameEngine } from "../../game_engine";
 import { GameScript } from "../../../game_script";
+
 type EnemyType = 'BoxBox' | 'Arrow' | 'Grunt' | 'Pinwheel' | 'Weaver' | 'Singularity' | 'RANDOM';
+
 export type SpawnSerialized = {
     type: EnemyType;  
     location: [number, number] | 'RANDOM';

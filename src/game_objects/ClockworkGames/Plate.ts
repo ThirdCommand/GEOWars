@@ -1,4 +1,5 @@
-import { GameEngine } from "../../game_engine/game_engine";
+import { type AnimationView } from "../../AnimationView";
+import { type GameEngine } from "../../game_engine/game_engine";
 import {GameObject} from "../../game_engine/game_object";
 import {LineSprite} from "../../game_engine/line_sprite";
 import { type Transform } from "../../game_engine/transform";
@@ -14,7 +15,7 @@ export class Plate extends GameObject {
     height: number;
     lineSprite: PlateSprite;
     spriteParameters: PlateSpriteParameters;
-    constructor(engine: GameEngine, pos: [number, number]) {
+    constructor(engine: GameEngine | AnimationView, pos: [number, number]) {
         super(engine);
         this.transform.pos = pos;
         this.width = 75;

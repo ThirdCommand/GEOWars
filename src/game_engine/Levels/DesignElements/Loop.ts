@@ -8,9 +8,9 @@ import { type Scene, UpdateAble, type SceneObject } from "./Scene";
 // maybe I should have a loop beginner and a loop ender repeater thingy
 // like in music
 
-type LoopValues = {
-    loopIdx: number;
-    loopId: number;
+export type LoopValues = {
+    loopIdx?: number;
+    loopId?: number;
     repeatTimes: number;
 }
 

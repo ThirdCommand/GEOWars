@@ -6,17 +6,18 @@ import {type LoopEnd, LoopBeginning, LoopEndObject, LoopBeginningObject} from ".
 import {OperationObject, type Operation} from "./Operation";
 import { type LevelDesigner } from "../levelDesigner";
 import { LineSprite } from "../../line_sprite";
+import { TimeObject } from "./Time";
 
 export type GameElement = Event | Scene | LoopEnd | LoopBeginning | Operation
 
-export type GameElementObject = EventObject | SceneObject | LoopEndObject | LoopBeginningObject | OperationObject;
+export type GameElementObject = EventObject | SceneObject | LoopEndObject | LoopBeginningObject | OperationObject | TimeObject;
 
 export type SerializedGameElement = SceneSerialized | EventSerialized
 
 export type SceneSerialized  = {
     type: 'Scene';
     name: string;
-    gameElements: SerializedGameElement[]
+    serializedGameElements: SerializedGameElement[]
 }
 
 export interface UpdateAble {
@@ -89,7 +90,7 @@ export class SceneObject extends UIElement implements SerializeAble {
     expanded: boolean;
     name: string;
     UILineSprite: SceneSprite;
-    constructor(levelDesigner: LevelDesigner, name: string, parentScene: SceneObject, position: [number, number]) {
+    constructor(levelDesigner: LevelDesigner, name: string, parentScene?: SceneObject, position?: [number, number]) {
         super(levelDesigner, position, parentScene);
         // i'll have to create the game elements from the serialized data
         this.gameElementObjects = [];
@@ -138,7 +139,7 @@ export class SceneObject extends UIElement implements SerializeAble {
         return {
             type: "Scene",
             name: this.name,
-            gameElements: this.gameElementObjects.map((element) => element.serialize()),
+            serializedGameElements: this.gameElementObjects.map((element) => element.serialize()),
         };
     }
 

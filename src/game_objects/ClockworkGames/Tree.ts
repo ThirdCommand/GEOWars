@@ -1,3 +1,4 @@
+import { AnimationView } from "../../AnimationView";
 import { GameEngine } from "../../game_engine/game_engine";
 import { GameObject } from "../../game_engine/game_object";
 import { LineSprite } from "../../game_engine/line_sprite";
@@ -15,7 +16,7 @@ export class Tree extends GameObject {
             }
         }
     };
-    constructor(engine: GameEngine, pos: [number, number]) {
+    constructor(engine: GameEngine | AnimationView, pos: [number, number]) {
         super(engine);
         this.transform.pos = pos;
         this.transform.angle = 0;

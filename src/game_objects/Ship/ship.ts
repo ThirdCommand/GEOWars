@@ -8,8 +8,7 @@ import { GameEngine } from "../../game_engine/game_engine";
 import { GameScript } from "../../game_script";
 import { type Collider } from "../../game_engine/collider";
 
-
-type DirectionKey = 'w' | 'a' | 's' | 'd'
+export type DirectionKey = 'w' | 'a' | 's' | 'd'
 export class Ship extends GameObject {
     lineSprite: ShipSprite;
     cameraTransform: Transform;
@@ -48,7 +47,7 @@ export class Ship extends GameObject {
         d: [1, 0],
     };
 
-    constructor(engine: GameEngine, pos: [number, number], initialCameraZPos: number) { 
+    constructor(engine: GameEngine, pos: [number, number, number?], initialCameraZPos: number) { 
         super(engine);
         this.transform.pos = pos;
         this.transform.pos[2] = 0;

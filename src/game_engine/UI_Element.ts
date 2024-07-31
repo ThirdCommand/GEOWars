@@ -26,13 +26,16 @@ export abstract class UIElement {
         this.levelDesigner.addUIElement(this);
         this.inExpandedScene = true;
     }
+
     addUIElementSprite(UILineSprite: LineSprite) {
         this.UILineSprite = UILineSprite;
         this.levelDesigner.addUIElementSprite(UILineSprite);
     }
+
     addMouseClickListener() {
         this.levelDesigner.addMouseClickListener(this);
     }
+
     addMouseDoubleClickListener() {
         this.levelDesigner.addMouseDoubleClickListener(this);
     }
@@ -40,6 +43,7 @@ export abstract class UIElement {
     removeMouseClickListener() {
         this.levelDesigner.removeMouseClickListener(this);
     }
+
     removeMouseDoubleClickListener() {
         this.levelDesigner.removeMouseDoubleClickListener(this);
     }
@@ -133,7 +137,4 @@ export abstract class UIElement {
     deleteYourShit() {
         // Abstract for event I guess
     }
-
-
-
 }

@@ -4,16 +4,19 @@ import { Grid } from "../../game_objects/particles/Grid/grid";
 // import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
 import { GameScript } from "../../game_script";
 import { Transform } from "../transform";
-import { GameElement, SceneObject, SerializedGameElement, GameElementObject } from "./DesignElements/Scene";
-import { Spawn } from "./DesignElements/Spawn";
+import {SceneObject, SerializedGameElement, GameElementObject, SceneSerialized, GameElement } from "./DesignElements/Scene";
+import { Spawn, SpawnSerialized } from "./DesignElements/Spawn";
 
-import { EventObject } from "./DesignElements/Event";
+import { EventObject, EventSerialized} from "./DesignElements/Event";
 import { TimeObject } from "./DesignElements/Time";
-import { LoopBeginningObject, LoopEndObject } from "./DesignElements/Loop";
+import { LoopBeginningObject, LoopEndObject, LoopValues} from "./DesignElements/Loop";
 import { OperationObject } from "./DesignElements/Operation";
 import { GameEngine } from "../game_engine";
 import { type UIElement } from "../UI_Element";
 import { type LineSprite } from "../line_sprite";
+import { Types, type AnimationView } from "../../AnimationView";
+import { GameObject } from "../game_object";
+import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
 
 // I should collect placed enemies
 
@@ -23,43 +26,43 @@ import { type LineSprite } from "../line_sprite";
 // all of them 
 export class LevelDesigner {
 
-    serializedGame: string;
+    serializedGame: SceneSerialized;
+
     UIElementMouseFollower: UIElement;
-    UIElementSprites: UIElement[];
+    UIElementSprites: LineSprite[];
     currentMousePos: [number, number];
     draggingLineSprite: LineSprite;
 
     // duck typing for scene
     gameElements: GameElementObject[]; // top level list of game elements
-    expandedScenes = [this];
+    expandedScenes: SceneObject[];
     transform = new Transform();
 
-    widthHeight = [0,0];
+    widthHeight: [number, number];
 
-    loopBeginningObjectStackForLoading = [];
+    loopBeginningObjectStackForLoading: LoopBeginningObject[];
 
     DIM_X = 1200;
     DIM_Y = 300;
     BG_COLOR = "#000000";
-    engine = engine;
-    animationView = animationView;
-    levelDesignerCtx = levelDesignerCtx;
+    engine: GameEngine;
+    animationView: AnimationView;
+    levelDesignerCtx: CanvasRenderingContext2D;
+    score: 0;
+    lives: 99;
 
-    animationWindow = animationWindow;
-    UIActionsToRun = [];
+    UIActionsToRun: Array<() => void>;
 
     ctx: CanvasRenderingContext2D;
 
-    gameObjects = [];
-    lineSprites = [];
-    zoomScale = 1;
-    ship = {
-        transform: {
-            pos: [],
-        },
+    gameObjects: GameObject[];
+    lineSprites: LineSprite[];
+    zoomScale: number;
+    ship: {
+        transform: Transform
     };
-    lastTime = 0;
-    animate = animate.bind(this);
+    lastTime: 0;
+
     overlayText = {
         Location: [0, 0],
         Time: 0,
@@ -67,34 +70,36 @@ export class LevelDesigner {
         StartingAngle: 0,
     };
     overlayTextCleared = true;
+    clickedDown: boolean;
 
-    palletModal = getPalletModal();
+    // palletModal = getPalletModal();
 
     // can be scene, time, event, or loop
-    selectedGameElement;
+    selectedGameElement: GameElementObject;
 
-    currentEnemyPlacer;
+    currentEnemyPlacer: EnemyPlacer;
 
 
-    // main game array is the main list of sequence objects
-    mainGameArray = [];
+    // // main game array is the main list of sequence objects
+    // mainGameArray = [];
 
     gameEditorOpened = false;
 
+    shipRelative: HTMLInputElement;
+
     constructor(
         engine: GameEngine, 
-        animationView, 
+        animationView: AnimationView, 
         levelDesignerCtx: CanvasRenderingContext2D, 
-        animationWindow, 
-        serializedGame: string
+        serializedGame?: SceneSerialized
     ) {
         this.serializedGame = serializedGame;
         this.UIElementSprites = [];
 
         // duck typing for scene
         this.gameElements = []; // top level list of game elements
-        this.expandedScenes = [this];
-        this.transform = {pos: [0,0]};
+        this.expandedScenes = [new SceneObject(this, 'main')];
+        this.transform = new Transform();
 
         this.widthHeight = [0,0];
 
@@ -104,7 +109,6 @@ export class LevelDesigner {
         this.animationView = animationView;
         this.levelDesignerCtx = levelDesignerCtx;
 
-        this.animationWindow = animationWindow;
         this.UIActionsToRun = [];
 
         this.ctx = levelDesignerCtx;
@@ -112,9 +116,7 @@ export class LevelDesigner {
         this.lineSprites = [];
         this.zoomScale = 1;
         this.ship = {
-            transform: {
-                pos: [],
-            },
+            transform: new Transform()
         };
         this.lastTime = 0;
         this.animate = this.animate.bind(this);
@@ -126,7 +128,7 @@ export class LevelDesigner {
         };
         this.overlayTextCleared = true;
 
-        this.palletModal = this.getPalletModal();
+        // this.palletModal = this.getPalletModal();
 
         // can be scene, time, event, or loop
         this.selectedGameElement;
@@ -135,7 +137,7 @@ export class LevelDesigner {
  
 
         // main game array is the main list of sequence objects
-        this.mainGameArray = [];
+        // this.mainGameArray = [];
 
         this.gameEditorOpened = false;
         
@@ -146,13 +148,13 @@ export class LevelDesigner {
         const addPinwheel = document.getElementById("Pinwheel");
         const addWeaver = document.getElementById("Weaver");
         const addSingularity = document.getElementById("Singularity");
-        const makeGame = document.getElementById("LevelEditor");
+        // const makeGame = document.getElementById("LevelEditor");
         const makeEventObject = document.getElementById("MakeEvent");
         const addTime = document.getElementById("TimeSubmit");
         const addLoop = document.getElementById("LoopSubmit");
         const addOperation = document.getElementById("OperationSubmit");
         const sceneNameSubmit = document.getElementById("sceneNameSubmit");
-        const shipRelative = document.getElementById("shipRelative");
+        const shipRelative = document.getElementById("shipRelative") as HTMLInputElement;
         this.shipRelative = shipRelative;
         const setCoordinate = document.getElementById("changeCoordinates");
         const setRandomCoordinates = document.getElementById("setRandomCoordinates");
@@ -162,19 +164,19 @@ export class LevelDesigner {
 
         const saveGameDesign = document.getElementById("saveGameDesign");
 
-        const loadGameDesign = document.getElementById("loadGameDesign");
+        // const loadGameDesign = document.getElementById("loadGameDesign");
 
         const startGame = document.getElementById("startGame");
 
         shipRelative.onclick = (e) => {
             e.stopPropagation();
-            const value = e.target.value;
+            const value = shipRelative.value;
             console.log(value);
             if(value === "on") {
-                e.target.value = "off";
+                shipRelative.value = "off";
                 this.makeCoordinatesShipRelative();
             } else {
-                e.target.value = "on";
+                shipRelative.value = "on";
                 this.makeCoordinatesArenaRelative();
             }
 
@@ -182,9 +184,9 @@ export class LevelDesigner {
 
         setCoordinate.onclick = (e) => {
             e.stopPropagation();
-            const x = Number(document.getElementById("xCoordinate").value);
-            const y = Number(document.getElementById("yCoordinate").value);
-            const angle = Number(document.getElementById("angle").value);
+            const x = Number((document.getElementById("xCoordinate") as HTMLInputElement).value);
+            const y = Number((document.getElementById("yCoordinate") as HTMLInputElement).value);
+            const angle = Number((document.getElementById("angle") as HTMLInputElement).value);
             console.log({x, y, angle});
             this.currentEnemyPlacer?.setCoordinates(x, y, angle);
         };
@@ -200,8 +202,8 @@ export class LevelDesigner {
             e.stopPropagation();
             this.currentEnemyPlacer?.type === "RANDOM";
 
-            const selectedEnemies = Array.from(document.getElementById('possibleSpawns').selectedOptions).map(({ value }) => value);
-            const numberToGenerate = document.getElementById('numberToGenerate').value;
+            const selectedEnemies = Array.from((document.getElementById('possibleSpawns') as HTMLSelectElement).selectedOptions).map(({ value }) => value);
+            const numberToGenerate = (document.getElementById('numberToGenerate') as HTMLInputElement).value;
 
             const newSpawn = {
                 location: 'RANDOM',
@@ -263,7 +265,7 @@ export class LevelDesigner {
 
         sceneNameSubmit.onclick = (e) => {
             e.stopPropagation();
-            const name = document.getElementById("sceneName").value;
+            const name = (document.getElementById("sceneName") as HTMLInputElement).value;
             this.UIActionsToRun.push(() => this.makeSceneObject(name));
         };
         // loadGameDesign.onclick = (e) => {
@@ -273,13 +275,13 @@ export class LevelDesigner {
         // };
         addTime.onclick = (e) => {
             e.stopPropagation();
-            const time = document.getElementById("Time").value;
+            const time = (document.getElementById("Time") as HTMLInputElement).value;
             this.UIActionsToRun.push(() => this.makeTime(time));
         };
         addOperation.onclick = (e) => {
             e.stopPropagation(); 
-            const operationType = document.getElementById("OperationType").value;
-            const operationValue = document.getElementById("OperationFactor").value;
+            const operationType = (document.getElementById("OperationType") as HTMLInputElement).value;
+            const operationValue = (document.getElementById("OperationFactor") as HTMLInputElement).value;
             const operand = {
                 type: operationType,
                 factor: operationValue,
@@ -294,17 +296,17 @@ export class LevelDesigner {
         addLoop.onclick = (e) => {
             e.stopPropagation();
             const loop = {
-                repeatTimes: Number(document.getElementById("Repeats").value),
+                repeatTimes: Number((document.getElementById("Repeats") as HTMLInputElement).value),
                 // loopIdx: Number(document.getElementById("StartingIndex").value),
             };
             this.UIActionsToRun.push(() => this.makeLoop(loop));
         };
 
-        window.addEventListener("scroll", (e) => {
-            // get the current mouse position to know if it is within the 
-            // level editor
-            // then move the level editor up or down 
-        });
+        // window.addEventListener("scroll", (e) => {
+        //     // get the current mouse position to know if it is within the 
+        //     // level editor
+        //     // then move the level editor up or down 
+        // });
 
         window.addEventListener("keydown", (e) => {
             e.stopPropagation();
@@ -338,22 +340,22 @@ export class LevelDesigner {
         // });
     }
 
-    addToClipBoard(uiElement: UIElement) {
+    // addToClipBoard(uiElement: UIElement) {
 
-    }
+    // }
 
     startGame() {
         this.serializedGame = {
-            gameName: "Game",
-            gameElements: this.gameElements.map(
-                (element) => element.serialize()
+            name: "Game",
+            serializedGameElements: this.gameElements.map(
+                (element) => element.serialize() // set up proper return here
             ),
         };
-        const serializedGame = JSON.stringify(this.serializedGame);
+        const serializedGameString = JSON.stringify(this.serializedGame);
         // I should unselect whatever is selected.
         // events being the main issue since they have things
         // on the game 
-        this.engine.gameScript.startGame(serializedGame);
+        this.engine.gameScript.startGame(serializedGameString);
         this.engine.gameEditorOpened = false;
     }
 
@@ -376,7 +378,7 @@ export class LevelDesigner {
         console.log(pos);
     }
 
-    expandScene(scene) {
+    expandScene(scene: SceneObject) {
         this.selectedGameElement?.unSelected();
         this.selectedGameElement = undefined;
 
@@ -384,7 +386,7 @@ export class LevelDesigner {
 
         this.expandedScenes[parentIndex + 1]?.unExpandScene();
 
-        scene.gameElements.forEach((element) => {
+        scene.gameElementObjects.forEach((element) => {
             element.parentSceneExpanded();
             this.addUIElementSprite(element.UILineSprite);
         });
@@ -392,7 +394,7 @@ export class LevelDesigner {
         this.expandedScenes.push(scene);
     }
 
-    unExpandScene(scene) {
+    unExpandScene(scene: SceneObject) {
         if(this.expandedScenes.length === 1) return console.log("can't unexpand the base scene");
         if(this.expandedScenes.indexOf(scene) === -1) return console.log("scene not expanded");
         const bottomExpandedScene = this.expandedScenes.pop();
@@ -402,7 +404,7 @@ export class LevelDesigner {
         if(scene !== bottomExpandedScene) bottomExpandedScene.parentScene.unExpandScene();
     }
 
-    mouseMoveEvent(e) {
+    mouseMoveEvent(e: MouseEvent) {
         if (e.target.classList[0] === "level-editor-canvas") {
             
             this.currentMousePos = [e.offsetX, e.offsetY];
@@ -426,7 +428,7 @@ export class LevelDesigner {
                 // check left element:
                 let moved = false;
                 if(leftElementIndex >= 0) {
-                    const leftElement = bottomExpandedScene.gameElements[leftElementIndex];
+                    const leftElement = bottomExpandedScene.gameElementObjects[leftElementIndex];
                     const leftElementWidth = leftElement.widthHeight[0];
                     const leftElementX = leftElement.transform.pos[0];
                     const leftElementMiddlePosition = leftElementX + leftElementWidth / 2;
@@ -445,8 +447,8 @@ export class LevelDesigner {
                 }
 
                 // check right:
-                if( rightElementIndex < bottomExpandedScene.gameElements.length && moved === false) {
-                    const rightElement = bottomExpandedScene.gameElements[rightElementIndex];
+                if( rightElementIndex < bottomExpandedScene.gameElementObjects.length && moved === false) {
+                    const rightElement = bottomExpandedScene.gameElementObjects[rightElementIndex];
                     const rightElementWidth = rightElement.widthHeight[0];
                     const rightElementX = rightElement.transform.pos[0];
                     const rightElementMiddlePosition = rightElementX + rightElementWidth / 2;
@@ -473,30 +475,30 @@ export class LevelDesigner {
 
     leftJustifyGameElements() {
         const bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
-        const expandedElements = bottomExpandedScene.gameElements;
-        bottomExpandedScene.gameElements = [];
+        const expandedElements = bottomExpandedScene.gameElementObjects;
+        bottomExpandedScene.gameElementObjects = [];
 
         expandedElements.forEach((element) => {
             const newPos = this.getNewDrawPosition();
             element.transform.pos = newPos;
-            bottomExpandedScene.gameElements.push(element);
+            bottomExpandedScene.gameElementObjects.push(element);
         });
     }
 
-    makeLoop(loop, parentScene = this.expandedScenes[this.expandedScenes.length - 1]) {
+    makeLoop(loop: LoopValues, parentScene = this.expandedScenes[this.expandedScenes.length - 1]) {
         const beginningObject = new LoopBeginningObject(this, undefined, this.getNewDrawPosition(), parentScene);
         const endObject = new LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
         beginningObject.endLoopObject = endObject;
         endObject.beginningLoopObject = beginningObject;
     }
 
-    makeLoopBeginning(loop, parentScene) {
+    makeLoopBeginning(loop: LoopValues, parentScene: SceneObject) {
         const loopBeginning = new LoopBeginningObject(this, undefined, this.getNewDrawPosition(), parentScene);
         this.loopBeginningObjectStackForLoading.push(loopBeginning);
         return loopBeginning;
     }
 
-    makeLoopEnding(loop, parentScene) {
+    makeLoopEnding(loop: LoopValues, parentScene: SceneObject) {
         const loopEndObject = new LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
         const matchingBeginning = this.loopBeginningObjectStackForLoading.pop();
         matchingBeginning.endLoopObject = loopEndObject;
@@ -504,8 +506,8 @@ export class LevelDesigner {
         return loopEndObject;
     }
 
-    moveLeft(UIElement) {
-        const gameElements = this.expandedScenes[this.expandedScenes.length - 1].gameElements;
+    moveLeft(UIElement: UIElement) {
+        const gameElements = this.expandedScenes[this.expandedScenes.length - 1].gameElementObjects;
         for(let i = 0; i < gameElements.length; i++) {
             const element = gameElements[i];
             if(element === UIElement) {
@@ -518,8 +520,8 @@ export class LevelDesigner {
         }
     }
 
-    moveRight(UIElement) {
-        const gameElements = this.expandedScenes[this.expandedScenes.length - 1].gameElements;
+    moveRight(UIElement: UIElement) {
+        const gameElements = this.expandedScenes[this.expandedScenes.length - 1].gameElementObjects;
         for(let i = 0; i < gameElements.length; i++) {
             const currentElement = gameElements[i];
             if(currentElement === UIElement) {
@@ -535,31 +537,32 @@ export class LevelDesigner {
 
     saveGameDesign() {
 
-        const gameElements = this.gameElements.map(
+        const serializedGameElements = this.gameElements.map(
             (element) => element.serialize() 
         );
 
         this.serializedGame = {
-            gameName: "Game",
-            gameElements,
+            name: "Game",
+            serializedGameElements,
         };
         console.log(JSON.stringify(this.serializedGame));
     }
 
     
 
-    loadGameDesign(json) {
+    loadGameDesign(json: string) {
         const serializedGame = JSON.parse(json);
         this.serializedGame = serializedGame;
-        this.gameElements = this.loadGameElements(serializedGame.gameElements);
+        this.gameElements = this.loadGameElements(serializedGame.serializedGameElements);
     }
 
-    loadGameElements(serializedGameElements: SerializedGameElement[], parentScene: SceneObject | LevelDesigner = this): GameElementObject[] {
+    loadGameElements(serializedGameElements: SerializedGameElement[], parentScene: SceneObject): GameElementObject[] {
         return serializedGameElements.map((serializedElement) => {
             if(serializedElement.type === "Scene") {
-                const newScene = this.makeSceneObject(serializedElement.name, parentScene);
+                // might be broken, not sure if should be visible or not
+                const newScene = this.makeSceneObject(serializedElement.name, true, parentScene);
                 this.expandedScenes.push(newScene);
-                newScene.gameElements = this.loadGameElements(serializedElement.gameElements, newScene) || [];
+                newScene.gameElementObjects = this.loadGameElements(serializedElement.gameElements, newScene) || [];
                 newScene.unExpandScene();
                 return newScene;
             } else if(serializedElement.type === "Event") {
@@ -576,7 +579,7 @@ export class LevelDesigner {
         });
     }
 
-    makeEventObject(eventToLoad, parentScene = this.expandedScenes[this.expandedScenes.length - 1]) {
+    makeEventObject(eventToLoad?: EventSerialized, parentScene: SceneObject = this.expandedScenes[this.expandedScenes.length - 1]): EventObject {
         // should provide this the current scene to know which array of elements to use
         const newElementPosition = this.getNewDrawPosition();
         
@@ -586,16 +589,16 @@ export class LevelDesigner {
         return event;
     }
     
-    swapAdjacentPositions(leftUIElement, rightUIElement) {
+    swapAdjacentPositions(leftUIElement: UIElement, rightUIElement: UIElement) {
         const newLeftX = leftUIElement?.transform?.pos[0] || 0;
         const newRightX = newLeftX + rightUIElement?.widthHeight[0] + 4;
         leftUIElement.transform.pos[0] = newRightX;
         rightUIElement.transform.pos[0] = newLeftX;
     }
 
-    getNewDrawPosition() {
+    getNewDrawPosition(): [number, number] {
         const bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
-        const expandedElements = bottomExpandedScene.gameElements;
+        const expandedElements = bottomExpandedScene.gameElementObjects;
         const lastElement = expandedElements[expandedElements.length - 1];
         const lastXPosition = lastElement?.transform?.pos[0] || 0;
         const lastYPosition = lastElement?.transform?.pos[1] || bottomExpandedScene.widthHeight[1] + bottomExpandedScene.transform.pos[1] + 4;
@@ -604,7 +607,7 @@ export class LevelDesigner {
         return [lastXPosition + lastWidth + 4, lastYPosition];
     }
 
-    makeSceneObject(name, visible = true, parentScene = this.expandedScenes[this.expandedScenes.length - 1]) {
+    makeSceneObject(name: string, visible = true, parentScene = this.expandedScenes[this.expandedScenes.length - 1]) {
         // this should add a box inside either the game sequence as a whole,
         // or inside the current scene
         let newElementPosition;
@@ -616,25 +619,25 @@ export class LevelDesigner {
         return(new SceneObject(this, name, parentScene, newElementPosition));
     }
 
-    loopSelected(loop) {
+    loopSelected(loop: GameElementObject) {
         this.selectedGameElement?.unSelected();
         this.selectedGameElement = loop;
     }
 
-    timeSelected(time) {
+    timeSelected(time: TimeObject) {
         this.selectedGameElement?.unSelected();
         this.selectedGameElement = time;
     }
 
-    operationSelected(operation) {
+    operationSelected(operation: OperationObject) {
         this.selectedGameElement?.unSelected();
         this.selectedGameElement = operation;
     }
 
-    eventSelected(event) {
+    eventSelected(event: EventObject) {
         this.selectedGameElement?.unSelected();
         this.selectedGameElement = event;
-        this.shipRelative.checked = event.isShipRelative;
+        this.shipRelative.value = event.isShipRelative.toString();
     }
 
     eventUnselected() {
@@ -642,12 +645,12 @@ export class LevelDesigner {
         this.currentEnemyPlacer = undefined;
     }
 
-    enemyPlacerClicked(enemyPlacer) {
+    enemyPlacerClicked(enemyPlacer: EnemyPlacer) {
         this.animationView.enemyPlacerSelected(enemyPlacer);
         this.currentEnemyPlacer = enemyPlacer;
     }
 
-    sceneDoubleClicked(scene) {
+    sceneDoubleClicked(scene: SceneObject) {
         // this should open the array of elements in the scene
         console.log("scene double clicked: ", scene);
         // should move this into scene object
@@ -656,22 +659,22 @@ export class LevelDesigner {
         // scene.UILineSprite.selected = true;
     }
 
-    sceneSelected(scene) {
+    sceneSelected(scene: SceneObject) {
         this.selectedGameElement?.unSelected();
         this.selectedGameElement = scene;
     }
 
-    getPalletModal() {
-        const modal = document.getElementById("pallet");
-        // add functions to buttons of the pallet
-    }
+    // getPalletModal() {
+    //     const modal = document.getElementById("pallet");
+    //     // add functions to buttons of the pallet
+    // }
 
     // enemyPlaced(spawn) {
     //     this.animationView.enemyPlaced(spawn);
     // }
 
     escapePressed() {
-        if(!this.currentEnemyPlacer.placed) {
+        if(!this.currentEnemyPlacer.isPlaced) {
             this.currentEnemyPlacer?.remove();
         }
         
@@ -679,23 +682,23 @@ export class LevelDesigner {
         this.currentEnemyPlacer = undefined;
     }
 
-    addEnemyButton(type) {
+    addEnemyButton(type: Types) {
         this.animationView.clear();
         this.animationView.addEnemy(type);
 
         this.currentEnemyPlacer?.remove();
-        if(this.selectedGameElement.enemyPlacers) {
+        if(this.selectedGameElement instanceof EventObject) {
             this.currentEnemyPlacer = this.selectedGameElement.createEnemyPlacer(type);
         } else {
             throw Error('event should be selected to add an enemy');
         }
     }
 
-    updateAnimationViewAngle(radiansAngle) {
+    updateAnimationViewAngle(radiansAngle: number) {
         this.animationView.gameObjects[0].transform.angle = radiansAngle;
     }
 
-    addingAnotherEnemy(enemyPlacer) {
+    addingAnotherEnemy(enemyPlacer: EnemyPlacer) {
         this.currentEnemyPlacer = enemyPlacer;
     }
 
@@ -712,43 +715,43 @@ export class LevelDesigner {
         this.clickedDown = false;
     }
 
-    addMouseClickListener(object) {
+    addMouseClickListener(object: UIElement) {
         this.engine.addLevelDesignerClickListener(object);
     }
-    addMouseDoubleClickListener(object) {
+    addMouseDoubleClickListener(object: UIElement) {
         this.engine.addLevelDesignerDoubleClickListener(object);
     }
 
-    removeMouseClickListener(object) {
+    removeMouseClickListener(object: UIElement) {
         this.engine.removeLevelDesignerClickListener(object);
     }
-    removeMouseDoubleClickListener(object) {
+    removeMouseDoubleClickListener(object: UIElement) {
         this.engine.removeLevelDesignerDoubleClickListener(object);
     }
 
-    addRandomRandomSpawnToEvent(spawn, ) {
-        if(this.selectedGameElement.enemyPlacers) {
-            this.selectedGameElement?.addRandomRandom(new Spawn(spawn, this.engine));
+    addRandomRandomSpawnToEvent(spawnData: SpawnSerialized) {
+        if(this.selectedGameElement instanceof EventObject) {
+            this.selectedGameElement?.addRandomRandom(new Spawn(spawnData, this.engine));
         }
     }
 
-    update(deltaTime) {
+    update() {
 
     }
 
     createWalls() {
-        return new Walls(this.engine, this);
+        return new Walls(this.engine);
     }
 
-    createGrid(cameraTransform) {
-        return new Grid(this.engine, this, new Transform());
+    createGrid() {
+        return new Grid(this.engine, new Transform());
     }
 
     createOverlay() {
         return new Overlay(this.engine, this, this.ship.transform);
     }
 
-    isOutOfBounds(pos, radius) {
+    isOutOfBounds(pos: [number, number], radius: number) {
         const max = [GameScript.DIM_X - radius, GameScript.DIM_Y - radius];
         if (radius) {
             return (
@@ -772,7 +775,7 @@ export class LevelDesigner {
         this.UIActionsToRun = [];
     }
 
-    animate(timeDelta) {
+    animate() {
         // it might be cool to animate the tiny enemies in the spawn card
         // this.animateGameObjects(timeDelta);
 
@@ -804,7 +807,7 @@ export class LevelDesigner {
     }
 
 
-    animateGameObjects(delta) {
+    animateGameObjects() {
         // this.gameObjects.forEach((object) => {
         //     object.animate(delta);
         // });
@@ -824,7 +827,7 @@ export class LevelDesigner {
         this.overlayTextCleared = true;
     }
 
-    renderLineSprites(ctx) {
+    renderLineSprites(ctx: CanvasRenderingContext2D) {
         ctx.save();
         ctx.scale(this.zoomScale, this.zoomScale);
         this.lineSprites.forEach((sprite) => {
@@ -833,7 +836,7 @@ export class LevelDesigner {
         ctx.restore();
     }
 
-    renderUILineSprites(ctx) {
+    renderUILineSprites(ctx: CanvasRenderingContext2D) {
         ctx.save();
         this.UIElementSprites.forEach((sprite) => {
             sprite.draw(ctx);
@@ -841,7 +844,7 @@ export class LevelDesigner {
         ctx.restore();
     }
 
-    addGameObject(gameObject) {
+    addGameObject(gameObject: GameObject) {
         this.gameObjects.push(gameObject);
     }
 
@@ -853,7 +856,7 @@ export class LevelDesigner {
 
     addPhysicsComponent() {}
 
-    remove(gameObject) {
+    remove(gameObject: GameObject) {
         if (gameObject.lineSprite) {
             const lineSpriteIndex = this.lineSprites.indexOf(gameObject.lineSprite);
             if (lineSpriteIndex > -1) this.lineSprites.splice(lineSpriteIndex, 1); 
@@ -862,8 +865,8 @@ export class LevelDesigner {
         if (index !== -1) this.gameObjects.splice(index, 1);
     }
 
-    removeExpandedElements(expandedScene) {
-        const UIElements = expandedScene.gameElements;
+    removeExpandedElements(expandedScene: SceneObject) {
+        const UIElements = expandedScene.gameElementObjects;
         UIElements.forEach((UIElement) => {
             UIElement.parentSceneUnexpanded();
             if(UIElement.UILineSprite) {
@@ -873,40 +876,42 @@ export class LevelDesigner {
         });
     }
 
-    removeUIElementSprite(UILineSprite) {
+    removeUIElementSprite(UILineSprite: LineSprite) {
         const index = this.UIElementSprites.indexOf(UILineSprite);
         if (index !== -1) this.UIElementSprites.splice(index, 1);
     }
 
-    removeUIElement(element) {
+    removeUIElement(element: GameElementObject) {
         const index = this.gameElements.indexOf(element);
         if (index !== -1) this.gameElements.splice(index, 1);
     }
 
-    addUIElementSprite(UILineSprite) {
+    addUIElementSprite(UILineSprite: LineSprite) {
         this.UIElementSprites.push(UILineSprite);
     }
 
-    addUIElement(UIElement) {
+    addUIElement(UIElement: UIElement) {
         const bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
-        bottomExpandedScene.gameElements.push(UIElement);
+        bottomExpandedScene.gameElementObjects.push(UIElement);
     }
 
-    addLineSprite(lineSprite) {
+    addLineSprite(lineSprite: LineSprite) {
         this.lineSprites.push(lineSprite);
     }
 
     makeCoordinatesShipRelative() {
-        this.selectedGameElement?.makeCoordinatesShipRelative();
+        if(this.selectedGameElement instanceof EventObject)
+            this.selectedGameElement.makeCoordinatesShipRelative();
     }
 
-    eventLoadShipRelative(isRelative) {
+    eventLoadShipRelative(isRelative: boolean) {
         this.shipRelative.checked = isRelative;
         console.log('loading ship',this.shipRelative);
     }
             
     makeCoordinatesArenaRelative() {
-        this.selectedGameElement?.makeCoordinatesArenaRelative();
+        if(this.selectedGameElement instanceof EventObject)
+            this.selectedGameElement?.makeCoordinatesArenaRelative();
     }
 
 }

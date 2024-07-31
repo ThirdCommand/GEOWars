@@ -7,8 +7,12 @@ import { LineSprite } from "../../game_engine/line_sprite";
 import { Color } from "../../game_engine/color";
 import { type AnimationView } from "../../AnimationView";
 
+interface Scoreboardable {
+    score: number;
+    lives: number;
+}
 export class Overlay extends GameObject {
-    gameScript: GameScript;
+    gameScript: Scoreboardable;
     shipTransform: Transform;
     frameRateUpdateRate: number;
     currentFrameRateUpdateTime: number;
@@ -16,7 +20,7 @@ export class Overlay extends GameObject {
     frameRate: number;
     lineSprite: OverlaySprite;
 
-    constructor(engine: GameEngine, gameScript: GameScript, shipTransform: Transform) {
+    constructor(engine: GameEngine, gameScript: Scoreboardable, shipTransform: Transform) {
         super(engine);
         this.gameScript = gameScript;
         this.shipTransform = shipTransform;

@@ -285,7 +285,7 @@ export class AnimationView {
         enemyMap[type]([100, 100]);
     }
 }
-type Types = 
+export type Types = 
 "BoxBox" | 
 "Pinwheel" | 
 "Arrow" | 
