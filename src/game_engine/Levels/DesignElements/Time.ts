@@ -64,6 +64,11 @@ export class Time {
 
 }
 
+export type TimeSerialized = {
+    type: "Time";
+    waitTime: number;
+}
+
 // UIElement
 export class TimeObject extends UIElement {
     UILineSprite: TimeObjectSprite;
@@ -92,7 +97,7 @@ export class TimeObject extends UIElement {
         const draggingSpriteTransform = new Transform(null, [this.transform.pos[0], this.transform.pos[1]]);
         return new TimeObjectSprite(draggingSpriteTransform, this.waitTime, this.widthHeight);
     }
-    serialize() {
+    serialize(): TimeSerialized {
         return {
             type: "Time",
             waitTime: this.waitTime,

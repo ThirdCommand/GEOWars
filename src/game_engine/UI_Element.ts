@@ -1,7 +1,7 @@
 import { Transform } from "./transform";
 import { VectorMath } from "./util";
 import { type LevelDesigner } from "./Levels/levelDesigner";
-import { SceneSerialized, type SceneObject } from "./Levels/DesignElements/Scene";
+import { SceneSerialized, type SceneObject, GameElementObject } from "./Levels/DesignElements/Scene";
 import { LineSprite } from "./line_sprite";
 import { EventSerialized } from "./Levels/DesignElements/Event";
 
@@ -23,7 +23,7 @@ export abstract class UIElement {
         this.parentScene = parentScene;
         this.transform = new Transform(null, position);
         this.levelDesigner = levelDesigner; // this is level designer not the game engine
-        this.levelDesigner.addUIElement(this);
+        this.levelDesigner.addUIElement(this as unknown as GameElementObject);
         this.inExpandedScene = true;
     }
 
@@ -121,7 +121,7 @@ export abstract class UIElement {
     abstract onMouseClick(mousePos: [number, number]): void
 
     followMouse() {
-        this.levelDesigner.UIElementMouseFollower = this;
+        this.levelDesigner.UIElementMouseFollower = this as unknown as GameElementObject;
         this.levelDesigner.draggingLineSprite = this.copyLineSpriteForDragging();
         this.levelDesigner.addUIElementSprite(this.levelDesigner.draggingLineSprite);
     }
@@ -130,7 +130,7 @@ export abstract class UIElement {
         this.removeMouseClickListener();
         this.removeMouseDoubleClickListener();
         this.levelDesigner.removeUIElementSprite(this.UILineSprite);
-        this.parentScene.removeGameElement(this);
+        this.parentScene.removeGameElement(this as unknown as GameElementObject);
         this.deleteYourShit();
     }
 

@@ -8,7 +8,13 @@ import { Time } from "./Time";
 import { LoopBeginning, LoopEnd } from "./Loop";
 import { type LevelDesigner } from "../levelDesigner";
 import { LineSprite } from "../../line_sprite";
-type Operand = {
+
+export type OperationSerialized = {
+    type: "Operation";
+    operand: Operand;
+}
+
+export type Operand = {
     type: string;
     factor: number;
 }
@@ -119,7 +125,7 @@ export class OperationObject extends UIElement {
         return new OperationObjectSprite(draggingSpriteTransform, this.widthHeight, this.operand);
     }
 
-    serialize() {
+    serialize(): OperationSerialized {
         return {
             type: "Operation",
             operand: {

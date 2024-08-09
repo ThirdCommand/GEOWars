@@ -2,11 +2,15 @@
 import { type GameEngine } from "../../game_engine";
 import { GameScript } from "../../../game_script";
 
-type EnemyType = 'BoxBox' | 'Arrow' | 'Grunt' | 'Pinwheel' | 'Weaver' | 'Singularity' | 'RANDOM';
+export type EnemyType = 'BoxBox' | 'Arrow' | 'Grunt' | 'Pinwheel' | 'Weaver' | 'Singularity' | 'AlienShip' | 'RANDOM';
+
+export function isEnemyType(value: string): value is EnemyType {
+    return ['BoxBox', 'Arrow', 'Grunt', 'Pinwheel', 'Weaver', 'Singularity', 'RANDOM'].includes(value);
+}
 
 export type SpawnSerialized = {
     type: EnemyType;  
-    location: [number, number] | 'RANDOM';
+    location?: [number, number] | 'RANDOM';
     possibleSpawns?: EnemyType[];
     numberToGenerate?: number;
     angle?: number;

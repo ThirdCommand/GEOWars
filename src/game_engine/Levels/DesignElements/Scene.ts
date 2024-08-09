@@ -1,18 +1,20 @@
 import { UIElement, type SerializeAble } from "../../UI_Element";
 import { Transform } from "../../transform";
 
-import { EventObject, type Event, type EventSerialized} from "./Event";
-import {type LoopEnd, LoopBeginning, LoopEndObject, LoopBeginningObject} from "./Loop";
-import {OperationObject, type Operation} from "./Operation";
+import { EventObject, type Event, type EventSerialized, EventObjectSprite} from "./Event";
+import {type LoopEnd, LoopBeginning, LoopEndObject, LoopBeginningObject, LoopBeginningSerialized, LoopEndSerialized, LoopBeginningObjectSprite, LoopEndingObjectSprite} from "./Loop";
+import {OperationObject, type Operation, Operand, OperationSerialized, OperationObjectSprite} from "./Operation";
 import { type LevelDesigner } from "../levelDesigner";
 import { LineSprite } from "../../line_sprite";
-import { TimeObject } from "./Time";
+import { Time, TimeObject, TimeObjectSprite, TimeSerialized } from "./Time";
 
-export type GameElement = Event | Scene | LoopEnd | LoopBeginning | Operation
+export type GameElement = Event | Scene | LoopEnd | LoopBeginning | Operation | Time
 
 export type GameElementObject = EventObject | SceneObject | LoopEndObject | LoopBeginningObject | OperationObject | TimeObject;
 
-export type SerializedGameElement = SceneSerialized | EventSerialized
+export type GameElementObjectSprite = TimeObjectSprite | OperationObjectSprite | LoopBeginningObjectSprite | LoopEndingObjectSprite | EventObjectSprite | SceneSprite;
+
+export type SerializedGameElement = SceneSerialized | EventSerialized | OperationSerialized | LoopBeginningSerialized | LoopEndSerialized | TimeSerialized
 
 export type SceneSerialized  = {
     type: 'Scene';
@@ -34,10 +36,10 @@ export class Scene implements UpdateAble {
     loopsToClose: number[];
 
     constructor(
-        parentScene: Scene, 
         name: string, 
-        gameElements: GameElement[], 
-        currentElementIndex: number
+        parentScene?: Scene, 
+        gameElements?: GameElement[], 
+        currentElementIndex?: number
     ) {
         this.parentScene = parentScene;
         this.type = "Scene";
@@ -86,7 +88,7 @@ export class Scene implements UpdateAble {
 
 export class SceneObject extends UIElement implements SerializeAble {
     levelDesigner: LevelDesigner;
-    gameElementObjects: UIElement[];
+    gameElementObjects: GameElementObject[];
     expanded: boolean;
     name: string;
     UILineSprite: SceneSprite;
@@ -166,7 +168,7 @@ export class SceneObject extends UIElement implements SerializeAble {
         });
     }
 
-    removeGameElement(element: UIElement) {
+    removeGameElement(element: GameElementObject) {
         const index = this.gameElementObjects.indexOf(element);
         if(index !== -1) this.gameElementObjects.splice(index, 1);
     }

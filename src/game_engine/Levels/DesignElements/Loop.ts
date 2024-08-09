@@ -88,11 +88,16 @@ export class LoopBeginning {
     resetToStartingValues() {}
 }
 
+
+export type LoopBeginningSerialized = {
+    type: "LoopBeginning";
+}
+
 // UIElement
 export class LoopBeginningObject extends UIElement {
     UILineSprite: LoopBeginningObjectSprite;
     endLoopObject: LoopEndObject | undefined;
-    constructor(levelDesigner: LevelDesigner, loop: LoopValues, position: [number, number], parentScene: SceneObject) {
+    constructor(levelDesigner: LevelDesigner, position: [number, number], parentScene: SceneObject) {
         super(levelDesigner, position, parentScene);
         this.widthHeight = [10, 40];
         this.clickRadius = 5;
@@ -124,7 +129,7 @@ export class LoopBeginningObject extends UIElement {
     }
     
 
-    serialize() {
+    serialize(): LoopBeginningSerialized {
         return {
             type: "LoopBeginning"
         };
@@ -144,6 +149,12 @@ export class LoopBeginningObject extends UIElement {
         this.endLoopObject = undefined;
         endObject?.delete();
     }
+}
+
+export type LoopEndSerialized = {
+    type: "LoopEnd"
+    loopIdx: number;
+    repeatTimes: number;
 }
 
 export class LoopEndObject extends UIElement {
@@ -190,7 +201,7 @@ export class LoopEndObject extends UIElement {
     }
     
 
-    serialize() {
+    serialize(): LoopEndSerialized {
         return {
             type: "LoopEnd",
             loopIdx: this.loopData.loopIdx,

@@ -1,11 +1,13 @@
+import { AnimationView } from "../../../AnimationView";
 import { type GameEngine } from "../../game_engine";
 import { GameObject } from "../../game_object";
+import { EnemyPlacer } from "./EnemyPlacer";
 
 export class PlacingAnimation extends GameObject {
     initialSpawningScale: number;
     cycleSpeed: number;
-    // parentObject:
-    constructor(engine: GameEngine) {
+    parentObject: EnemyPlacer;
+    constructor(engine: GameEngine | AnimationView) {
         super(engine);
         this.initialSpawningScale = 1.5;
         this.cycleSpeed = 0.1;

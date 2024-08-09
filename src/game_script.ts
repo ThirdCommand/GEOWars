@@ -14,7 +14,7 @@ import { ParticleExplosion } from "./game_objects/particles/particle_explosion";
 import { ShipExplosion } from "./game_objects/particles/ship_explosion";
 import {Star} from "./game_objects/particles/star";
 
-import { Scene } from "./game_engine/Levels/DesignElements/Scene";
+import {Scene, SerializedGameElement } from "./game_engine/Levels/DesignElements/Scene";
 import { Event } from "./game_engine/Levels/DesignElements/Event";
 import { Time } from "./game_engine/Levels/DesignElements/Time";
 import { LoopBeginning, LoopEnd } from "./game_engine/Levels/DesignElements/Loop";
@@ -132,7 +132,7 @@ export class GameScript {
     startGame(serializedGame: string) {
         this.serializedGame = serializedGame;
         const game = JSON.parse(serializedGame);
-        this.rootScene = new Scene(this, "Root");
+        this.rootScene = new Scene('root');
         this.rootScene.gameElements = this.loadGameElements(game.gameElements, this.rootScene);
         this.playFromRootScene = false; // clockwork content
         this.intervalTime = 0;
@@ -159,16 +159,17 @@ export class GameScript {
 
     // will need to duck type what happens when the scene is done and the game is over
 
-    loadGameElements(gameElements, parentScene) {
-        return gameElements.map((element) => {
+    
+    loadGameElements(serializedGameElements: SerializedGameElement[], parentScene: Scene) {
+        return serializedGameElements.map((element) => {
             if(element.type === "Scene") {
-                const newScene = new Scene(parentScene, element.name);
-                newScene.gameElements = this.loadGameElements(element.gameElements, newScene) || [];
+                const newScene = new Scene(element.name, parentScene);
+                newScene.gameElements = this.loadGameElements(element.serializedGameElements, newScene) || [];
                 return newScene;
             } else if(element.type === "Event") {
                 return new Event(element.spawns, parentScene, element.isShipRelative ,this.engine);
             } else if(element.type === "Time") {
-                return new Time(parentScene, element.waitTime, parentScene);
+                return new Time(parentScene, element.waitTime);
             } else if(element.type === "LoopBeginning") {
                 return new LoopBeginning(parentScene);
             } else if (element.type === "LoopEnd") {

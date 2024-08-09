@@ -321,7 +321,7 @@ var EventObject = /** @class */ (function (_super) {
         _this.addMouseClickListener();
         _this.isShipRelative = false;
         if (eventToLoad) {
-            eventToLoad.spawns.forEach(function (spawn) { return _this.addSpawn({ spawnData: spawn }); });
+            eventToLoad.spawns.forEach(function (spawn) { return _this.addSpawn(spawn); });
             _this.isShipRelative = eventToLoad.isShipRelative;
         }
         _this.addUIElementSprite(new EventObjectSprite(_this.transform, _this.spawnSprites, _this.widthHeight));
@@ -329,12 +329,12 @@ var EventObject = /** @class */ (function (_super) {
         return _this;
     }
     EventObject.prototype.enemyPlaced = function (spawn, enemyPlacer) {
-        this.addSpawn(new _Spawn__WEBPACK_IMPORTED_MODULE_3__.Spawn(spawn, this.engine));
+        this.addSpawn(new _Spawn__WEBPACK_IMPORTED_MODULE_3__.Spawn(spawn, this.levelDesigner.engine));
         this.addEnemyPlacer(enemyPlacer);
         this.levelDesigner.addingAnotherEnemy(this.createEnemyPlacer(spawn.type));
     };
     EventObject.prototype.removePlacer = function (enemyPlacer) {
-        this.spawns = this.spawns.filter(function (spawn) { return spawn !== enemyPlacer.spawn; });
+        this.spawns = this.spawns.filter(function (spawn) { return spawn !== enemyPlacer.serializedSpawn; });
         this.enemyPlacers = this.enemyPlacers.filter(function (placer) { return placer !== enemyPlacer; });
     };
     // copy and paste should be supported
@@ -379,10 +379,9 @@ var EventObject = /** @class */ (function (_super) {
         });
     };
     // copied into engine's clipboard
-    EventObject.prototype.pasteCopiedSpawns = function (spawns) {
-        var _this = this;
-        spawns.forEach(function (spawn) { return (_this.addSpawn(spawn)); });
-    };
+    // pasteCopiedSpawns(spawns) {
+    //     spawns.forEach((spawn) => (this.addSpawn(spawn)));
+    // }
     EventObject.prototype.serialize = function () {
         return {
             type: 'Event',
@@ -390,34 +389,33 @@ var EventObject = /** @class */ (function (_super) {
             isShipRelative: this.isShipRelative
         };
     };
-    EventObject.prototype.loadEvent = function (event) {
-        var _this = this;
-        event.spawns.forEach(function (spawn) { return _this.addSpawn({ spawn: spawn }); });
-    };
-    EventObject.prototype.addSpawn = function (spawn) {
-        this.spawns.push(spawn.spawn);
-        this.spawnSprites[spawn.spawn.type] += 1;
+    // loadEvent(event) {
+    //     event.spawns.forEach((spawn) => this.addSpawn({spawn}));
+    // }
+    EventObject.prototype.addSpawn = function (spawnSerialized) {
+        this.spawns.push(new _Spawn__WEBPACK_IMPORTED_MODULE_3__.Spawn(spawnSerialized, this.levelDesigner.engine));
+        this.spawnSprites[spawnSerialized.type] += 1;
     };
     EventObject.prototype.enemyPlacerClicked = function (enemyPlacer) {
         this.levelDesigner.enemyPlacerClicked(enemyPlacer);
     };
-    EventObject.prototype.addRandomRandom = function (spawn) {
+    EventObject.prototype.addRandomRandom = function (serializedSpawn) {
         var randomRandomAdded = this.spawns.find(function (spawny) { return spawny.type === 'RANDOM'; });
         if (randomRandomAdded) {
-            randomRandomAdded.possibleSpawns = spawn.spawn.possibleSpawns;
-            randomRandomAdded.numberToGenerate = spawn.spawn.numberToGenerate;
+            randomRandomAdded.possibleSpawns = serializedSpawn.possibleSpawns;
+            randomRandomAdded.numberToGenerate = serializedSpawn.numberToGenerate;
             var enemyPlacer = this.enemyPlacers.find(function (enemyPlacer) { return (enemyPlacer.type === 'RANDOM'); });
-            enemyPlacer.spawn.numberToGenerate = spawn.spawn.numberToGenerate;
-            enemyPlacer.spawn.possibleSpawns = spawn.spawn.possibleSpawns;
+            enemyPlacer.serializedSpawn.numberToGenerate = serializedSpawn.numberToGenerate;
+            enemyPlacer.serializedSpawn.possibleSpawns = serializedSpawn.possibleSpawns;
         }
         else {
             var enemyPlacer = new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_2__.EnemyPlacer(this.levelDesigner.engine, {
                 location: 'RANDOM',
                 type: 'RANDOM',
-                numberToGenerate: spawn.spawn.numberToGenerate,
-                possibleSpawns: spawn.spawn.possibleSpawns
-            }, this.levelDesigner, true);
-            this.addSpawn(spawn);
+                numberToGenerate: serializedSpawn.numberToGenerate,
+                possibleSpawns: serializedSpawn.possibleSpawns
+            }, this, true);
+            this.addSpawn(serializedSpawn);
             this.addEnemyPlacer(enemyPlacer);
         }
     };
@@ -642,7 +640,7 @@ var LoopBeginning = /** @class */ (function () {
 // UIElement
 var LoopBeginningObject = /** @class */ (function (_super) {
     __extends(LoopBeginningObject, _super);
-    function LoopBeginningObject(levelDesigner, loop, position, parentScene) {
+    function LoopBeginningObject(levelDesigner, position, parentScene) {
         var _this = _super.call(this, levelDesigner, position, parentScene) || this;
         _this.widthHeight = [10, 40];
         _this.clickRadius = 5;
@@ -1041,7 +1039,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 // there will have to be an ancestor scene that holds all the scenes and stuffs
 var Scene = /** @class */ (function () {
-    function Scene(parentScene, name, gameElements, currentElementIndex) {
+    function Scene(name, parentScene, gameElements, currentElementIndex) {
         this.parentScene = parentScene;
         this.type = "Scene";
         this.name = name || "";
@@ -1214,10 +1212,14 @@ var SceneSprite = /** @class */ (function (_super) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   Spawn: () => (/* binding */ Spawn)
+/* harmony export */   Spawn: () => (/* binding */ Spawn),
+/* harmony export */   isEnemyType: () => (/* binding */ isEnemyType)
 /* harmony export */ });
 /* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_script */ "./src/game_script.ts");
 
+function isEnemyType(value) {
+    return ['BoxBox', 'Arrow', 'Grunt', 'Pinwheel', 'Weaver', 'Singularity', 'RANDOM'].includes(value);
+}
 var Spawn = /** @class */ (function () {
     function Spawn(spawnData, gameEngine) {
         this.type = spawnData.type;
@@ -1469,6 +1471,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_objects_enemies_RandomRandom__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../game_objects/enemies/RandomRandom */ "./src/game_objects/enemies/RandomRandom.ts");
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../util */ "./src/game_engine/util.ts");
 /* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../game_objects/enemies/Singularity/alien_ship */ "./src/game_objects/enemies/Singularity/alien_ship.ts");
 // while placing, could do spawning animation over mouse position
 // once placed, draw it at the placed location
 // store the location
@@ -1502,6 +1505,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
+
 // should add Alien too
 var spriteMap = {
     BoxBox: function (transform) {
@@ -1513,6 +1517,7 @@ var spriteMap = {
     Grunt: function (transform) { return new _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_4__.GruntSprite(transform); },
     Pinwheel: function (transform) { return new _game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_5__.PinwheelSprite(transform); },
     Weaver: function (transform) { return new _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_6__.WeaverSprite(transform); },
+    AlienShip: function (transform) { return new _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_11__.AlienShipSprite(transform); },
     Singularity: function (transform) { return new _game_objects_enemies_Singularity_singularity_sprite__WEBPACK_IMPORTED_MODULE_7__.SingularitySprite(transform); },
     RANDOM: function (transform) { return new _game_objects_enemies_RandomRandom__WEBPACK_IMPORTED_MODULE_8__.RandomRandomSprite(transform); },
 };
@@ -1525,10 +1530,12 @@ var getClickRadius = {
     Weaver: 10,
     Singularity: 10,
     RANDOM: 10,
+    AlienShip: 10,
 };
 var EnemyPlacer = /** @class */ (function (_super) {
     __extends(EnemyPlacer, _super);
     function EnemyPlacer(engine, spawnData, event, isLoadingEvent) {
+        if (isLoadingEvent === void 0) { isLoadingEvent = false; }
         var _this = _super.call(this, engine) || this;
         var type = spawnData.type, location = spawnData.location, numberToGenerate = spawnData.numberToGenerate, possibleSpawns = spawnData.possibleSpawns, angle = spawnData.angle;
         _this.addLineSprite(spriteMap[type](_this.transform));
@@ -1598,7 +1605,7 @@ var EnemyPlacer = /** @class */ (function (_super) {
         this.remove();
     };
     EnemyPlacer.prototype.addMouseClickListener = function () {
-        this.gameEngine.addClickListener(this);
+        this.addClickListener();
     };
     EnemyPlacer.prototype.mouseClicked = function (mousePos) {
         var centerDist = _util__WEBPACK_IMPORTED_MODULE_9__.VectorMath.dist(this.transform.pos, mousePos);
@@ -1645,7 +1652,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 var PlacingAnimation = /** @class */ (function (_super) {
     __extends(PlacingAnimation, _super);
-    // parentObject:
     function PlacingAnimation(engine) {
         var _this = _super.call(this, engine) || this;
         _this.initialSpawningScale = 1.5;
@@ -1695,7 +1701,8 @@ var NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   LevelDesigner: () => (/* binding */ LevelDesigner)
+/* harmony export */   LevelDesigner: () => (/* binding */ LevelDesigner),
+/* harmony export */   isEnemyTypeArray: () => (/* binding */ isEnemyTypeArray)
 /* harmony export */ });
 /* harmony import */ var _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_objects/Walls/walls */ "./src/game_objects/Walls/walls.ts");
 /* harmony import */ var _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_objects/Overlay/overlay */ "./src/game_objects/Overlay/overlay.ts");
@@ -1730,6 +1737,10 @@ var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from
 
 
 // I should collect placed enemies
+// check if array of enemyType
+function isEnemyTypeArray(value) {
+    return !value.some(function (type) { return (!(0,_DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_6__.isEnemyType)(type)); });
+}
 // for a tracker I can highlight the current game element
 // just like selecting it... but maybe the same color for 
 // all of them 
@@ -1753,8 +1764,8 @@ var LevelDesigner = /** @class */ (function () {
         this.serializedGame = serializedGame;
         this.UIElementSprites = [];
         // duck typing for scene
-        this.gameElements = []; // top level list of game elements
-        this.expandedScenes = [new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_5__.SceneObject(this, 'main')];
+        this.baseScene = new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_5__.SceneObject(this, 'main'); // top level list of game elements
+        this.expandedScenes = [this.baseScene];
         this.transform = new _transform__WEBPACK_IMPORTED_MODULE_4__.Transform();
         this.widthHeight = [0, 0];
         this.loopBeginningObjectStackForLoading = [];
@@ -1842,14 +1853,16 @@ var LevelDesigner = /** @class */ (function () {
                 var value = _a.value;
                 return value;
             });
-            var numberToGenerate = document.getElementById('numberToGenerate').value;
-            var newSpawn = {
-                location: 'RANDOM',
-                type: 'RANDOM',
-                possibleSpawns: selectedEnemies,
-                numberToGenerate: numberToGenerate,
-            };
-            _this.addRandomRandomSpawnToEvent(newSpawn);
+            if (isEnemyTypeArray(selectedEnemies)) {
+                var numberToGenerate = document.getElementById('numberToGenerate').value;
+                var newSpawn = {
+                    location: 'RANDOM',
+                    type: 'RANDOM',
+                    possibleSpawns: selectedEnemies,
+                    numberToGenerate: Number(numberToGenerate),
+                };
+                _this.addRandomRandomSpawnToEvent(newSpawn);
+            }
         };
         addGruntButton.onclick = function (e) {
             e.stopPropagation();
@@ -1908,7 +1921,7 @@ var LevelDesigner = /** @class */ (function () {
         addTime.onclick = function (e) {
             e.stopPropagation();
             var time = document.getElementById("Time").value;
-            _this.UIActionsToRun.push(function () { return _this.makeTime(time); });
+            _this.UIActionsToRun.push(function () { return _this.makeTime(Number(time)); });
         };
         addOperation.onclick = function (e) {
             e.stopPropagation();
@@ -1916,7 +1929,7 @@ var LevelDesigner = /** @class */ (function () {
             var operationValue = document.getElementById("OperationFactor").value;
             var operand = {
                 type: operationType,
-                factor: operationValue,
+                factor: Number(operationValue),
             };
             _this.UIActionsToRun.push(function () { return _this.makeOperation(operand); });
         };
@@ -1969,8 +1982,9 @@ var LevelDesigner = /** @class */ (function () {
     // }
     LevelDesigner.prototype.startGame = function () {
         this.serializedGame = {
+            type: 'Scene',
             name: "Game",
-            serializedGameElements: this.gameElements.map(function (element) { return element.serialize(); } // set up proper return here
+            serializedGameElements: this.baseScene.gameElementObjects.map(function (element) { return element.serialize(); } // set up proper return here
             ),
         };
         var serializedGameString = JSON.stringify(this.serializedGame);
@@ -1983,7 +1997,7 @@ var LevelDesigner = /** @class */ (function () {
     LevelDesigner.prototype.makeTime = function (time, parentScene) {
         if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
         var newElementPosition = this.getNewDrawPosition();
-        var timeObject = new _DesignElements_Time__WEBPACK_IMPORTED_MODULE_8__.TimeObject(this, { waitTime: time }, newElementPosition, parentScene);
+        var timeObject = new _DesignElements_Time__WEBPACK_IMPORTED_MODULE_8__.TimeObject(this, time, newElementPosition, parentScene);
         this.selectedGameElement = timeObject;
         return timeObject;
     };
@@ -2024,20 +2038,20 @@ var LevelDesigner = /** @class */ (function () {
             bottomExpandedScene.parentScene.unExpandScene();
     };
     LevelDesigner.prototype.mouseMoveEvent = function (e) {
-        if (e.target.classList[0] === "level-editor-canvas") {
+        if (e.target instanceof HTMLElement && e.target.classList[0] === "level-editor-canvas") {
             this.currentMousePos = [e.offsetX, e.offsetY];
             if (this.UIElementMouseFollower) {
-                var moveToPosition = [e.offsetX - this.draggingLineSprite.widthHeight[0] / 2, e.offsetY - this.draggingLineSprite.widthHeight[1] / 2];
-                this.draggingLineSprite.transform.pos = __spreadArray([], moveToPosition, true);
+                var moveToPosition = [e.offsetX - this.UIElementMouseFollower.UILineSprite.widthHeight[0] / 2, e.offsetY - this.UIElementMouseFollower.UILineSprite.widthHeight[1] / 2];
+                this.UIElementMouseFollower.UILineSprite.transform.pos = __spreadArray([], moveToPosition, true);
                 // check if the element is overlapping with another element
                 var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
-                var draggedElementSceneIndex = bottomExpandedScene.gameElements.indexOf(this.UIElementMouseFollower);
+                var draggedElementSceneIndex = bottomExpandedScene.gameElementObjects.indexOf(this.UIElementMouseFollower);
                 if (draggedElementSceneIndex === -1)
                     return;
                 var leftElementIndex = draggedElementSceneIndex - 1;
                 var rightElementIndex = draggedElementSceneIndex + 1;
-                var draggedElementXPosition = this.draggingLineSprite.transform.pos[0];
-                var draggedElementWidth = this.draggingLineSprite.widthHeight[0];
+                var draggedElementXPosition = this.UIElementMouseFollower.UILineSprite.transform.pos[0];
+                var draggedElementWidth = this.UIElementMouseFollower.UILineSprite.widthHeight[0];
                 // check left element:
                 var moved = false;
                 if (leftElementIndex >= 0) {
@@ -2086,13 +2100,13 @@ var LevelDesigner = /** @class */ (function () {
     };
     LevelDesigner.prototype.makeLoop = function (loop, parentScene) {
         if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
-        var beginningObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_9__.LoopBeginningObject(this, undefined, this.getNewDrawPosition(), parentScene);
+        var beginningObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_9__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
         var endObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_9__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
         beginningObject.endLoopObject = endObject;
         endObject.beginningLoopObject = beginningObject;
     };
-    LevelDesigner.prototype.makeLoopBeginning = function (loop, parentScene) {
-        var loopBeginning = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_9__.LoopBeginningObject(this, undefined, this.getNewDrawPosition(), parentScene);
+    LevelDesigner.prototype.makeLoopBeginning = function (parentScene) {
+        var loopBeginning = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_9__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
         this.loopBeginningObjectStackForLoading.push(loopBeginning);
         return loopBeginning;
     };
@@ -2133,8 +2147,9 @@ var LevelDesigner = /** @class */ (function () {
         }
     };
     LevelDesigner.prototype.saveGameDesign = function () {
-        var serializedGameElements = this.gameElements.map(function (element) { return element.serialize(); });
+        var serializedGameElements = this.baseScene.gameElementObjects.map(function (element) { return element.serialize(); });
         this.serializedGame = {
+            type: "Scene",
             name: "Game",
             serializedGameElements: serializedGameElements,
         };
@@ -2143,7 +2158,9 @@ var LevelDesigner = /** @class */ (function () {
     LevelDesigner.prototype.loadGameDesign = function (json) {
         var serializedGame = JSON.parse(json);
         this.serializedGame = serializedGame;
-        this.gameElements = this.loadGameElements(serializedGame.serializedGameElements);
+        this.baseScene = new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_5__.SceneObject(this, 'main');
+        this.expandedScenes = [this.baseScene];
+        this.baseScene.gameElementObjects = this.loadGameElements(serializedGame.serializedGameElements, this.baseScene);
     };
     LevelDesigner.prototype.loadGameElements = function (serializedGameElements, parentScene) {
         var _this = this;
@@ -2152,7 +2169,7 @@ var LevelDesigner = /** @class */ (function () {
                 // might be broken, not sure if should be visible or not
                 var newScene = _this.makeSceneObject(serializedElement.name, true, parentScene);
                 _this.expandedScenes.push(newScene);
-                newScene.gameElementObjects = _this.loadGameElements(serializedElement.gameElements, newScene) || [];
+                newScene.gameElementObjects = _this.loadGameElements(serializedElement.serializedGameElements, newScene) || [];
                 newScene.unExpandScene();
                 return newScene;
             }
@@ -2163,7 +2180,7 @@ var LevelDesigner = /** @class */ (function () {
                 return _this.makeTime(serializedElement.waitTime, parentScene);
             }
             else if (serializedElement.type === "LoopBeginning") {
-                return _this.makeLoopBeginning(serializedElement, parentScene);
+                return _this.makeLoopBeginning(parentScene);
             }
             else if (serializedElement.type === "LoopEnd") {
                 return _this.makeLoopEnding(serializedElement, parentScene);
@@ -2443,9 +2460,9 @@ var LevelDesigner = /** @class */ (function () {
             this.UIElementSprites.splice(index, 1);
     };
     LevelDesigner.prototype.removeUIElement = function (element) {
-        var index = this.gameElements.indexOf(element);
+        var index = this.baseScene.gameElementObjects.indexOf(element);
         if (index !== -1)
-            this.gameElements.splice(index, 1);
+            this.baseScene.gameElementObjects.splice(index, 1);
     };
     LevelDesigner.prototype.addUIElementSprite = function (UILineSprite) {
         this.UIElementSprites.push(UILineSprite);
@@ -9364,7 +9381,7 @@ var GameScript = /** @class */ (function () {
     GameScript.prototype.startGame = function (serializedGame) {
         this.serializedGame = serializedGame;
         var game = JSON.parse(serializedGame);
-        this.rootScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_15__.Scene(this, "Root");
+        this.rootScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_15__.Scene('root');
         this.rootScene.gameElements = this.loadGameElements(game.gameElements, this.rootScene);
         this.playFromRootScene = false; // clockwork content
         this.intervalTime = 0;
@@ -9388,19 +9405,19 @@ var GameScript = /** @class */ (function () {
         new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [725, 300]);
     };
     // will need to duck type what happens when the scene is done and the game is over
-    GameScript.prototype.loadGameElements = function (gameElements, parentScene) {
+    GameScript.prototype.loadGameElements = function (serializedGameElements, parentScene) {
         var _this = this;
-        return gameElements.map(function (element) {
+        return serializedGameElements.map(function (element) {
             if (element.type === "Scene") {
-                var newScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_15__.Scene(parentScene, element.name);
-                newScene.gameElements = _this.loadGameElements(element.gameElements, newScene) || [];
+                var newScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_15__.Scene(element.name, parentScene);
+                newScene.gameElements = _this.loadGameElements(element.serializedGameElements, newScene) || [];
                 return newScene;
             }
             else if (element.type === "Event") {
                 return new _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_16__.Event(element.spawns, parentScene, element.isShipRelative, _this.engine);
             }
             else if (element.type === "Time") {
-                return new _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_17__.Time(parentScene, element.waitTime, parentScene);
+                return new _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_17__.Time(parentScene, element.waitTime);
             }
             else if (element.type === "LoopBeginning") {
                 return new _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_18__.LoopBeginning(parentScene);
@@ -9976,12 +9993,6 @@ var GameView = /** @class */ (function () {
         this.levelDesignLoaded = true;
         this.lastTime = 0;
         this.animate = this.animate.bind(this);
-        this.MOVES = {
-            s: [0, 1],
-            a: [-1, 0],
-            w: [0, -1],
-            d: [1, 0],
-        };
     }
     GameView.prototype.bindKeyboardKeys = function () {
         window.addEventListener("keydown", this.createKeyEvent(true), true);
@@ -10020,9 +10031,11 @@ var GameView = /** @class */ (function () {
                     _this.engine.gameScript.theme.unmute();
                 }
             }
-            var unitVector = _this.MOVES[e.key];
-            if (unitVector) {
-                _this.updateMovementDirection(e.key, down);
+            if (e.key === 'a' || e.key === 's' || e.key === 'w' || e.key === 'd') {
+                var unitVector = GameView.MOVES[e.key];
+                if (unitVector) {
+                    _this.updateMovementDirection(e.key, down);
+                }
             }
             if (e.key === "p") {
                 _this.engine.updateStartButtonListeners(down);
@@ -10163,6 +10176,12 @@ var GameView = /** @class */ (function () {
         this.lastTime = time;
         // every call to animate requests causes another call to animate
         requestAnimationFrame(this.animate);
+    };
+    GameView.MOVES = {
+        s: [0, 1],
+        a: [-1, 0],
+        w: [0, -1],
+        d: [1, 0],
     };
     return GameView;
 }());
@@ -10324,8 +10343,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var animationView = new _AnimationView__WEBPACK_IMPORTED_MODULE_4__.AnimationView(animationWindow);
     var levelDesigner = new _game_engine_Levels_levelDesigner__WEBPACK_IMPORTED_MODULE_3__.LevelDesigner(gameEngine, animationView, levelDesignerCtx);
     gameEngine.levelDesigner = levelDesigner;
-    var gameView = new _game_view__WEBPACK_IMPORTED_MODULE_1__.GameView(gameEngine, ctx, canvasEl, levelDesigner, animationView).start();
-    levelDesigner.gameView = gameView;
+    new _game_view__WEBPACK_IMPORTED_MODULE_1__.GameView(gameEngine, ctx, canvasEl, levelDesigner, animationView).start();
 });
 
 })();

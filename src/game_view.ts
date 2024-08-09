@@ -18,8 +18,11 @@ export class GameView {
     levelDesignLoaded: boolean;
     canvasEl: HTMLCanvasElement;
 
-    MOVES: {
-        [key: DirectionKey]: [number, number]
+    static MOVES = {
+        s: [0, 1],
+        a: [-1, 0],
+        w: [0, -1],
+        d: [1, 0],
     };
 
     constructor(
@@ -44,12 +47,6 @@ export class GameView {
         this.levelDesignLoaded = true;
         this.lastTime = 0;
         this.animate = this.animate.bind(this);
-        this.MOVES = {
-            s: [0, 1],
-            a: [-1, 0],
-            w: [0, -1],
-            d: [1, 0],
-        };
     }
 
     bindKeyboardKeys() {
@@ -92,11 +89,13 @@ export class GameView {
                     this.engine.gameScript.theme.unmute();
                 }
             }
-
-            const unitVector = this.MOVES[e.key];
-            if (unitVector) {
-                this.updateMovementDirection(e.key, down);
+            if(e.key === 'a' || e.key === 's' || e.key === 'w' || e.key === 'd') {
+                const unitVector = GameView.MOVES[e.key];
+                if (unitVector) {
+                    this.updateMovementDirection(e.key, down);
+                }
             }
+            
             if (e.key === "p") {
                 this.engine.updateStartButtonListeners(down);
             }

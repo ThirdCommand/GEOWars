@@ -21,8 +21,9 @@ import { VectorMath } from "../../util";
 import { type Transform } from "../../transform";
 import { type GameEngine } from "../../game_engine";
 import { type EventObject } from "../DesignElements/Event";
-import { type SpawnSerialized } from "../DesignElements/Spawn";
+import { EnemyType, type SpawnSerialized } from "../DesignElements/Spawn";
 import { GameScript } from "../../../game_script";
+import {AlienShipSprite } from "../../../game_objects/enemies/Singularity/alien_ship";
 
 // should add Alien too
 export const spriteMap = {
@@ -35,6 +36,7 @@ export const spriteMap = {
     Grunt: (transform: Transform) => new GruntSprite(transform),
     Pinwheel: (transform: Transform) => new PinwheelSprite(transform),
     Weaver: (transform: Transform) => new WeaverSprite(transform),
+    AlienShip: (transform: Transform) => new AlienShipSprite(transform),
     Singularity: (transform: Transform) => new SingularitySprite(transform),
     RANDOM: (transform: Transform) => new RandomRandomSprite(transform),
 };
@@ -48,6 +50,7 @@ const getClickRadius = {
     Weaver: 10,
     Singularity: 10,
     RANDOM: 10,
+    AlienShip: 10,
 };
 
 export class EnemyPlacer extends GameObject {
@@ -55,8 +58,8 @@ export class EnemyPlacer extends GameObject {
     event: EventObject;
     serializedSpawn: SpawnSerialized;
     clickRadius: number;
-    type: SpawnSerialized['type'];
-    constructor(engine: GameEngine, spawnData: SpawnSerialized, event: EventObject, isLoadingEvent: boolean) {
+    type: EnemyType;
+    constructor(engine: GameEngine, spawnData: SpawnSerialized, event: EventObject, isLoadingEvent: boolean = false) {
         super(engine);
         const {type, location, numberToGenerate, possibleSpawns, angle} = spawnData;
         this.addLineSprite(spriteMap[type](this.transform));
@@ -132,7 +135,7 @@ export class EnemyPlacer extends GameObject {
     }
 
     addMouseClickListener() {
-        this.gameEngine.addClickListener(this);
+        this.addClickListener();
     }
 
     mouseClicked(mousePos: [number, number]) {

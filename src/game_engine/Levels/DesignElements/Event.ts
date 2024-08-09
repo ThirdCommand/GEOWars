@@ -2,13 +2,12 @@ import { UIElement } from "../../UI_Element";
 import { Transform } from "../../transform";
 
 import {EnemyPlacer, spriteMap} from "../LevelDesign/EnemyPlacer";
-import {Spawn, type SpawnSerialized} from "./Spawn";
+import {EnemyType, Spawn, type SpawnSerialized} from "./Spawn";
 
 import {type UpdateAble, type Scene, type SceneObject } from "./Scene";
 import { type LevelDesigner } from "../levelDesigner";
 import { type GameEngine } from "../../game_engine";
 import { LineSprite } from "../../line_sprite";
-import { EnemySpawn } from "../../../game_objects/particles/enemy_spawn";
 
 // maybe this is what is created from the serialized version
 export class Event implements UpdateAble{
@@ -50,7 +49,7 @@ export class Event implements UpdateAble{
 
 export type EventSerialized = {
     type: 'Event';
-    spawns: [];
+    spawns: SpawnSerialized[];
     isShipRelative: boolean;
 }
 
@@ -75,7 +74,7 @@ export class EventObject extends UIElement {
         this.isShipRelative = false;
         
         if(eventToLoad) {
-            eventToLoad.spawns.forEach((spawn) => this.addSpawn({spawnData: spawn}));
+            eventToLoad.spawns.forEach((spawn) => this.addSpawn(spawn));
             this.isShipRelative = eventToLoad.isShipRelative;
         }
         this.addUIElementSprite(new EventObjectSprite(this.transform, this.spawnSprites, this.widthHeight));
@@ -83,13 +82,13 @@ export class EventObject extends UIElement {
     }
 
     enemyPlaced(spawn: SpawnSerialized, enemyPlacer: EnemyPlacer) {
-        this.addSpawn(new Spawn(spawn, this.engine));
+        this.addSpawn(new Spawn(spawn, this.levelDesigner.engine));
         this.addEnemyPlacer(enemyPlacer);
         this.levelDesigner.addingAnotherEnemy(this.createEnemyPlacer(spawn.type));
     }
 
     removePlacer(enemyPlacer: EnemyPlacer) {
-        this.spawns = this.spawns.filter((spawn) => spawn !== enemyPlacer.spawn);
+        this.spawns = this.spawns.filter((spawn) => spawn !== enemyPlacer.serializedSpawn);
         this.enemyPlacers = this.enemyPlacers.filter((placer) => placer !== enemyPlacer);
     }
 
@@ -142,11 +141,11 @@ export class EventObject extends UIElement {
     }
 
     // copied into engine's clipboard
-    pasteCopiedSpawns(spawns) {
-        spawns.forEach((spawn) => (this.addSpawn(spawn)));
-    }
+    // pasteCopiedSpawns(spawns) {
+    //     spawns.forEach((spawn) => (this.addSpawn(spawn)));
+    // }
 
-    serialize() {  
+    serialize(): EventSerialized {  
         return {
             type: 'Event',
             spawns: this.spawns,
@@ -154,45 +153,45 @@ export class EventObject extends UIElement {
         };
     }
 
-    loadEvent(event) {
-        event.spawns.forEach((spawn) => this.addSpawn({spawn}));
+    // loadEvent(event) {
+    //     event.spawns.forEach((spawn) => this.addSpawn({spawn}));
+    // }
+
+    addSpawn(spawnSerialized: SpawnSerialized) {
+        this.spawns.push(new Spawn(spawnSerialized, this.levelDesigner.engine));
+        this.spawnSprites[spawnSerialized.type] += 1;
     }
 
-    addSpawn(spawn) {
-        this.spawns.push(spawn.spawn);
-        this.spawnSprites[spawn.spawn.type] += 1;
-    }
-
-    enemyPlacerClicked(enemyPlacer) {
+    enemyPlacerClicked(enemyPlacer: EnemyPlacer) {
         this.levelDesigner.enemyPlacerClicked(enemyPlacer);
     }
 
-    addRandomRandom(spawn) {
+    addRandomRandom(serializedSpawn: SpawnSerialized) {
         const randomRandomAdded = this.spawns.find((spawny) => spawny.type === 'RANDOM');
         if(randomRandomAdded) {
-            randomRandomAdded.possibleSpawns = spawn.spawn.possibleSpawns;
-            randomRandomAdded.numberToGenerate = spawn.spawn.numberToGenerate;
+            randomRandomAdded.possibleSpawns = serializedSpawn.possibleSpawns;
+            randomRandomAdded.numberToGenerate = serializedSpawn.numberToGenerate;
             const enemyPlacer = this.enemyPlacers.find((enemyPlacer) => (enemyPlacer.type === 'RANDOM'));
-            enemyPlacer.spawn.numberToGenerate = spawn.spawn.numberToGenerate;
-            enemyPlacer.spawn.possibleSpawns = spawn.spawn.possibleSpawns;
+            enemyPlacer.serializedSpawn.numberToGenerate = serializedSpawn.numberToGenerate;
+            enemyPlacer.serializedSpawn.possibleSpawns = serializedSpawn.possibleSpawns;
         } else {
             const enemyPlacer = new EnemyPlacer(
                 this.levelDesigner.engine, 
                 {
                     location: 'RANDOM', 
                     type: 'RANDOM', 
-                    numberToGenerate: spawn.spawn.numberToGenerate, 
-                    possibleSpawns: spawn.spawn.possibleSpawns
-                }, 
-                this.levelDesigner, 
+                    numberToGenerate: serializedSpawn.numberToGenerate, 
+                    possibleSpawns: serializedSpawn.possibleSpawns
+                },
+                this,
                 true
             );
-            this.addSpawn(spawn);
+            this.addSpawn(serializedSpawn);
             this.addEnemyPlacer(enemyPlacer);
         }
     }
 
-    createEnemyPlacer(type) {
+    createEnemyPlacer(type: EnemyType) {
         return new EnemyPlacer(this.levelDesigner.engine, {type}, this);
     }
 
