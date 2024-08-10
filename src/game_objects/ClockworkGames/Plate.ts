@@ -30,6 +30,7 @@ export class Plate extends GameObject {
         this.addLineSprite(new PlateSprite(this.transform, this.spriteParameters));
     }
     update(){}
+    animate() {}
 
     exist() {
         this.addCollider("General", this, 5);

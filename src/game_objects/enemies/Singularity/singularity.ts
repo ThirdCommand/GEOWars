@@ -55,11 +55,11 @@ export class Singularity extends GameObject {
         this.alienSpawnAmount = 10;
         this.alienSpawnSpeed = 1.5;
         this.gravityPulsateScale = 1;
-        this.deathSound = new Sound("sounds/Gravity_well_die.wav");
-        this.gravityWellHitSound = new Sound("sounds/Gravity_well_hit.wav", 0.5);
-        this.openGateSound = new Sound("sounds/Gravity_well_explode.wav");
+        this.deathSound = new Sound("sounds/Gravity_well_die.wav", 1, engine.muted);
+        this.gravityWellHitSound = new Sound("sounds/Gravity_well_hit.wav", 0.5, engine.muted);
+        this.openGateSound = new Sound("sounds/Gravity_well_explode.wav", 1, engine.muted);
         // this.id = options.id
-        this.spawnSound = new Sound("sounds/Enemy_spawn_red.wav", 1);
+        this.spawnSound = new Sound("sounds/Enemy_spawn_red.wav", 1, engine.muted);
         this.playSound(this.spawnSound);
 
         this.increasing = true;

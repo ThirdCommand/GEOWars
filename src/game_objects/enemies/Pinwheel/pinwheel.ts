@@ -21,7 +21,7 @@ export class Pinwheel extends GameObject {
         this.points = 20;
         this.transform.pos = pos;
         this.transform.vel = VectorMath.randomVec(speed);
-        this.spawnSound = new Sound("sounds/Enemy_spawn_blue.wav", 0.5);
+        this.spawnSound = new Sound("sounds/Enemy_spawn_blue.wav", 0.5, this.gameEngine.muted);
         this.playSound(this.spawnSound);
         this.addLineSprite(new PinwheelSprite(this.transform));
         this.addChildGameObject(new EnemySpawn(this.gameEngine));

@@ -83,4 +83,5 @@ export class SingularityParticles extends GameObject {
         }
         this.changeCurrentColor();
     }
+    animate() {}
 }

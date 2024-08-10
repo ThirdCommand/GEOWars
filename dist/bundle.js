@@ -224,8 +224,8 @@ var AnimationView = /** @class */ (function () {
                 // new LeftSandwich(this, [110,107]);
                 // new RightSandwich(this, [140,107]);
                 // new Plate(this, [120, 95]);
-                var entity = new _game_objects_ClockworkGames_Entity_Entity__WEBPACK_IMPORTED_MODULE_9__.Entity(_this, [100, 90]);
-                new _game_objects_ClockworkGames_Bed__WEBPACK_IMPORTED_MODULE_10__.Bed(_this, [100, 100], entity);
+                // const entity = new Entity(this, [100, 90]);
+                // new Bed(this, [100, 100], entity);
             },
             Plate: function (pos) { return new _game_objects_ClockworkGames_Plate__WEBPACK_IMPORTED_MODULE_11__.Plate(_this, pos); }
         };
@@ -372,7 +372,6 @@ var EventObject = /** @class */ (function (_super) {
     EventObject.prototype.loadSpawns = function () {
         var _this = this;
         this.spawns.forEach(function (spawn) {
-            // pretty sure this is a serialized spawn....
             var enemyPlacer = new _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_2__.EnemyPlacer(_this.levelDesigner.engine, spawn, _this, true);
             enemyPlacer.addMouseClickListener();
             _this.enemyPlacers.push(enemyPlacer);
@@ -385,7 +384,7 @@ var EventObject = /** @class */ (function (_super) {
     EventObject.prototype.serialize = function () {
         return {
             type: 'Event',
-            spawns: this.spawns,
+            spawns: this.spawns.map(function (spawn) { return spawn.serialize(); }),
             isShipRelative: this.isShipRelative
         };
     };
@@ -1049,7 +1048,8 @@ var Scene = /** @class */ (function () {
         this.loopsToClose = [];
     }
     Scene.prototype.update = function (dT) {
-        this.gameElements[this.currentElementIndex].update(dT);
+        var _a;
+        (_a = this.gameElements[this.currentElementIndex]) === null || _a === void 0 ? void 0 : _a.update(dT);
     };
     /*
     stack works I believe
@@ -1078,7 +1078,8 @@ var Scene = /** @class */ (function () {
         }
         else {
             this.currentElementIndex = 0;
-            this.parentScene.nextElement();
+            if (this.parentScene)
+                this.parentScene.nextElement();
         }
     };
     return Scene;
@@ -1105,8 +1106,6 @@ var SceneObject = /** @class */ (function (_super) {
         this.levelDesigner.expandScene(this);
     };
     SceneObject.prototype.unExpandScene = function () {
-        this.expanded = false;
-        this.UILineSprite.expanded = false;
         this.levelDesigner.unExpandScene(this);
     };
     SceneObject.prototype.copyLineSpriteForDragging = function () {
@@ -1281,14 +1280,11 @@ var Spawn = /** @class */ (function () {
     };
     Spawn.prototype.serialize = function () {
         return {
-            type: "Spawn",
-            spawnData: {
-                type: this.type,
-                angle: this.angle,
-                location: this.location,
-                possibleSpawns: this.possibleSpawns,
-                numberToGenerate: this.numberToGenerate,
-            },
+            type: this.type,
+            angle: this.angle,
+            location: this.location,
+            possibleSpawns: this.possibleSpawns,
+            numberToGenerate: this.numberToGenerate,
         };
     };
     return Spawn;
@@ -1579,8 +1575,8 @@ var EnemyPlacer = /** @class */ (function (_super) {
         this.removeMousePosListener();
         this.addMouseClickListener();
     };
-    EnemyPlacer.prototype.update = function () {
-    };
+    EnemyPlacer.prototype.animate = function () { };
+    EnemyPlacer.prototype.update = function () { };
     EnemyPlacer.prototype.setCoordinates = function (x, y, angle) {
         var radiansAngle = angle * Math.PI / 180;
         this.transform.pos[0] = x || this.transform.pos[0];
@@ -1685,6 +1681,8 @@ var PlacingAnimation = /** @class */ (function (_super) {
                 this.cycleSpeed * cycleSpeedScale;
         }
     };
+    PlacingAnimation.prototype.animate = function () {
+    };
     return PlacingAnimation;
 }(_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
@@ -1706,15 +1704,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_objects/Walls/walls */ "./src/game_objects/Walls/walls.ts");
 /* harmony import */ var _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_objects/Overlay/overlay */ "./src/game_objects/Overlay/overlay.ts");
-/* harmony import */ var _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_objects/particles/Grid/grid */ "./src/game_objects/particles/Grid/grid.ts");
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.ts");
-/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.ts");
-/* harmony import */ var _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./DesignElements/Scene */ "./src/game_engine/Levels/DesignElements/Scene.ts");
-/* harmony import */ var _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./DesignElements/Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.ts");
-/* harmony import */ var _DesignElements_Event__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.ts");
-/* harmony import */ var _DesignElements_Time__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.ts");
-/* harmony import */ var _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.ts");
-/* harmony import */ var _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./DesignElements/Operation */ "./src/game_engine/Levels/DesignElements/Operation.ts");
+/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.ts");
+/* harmony import */ var _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./DesignElements/Scene */ "./src/game_engine/Levels/DesignElements/Scene.ts");
+/* harmony import */ var _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./DesignElements/Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.ts");
+/* harmony import */ var _DesignElements_Event__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.ts");
+/* harmony import */ var _DesignElements_Time__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.ts");
+/* harmony import */ var _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.ts");
+/* harmony import */ var _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./DesignElements/Operation */ "./src/game_engine/Levels/DesignElements/Operation.ts");
 var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from, pack) {
     if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
         if (ar || !(i in from)) {
@@ -1726,7 +1723,7 @@ var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from
 };
 
 
-
+// import { Grid } from "../../game_objects/particles/Grid/grid";
 // import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
 
 
@@ -1739,7 +1736,7 @@ var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from
 // I should collect placed enemies
 // check if array of enemyType
 function isEnemyTypeArray(value) {
-    return !value.some(function (type) { return (!(0,_DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_6__.isEnemyType)(type)); });
+    return !value.some(function (type) { return (!(0,_DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_5__.isEnemyType)(type)); });
 }
 // for a tracker I can highlight the current game element
 // just like selecting it... but maybe the same color for 
@@ -1747,7 +1744,7 @@ function isEnemyTypeArray(value) {
 var LevelDesigner = /** @class */ (function () {
     function LevelDesigner(engine, animationView, levelDesignerCtx, serializedGame) {
         var _this = this;
-        this.transform = new _transform__WEBPACK_IMPORTED_MODULE_4__.Transform();
+        this.transform = new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform();
         this.DIM_X = 1200;
         this.DIM_Y = 300;
         this.BG_COLOR = "#000000";
@@ -1761,15 +1758,16 @@ var LevelDesigner = /** @class */ (function () {
         // // main game array is the main list of sequence objects
         // mainGameArray = [];
         this.gameEditorOpened = false;
+        this.engine = engine;
         this.serializedGame = serializedGame;
         this.UIElementSprites = [];
         // duck typing for scene
-        this.baseScene = new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_5__.SceneObject(this, 'main'); // top level list of game elements
-        this.expandedScenes = [this.baseScene];
-        this.transform = new _transform__WEBPACK_IMPORTED_MODULE_4__.Transform();
+        this.expandedScenes = [];
+        // this is added to expanded Scenes off the bat. Check addUIElement
+        this.baseScene = new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_4__.SceneObject(this, 'main'); // top level list of game elements
+        this.transform = new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform();
         this.widthHeight = [0, 0];
         this.loopBeginningObjectStackForLoading = [];
-        this.engine = engine;
         this.animationView = animationView;
         this.levelDesignerCtx = levelDesignerCtx;
         this.UIActionsToRun = [];
@@ -1778,7 +1776,7 @@ var LevelDesigner = /** @class */ (function () {
         this.lineSprites = [];
         this.zoomScale = 1;
         this.ship = {
-            transform: new _transform__WEBPACK_IMPORTED_MODULE_4__.Transform()
+            transform: new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform()
         };
         this.lastTime = 0;
         this.animate = this.animate.bind(this);
@@ -1997,14 +1995,14 @@ var LevelDesigner = /** @class */ (function () {
     LevelDesigner.prototype.makeTime = function (time, parentScene) {
         if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
         var newElementPosition = this.getNewDrawPosition();
-        var timeObject = new _DesignElements_Time__WEBPACK_IMPORTED_MODULE_8__.TimeObject(this, time, newElementPosition, parentScene);
+        var timeObject = new _DesignElements_Time__WEBPACK_IMPORTED_MODULE_7__.TimeObject(this, time, newElementPosition, parentScene);
         this.selectedGameElement = timeObject;
         return timeObject;
     };
     LevelDesigner.prototype.makeOperation = function (operand, parentScene) {
         if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
         var newElementPosition = this.getNewDrawPosition();
-        var operationObject = new _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_10__.OperationObject(this, operand, newElementPosition, parentScene);
+        var operationObject = new _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_9__.OperationObject(this, operand, newElementPosition, parentScene);
         operationObject.onMouseClick();
         this.selectedGameElement = operationObject;
         return operationObject;
@@ -2018,7 +2016,8 @@ var LevelDesigner = /** @class */ (function () {
         (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
         this.selectedGameElement = undefined;
         var parentIndex = this.expandedScenes.indexOf(scene.parentScene);
-        (_b = this.expandedScenes[parentIndex + 1]) === null || _b === void 0 ? void 0 : _b.unExpandScene();
+        if (parentIndex !== -1)
+            (_b = this.expandedScenes[parentIndex + 1]) === null || _b === void 0 ? void 0 : _b.unExpandScene();
         scene.gameElementObjects.forEach(function (element) {
             element.parentSceneExpanded();
             _this.addUIElementSprite(element.UILineSprite);
@@ -2026,10 +2025,13 @@ var LevelDesigner = /** @class */ (function () {
         this.expandedScenes.push(scene);
     };
     LevelDesigner.prototype.unExpandScene = function (scene) {
-        if (this.expandedScenes.length === 1)
+        var expandedIndex = this.expandedScenes.indexOf(scene);
+        if (expandedIndex === 0)
             return console.log("can't unexpand the base scene");
-        if (this.expandedScenes.indexOf(scene) === -1)
+        if (expandedIndex === -1)
             return console.log("scene not expanded");
+        scene.expanded = false;
+        scene.UILineSprite.expanded = false;
         var bottomExpandedScene = this.expandedScenes.pop();
         this.removeExpandedElements(bottomExpandedScene);
         bottomExpandedScene.expanded = false;
@@ -2041,8 +2043,11 @@ var LevelDesigner = /** @class */ (function () {
         if (e.target instanceof HTMLElement && e.target.classList[0] === "level-editor-canvas") {
             this.currentMousePos = [e.offsetX, e.offsetY];
             if (this.UIElementMouseFollower) {
-                var moveToPosition = [e.offsetX - this.UIElementMouseFollower.UILineSprite.widthHeight[0] / 2, e.offsetY - this.UIElementMouseFollower.UILineSprite.widthHeight[1] / 2];
-                this.UIElementMouseFollower.UILineSprite.transform.pos = __spreadArray([], moveToPosition, true);
+                var moveToPosition = [
+                    e.offsetX - this.UIElementMouseFollower.draggingLineSprite.widthHeight[0] / 2,
+                    e.offsetY - this.UIElementMouseFollower.draggingLineSprite.widthHeight[1] / 2
+                ];
+                this.UIElementMouseFollower.draggingLineSprite.transform.pos = __spreadArray([], moveToPosition, true);
                 // check if the element is overlapping with another element
                 var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
                 var draggedElementSceneIndex = bottomExpandedScene.gameElementObjects.indexOf(this.UIElementMouseFollower);
@@ -2050,8 +2055,8 @@ var LevelDesigner = /** @class */ (function () {
                     return;
                 var leftElementIndex = draggedElementSceneIndex - 1;
                 var rightElementIndex = draggedElementSceneIndex + 1;
-                var draggedElementXPosition = this.UIElementMouseFollower.UILineSprite.transform.pos[0];
-                var draggedElementWidth = this.UIElementMouseFollower.UILineSprite.widthHeight[0];
+                var draggedElementXPosition = this.UIElementMouseFollower.draggingLineSprite.transform.pos[0];
+                var draggedElementWidth = this.UIElementMouseFollower.draggingLineSprite.widthHeight[0];
                 // check left element:
                 var moved = false;
                 if (leftElementIndex >= 0) {
@@ -2100,18 +2105,18 @@ var LevelDesigner = /** @class */ (function () {
     };
     LevelDesigner.prototype.makeLoop = function (loop, parentScene) {
         if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
-        var beginningObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_9__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
-        var endObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_9__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
+        var beginningObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_8__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
+        var endObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_8__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
         beginningObject.endLoopObject = endObject;
         endObject.beginningLoopObject = beginningObject;
     };
     LevelDesigner.prototype.makeLoopBeginning = function (parentScene) {
-        var loopBeginning = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_9__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
+        var loopBeginning = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_8__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
         this.loopBeginningObjectStackForLoading.push(loopBeginning);
         return loopBeginning;
     };
     LevelDesigner.prototype.makeLoopEnding = function (loop, parentScene) {
-        var loopEndObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_9__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
+        var loopEndObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_8__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
         var matchingBeginning = this.loopBeginningObjectStackForLoading.pop();
         matchingBeginning.endLoopObject = loopEndObject;
         loopEndObject.beginningLoopObject = matchingBeginning;
@@ -2158,7 +2163,7 @@ var LevelDesigner = /** @class */ (function () {
     LevelDesigner.prototype.loadGameDesign = function (json) {
         var serializedGame = JSON.parse(json);
         this.serializedGame = serializedGame;
-        this.baseScene = new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_5__.SceneObject(this, 'main');
+        this.baseScene = new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_4__.SceneObject(this, 'main');
         this.expandedScenes = [this.baseScene];
         this.baseScene.gameElementObjects = this.loadGameElements(serializedGame.serializedGameElements, this.baseScene);
     };
@@ -2195,7 +2200,7 @@ var LevelDesigner = /** @class */ (function () {
         if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
         // should provide this the current scene to know which array of elements to use
         var newElementPosition = this.getNewDrawPosition();
-        var event = new _DesignElements_Event__WEBPACK_IMPORTED_MODULE_7__.EventObject(this, eventToLoad, newElementPosition, parentScene);
+        var event = new _DesignElements_Event__WEBPACK_IMPORTED_MODULE_6__.EventObject(this, eventToLoad, newElementPosition, parentScene);
         (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
         this.selectedGameElement = event;
         return event;
@@ -2227,7 +2232,7 @@ var LevelDesigner = /** @class */ (function () {
             newElementPosition = this.getNewDrawPosition();
         }
         // sprites are made and added automatically
-        return (new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_5__.SceneObject(this, name, parentScene, newElementPosition));
+        return (new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_4__.SceneObject(this, name, parentScene, newElementPosition));
     };
     LevelDesigner.prototype.loopSelected = function (loop) {
         var _a;
@@ -2281,9 +2286,10 @@ var LevelDesigner = /** @class */ (function () {
     // }
     LevelDesigner.prototype.escapePressed = function () {
         var _a;
-        if (!this.currentEnemyPlacer.isPlaced) {
+        if (this.currentEnemyPlacer && !this.currentEnemyPlacer.isPlaced) {
             (_a = this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.remove();
         }
+        this.UIElementSprites.forEach(function (sprite) { return sprite.selected = false; });
         this.animationView.clear();
         this.currentEnemyPlacer = undefined;
     };
@@ -2292,7 +2298,7 @@ var LevelDesigner = /** @class */ (function () {
         this.animationView.clear();
         this.animationView.addEnemy(type);
         (_a = this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.remove();
-        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_7__.EventObject) {
+        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_6__.EventObject) {
             this.currentEnemyPlacer = this.selectedGameElement.createEnemyPlacer(type);
         }
         else {
@@ -2312,7 +2318,8 @@ var LevelDesigner = /** @class */ (function () {
     LevelDesigner.prototype.unClicked = function () {
         if (this.UIElementMouseFollower) {
             this.UIElementMouseFollower.elementLetGo();
-            this.UIElementMouseFollower = undefined;
+            this.removeUIElementSprite(this.UIElementMouseFollower.draggingLineSprite);
+            this.UIElementMouseFollower = null;
         }
         this.clickedDown = false;
     };
@@ -2330,8 +2337,8 @@ var LevelDesigner = /** @class */ (function () {
     };
     LevelDesigner.prototype.addRandomRandomSpawnToEvent = function (spawnData) {
         var _a;
-        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_7__.EventObject) {
-            (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.addRandomRandom(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_6__.Spawn(spawnData, this.engine));
+        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_6__.EventObject) {
+            (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.addRandomRandom(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_5__.Spawn(spawnData, this.engine));
         }
     };
     LevelDesigner.prototype.update = function () {
@@ -2339,14 +2346,14 @@ var LevelDesigner = /** @class */ (function () {
     LevelDesigner.prototype.createWalls = function () {
         return new _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_0__.Walls(this.engine);
     };
-    LevelDesigner.prototype.createGrid = function () {
-        return new _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_2__.Grid(this.engine, new _transform__WEBPACK_IMPORTED_MODULE_4__.Transform());
-    };
+    // createGrid() {
+    //     return new Grid(this.engine, new Transform());
+    // }
     LevelDesigner.prototype.createOverlay = function () {
         return new _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_1__.Overlay(this.engine, this, this.ship.transform);
     };
     LevelDesigner.prototype.isOutOfBounds = function (pos, radius) {
-        var max = [_game_script__WEBPACK_IMPORTED_MODULE_3__.GameScript.DIM_X - radius, _game_script__WEBPACK_IMPORTED_MODULE_3__.GameScript.DIM_Y - radius];
+        var max = [_game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.DIM_X - radius, _game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.DIM_Y - radius];
         if (radius) {
             return (pos[0] <= radius ||
                 pos[0] >= max[0] ||
@@ -2356,8 +2363,8 @@ var LevelDesigner = /** @class */ (function () {
         else {
             return (pos[0] < 0 ||
                 pos[1] < 0 ||
-                pos[0] > _game_script__WEBPACK_IMPORTED_MODULE_3__.GameScript.DIM_X ||
-                pos[1] > _game_script__WEBPACK_IMPORTED_MODULE_3__.GameScript.DIM_Y);
+                pos[0] > _game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.DIM_X ||
+                pos[1] > _game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.DIM_Y);
         }
     };
     LevelDesigner.prototype.runUIActions = function () {
@@ -2469,13 +2476,19 @@ var LevelDesigner = /** @class */ (function () {
     };
     LevelDesigner.prototype.addUIElement = function (UIElement) {
         var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
-        bottomExpandedScene.gameElementObjects.push(UIElement);
+        if (!bottomExpandedScene && UIElement instanceof _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_4__.SceneObject) {
+            setTimeout(function () { return UIElement.expandScene(); });
+            // this.expandedScenes.push(UIElement);
+        }
+        else {
+            bottomExpandedScene.gameElementObjects.push(UIElement);
+        }
     };
     LevelDesigner.prototype.addLineSprite = function (lineSprite) {
         this.lineSprites.push(lineSprite);
     };
     LevelDesigner.prototype.makeCoordinatesShipRelative = function () {
-        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_7__.EventObject)
+        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_6__.EventObject)
             this.selectedGameElement.makeCoordinatesShipRelative();
     };
     LevelDesigner.prototype.eventLoadShipRelative = function (isRelative) {
@@ -2484,7 +2497,7 @@ var LevelDesigner = /** @class */ (function () {
     };
     LevelDesigner.prototype.makeCoordinatesArenaRelative = function () {
         var _a;
-        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_7__.EventObject)
+        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_6__.EventObject)
             (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.makeCoordinatesArenaRelative();
     };
     return LevelDesigner;
@@ -2581,15 +2594,12 @@ var UIElement = /** @class */ (function () {
     };
     UIElement.prototype.elementLetGo = function () {
         this.draggingElement = false;
-        this.levelDesigner.UIElementMouseFollower = null;
-        this.levelDesigner.removeUIElementSprite(this.levelDesigner.draggingLineSprite);
-        this.levelDesigner.draggingLineSprite = null;
         // send to ghost position
     };
     UIElement.prototype.followMouse = function () {
         this.levelDesigner.UIElementMouseFollower = this;
-        this.levelDesigner.draggingLineSprite = this.copyLineSpriteForDragging();
-        this.levelDesigner.addUIElementSprite(this.levelDesigner.draggingLineSprite);
+        this.levelDesigner.UIElementMouseFollower.draggingLineSprite = this.copyLineSpriteForDragging();
+        this.levelDesigner.addUIElementSprite(this.levelDesigner.UIElementMouseFollower.draggingLineSprite);
     };
     UIElement.prototype.delete = function () {
         this.removeMouseClickListener();
@@ -2843,6 +2853,16 @@ var GameEngine = /** @class */ (function () {
             this.updateControlListeners();
             return;
         }
+        if (this.gameEditorOpened) {
+            // this.checkCollisions();
+            this.updateGameObjects(delta);
+            this.renderLineSprites(this.ctx);
+            this.addClickListenersAfterTick();
+            this.addDoubleClickListenersAfterTick();
+            this.removeClickListenersAfterTick();
+            this.removeDoubleClickListenerAfterTick();
+            return;
+        }
         // console.log(delta)
         // if(delta > 125){
         //   delta = 125
@@ -2857,14 +2877,11 @@ var GameEngine = /** @class */ (function () {
         this.updateGameObjects(delta);
         var beforeRender = performance.now();
         var updateTime = beforeRender - beforeUpdate;
-        this.clearCanvas();
         this.renderLineSprites(this.ctx);
         var beforeScriptUpdate = performance.now();
         var renderTime = beforeScriptUpdate - beforeRender;
         this.updateControlListeners();
-        if (!this.gameEditorOpened) {
-            this.updateGameScript(delta);
-        }
+        this.updateGameScript(delta);
         var scriptTime = performance.now() - beforeScriptUpdate;
         this.playSounds();
         this.collectPerformanceData(delta, collisionTime, physicsCalcTime, updateTime, renderTime, scriptTime);
@@ -3167,6 +3184,7 @@ var GameEngine = /** @class */ (function () {
     };
     GameEngine.prototype.renderLineSprites = function (ctx) {
         // ctx.scale = gameEngine.currentCamera.zoomScale
+        this.clearCanvas();
         this.ctx.save();
         // this belongs in the camera #camera
         this.ctx.scale(this.zoomScale, this.zoomScale);
@@ -3458,8 +3476,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 var Sound = /** @class */ (function () {
     function Sound(url, volume, muted) {
-        if (volume === void 0) { volume = 1; }
-        if (muted === void 0) { muted = false; }
         this.url = url;
         this.volume = volume;
         this.muted = muted;
@@ -3582,14 +3598,17 @@ var Transform = /** @class */ (function () {
         // doesn't care about line orientation
         // center of the line is current position, or adjusted by relative position
         // assuming camera is on top of the line
-        var linePosition = this.vectorAdd([0, 0, 0], this.pos);
-        var Zc = this.cameraTransform.pos[2];
-        var pointOne = length / 2;
-        var pointTwo = -length / 2;
-        var Zs = linePosition[2];
-        var absPointOne = (pointOne) / (Zs - Zc) * (0 - Zc);
-        var absPointTwo = (pointTwo) / (Zs - Zc) * (0 - Zc);
-        return absPointOne - absPointTwo;
+        if (this.cameraTransform) {
+            var linePosition = this.vectorAdd([0, 0, 0], this.pos);
+            var Zc = this.cameraTransform.pos[2];
+            var pointOne = length / 2;
+            var pointTwo = -length / 2;
+            var Zs = linePosition[2];
+            var absPointOne = (pointOne) / (Zs - Zc) * (0 - Zc);
+            var absPointTwo = (pointTwo) / (Zs - Zc) * (0 - Zc);
+            return absPointOne - absPointTwo;
+        }
+        return length;
     };
     Transform.prototype.absoluteVelocity = function () {
         var absVel = [];
@@ -3710,13 +3729,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   Bullet: () => (/* binding */ Bullet)
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/sound */ "./src/game_engine/sound.ts");
-/* harmony import */ var _particles_bullet_wall_explosion__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../particles/bullet_wall_explosion */ "./src/game_objects/particles/bullet_wall_explosion.ts");
-/* harmony import */ var _bullet_sprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./bullet_sprite */ "./src/game_objects/Bullet/bullet_sprite.js");
-/* harmony import */ var _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.ts");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../game_engine/util */ "./src/game_engine/util.ts");
-/* harmony import */ var _enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../enemies/Singularity/singularity */ "./src/game_objects/enemies/Singularity/singularity.ts");
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _particles_bullet_wall_explosion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../particles/bullet_wall_explosion */ "./src/game_objects/particles/bullet_wall_explosion.ts");
+/* harmony import */ var _bullet_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./bullet_sprite */ "./src/game_objects/Bullet/bullet_sprite.js");
+/* harmony import */ var _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.ts");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_engine/util */ "./src/game_engine/util.ts");
+/* harmony import */ var _enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../enemies/Singularity/singularity */ "./src/game_objects/enemies/Singularity/singularity.ts");
+/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -3739,7 +3757,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
-
 var Bullet = /** @class */ (function (_super) {
     __extends(Bullet, _super);
     function Bullet(engine, pos, // we ignore the third one here
@@ -3755,10 +3772,9 @@ var Bullet = /** @class */ (function (_super) {
         _this.length = 12;
         _this.radius = _this.length / 4;
         _this.wrap = false;
-        _this.wallhit = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/bullet_hitwall.wav", 1);
         _this.addExplosionCollider();
         _this.addPhysicsComponent();
-        _this.addLineSprite(new _bullet_sprite__WEBPACK_IMPORTED_MODULE_3__.BulletSprite(_this.transform));
+        _this.addLineSprite(new _bullet_sprite__WEBPACK_IMPORTED_MODULE_2__.BulletSprite(_this.transform));
         _this.exploded = false;
         _this.lifeTime = 4000;
         _this.aliveTime = 0;
@@ -3793,13 +3809,14 @@ var Bullet = /** @class */ (function (_super) {
         if (this.bending) {
             this.bend(deltaTime);
         }
-        if (_game_script__WEBPACK_IMPORTED_MODULE_7__.GameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius) &&
+        if (_game_script__WEBPACK_IMPORTED_MODULE_6__.GameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius) &&
             !this.exploded) {
             this.exploded = true;
-            new _particles_bullet_wall_explosion__WEBPACK_IMPORTED_MODULE_2__.BulletWallExplosion(this.gameEngine, this.transform.pos);
-            this.gameEngine.queueSound(this.wallhit);
+            new _particles_bullet_wall_explosion__WEBPACK_IMPORTED_MODULE_1__.BulletWallExplosion(this.gameEngine, this.transform.pos);
             this.remove();
         }
+    };
+    Bullet.prototype.animate = function () {
     };
     Bullet.prototype.bend = function (deltaTime) {
         this.bendTime += deltaTime;
@@ -3807,7 +3824,7 @@ var Bullet = /** @class */ (function (_super) {
             this.bending = false;
         }
         else {
-            var speed = _game_engine_util__WEBPACK_IMPORTED_MODULE_5__.VectorMath.norm(this.transform.vel);
+            var speed = _game_engine_util__WEBPACK_IMPORTED_MODULE_4__.VectorMath.norm(this.transform.vel);
             var velDir = Math.atan2(this.transform.vel[1], this.transform.vel[0]);
             var bendSpeed = void 0;
             if (this.powerLevel > 2) {
@@ -3824,14 +3841,14 @@ var Bullet = /** @class */ (function (_super) {
     };
     Bullet.prototype.onCollision = function (collider, type) {
         if (type === "bulletHit") {
-            if (collider.gameObject instanceof _enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_6__.Singularity) {
+            if (collider.gameObject instanceof _enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_5__.Singularity) {
                 collider.gameObject.bulletHit();
                 this.remove();
             }
             else {
                 var hitObjectTransform = collider.gameObject.transform;
                 var pos = hitObjectTransform.absolutePosition();
-                new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_4__.ParticleExplosion(this.gameEngine, pos);
+                new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_3__.ParticleExplosion(this.gameEngine, pos);
                 // only scorable things are included in the subscriptions..
                 // not sure how to get typescript to agree with that yet
                 // feels like a pain and a waste of time for now
@@ -4985,6 +5002,7 @@ var Plate = /** @class */ (function (_super) {
         return _this;
     }
     Plate.prototype.update = function () { };
+    Plate.prototype.animate = function () { };
     Plate.prototype.exist = function () {
         this.addCollider("General", this, 5);
     };
@@ -5402,6 +5420,7 @@ var Tree = /** @class */ (function (_super) {
         return _this;
     }
     Tree.prototype.update = function () { };
+    Tree.prototype.animate = function () { };
     Tree.prototype.exist = function () {
         this.addCollider("General", this, 5);
     };
@@ -5533,6 +5552,7 @@ var Overlay = /** @class */ (function (_super) {
             this.frameRate = Math.floor(this.currentFrameCount / (this.frameRateUpdateRate / 1000));
         }
     };
+    Overlay.prototype.animate = function () { };
     return Overlay;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
@@ -5636,8 +5656,8 @@ var Ship = /** @class */ (function (_super) {
         _this.maxSpeed = 2.5; // 2.5
         _this.mousePos = [0, 0];
         _this.fireAngle = 0;
-        _this.bulletSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Fire_normal.wav", 0.2);
-        _this.upgradeBulletsSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Hi_Score_achieved.wav");
+        _this.bulletSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Fire_normal.wav", 0.2, engine.muted);
+        _this.upgradeBulletsSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Hi_Score_achieved.wav", 1, engine.muted);
         _this.bulletTimeCheck = 0;
         _this.bulletInterval = 120;
         _this.controlsDirection = [0, 0];
@@ -5664,6 +5684,8 @@ var Ship = /** @class */ (function (_super) {
         return _this;
         // 1/8 of a second flash every half second
     }
+    Ship.prototype.animate = function () {
+    };
     Ship.prototype.update = function (deltaTime) {
         if (this.gameEngine instanceof _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_5__.GameEngine && this.gameEngine.gameEditorOpened) {
             if (!this.gameEditorHasBeenOpened) {
@@ -6033,6 +6055,7 @@ var Walls = /** @class */ (function (_super) {
     }
     Walls.prototype.update = function () {
     };
+    Walls.prototype.animate = function () { };
     return Walls;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
 
@@ -6168,7 +6191,7 @@ var Arrow = /** @class */ (function (_super) {
         _this.points = 50;
         _this.transform.vel = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.VectorMath.vectorCartesian(_this.transform.angle, _this.speed);
         _this.radius = 6;
-        _this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Enemy_spawn_purple.wav", 0.5);
+        _this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Enemy_spawn_purple.wav", 0.5, _this.gameEngine.muted);
         _this.playSound(_this.spawnSound);
         _this.addLineSprite(new _arrow_sprite__WEBPACK_IMPORTED_MODULE_4__.ArrowSprite(_this.transform));
         _this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__.EnemySpawn(_this.gameEngine));
@@ -6419,7 +6442,7 @@ var BoxBox = /** @class */ (function (_super) {
     __extends(BoxBox, _super);
     function BoxBox(engine, pos) {
         var _this = _super.call(this, engine) || this;
-        _this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Enemy_spawn_blue.wav", 0.5);
+        _this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Enemy_spawn_blue.wav", 0.5, engine.muted);
         _this.transform.pos = pos;
         _this.radius = 10;
         _this.points = 20;
@@ -7157,7 +7180,7 @@ var Grunt = /** @class */ (function (_super) {
         _this.bumpAcceleration = 1.5;
         _this.bumpInfluencers = [];
         _this.bumpDirectionInfluenced = false;
-        _this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Enemy_spawn_blue.wav", 0.5);
+        _this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Enemy_spawn_blue.wav", 0.5, _this.gameEngine.muted);
         _this.playSound(_this.spawnSound);
         _this.addLineSprite(new GruntSprite(_this.transform));
         _this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_4__.EnemySpawn(_this.gameEngine));
@@ -7344,7 +7367,7 @@ var Pinwheel = /** @class */ (function (_super) {
         _this.points = 20;
         _this.transform.pos = pos;
         _this.transform.vel = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.VectorMath.randomVec(speed);
-        _this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Enemy_spawn_blue.wav", 0.5);
+        _this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Enemy_spawn_blue.wav", 0.5, _this.gameEngine.muted);
         _this.playSound(_this.spawnSound);
         _this.addLineSprite(new PinwheelSprite(_this.transform));
         _this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__.EnemySpawn(_this.gameEngine));
@@ -7479,6 +7502,7 @@ var RandomRandom = /** @class */ (function (_super) {
         return _this;
     }
     RandomRandom.prototype.update = function () { };
+    RandomRandom.prototype.animate = function () { };
     return RandomRandom;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
@@ -7573,6 +7597,7 @@ var AlienShip = /** @class */ (function (_super) {
     }
     AlienShip.prototype.exist = function () { };
     // change to acceleration
+    AlienShip.prototype.animate = function () { };
     AlienShip.prototype.update = function () {
         // console.log(this.transform.pos)
         this.chase();
@@ -7722,11 +7747,11 @@ var Singularity = /** @class */ (function (_super) {
         _this.alienSpawnAmount = 10;
         _this.alienSpawnSpeed = 1.5;
         _this.gravityPulsateScale = 1;
-        _this.deathSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Gravity_well_die.wav");
-        _this.gravityWellHitSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Gravity_well_hit.wav", 0.5);
-        _this.openGateSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Gravity_well_explode.wav");
+        _this.deathSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Gravity_well_die.wav", 1, engine.muted);
+        _this.gravityWellHitSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Gravity_well_hit.wav", 0.5, engine.muted);
+        _this.openGateSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Gravity_well_explode.wav", 1, engine.muted);
         // this.id = options.id
-        _this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Enemy_spawn_red.wav", 1);
+        _this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Enemy_spawn_red.wav", 1, engine.muted);
         _this.playSound(_this.spawnSound);
         _this.increasing = true;
         _this.addLineSprite(new _singularity_sprite__WEBPACK_IMPORTED_MODULE_6__.SingularitySprite(_this.transform));
@@ -8019,7 +8044,7 @@ var Weaver = /** @class */ (function (_super) {
         _this.bumpInfluencers = [];
         _this.bumpAcceleration = 1.5;
         _this.bulletDodgeSpeed = 4;
-        _this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Enemy_spawn_green.wav", 0.5);
+        _this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Enemy_spawn_green.wav", 0.5, _this.gameEngine.muted);
         _this.playSound(_this.spawnSound);
         _this.addLineSprite(new WeaverSprite(_this.transform));
         _this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_4__.EnemySpawn(_this.gameEngine));
@@ -8310,8 +8335,8 @@ var Grid = /** @class */ (function (_super) {
         }
         return gridPoints;
     };
-    Grid.prototype.update = function () {
-    };
+    Grid.prototype.animate = function () { };
+    Grid.prototype.update = function () { };
     return Grid;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
@@ -8407,6 +8432,7 @@ var GridPoint = /** @class */ (function (_super) {
     __extends(GridPoint, _super);
     function GridPoint(engine, pos, cameraTransform) {
         var _this = _super.call(this, engine) || this;
+        _this.originalPosition = [0, 0, 0];
         _this.originalPosition[0] = pos[0];
         _this.originalPosition[1] = pos[1];
         _this.originalPosition[2] = pos[2];
@@ -8427,6 +8453,7 @@ var GridPoint = /** @class */ (function (_super) {
         this.transform.acc[2] += this.transform.vel[2] * this.dampening + (this.transform.pos[2] - this.originalPosition[2]) * this.elasticity;
         this.originalPosition[2] = 0;
     };
+    GridPoint.prototype.animate = function () { };
     return GridPoint;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
@@ -8487,6 +8514,8 @@ var SingularityParticle = /** @class */ (function (_super) {
         this.transform.acc = [0, 0, 0];
         this.checkBounds();
     };
+    SingularityParticle.prototype.aniimate = function () {
+    };
     SingularityParticle.prototype.checkBounds = function () {
         if (_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.isOutOfBounds(this.transform.absolutePosition(), -0.5)) {
             this.remove();
@@ -8544,7 +8573,7 @@ var BulletWallExplosion = /** @class */ (function (_super) {
         var opacity = Math.random() * 0.35 + 0.6;
         _this.currentColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_3__.Color("hsla", [startingH, 100, 50, opacity]);
         _this.particleNum = 20;
-        var bulletWallHit = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/bullet_hitwall.wav", 0.1);
+        var bulletWallHit = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/bullet_hitwall.wav", 0.4, _this.gameEngine.muted);
         _this.wallHit = _this.whichWall();
         _this.playSound(bulletWallHit);
         _this.createParticles();
@@ -8580,6 +8609,7 @@ var BulletWallExplosion = /** @class */ (function (_super) {
             this.addChildGameObject(new _particle__WEBPACK_IMPORTED_MODULE_0__.Particle(this.gameEngine, [x, y, z], speed, color, this.wallHit));
         }
     };
+    BulletWallExplosion.prototype.animate = function () { };
     BulletWallExplosion.prototype.update = function () {
         if (this.childObjects.length === 0) {
             this.remove();
@@ -8629,6 +8659,9 @@ var EnemySpawn = /** @class */ (function (_super) {
         return _this;
         // this.gameEngine.queueSound(this.parentObject.spawnSound)
     }
+    EnemySpawn.prototype.animate = function (timeDelta) {
+        this.update(timeDelta);
+    };
     EnemySpawn.prototype.update = function (timeDelta) {
         this.existTime += timeDelta;
         this.parentObject.lineSprite.spawning = true;
@@ -8706,7 +8739,7 @@ var Particle = /** @class */ (function (_super) {
         var _this = _super.call(this, engine) || this;
         _this.transform.pos[0] = pos[0];
         _this.transform.pos[1] = pos[1];
-        _this.transform.pos[2] = pos[2];
+        _this.transform.pos[2] = pos[2] || 0;
         if (engine instanceof _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine) {
             _this.transform.cameraTransform = engine.gameScript.ship.cameraTransform;
         }
@@ -8742,6 +8775,8 @@ var Particle = /** @class */ (function (_super) {
                 return [Math.random() * Math.PI + 3 * Math.PI / 2, Math.random() * Math.PI * 2];
             }
         }
+    };
+    Particle.prototype.animate = function () {
     };
     Particle.prototype.update = function (deltaTime) {
         // this.lineSprite.rectLength -= 0.01 * deltaTime;
@@ -8906,7 +8941,7 @@ var ParticleExplosion = /** @class */ (function (_super) {
             // console.log("potato")
             _this.particleNum = 20;
         }
-        var explosionSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Enemy_explode.wav", 0.2);
+        var explosionSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Enemy_explode.wav", 0.2, _this.gameEngine.muted);
         _this.playSound(explosionSound);
         _this.createExplosionParticles();
         engine.gameScript.grid.Explosion(pos);
@@ -8931,6 +8966,7 @@ var ParticleExplosion = /** @class */ (function (_super) {
             this.remove();
         }
     };
+    ParticleExplosion.prototype.animate = function () { };
     return ParticleExplosion;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
 
@@ -8981,7 +9017,7 @@ var ShipExplosion = /** @class */ (function (_super) {
         var opacity = Math.random() * 0.35 + 0.6;
         _this.currentColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_3__.Color("hsla", [startingH, 100, 50, opacity]);
         _this.particleNum = 400;
-        var explosionSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Enemy_explode.wav", 0.2);
+        var explosionSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Enemy_explode.wav", 0.2, _this.gameEngine.muted);
         _this.playSound(explosionSound);
         _this.createExplosionParticles();
         return _this;
@@ -9007,6 +9043,7 @@ var ShipExplosion = /** @class */ (function (_super) {
             this.remove();
         }
     };
+    ShipExplosion.prototype.animate = function () { };
     return ShipExplosion;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
 
@@ -9069,7 +9106,7 @@ var SingularityHitExplosion = /** @class */ (function (_super) {
             _this.particleNum = 15;
         }
         // find singularity hit sound
-        var explosionSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Enemy_explode.wav", 0.2);
+        var explosionSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Enemy_explode.wav", 0.2, _this.gameEngine.muted);
         _this.playSound(explosionSound);
         _this.createExplosionParticles();
         return _this;
@@ -9091,6 +9128,7 @@ var SingularityHitExplosion = /** @class */ (function (_super) {
             this.remove();
         }
     };
+    SingularityHitExplosion.prototype.animate = function () { };
     return SingularityHitExplosion;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
 
@@ -9189,6 +9227,7 @@ var SingularityParticles = /** @class */ (function (_super) {
         }
         this.changeCurrentColor();
     };
+    SingularityParticles.prototype.animate = function () { };
     return SingularityParticles;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
@@ -9239,8 +9278,8 @@ var Star = /** @class */ (function (_super) {
         return _this;
         // add random good colors
     }
-    Star.prototype.update = function () {
-    };
+    Star.prototype.update = function () { };
+    Star.prototype.animate = function () { };
     return Star;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
@@ -9341,10 +9380,10 @@ __webpack_require__.r(__webpack_exports__);
 var GameScript = /** @class */ (function () {
     function GameScript(engine) {
         this.serializedGame = "";
-        this.theme = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Geometry_OST.mp3", 1);
-        this.gameOverSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Game_over.wav");
-        this.gameStartSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Game_start.wav");
-        this.shipDeathSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Ship_explode.wav");
+        this.theme = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Geometry_OST.mp3", 1, engine.muted);
+        this.gameOverSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Game_over.wav", 1, engine.muted);
+        this.gameStartSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Game_start.wav", 1, engine.muted);
+        this.shipDeathSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Ship_explode.wav", 1, engine.muted);
         this.gameTime = 0;
         this.score = 0;
         this.engine = engine;
@@ -9381,12 +9420,14 @@ var GameScript = /** @class */ (function () {
     GameScript.prototype.startGame = function (serializedGame) {
         this.serializedGame = serializedGame;
         var game = JSON.parse(serializedGame);
-        this.rootScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_15__.Scene('root');
-        this.rootScene.gameElements = this.loadGameElements(game.gameElements, this.rootScene);
-        this.playFromRootScene = false; // clockwork content
+        if (game.serializedGameElements.length > 0) {
+            this.rootScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_15__.Scene('root');
+            this.rootScene.gameElements = this.loadGameElements(game.serializedGameElements, this.rootScene);
+            this.playFromRootScene = true;
+        }
         this.intervalTime = 0;
         // clockwork content
-        this.loadClockworkContent();
+        // this.loadClockworkContent();
         this.ship.transform.pos = [this.startPosition[0], this.startPosition[1], this.startPosition[2]];
     };
     GameScript.prototype.loadClockworkContent = function () {
@@ -9467,7 +9508,7 @@ var GameScript = /** @class */ (function () {
             this.rootScene.update(deltaTime);
         }
         else {
-            // this.spawnSequence(deltaTime); clockwork content
+            this.spawnSequence(deltaTime);
         }
         this.changeExplosionColor();
     };

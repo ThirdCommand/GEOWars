@@ -87,10 +87,10 @@ export class GameScript {
 
     constructor(engine: GameEngine) {
         this.serializedGame = "";
-        this.theme = new Sound("sounds/Geometry_OST.mp3", 1);
-        this.gameOverSound = new Sound("sounds/Game_over.wav");
-        this.gameStartSound = new Sound("sounds/Game_start.wav");
-        this.shipDeathSound = new Sound("sounds/Ship_explode.wav");
+        this.theme = new Sound("sounds/Geometry_OST.mp3", 1, engine.muted);
+        this.gameOverSound = new Sound("sounds/Game_over.wav", 1, engine.muted);
+        this.gameStartSound = new Sound("sounds/Game_start.wav", 1, engine.muted);
+        this.shipDeathSound = new Sound("sounds/Ship_explode.wav", 1, engine.muted);
         this.gameTime = 0;
         this.score = 0;
         this.engine = engine;
@@ -132,12 +132,14 @@ export class GameScript {
     startGame(serializedGame: string) {
         this.serializedGame = serializedGame;
         const game = JSON.parse(serializedGame);
-        this.rootScene = new Scene('root');
-        this.rootScene.gameElements = this.loadGameElements(game.gameElements, this.rootScene);
-        this.playFromRootScene = false; // clockwork content
+        if(game.serializedGameElements.length > 0) {
+            this.rootScene = new Scene('root');
+            this.rootScene.gameElements = this.loadGameElements(game.serializedGameElements, this.rootScene);
+            this.playFromRootScene = true; 
+        }
         this.intervalTime = 0;
         // clockwork content
-        this.loadClockworkContent();
+        // this.loadClockworkContent();
         this.ship.transform.pos = [this.startPosition[0], this.startPosition[1], this.startPosition[2]];
     }
 
@@ -219,7 +221,7 @@ export class GameScript {
         if(this.playFromRootScene) {
             this.rootScene.update(deltaTime);
         } else {
-            // this.spawnSequence(deltaTime); clockwork content
+            this.spawnSequence(deltaTime);
         }
         this.changeExplosionColor();
     }

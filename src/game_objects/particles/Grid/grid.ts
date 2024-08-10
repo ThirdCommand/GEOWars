@@ -108,9 +108,9 @@ export class Grid extends GameObject {
         return gridPoints;
     }
 
-    update() {
+    animate() {}
 
-    }
+    update() {}
 
 }
 

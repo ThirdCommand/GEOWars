@@ -103,9 +103,9 @@ export class EnemyPlacer extends GameObject {
         this.addMouseClickListener();
     }
 
-    update() {
+    animate() {}
 
-    }
+    update() {}
 
     setCoordinates(x: number, y: number, angle: number) {
         const radiansAngle = angle * Math.PI / 180;

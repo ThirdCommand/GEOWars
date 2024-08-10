@@ -62,6 +62,7 @@ export class EventObject extends UIElement {
     enemyPlacers: EnemyPlacer[];
     isShipRelative: boolean;
     UILineSprite: EventObjectSprite;
+    draggingLineSprite: EventObjectSprite;
     constructor(levelDesigner: LevelDesigner, eventToLoad?: EventSerialized, position?: [number, number], parentScene?: SceneObject) {
         super(levelDesigner, position, parentScene);
         this.spawns = [];
@@ -133,7 +134,6 @@ export class EventObject extends UIElement {
 
     loadSpawns() {
         this.spawns.forEach((spawn) => {
-            // pretty sure this is a serialized spawn....
             const enemyPlacer = new EnemyPlacer(this.levelDesigner.engine, spawn, this, true);
             enemyPlacer.addMouseClickListener();
             this.enemyPlacers.push(enemyPlacer);
@@ -148,7 +148,7 @@ export class EventObject extends UIElement {
     serialize(): EventSerialized {  
         return {
             type: 'Event',
-            spawns: this.spawns,
+            spawns: this.spawns.map((spawn) => spawn.serialize()),
             isShipRelative: this.isShipRelative
         };
     }
@@ -235,7 +235,7 @@ export class EventObject extends UIElement {
     }
 }
 
-type SppawnSpriteMap = {
+type SpawnSpriteMap = {
     BoxBox: number;
     Arrow: number;
     Grunt: number;
@@ -252,7 +252,7 @@ type SpawnSpriteKey = "BoxBox" | "Arrow" | "Grunt" | "Pinwheel" | "Weaver" | "Si
 export class EventObjectSprite extends LineSprite {
     selected: boolean;
     expanded: boolean;
-    spawnSprites: SppawnSpriteMap;
+    spawnSprites: SpawnSpriteMap;
     widthHeight: [number, number];
 
     static firstPosition: [number, number] = [10,10];
@@ -276,7 +276,7 @@ export class EventObjectSprite extends LineSprite {
         RANDOM: spriteMap['RANDOM'](new Transform(null, EventObjectSprite.seventhPosition)),
     };
 
-    constructor(transform: Transform, spawnSprites: SppawnSpriteMap, widthHeight: [number, number]) {
+    constructor(transform: Transform, spawnSprites: SpawnSpriteMap, widthHeight: [number, number]) {
         super(transform);
         this.selected = true;
         this.expanded = true;

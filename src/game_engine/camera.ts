@@ -30,6 +30,7 @@ export class Camera extends GameObject {
             -yPos * zoomScale + height / 2
         );
     }
+    animate(){}
 
     // contains the transformation info
     // contains the scaling info

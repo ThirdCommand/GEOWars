@@ -35,7 +35,7 @@ export class AlienShip extends GameObject {
 
     // change to acceleration
    
-
+    animate() {}
     update() {
         // console.log(this.transform.pos)
         this.chase();

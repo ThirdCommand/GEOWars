@@ -87,16 +87,13 @@ export class Spawn {
         }
     }
 
-    serialize(): {type: "Spawn", spawnData: SpawnSerialized} {
+    serialize(): SpawnSerialized {
         return {
-            type: "Spawn",
-            spawnData: {
-                type: this.type,
-                angle: this.angle,
-                location: this.location,
-                possibleSpawns: this.possibleSpawns,
-                numberToGenerate: this.numberToGenerate,
-            },
+            type: this.type,
+            angle: this.angle,
+            location: this.location,
+            possibleSpawns: this.possibleSpawns,
+            numberToGenerate: this.numberToGenerate,
         };
     }
 }

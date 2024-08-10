@@ -198,7 +198,7 @@ export class BoxBox extends GameObject implements Scorable {
 
     constructor(engine: GameEngine | AnimationView, pos: [number, number]) {
         super(engine);
-        this.spawnSound = new Sound("sounds/Enemy_spawn_blue.wav", 0.5);
+        this.spawnSound = new Sound("sounds/Enemy_spawn_blue.wav", 0.5, engine.muted);
         this.transform.pos = pos;
         this.radius = 10;
         this.points = 20;

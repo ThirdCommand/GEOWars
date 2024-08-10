@@ -16,7 +16,7 @@ export class ShipExplosion extends GameObject {
             "hsla", [startingH, 100, 50, opacity]
         );
         this.particleNum = 400;
-        const explosionSound = new Sound("sounds/Enemy_explode.wav", 0.2);
+        const explosionSound = new Sound("sounds/Enemy_explode.wav", 0.2, this.gameEngine.muted);
         this.playSound(explosionSound);
         this.createExplosionParticles();
     }
@@ -28,7 +28,7 @@ export class ShipExplosion extends GameObject {
     createExplosionParticles() {
         for (let i = 0; i < this.particleNum; i++) {
             const speed = Math.random() * 10 + 4;
-1
+            1;
             // const colorVarienceDelta = 30;
             // const colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2;
             const color = this.currentColor.dup();
@@ -44,4 +44,5 @@ export class ShipExplosion extends GameObject {
             this.remove();
         }
     }
+    animate() {}
 }

@@ -182,6 +182,19 @@ export class GameEngine {
             this.updateControlListeners();
             return;
         }
+
+        if(this.gameEditorOpened) {
+            // this.checkCollisions();
+            this.updateGameObjects(delta);
+            this.renderLineSprites(this.ctx);
+
+            this.addClickListenersAfterTick();
+            this.addDoubleClickListenersAfterTick();
+            this.removeClickListenersAfterTick();
+            this.removeDoubleClickListenerAfterTick();
+            return;
+        }
+
         // console.log(delta)
         // if(delta > 125){
         //   delta = 125
@@ -196,15 +209,12 @@ export class GameEngine {
         this.updateGameObjects(delta);
         const beforeRender = performance.now();
         const updateTime = beforeRender - beforeUpdate;
-        this.clearCanvas();
         this.renderLineSprites(this.ctx);
         const beforeScriptUpdate = performance.now();
         const renderTime = beforeScriptUpdate - beforeRender;
         this.updateControlListeners();
-        
-        if (!this.gameEditorOpened) {
-            this.updateGameScript(delta);
-        }
+        this.updateGameScript(delta);
+
         const scriptTime = performance.now() - beforeScriptUpdate;
         this.playSounds();
 
@@ -582,8 +592,8 @@ export class GameEngine {
 
     renderLineSprites(ctx: CanvasRenderingContext2D) {
         // ctx.scale = gameEngine.currentCamera.zoomScale
+        this.clearCanvas();
         this.ctx.save();
-
         // this belongs in the camera #camera
         this.ctx.scale(this.zoomScale, this.zoomScale);
         this.lineSprites.forEach((sprite) => {

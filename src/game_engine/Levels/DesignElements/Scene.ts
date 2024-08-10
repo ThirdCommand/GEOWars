@@ -51,7 +51,7 @@ export class Scene implements UpdateAble {
     }
 
     update(dT: number) {
-        this.gameElements[this.currentElementIndex].update(dT);
+        this.gameElements[this.currentElementIndex]?.update(dT);
     }
     /*
     stack works I believe
@@ -80,7 +80,7 @@ export class Scene implements UpdateAble {
             this.currentElementIndex++;
         } else {
             this.currentElementIndex = 0;
-            this.parentScene.nextElement();
+            if (this.parentScene) this.parentScene.nextElement();
         }
     }
 
@@ -92,6 +92,7 @@ export class SceneObject extends UIElement implements SerializeAble {
     expanded: boolean;
     name: string;
     UILineSprite: SceneSprite;
+    draggingLineSprite: SceneSprite;
     constructor(levelDesigner: LevelDesigner, name: string, parentScene?: SceneObject, position?: [number, number]) {
         super(levelDesigner, position, parentScene);
         // i'll have to create the game elements from the serialized data
@@ -113,8 +114,6 @@ export class SceneObject extends UIElement implements SerializeAble {
     }
 
     unExpandScene() {
-        this.expanded = false;
-        this.UILineSprite.expanded = false;
         this.levelDesigner.unExpandScene(this);
     }
 

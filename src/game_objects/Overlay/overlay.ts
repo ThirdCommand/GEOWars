@@ -48,6 +48,7 @@ export class Overlay extends GameObject {
             this.frameRate = Math.floor(this.currentFrameCount / (this.frameRateUpdateRate / 1000));
         }
     }
+    animate() {}
 }
 
 

@@ -10,6 +10,7 @@ export class RandomRandom extends GameObject {
         this.addLineSprite(new RandomRandomSprite(this.transform));
     }
     update(){}
+    animate() {}
 }
 export class RandomRandomSprite extends LineSprite implements Spawnable{
     widthHeight: [number, number];

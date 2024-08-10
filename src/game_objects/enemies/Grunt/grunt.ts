@@ -33,7 +33,7 @@ export class Grunt extends GameObject {
         this.bumpAcceleration = 1.5;
         this.bumpInfluencers = [];
         this.bumpDirectionInfluenced = false;
-        this.spawnSound = new Sound("sounds/Enemy_spawn_blue.wav", 0.5);
+        this.spawnSound = new Sound("sounds/Enemy_spawn_blue.wav", 0.5, this.gameEngine.muted);
         this.playSound(this.spawnSound);
         this.addLineSprite(new GruntSprite(this.transform));
         this.addChildGameObject(new EnemySpawn(this.gameEngine));

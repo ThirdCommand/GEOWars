@@ -98,6 +98,8 @@ export class OperationObject extends UIElement {
     widthHeight: [number, number];
     clickRadius: 20;
     UILineSprite: OperationObjectSprite;
+    draggingLineSprite: OperationObjectSprite;
+
     constructor(levelDesigner: LevelDesigner, operationToLoad: Operand, position: [number, number], parentScene: SceneObject) {
         super(levelDesigner, position, parentScene);
         this.operand = operationToLoad;

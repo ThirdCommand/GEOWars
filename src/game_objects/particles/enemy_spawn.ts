@@ -23,6 +23,9 @@ export class EnemySpawn extends GameObject {
         this.existTime = 0;
         // this.gameEngine.queueSound(this.parentObject.spawnSound)
     }
+    animate(timeDelta: number) {
+        this.update(timeDelta);
+    }
 
     update(timeDelta: number) {
         this.existTime += timeDelta;

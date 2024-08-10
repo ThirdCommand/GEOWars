@@ -13,4 +13,5 @@ export class Walls extends GameObject {
     update() {
         
     }
+    animate() {}
 }

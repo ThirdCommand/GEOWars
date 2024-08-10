@@ -5,7 +5,7 @@ export class Sound {
     muted: boolean;
     sound: HTMLAudioElement;
 
-    constructor(url: string, volume: number = 1, muted: boolean = false){
+    constructor(url: string, volume: number, muted: boolean){
         this.url = url;
         this.volume = volume;
         this.muted = muted;

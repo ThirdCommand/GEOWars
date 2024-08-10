@@ -45,5 +45,8 @@ export class PlacingAnimation extends GameObject {
         this.cycleSpeed * cycleSpeedScale;
         }
     }
+    animate() {
+        
+    }
 }
 const NORMAL_FRAME_TIME_DELTA = 1000 / 60;

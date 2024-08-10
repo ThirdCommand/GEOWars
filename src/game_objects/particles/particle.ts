@@ -30,7 +30,7 @@ export class Particle extends GameObject{
         super(engine);
         this.transform.pos[0] = pos[0];
         this.transform.pos[1] = pos[1];
-        this.transform.pos[2] = pos[2];
+        this.transform.pos[2] = pos[2] || 0;
         
         if(engine instanceof GameEngine) {
             this.transform.cameraTransform = engine.gameScript.ship.cameraTransform;
@@ -63,6 +63,10 @@ export class Particle extends GameObject{
                 return [Math.random() * Math.PI + 3 * Math.PI / 2, Math.random() * Math.PI * 2];
             }
         }
+    }
+
+    animate() {
+
     }
   
 

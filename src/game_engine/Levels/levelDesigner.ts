@@ -1,6 +1,6 @@
 import { Walls } from "../../game_objects/Walls/walls";
 import { Overlay } from "../../game_objects/Overlay/overlay";
-import { Grid } from "../../game_objects/particles/Grid/grid";
+// import { Grid } from "../../game_objects/particles/Grid/grid";
 // import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
 import { GameScript } from "../../game_script";
 import { Transform } from "../transform";
@@ -14,7 +14,7 @@ import { Operand, OperationObject } from "./DesignElements/Operation";
 import { GameEngine } from "../game_engine";
 import { type UIElement } from "../UI_Element";
 import { type LineSprite } from "../line_sprite";
-import { Types, type AnimationView } from "../../AnimationView";
+import { type AnimationView } from "../../AnimationView";
 import { GameObject } from "../game_object";
 import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
 
@@ -36,7 +36,6 @@ export class LevelDesigner {
     UIElementMouseFollower: GameElementObject;
     UIElementSprites: LineSprite[];
     currentMousePos: [number, number];
-    draggingLineSprite: LineSprite;
 
     // duck typing for scene
     baseScene: SceneObject; // top level scene containing all the game elements
@@ -98,19 +97,22 @@ export class LevelDesigner {
         levelDesignerCtx: CanvasRenderingContext2D, 
         serializedGame?: SceneSerialized
     ) {
+        this.engine = engine;
         this.serializedGame = serializedGame;
         this.UIElementSprites = [];
 
         // duck typing for scene
+        this.expandedScenes = [];
+        // this is added to expanded Scenes off the bat. Check addUIElement
         this.baseScene = new SceneObject(this, 'main'); // top level list of game elements
-        this.expandedScenes = [this.baseScene];
+
         this.transform = new Transform();
 
         this.widthHeight = [0,0];
 
         this.loopBeginningObjectStackForLoading = [];
 
-        this.engine = engine;
+        
         this.animationView = animationView;
         this.levelDesignerCtx = levelDesignerCtx;
 
@@ -276,11 +278,13 @@ export class LevelDesigner {
             const name = (document.getElementById("sceneName") as HTMLInputElement).value;
             this.UIActionsToRun.push(() => this.makeSceneObject(name));
         };
+
         // loadGameDesign.onclick = (e) => {
         //     e.stopPropagation();
         //     const json = document.getElementById("loadGameDesignInput").value;
         //     this.loadGameDesign(json);
         // };
+
         addTime.onclick = (e) => {
             e.stopPropagation();
             const time = (document.getElementById("Time") as HTMLInputElement).value;
@@ -392,8 +396,7 @@ export class LevelDesigner {
         this.selectedGameElement = undefined;
 
         const parentIndex = this.expandedScenes.indexOf(scene.parentScene);
-
-        this.expandedScenes[parentIndex + 1]?.unExpandScene();
+        if(parentIndex !== -1) this.expandedScenes[parentIndex + 1]?.unExpandScene();
 
         scene.gameElementObjects.forEach((element) => {
             element.parentSceneExpanded();
@@ -404,8 +407,13 @@ export class LevelDesigner {
     }
 
     unExpandScene(scene: SceneObject) {
-        if(this.expandedScenes.length === 1) return console.log("can't unexpand the base scene");
-        if(this.expandedScenes.indexOf(scene) === -1) return console.log("scene not expanded");
+        const expandedIndex = this.expandedScenes.indexOf(scene);
+        if(expandedIndex === 0) return console.log("can't unexpand the base scene");
+        if(expandedIndex === -1) return console.log("scene not expanded");
+
+        scene.expanded = false;
+        scene.UILineSprite.expanded = false;
+        
         const bottomExpandedScene = this.expandedScenes.pop();
         this.removeExpandedElements(bottomExpandedScene);
         bottomExpandedScene.expanded = false;
@@ -419,8 +427,12 @@ export class LevelDesigner {
             this.currentMousePos = [e.offsetX, e.offsetY];
             if(this.UIElementMouseFollower) {
 
-                const moveToPosition: [number, number] = [e.offsetX - this.UIElementMouseFollower.UILineSprite.widthHeight[0] / 2, e.offsetY -  this.UIElementMouseFollower.UILineSprite.widthHeight[1] / 2];
-                this.UIElementMouseFollower.UILineSprite.transform.pos = [...moveToPosition];
+                const moveToPosition: [number, number] = [
+                    e.offsetX - this.UIElementMouseFollower.draggingLineSprite.widthHeight[0] / 2, 
+                    e.offsetY -  this.UIElementMouseFollower.draggingLineSprite.widthHeight[1] / 2
+                ];
+
+                this.UIElementMouseFollower.draggingLineSprite.transform.pos = [...moveToPosition];
                 // check if the element is overlapping with another element
                 const bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
 
@@ -431,8 +443,8 @@ export class LevelDesigner {
                 const leftElementIndex = draggedElementSceneIndex - 1;
                 const rightElementIndex = draggedElementSceneIndex + 1;
 
-                const draggedElementXPosition =  this.UIElementMouseFollower.UILineSprite.transform.pos[0];
-                const draggedElementWidth =  this.UIElementMouseFollower.UILineSprite.widthHeight[0];
+                const draggedElementXPosition =  this.UIElementMouseFollower.draggingLineSprite.transform.pos[0];
+                const draggedElementWidth =  this.UIElementMouseFollower.draggingLineSprite.widthHeight[0];
 
                 // check left element:
                 let moved = false;
@@ -686,9 +698,10 @@ export class LevelDesigner {
     // }
 
     escapePressed() {
-        if(!this.currentEnemyPlacer.isPlaced) {
+        if(this.currentEnemyPlacer && !this.currentEnemyPlacer.isPlaced) {
             this.currentEnemyPlacer?.remove();
         }
+        this.UIElementSprites.forEach((sprite) => (sprite as GameElementObject['UILineSprite']).selected = false);
         
         this.animationView.clear();
         this.currentEnemyPlacer = undefined;
@@ -722,7 +735,8 @@ export class LevelDesigner {
     unClicked() {
         if(this.UIElementMouseFollower) {
             this.UIElementMouseFollower.elementLetGo();
-            this.UIElementMouseFollower = undefined;
+            this.removeUIElementSprite(this.UIElementMouseFollower.draggingLineSprite);
+            this.UIElementMouseFollower = null;
         }
         this.clickedDown = false;
     }
@@ -755,9 +769,9 @@ export class LevelDesigner {
         return new Walls(this.engine);
     }
 
-    createGrid() {
-        return new Grid(this.engine, new Transform());
-    }
+    // createGrid() {
+    //     return new Grid(this.engine, new Transform());
+    // }
 
     createOverlay() {
         return new Overlay(this.engine, this, this.ship.transform);
@@ -904,7 +918,12 @@ export class LevelDesigner {
 
     addUIElement(UIElement: GameElementObject) {
         const bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
-        bottomExpandedScene.gameElementObjects.push(UIElement);
+        if(!bottomExpandedScene && UIElement instanceof SceneObject) {
+            setTimeout(() => UIElement.expandScene());
+            // this.expandedScenes.push(UIElement);
+        } else {
+            bottomExpandedScene.gameElementObjects.push(UIElement);
+        }
     }
 
     addLineSprite(lineSprite: LineSprite) {

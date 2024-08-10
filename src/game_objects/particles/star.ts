@@ -13,9 +13,8 @@ export class Star extends GameObject {
         this.addLineSprite(new StarSprite(this.transform));
         // add random good colors
     }
-    update() {
-
-    }
+    update() {}
+    animate(){}
 }
 
 export class StarSprite extends LineSprite {

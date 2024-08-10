@@ -96,6 +96,7 @@ export type LoopBeginningSerialized = {
 // UIElement
 export class LoopBeginningObject extends UIElement {
     UILineSprite: LoopBeginningObjectSprite;
+    draggingLineSprite: LoopBeginningObjectSprite;
     endLoopObject: LoopEndObject | undefined;
     constructor(levelDesigner: LevelDesigner, position: [number, number], parentScene: SceneObject) {
         super(levelDesigner, position, parentScene);
@@ -159,6 +160,7 @@ export type LoopEndSerialized = {
 
 export class LoopEndObject extends UIElement {
     UILineSprite: LoopEndingObjectSprite;
+    draggingLineSprite: LoopEndingObjectSprite;
     loopData: LoopValues;
     beginningLoopObject: LoopBeginningObject | undefined;
     constructor(levelDesigner: LevelDesigner, loop: LoopValues, position: [number, number], parentScene: SceneObject) {

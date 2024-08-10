@@ -47,7 +47,6 @@ export class Bullet extends GameObject {
         this.length = 12;
         this.radius = this.length / 4;
         this.wrap = false;
-        this.wallhit = new Sound("sounds/bullet_hitwall.wav", 1);
         this.addExplosionCollider();
         this.addPhysicsComponent();
         this.addLineSprite(new BulletSprite(this.transform));
@@ -95,10 +94,11 @@ export class Bullet extends GameObject {
         ) {
             this.exploded = true;
             new BulletWallExplosion(this.gameEngine, this.transform.pos);
-
-            this.gameEngine.queueSound(this.wallhit);
             this.remove();
         }
+    }
+    animate() {
+
     }
 
     bend(deltaTime: number) {  

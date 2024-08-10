@@ -72,6 +72,7 @@ export type TimeSerialized = {
 // UIElement
 export class TimeObject extends UIElement {
     UILineSprite: TimeObjectSprite;
+    draggingLineSprite: TimeObjectSprite;
     waitTime: number;
     constructor(levelDesigner: LevelDesigner, waitTime: number, position: [number, number], parentScene: SceneObject) {
         super(levelDesigner, position, parentScene);

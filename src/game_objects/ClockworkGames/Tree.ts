@@ -33,6 +33,7 @@ export class Tree extends GameObject {
         };
     }
     update() {}
+    animate() {}
 
     exist() {
         this.addCollider("General", this, 5);

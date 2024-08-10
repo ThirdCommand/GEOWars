@@ -277,8 +277,8 @@ export class AnimationView {
                 // new LeftSandwich(this, [110,107]);
                 // new RightSandwich(this, [140,107]);
                 // new Plate(this, [120, 95]);
-                const entity = new Entity(this, [100, 90]);
-                new Bed(this, [100, 100], entity);
+                // const entity = new Entity(this, [100, 90]);
+                // new Bed(this, [100, 100], entity);
             },
             Plate: (pos: [number, number]) => new Plate(this, pos)
         };

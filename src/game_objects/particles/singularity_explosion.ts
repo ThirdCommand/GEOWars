@@ -26,7 +26,7 @@ export class ParticleExplosion extends GameObject {
             this.particleNum = 20;
         }
 
-        const explosionSound = new Sound("sounds/Enemy_explode.wav", 0.2);
+        const explosionSound = new Sound("sounds/Enemy_explode.wav", 0.2, this.gameEngine.muted);
         this.playSound(explosionSound);
         this.createExplosionParticles();
     }
@@ -50,4 +50,5 @@ export class ParticleExplosion extends GameObject {
             this.remove();
         }
     }
+    animate() {}
 }

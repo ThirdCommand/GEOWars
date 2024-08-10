@@ -47,7 +47,7 @@ export class Weaver extends GameObject {
         this.bumpAcceleration = 1.5;
         this.bulletDodgeSpeed = 4;
 
-        this.spawnSound = new Sound("sounds/Enemy_spawn_green.wav", 0.5);
+        this.spawnSound = new Sound("sounds/Enemy_spawn_green.wav", 0.5, this.gameEngine.muted);
         this.playSound(this.spawnSound);
         this.addLineSprite(new WeaverSprite(this.transform));
         this.addChildGameObject(new EnemySpawn(this.gameEngine));

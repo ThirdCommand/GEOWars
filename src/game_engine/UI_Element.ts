@@ -18,6 +18,7 @@ export abstract class UIElement {
     widthHeight: [number, number];
     clickRadius: number;
     draggingElement: boolean;
+    draggingLineSprite: LineSprite | null;
 
     constructor(levelDesigner: LevelDesigner, position: [number, number], parentScene: SceneObject) {
         this.parentScene = parentScene;
@@ -110,9 +111,6 @@ export abstract class UIElement {
 
     elementLetGo() {
         this.draggingElement = false;
-        this.levelDesigner.UIElementMouseFollower = null;
-        this.levelDesigner.removeUIElementSprite(this.levelDesigner.draggingLineSprite);
-        this.levelDesigner.draggingLineSprite = null;
         // send to ghost position
     }
 
@@ -122,8 +120,8 @@ export abstract class UIElement {
 
     followMouse() {
         this.levelDesigner.UIElementMouseFollower = this as unknown as GameElementObject;
-        this.levelDesigner.draggingLineSprite = this.copyLineSpriteForDragging();
-        this.levelDesigner.addUIElementSprite(this.levelDesigner.draggingLineSprite);
+        this.levelDesigner.UIElementMouseFollower.draggingLineSprite = this.copyLineSpriteForDragging() as unknown as GameElementObject['draggingLineSprite'];
+        this.levelDesigner.addUIElementSprite(this.levelDesigner.UIElementMouseFollower.draggingLineSprite);
     }
 
     delete() {

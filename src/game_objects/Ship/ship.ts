@@ -65,8 +65,8 @@ export class Ship extends GameObject {
         this.maxSpeed = 2.5; // 2.5
         this.mousePos = [0,0];
         this.fireAngle = 0;
-        this.bulletSound = new Sound("sounds/Fire_normal.wav", 0.2);
-        this.upgradeBulletsSound = new Sound("sounds/Hi_Score_achieved.wav");
+        this.bulletSound = new Sound("sounds/Fire_normal.wav", 0.2, engine.muted);
+        this.upgradeBulletsSound = new Sound("sounds/Hi_Score_achieved.wav", 1, engine.muted);
         this.bulletTimeCheck = 0;
         this.bulletInterval = 120;
         this.controlsDirection = [0,0];
@@ -93,6 +93,10 @@ export class Ship extends GameObject {
         this.controllerInUse = false;
         this.gameEditorHasBeenOpened = false;
     // 1/8 of a second flash every half second
+    }
+
+    animate() {
+
     }
 
   

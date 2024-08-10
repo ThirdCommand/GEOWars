@@ -32,6 +32,9 @@ export class SingularityParticle extends Particle {
         this.transform.acc = [0,0,0];
         this.checkBounds();
     }
+    aniimate() {
+        
+    }
     checkBounds() {
         if (GameScript.isOutOfBounds(this.transform.absolutePosition(), -0.5)) {
             this.remove();

@@ -38,7 +38,7 @@ export abstract class GameObject implements controllable{
         this.colliders = [];
     }
 
-    animate?(dT: number): void 
+    abstract animate(dT: number): void 
 
     addPhysicsComponent() {
         this.physicsComponent = new PhysicsComponent(this.transform);

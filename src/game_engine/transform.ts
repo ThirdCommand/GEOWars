@@ -82,14 +82,17 @@ export class Transform {
         // doesn't care about line orientation
         // center of the line is current position, or adjusted by relative position
         // assuming camera is on top of the line
-        const linePosition = this.vectorAdd([0,0,0], this.pos);
-        const Zc = this.cameraTransform.pos[2];
-        const pointOne = length / 2;
-        const pointTwo = -length / 2;
-        const Zs = linePosition[2];
-        const absPointOne = (pointOne)/(Zs-Zc) * (0 - Zc);
-        const absPointTwo = (pointTwo)/(Zs-Zc) * (0 - Zc);
-        return absPointOne - absPointTwo;
+        if(this.cameraTransform) {
+            const linePosition = this.vectorAdd([0,0,0], this.pos);
+            const Zc = this.cameraTransform.pos[2];
+            const pointOne = length / 2;
+            const pointTwo = -length / 2;
+            const Zs = linePosition[2];
+            const absPointOne = (pointOne)/(Zs-Zc) * (0 - Zc);
+            const absPointTwo = (pointTwo)/(Zs-Zc) * (0 - Zc);
+            return absPointOne - absPointTwo;
+        }
+        return length;
     }
 
     absoluteVelocity(): [number, number, number?] {
