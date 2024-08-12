@@ -23,15 +23,139 @@ export type RotationState = {
     pauseTime: number;
 }
 
+type DrawCoordinatesTopLeft = {
+    BottomSquareBL: [number, number];
+    BottomSquareBR: [number, number];
+    BottomSquareTL: [number, number];
+    BottomSquareTR: [number, number];
+    TopSquareBL: [number, number];
+    TopSquareBR: [number, number];
+    TopSquareTL: [number, number];
+    TopSquareTR: [number, number];
+    Left: { // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
+        // take these distances to the axis of rotation, and then multiply them by cos(angle) of rotation
+        _BottomSquareBL: [number, number, number];
+        _BottomSquareBR: [number, number, number];
+        _BottomSquareTL: [number, number, number];
+        _BottomSquareTR: [number, number, number];
+        _TopSquareBL: [number, number, number];
+        _TopSquareBR: [number, number, number];
+        _TopSquareTL: [number, number, number];
+        _TopSquareTR: [number, number, number];
+    },
+    Right: {
+        _BottomSquareBL: [number, number, number];
+        _BottomSquareBR: [number, number, number];
+        _BottomSquareTL: [number, number, number];
+        _BottomSquareTR: [number, number, number];
+        _TopSquareBL: [number, number, number];
+        _TopSquareBR: [number, number, number];
+        _TopSquareTL: [number, number, number];
+        _TopSquareTR: [number, number, number];
+    },
+    Top: { // X stays the same, Y scales
+        _BottomSquareBL: [number, number, number];
+        _BottomSquareBR: [number, number, number];
+        _BottomSquareTL: [number, number, number];
+        _BottomSquareTR: [number, number, number];
+        _TopSquareBL: [number, number, number];
+        _TopSquareBR: [number, number, number];
+        _TopSquareTL: [number, number, number];
+        _TopSquareTR: [number, number, number];
+    },
+    Bottom: { // X stays the same, Y scales
+        // BL <=> TR, TL <=> BR
+        _BottomSquareBL: [number, number, number];
+        _BottomSquareBR: [number, number, number];
+        _BottomSquareTL: [number, number, number];
+        _BottomSquareTR: [number, number, number];
+        _TopSquareBL: [number, number, number];
+        _TopSquareBR: [number, number, number];
+        _TopSquareTL: [number, number, number];
+        _TopSquareTR: [number, number, number];
+    },
+    _BottomSquareBL: [number, number];
+    _BottomSquareBR: [number, number];
+    _BottomSquareTL: [number, number];
+    _BottomSquareTR: [number, number];
+    _TopSquareBL: [number, number];
+    _TopSquareBR: [number, number];
+    _TopSquareTL: [number, number];
+    _TopSquareTR: [number, number];
+};
+
+type DrawCoordinatesBottomLeft = {
+    BottomSquareBL: [number, number];
+    BottomSquareBR: [number, number];
+    BottomSquareTL: [number, number];
+    BottomSquareTR: [number, number];
+    TopSquareBL: [number, number];
+    TopSquareBR: [number, number];
+    TopSquareTL: [number, number];
+    TopSquareTR: [number, number];
+    Left: { // distances to axis of rotation, [x, y, angleOffset], y is the same, x requires pythag;
+        // take these distances to the axis of rotation, and then multiply them by cos(angle) of rotation
+        _BottomSquareBL: [number, number, number];
+        _BottomSquareBR: [number, number, number];
+        _BottomSquareTL: [number, number, number];
+        _BottomSquareTR: [number, number, number];
+        _TopSquareBL: [number, number, number];
+        _TopSquareBR: [number, number, number];
+        _TopSquareTL: [number, number, number];
+        _TopSquareTR: [number, number, number];
+    },
+    Right: {
+        _BottomSquareBL: [number, number, number];
+        _BottomSquareBR: [number, number, number];
+        _BottomSquareTL: [number, number, number];
+        _BottomSquareTR: [number, number, number];
+        _TopSquareBL: [number, number, number];
+        _TopSquareBR: [number, number, number];
+        _TopSquareTL: [number, number, number];
+        _TopSquareTR: [number, number, number];
+    },
+    Top: { // X stays the same, Y scales
+        _BottomSquareBL: [number, number, number];
+        _BottomSquareBR: [number, number, number];
+        _BottomSquareTL: [number, number, number];
+        _BottomSquareTR: [number, number, number];
+        _TopSquareBL: [number, number, number];
+        _TopSquareBR: [number, number, number];
+        _TopSquareTL: [number, number, number];
+        _TopSquareTR: [number, number, number];
+    },
+    Bottom: { // X stays the same, Y scales
+        // BL <=> TR, TL <=> BR
+        _BottomSquareBL: [number, number, number];
+        _BottomSquareBR: [number, number, number];
+        _BottomSquareTL: [number, number, number];
+        _BottomSquareTR: [number, number, number];
+        _TopSquareBL: [number, number, number];
+        _TopSquareBR: [number, number, number];
+        _TopSquareTL: [number, number, number];
+        _TopSquareTR: [number, number, number];
+    },
+    _BottomSquareBL: [number, number];
+    _BottomSquareBR: [number, number];
+    _BottomSquareTL: [number, number];
+    _BottomSquareTR: [number, number];
+    _TopSquareBL: [number, number];
+    _TopSquareBR: [number, number];
+    _TopSquareTL: [number, number];
+    _TopSquareTR: [number, number];
+}
+
 
 export class BoxBox extends GameObject implements Scorable {
     static boxWidth: number = 13;
-    static boxDepth: number = BoxBox.boxWidth / 3;
+    static boxDepth: number = BoxBox.boxWidth / 2.2;
 
     static w: number = BoxBox.boxWidth;
     static d: number = BoxBox.boxDepth;
 
-    static drawCoordinatesTopLeft = {
+
+
+    static drawCoordinatesTopLeft: DrawCoordinatesTopLeft = {
         // try making y negativified
     
         BottomSquareBL: [-3/4 * BoxBox.w, 3/4 * BoxBox.w],
@@ -94,7 +218,7 @@ export class BoxBox extends GameObject implements Scorable {
         _TopSquareTR: [3/4 * BoxBox.w, -3/4 * BoxBox.w],
     };
 
-    static drawCoordinatesBottomLeft = {
+    static drawCoordinatesBottomLeft: DrawCoordinatesBottomLeft = {
         // I think 
         // flip Y coordinates for this shape
     
@@ -162,24 +286,23 @@ export class BoxBox extends GameObject implements Scorable {
         _TopSquareTL: [-1/4 * BoxBox.w, -1/4 * BoxBox.w],
         _TopSquareTR: [3/4 * BoxBox.w, -1/4 * BoxBox.w],
     };
-
-    static projectedDrawCoordinates = {
-        BottomSquareBL: [...BoxBox.drawCoordinatesBottomLeft.BottomSquareBL],
-        BottomSquareBR: [...BoxBox.drawCoordinatesBottomLeft.BottomSquareBR],
-        BottomSquareTL: [...BoxBox.drawCoordinatesBottomLeft.BottomSquareTL],
-        BottomSquareTR: [...BoxBox.drawCoordinatesBottomLeft.BottomSquareTR],
-        TopSquareBL: [...BoxBox.drawCoordinatesBottomLeft.TopSquareBL],
-        TopSquareBR: [...BoxBox.drawCoordinatesBottomLeft.TopSquareBR],
-        TopSquareTL: [...BoxBox.drawCoordinatesBottomLeft.TopSquareTL],
-        TopSquareTR: [...BoxBox.drawCoordinatesBottomLeft.TopSquareTR],
-        _BottomSquareBL: [...BoxBox.drawCoordinatesBottomLeft._BottomSquareBL],
-        _BottomSquareBR: [...BoxBox.drawCoordinatesBottomLeft._BottomSquareBR],
-        _BottomSquareTL: [...BoxBox.drawCoordinatesBottomLeft._BottomSquareTL],
-        _BottomSquareTR: [...BoxBox.drawCoordinatesBottomLeft._BottomSquareTR],
-        _TopSquareBL: [...BoxBox.drawCoordinatesBottomLeft._TopSquareBL],
-        _TopSquareBR: [...BoxBox.drawCoordinatesBottomLeft._TopSquareBR],
-        _TopSquareTL: [...BoxBox.drawCoordinatesBottomLeft._TopSquareTL],
-        _TopSquareTR: [...BoxBox.drawCoordinatesBottomLeft._TopSquareTR],
+    projectedDrawCoordinates: {
+        BottomSquareBL: [number, number],
+        BottomSquareBR: [number, number],
+        BottomSquareTL: [number, number],
+        BottomSquareTR: [number, number],
+        TopSquareBL: [number, number],
+        TopSquareBR: [number, number],
+        TopSquareTL: [number, number],
+        TopSquareTR: [number, number],
+        _BottomSquareBL: [number, number],
+        _BottomSquareBR: [number, number],
+        _BottomSquareTL: [number, number],
+        _BottomSquareTR: [number, number],
+        _TopSquareBL: [number, number],
+        _TopSquareBR: [number, number],
+        _TopSquareTL: [number, number],
+        _TopSquareTR: [number, number]
     };
 
     static animationStates = ["Paused", "Rotating", "MidPaused", "CompletingRotation"] as const;
@@ -210,7 +333,24 @@ export class BoxBox extends GameObject implements Scorable {
         // 2. top left, bottom right
 
         // the axis of rotation determines the length of the line for the _ coordinates
-
+        this.projectedDrawCoordinates = {
+            BottomSquareBL: [...BoxBox.drawCoordinatesBottomLeft.BottomSquareBL],
+            BottomSquareBR: [...BoxBox.drawCoordinatesBottomLeft.BottomSquareBR],
+            BottomSquareTL: [...BoxBox.drawCoordinatesBottomLeft.BottomSquareTL],
+            BottomSquareTR: [...BoxBox.drawCoordinatesBottomLeft.BottomSquareTR],
+            TopSquareBL: [...BoxBox.drawCoordinatesBottomLeft.TopSquareBL],
+            TopSquareBR: [...BoxBox.drawCoordinatesBottomLeft.TopSquareBR],
+            TopSquareTL: [...BoxBox.drawCoordinatesBottomLeft.TopSquareTL],
+            TopSquareTR: [...BoxBox.drawCoordinatesBottomLeft.TopSquareTR],
+            _BottomSquareBL: [...BoxBox.drawCoordinatesBottomLeft._BottomSquareBL],
+            _BottomSquareBR: [...BoxBox.drawCoordinatesBottomLeft._BottomSquareBR],
+            _BottomSquareTL: [...BoxBox.drawCoordinatesBottomLeft._BottomSquareTL],
+            _BottomSquareTR: [...BoxBox.drawCoordinatesBottomLeft._BottomSquareTR],
+            _TopSquareBL: [...BoxBox.drawCoordinatesBottomLeft._TopSquareBL],
+            _TopSquareBR: [...BoxBox.drawCoordinatesBottomLeft._TopSquareBR],
+            _TopSquareTL: [...BoxBox.drawCoordinatesBottomLeft._TopSquareTL],
+            _TopSquareTR: [...BoxBox.drawCoordinatesBottomLeft._TopSquareTR],
+        };
         this.rotationState = {
             animationState: "Paused",
             rotationDirection: "Left",
@@ -219,10 +359,10 @@ export class BoxBox extends GameObject implements Scorable {
             stateTime: 0,
             shapeState: "TopLeft",
             positionShift: [0,0],
-            midPauseTime: 10,
+            midPauseTime: 400,
             pauseTime: 1000,
         };
-        this.addLineSprite(new BoxBoxSprite(this.transform, this.rotationState));
+        this.addLineSprite(new BoxBoxSprite(this.transform, this.rotationState, this.projectedDrawCoordinates));
         this.addChildGameObject(new EnemySpawn(this.gameEngine));
         this.playSound(this.spawnSound);
     }
@@ -277,7 +417,7 @@ export class BoxBox extends GameObject implements Scorable {
         
         const coordinateShift = this.rotationState.coordinateShift;
         // defined statically above this class
-        const projectedDrawCoordinates = BoxBox.projectedDrawCoordinates;
+        const projectedDrawCoordinates = this.projectedDrawCoordinates;
 
         const midPauseTime = this.rotationState.midPauseTime;
         const pauseTime = this.rotationState.pauseTime;
@@ -368,21 +508,22 @@ export class BoxBox extends GameObject implements Scorable {
         // except theres issues there since it can rotate in any direction after getting to 180 degrees
         // I think I'll have to then swap points to the reversed version
         const drawCoordinates = this.rotationState.shapeState === "BottomLeft" ? BoxBox.drawCoordinatesBottomLeft : BoxBox.drawCoordinatesTopLeft;
-        let [x, y, angleOffset] = drawCoordinates.BottomSquareBL;
+        let [x, y] = drawCoordinates.BottomSquareBL;
+        let angleOffset = 0;
         projectedDrawCoordinates.BottomSquareBL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-        [x, y, angleOffset] = drawCoordinates.BottomSquareBR;
+        [x, y] = drawCoordinates.BottomSquareBR;
         projectedDrawCoordinates.BottomSquareBR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-        [x, y, angleOffset] = drawCoordinates.BottomSquareTL;
+        [x, y] = drawCoordinates.BottomSquareTL;
         projectedDrawCoordinates.BottomSquareTL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-        [x, y, angleOffset] = drawCoordinates.BottomSquareTR;
+        [x, y] = drawCoordinates.BottomSquareTR;
         projectedDrawCoordinates.BottomSquareTR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-        [x, y, angleOffset] = drawCoordinates.TopSquareBL;
+        [x, y] = drawCoordinates.TopSquareBL;
         projectedDrawCoordinates.TopSquareBL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-        [x, y, angleOffset] = drawCoordinates.TopSquareBR;
+        [x, y] = drawCoordinates.TopSquareBR;
         projectedDrawCoordinates.TopSquareBR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-        [x, y, angleOffset] = drawCoordinates.TopSquareTL;
+        [x, y] = drawCoordinates.TopSquareTL;
         projectedDrawCoordinates.TopSquareTL    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-        [x, y, angleOffset] = drawCoordinates.TopSquareTR;
+        [x, y] = drawCoordinates.TopSquareTR;
         projectedDrawCoordinates.TopSquareTR    = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
 
         if(rotationDirection === "Left") {

@@ -6451,6 +6451,24 @@ var BoxBox = /** @class */ (function (_super) {
         // 1. bottom left, top right
         // 2. top left, bottom right
         // the axis of rotation determines the length of the line for the _ coordinates
+        _this.projectedDrawCoordinates = {
+            BottomSquareBL: __spreadArray([], BoxBox.drawCoordinatesBottomLeft.BottomSquareBL, true),
+            BottomSquareBR: __spreadArray([], BoxBox.drawCoordinatesBottomLeft.BottomSquareBR, true),
+            BottomSquareTL: __spreadArray([], BoxBox.drawCoordinatesBottomLeft.BottomSquareTL, true),
+            BottomSquareTR: __spreadArray([], BoxBox.drawCoordinatesBottomLeft.BottomSquareTR, true),
+            TopSquareBL: __spreadArray([], BoxBox.drawCoordinatesBottomLeft.TopSquareBL, true),
+            TopSquareBR: __spreadArray([], BoxBox.drawCoordinatesBottomLeft.TopSquareBR, true),
+            TopSquareTL: __spreadArray([], BoxBox.drawCoordinatesBottomLeft.TopSquareTL, true),
+            TopSquareTR: __spreadArray([], BoxBox.drawCoordinatesBottomLeft.TopSquareTR, true),
+            _BottomSquareBL: __spreadArray([], BoxBox.drawCoordinatesBottomLeft._BottomSquareBL, true),
+            _BottomSquareBR: __spreadArray([], BoxBox.drawCoordinatesBottomLeft._BottomSquareBR, true),
+            _BottomSquareTL: __spreadArray([], BoxBox.drawCoordinatesBottomLeft._BottomSquareTL, true),
+            _BottomSquareTR: __spreadArray([], BoxBox.drawCoordinatesBottomLeft._BottomSquareTR, true),
+            _TopSquareBL: __spreadArray([], BoxBox.drawCoordinatesBottomLeft._TopSquareBL, true),
+            _TopSquareBR: __spreadArray([], BoxBox.drawCoordinatesBottomLeft._TopSquareBR, true),
+            _TopSquareTL: __spreadArray([], BoxBox.drawCoordinatesBottomLeft._TopSquareTL, true),
+            _TopSquareTR: __spreadArray([], BoxBox.drawCoordinatesBottomLeft._TopSquareTR, true),
+        };
         _this.rotationState = {
             animationState: "Paused",
             rotationDirection: "Left",
@@ -6459,10 +6477,10 @@ var BoxBox = /** @class */ (function (_super) {
             stateTime: 0,
             shapeState: "TopLeft",
             positionShift: [0, 0],
-            midPauseTime: 10,
+            midPauseTime: 400,
             pauseTime: 1000,
         };
-        _this.addLineSprite(new _boxbox_sprite__WEBPACK_IMPORTED_MODULE_4__.BoxBoxSprite(_this.transform, _this.rotationState));
+        _this.addLineSprite(new _boxbox_sprite__WEBPACK_IMPORTED_MODULE_4__.BoxBoxSprite(_this.transform, _this.rotationState, _this.projectedDrawCoordinates));
         _this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__.EnemySpawn(_this.gameEngine));
         _this.playSound(_this.spawnSound);
         return _this;
@@ -6512,7 +6530,7 @@ var BoxBox = /** @class */ (function (_super) {
         var rotationAngle = this.rotationState.rotationAngle;
         var coordinateShift = this.rotationState.coordinateShift;
         // defined statically above this class
-        var projectedDrawCoordinates = BoxBox.projectedDrawCoordinates;
+        var projectedDrawCoordinates = this.projectedDrawCoordinates;
         var midPauseTime = this.rotationState.midPauseTime;
         var pauseTime = this.rotationState.pauseTime;
         var originalAngle = rotationAngle;
@@ -6600,21 +6618,22 @@ var BoxBox = /** @class */ (function (_super) {
         // except theres issues there since it can rotate in any direction after getting to 180 degrees
         // I think I'll have to then swap points to the reversed version
         var drawCoordinates = this.rotationState.shapeState === "BottomLeft" ? BoxBox.drawCoordinatesBottomLeft : BoxBox.drawCoordinatesTopLeft;
-        var _15 = drawCoordinates.BottomSquareBL, x = _15[0], y = _15[1], angleOffset = _15[2];
+        var _15 = drawCoordinates.BottomSquareBL, x = _15[0], y = _15[1];
+        var angleOffset = 0;
         projectedDrawCoordinates.BottomSquareBL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-        _a = drawCoordinates.BottomSquareBR, x = _a[0], y = _a[1], angleOffset = _a[2];
+        _a = drawCoordinates.BottomSquareBR, x = _a[0], y = _a[1];
         projectedDrawCoordinates.BottomSquareBR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-        _b = drawCoordinates.BottomSquareTL, x = _b[0], y = _b[1], angleOffset = _b[2];
+        _b = drawCoordinates.BottomSquareTL, x = _b[0], y = _b[1];
         projectedDrawCoordinates.BottomSquareTL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-        _c = drawCoordinates.BottomSquareTR, x = _c[0], y = _c[1], angleOffset = _c[2];
+        _c = drawCoordinates.BottomSquareTR, x = _c[0], y = _c[1];
         projectedDrawCoordinates.BottomSquareTR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-        _d = drawCoordinates.TopSquareBL, x = _d[0], y = _d[1], angleOffset = _d[2];
+        _d = drawCoordinates.TopSquareBL, x = _d[0], y = _d[1];
         projectedDrawCoordinates.TopSquareBL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-        _e = drawCoordinates.TopSquareBR, x = _e[0], y = _e[1], angleOffset = _e[2];
+        _e = drawCoordinates.TopSquareBR, x = _e[0], y = _e[1];
         projectedDrawCoordinates.TopSquareBR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-        _f = drawCoordinates.TopSquareTL, x = _f[0], y = _f[1], angleOffset = _f[2];
+        _f = drawCoordinates.TopSquareTL, x = _f[0], y = _f[1];
         projectedDrawCoordinates.TopSquareTL = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
-        _g = drawCoordinates.TopSquareTR, x = _g[0], y = _g[1], angleOffset = _g[2];
+        _g = drawCoordinates.TopSquareTR, x = _g[0], y = _g[1];
         projectedDrawCoordinates.TopSquareTR = [(x + coordinateShift[0]) * projectedWidthScale[0], (-y + coordinateShift[1]) * projectedWidthScale[1]];
         if (rotationDirection === "Left") {
             var drawCoordinatesLeft = drawCoordinates.Left;
@@ -6754,7 +6773,7 @@ var BoxBox = /** @class */ (function (_super) {
         }
     };
     BoxBox.boxWidth = 13;
-    BoxBox.boxDepth = BoxBox.boxWidth / 3;
+    BoxBox.boxDepth = BoxBox.boxWidth / 2.2;
     BoxBox.w = BoxBox.boxWidth;
     BoxBox.d = BoxBox.boxDepth;
     BoxBox.drawCoordinatesTopLeft = {
@@ -6882,24 +6901,6 @@ var BoxBox = /** @class */ (function (_super) {
         _TopSquareTL: [-1 / 4 * BoxBox.w, -1 / 4 * BoxBox.w],
         _TopSquareTR: [3 / 4 * BoxBox.w, -1 / 4 * BoxBox.w],
     };
-    BoxBox.projectedDrawCoordinates = {
-        BottomSquareBL: __spreadArray([], BoxBox.drawCoordinatesBottomLeft.BottomSquareBL, true),
-        BottomSquareBR: __spreadArray([], BoxBox.drawCoordinatesBottomLeft.BottomSquareBR, true),
-        BottomSquareTL: __spreadArray([], BoxBox.drawCoordinatesBottomLeft.BottomSquareTL, true),
-        BottomSquareTR: __spreadArray([], BoxBox.drawCoordinatesBottomLeft.BottomSquareTR, true),
-        TopSquareBL: __spreadArray([], BoxBox.drawCoordinatesBottomLeft.TopSquareBL, true),
-        TopSquareBR: __spreadArray([], BoxBox.drawCoordinatesBottomLeft.TopSquareBR, true),
-        TopSquareTL: __spreadArray([], BoxBox.drawCoordinatesBottomLeft.TopSquareTL, true),
-        TopSquareTR: __spreadArray([], BoxBox.drawCoordinatesBottomLeft.TopSquareTR, true),
-        _BottomSquareBL: __spreadArray([], BoxBox.drawCoordinatesBottomLeft._BottomSquareBL, true),
-        _BottomSquareBR: __spreadArray([], BoxBox.drawCoordinatesBottomLeft._BottomSquareBR, true),
-        _BottomSquareTL: __spreadArray([], BoxBox.drawCoordinatesBottomLeft._BottomSquareTL, true),
-        _BottomSquareTR: __spreadArray([], BoxBox.drawCoordinatesBottomLeft._BottomSquareTR, true),
-        _TopSquareBL: __spreadArray([], BoxBox.drawCoordinatesBottomLeft._TopSquareBL, true),
-        _TopSquareBR: __spreadArray([], BoxBox.drawCoordinatesBottomLeft._TopSquareBR, true),
-        _TopSquareTL: __spreadArray([], BoxBox.drawCoordinatesBottomLeft._TopSquareTL, true),
-        _TopSquareTR: __spreadArray([], BoxBox.drawCoordinatesBottomLeft._TopSquareTR, true),
-    };
     BoxBox.animationStates = ["Paused", "Rotating", "MidPaused", "CompletingRotation"];
     BoxBox.rotationDirections = ["Bottom", "Top", "Left", "Right"];
     BoxBox.shapeStates = ["BottomLeft", "TopLeft"];
@@ -6921,7 +6922,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   BoxBoxSprite: () => (/* binding */ BoxBoxSprite)
 /* harmony export */ });
 /* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
-/* harmony import */ var _boxbox__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./boxbox */ "./src/game_objects/enemies/BoxBox/boxbox.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -6938,14 +6938,14 @@ var __extends = (undefined && undefined.__extends) || (function () {
     };
 })();
 
-
 var BoxBoxSprite = /** @class */ (function (_super) {
     __extends(BoxBoxSprite, _super);
-    function BoxBoxSprite(transform, rotationState) {
+    function BoxBoxSprite(transform, rotationState, projectedDrawCoordinates) {
         var _this = _super.call(this, transform) || this;
         _this.spawningScale = 1;
         _this.rotationState = rotationState;
         _this.spawning = false;
+        _this.projectedDrawCoordinates = projectedDrawCoordinates;
         return _this;
     }
     BoxBoxSprite.prototype.draw = function (ctx) {
@@ -6966,7 +6966,7 @@ var BoxBoxSprite = /** @class */ (function (_super) {
             return;
         }
         ctx.translate(pos[0] - this.rotationState.positionShift[0] - this.rotationState.coordinateShift[0], pos[1] - this.rotationState.positionShift[1] - this.rotationState.coordinateShift[1]);
-        var blurFactor = 0.5;
+        var blurFactor = 0.2;
         ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
         ctx.shadowBlur = 10 * blurFactor;
         ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
@@ -7035,7 +7035,7 @@ var BoxBoxSprite = /** @class */ (function (_super) {
     BoxBoxSprite.prototype.drawBox1 = function (ctx) {
         // need to rethink spawn scaling. 
         // I might have to bring back the original draw methods for spawn animation
-        var projectedCoordinates = _boxbox__WEBPACK_IMPORTED_MODULE_1__.BoxBox.projectedDrawCoordinates;
+        var projectedCoordinates = this.projectedDrawCoordinates;
         var point1 = projectedCoordinates.BottomSquareBL;
         var point2 = projectedCoordinates.BottomSquareBR;
         var point3 = projectedCoordinates.BottomSquareTR;
@@ -7076,7 +7076,7 @@ var BoxBoxSprite = /** @class */ (function (_super) {
         ctx.stroke();
     };
     BoxBoxSprite.prototype.drawBox2 = function (ctx) {
-        var projectedCoordinates = _boxbox__WEBPACK_IMPORTED_MODULE_1__.BoxBox.projectedDrawCoordinates;
+        var projectedCoordinates = this.projectedDrawCoordinates;
         var point1 = projectedCoordinates.TopSquareBL;
         var point2 = projectedCoordinates.TopSquareBR;
         var point3 = projectedCoordinates.TopSquareTR;

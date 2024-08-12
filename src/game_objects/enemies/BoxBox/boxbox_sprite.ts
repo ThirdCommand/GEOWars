@@ -4,14 +4,16 @@ import { BoxBox, type RotationState} from "./boxbox";
 
 export class BoxBoxSprite extends LineSprite implements Spawnable{
     spawningScale: number;
-    rotationState?: RotationState;
+    rotationState: RotationState;
     spawning: boolean;
+    projectedDrawCoordinates: BoxBox['projectedDrawCoordinates'];
 
-    constructor(transform: Transform, rotationState?: RotationState) {
+    constructor(transform: Transform, rotationState?: RotationState, projectedDrawCoordinates?: BoxBox['projectedDrawCoordinates']) {
         super(transform);
         this.spawningScale = 1;
         this.rotationState = rotationState;
         this.spawning = false;
+        this.projectedDrawCoordinates = projectedDrawCoordinates;
     }
 
     draw(ctx: CanvasRenderingContext2D) {
@@ -40,7 +42,7 @@ export class BoxBoxSprite extends LineSprite implements Spawnable{
             pos[0]  - this.rotationState.positionShift[0] - this.rotationState.coordinateShift[0], 
             pos[1]  - this.rotationState.positionShift[1] - this.rotationState.coordinateShift[1]
         );
-        const blurFactor = 0.5;
+        const blurFactor = 0.2;
         ctx.shadowColor = "rgb(" + r + "," + g + "," + b + ")";
         ctx.shadowBlur = 10 * blurFactor;
         ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + ",0.2)";
@@ -116,7 +118,7 @@ export class BoxBoxSprite extends LineSprite implements Spawnable{
 
 
         
-        const projectedCoordinates = BoxBox.projectedDrawCoordinates;
+        const projectedCoordinates = this.projectedDrawCoordinates;
         
         const point1 = projectedCoordinates.BottomSquareBL;
         const point2 = projectedCoordinates.BottomSquareBR;
@@ -169,7 +171,7 @@ export class BoxBoxSprite extends LineSprite implements Spawnable{
 
     drawBox2(ctx: CanvasRenderingContext2D) {
         
-        const projectedCoordinates = BoxBox.projectedDrawCoordinates;
+        const projectedCoordinates = this.projectedDrawCoordinates;
         const point1 = projectedCoordinates.TopSquareBL;
         const point2 = projectedCoordinates.TopSquareBR;
         const point3 = projectedCoordinates.TopSquareTR;
