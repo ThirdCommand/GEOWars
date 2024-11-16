@@ -226,12 +226,126 @@ var AnimationView = /** @class */ (function () {
                 // new Plate(this, [120, 95]);
                 // const entity = new Entity(this, [100, 90]);
                 // new Bed(this, [100, 100], entity);
+                new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_7__.Tree(_this, [100, 100]);
             },
             Plate: function (pos) { return new _game_objects_ClockworkGames_Plate__WEBPACK_IMPORTED_MODULE_11__.Plate(_this, pos); }
         };
         enemyMap[type]([100, 100]);
     };
     return AnimationView;
+}());
+
+
+
+/***/ }),
+
+/***/ "./src/game_engine/EntityState/Activity.ts":
+/*!*************************************************!*\
+  !*** ./src/game_engine/EntityState/Activity.ts ***!
+  \*************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Activity: () => (/* binding */ Activity),
+/* harmony export */   ParentActivity: () => (/* binding */ ParentActivity)
+/* harmony export */ });
+var Activity = /** @class */ (function () {
+    function Activity(name, activityState, activator) {
+        this.name = name;
+        this.activityState = activityState;
+        this.runActivity = activator;
+    }
+    // return true if completed
+    Activity.prototype.doActivity = function (dT) {
+        return this.runActivity(dT, this.activityState);
+    };
+    return Activity;
+}());
+
+// might need to store the activity data at the parent level to allow introspection
+// or I can have references to the data that's in the activity queue so I don't have 
+// to loop through an array
+var ParentActivity = /** @class */ (function () {
+    function ParentActivity(name, subActivities, parentActivity, currentActivityIndex) {
+        this.name = name;
+        this.parentActivity = parentActivity;
+        this.currentActivityIndex = currentActivityIndex || 0;
+        this.subActivities = subActivities || [];
+    }
+    // returns true if this parent activity is done
+    ParentActivity.prototype.doActivity = function (dT) {
+        var _a;
+        var currentActivityCompleted = ((_a = this.subActivities[this.currentActivityIndex]) === null || _a === void 0 ? void 0 : _a.doActivity(dT)) || true;
+        if (currentActivityCompleted) {
+            if (this.currentActivityIndex < this.subActivities.length - 1) {
+                this.currentActivityIndex++;
+                return false;
+            }
+            else {
+                this.currentActivityIndex = 0;
+                return true;
+            }
+        }
+        return false;
+    };
+    return ParentActivity;
+}());
+
+
+
+/***/ }),
+
+/***/ "./src/game_engine/EntityState/Animate.ts":
+/*!************************************************!*\
+  !*** ./src/game_engine/EntityState/Animate.ts ***!
+  \************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Animation: () => (/* binding */ Animation),
+/* harmony export */   ParentAnimation: () => (/* binding */ ParentAnimation)
+/* harmony export */ });
+// I could contain two entity sprite parameters and or transforms in one animation
+// that could be nice
+var Animation = /** @class */ (function () {
+    function Animation(name, animationState, animator, spriteParameters, parentAnimation) {
+        this.name = name;
+        this.spriteParameters = spriteParameters;
+        this.parentAnimation = parentAnimation;
+        this.animationState = animationState;
+        this.runAnimation = animator;
+    }
+    Animation.prototype.animate = function (dT) {
+        return this.runAnimation(dT, this.animationState, this.spriteParameters) ? this.endAnimation(this.animationState) : false;
+    };
+    return Animation;
+}());
+
+var ParentAnimation = /** @class */ (function () {
+    function ParentAnimation(name, animations, parentAnimation, currentAnimationIndex) {
+        this.name = name;
+        this.parentAnimation = parentAnimation;
+        this.animations = animations || [];
+        this.currentAnimationIndex = currentAnimationIndex || 0;
+    }
+    ParentAnimation.prototype.animate = function (dT) {
+        var _a;
+        var currentAnimationStateComplete = ((_a = this.animations[this.currentAnimationIndex]) === null || _a === void 0 ? void 0 : _a.animate(dT)) || true;
+        if (currentAnimationStateComplete) {
+            if (this.currentAnimationIndex < this.animations.length - 1) {
+                this.currentAnimationIndex++;
+                return false;
+            }
+            else {
+                this.currentAnimationIndex = 0;
+                return true;
+            }
+        }
+        return false;
+    };
+    return ParentAnimation;
 }());
 
 
@@ -3876,10 +3990,13 @@ var Bullet = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Bed: () => (/* binding */ Bed),
-/* harmony export */   BedSprite: () => (/* binding */ BedSprite)
+/* harmony export */   BedSprite: () => (/* binding */ BedSprite),
+/* harmony export */   bedSpinAnimator: () => (/* binding */ bedSpinAnimator),
+/* harmony export */   createBedSpinAnimation: () => (/* binding */ createBedSpinAnimation)
 /* harmony export */ });
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+/* harmony import */ var _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/EntityState/Animate */ "./src/game_engine/EntityState/Animate.ts");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -3895,6 +4012,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+
 
 
 var Bed = /** @class */ (function (_super) {
@@ -3997,8 +4115,17 @@ var Bed = /** @class */ (function (_super) {
         this.addCollider("General", this, 5);
     };
     return Bed;
-}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
 
+var bedSpinAnimator = function (dT, animationState, spriteParameters) {
+    var bodySpinAngle = animationState.size;
+    var percentageCovered = bodySpinAngle / Math.PI;
+    spriteParameters.covers.yOffset.size = -percentageCovered * spriteParameters.covers.yOffset.max();
+    return false;
+};
+var createBedSpinAnimation = function (bed, entity) {
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('BedSpin', entity.spriteParameters.bodyAngle, bedSpinAnimator);
+};
 var BedSprite = /** @class */ (function (_super) {
     __extends(BedSprite, _super);
     function BedSprite(transform, spriteParameters) {
@@ -4028,7 +4155,7 @@ var BedSprite = /** @class */ (function (_super) {
         ctx.fillRect(covers.topLeft.x, covers.topLeft.y + covers.yOffset.size, this.spriteParameters.width.size, this.spriteParameters.covers.height);
     };
     return BedSprite;
-}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__.LineSprite));
 
 // const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
@@ -4049,6 +4176,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
 /* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 /* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
+/* harmony import */ var _game_engine_EntityState_Activity__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../game_engine/EntityState/Activity */ "./src/game_engine/EntityState/Activity.ts");
+/* harmony import */ var _EntityAnimationStates__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./EntityAnimationStates */ "./src/game_objects/ClockworkGames/Entity/EntityAnimationStates.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -4067,54 +4196,15 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
+
+
 var Entity = /** @class */ (function (_super) {
     __extends(Entity, _super);
     function Entity(engine, pos) {
         var _this = _super.call(this, engine) || this;
-        _this.possibleActivities = {
-            moveTo: function (location) {
-                _this.activitiesQueue.push({
-                    name: "moveTo",
-                    location: location
-                });
-            },
-            sleep: function (bed) {
-                _this.activitiesQueue.push({
-                    name: "goToSleep",
-                    bed: bed,
-                    subActivities: [
-                        {
-                            name: "moveTo",
-                            location: bed.transform.pos
-                        },
-                        {
-                            name: "goToSleep",
-                            bed: bed
-                        },
-                        {
-                            name: "wait",
-                            time: 5000,
-                            waitedTime: 0
-                        }
-                    ]
-                });
-            },
-            wait: function (time) {
-                _this.activitiesQueue.push({
-                    name: "wait",
-                    time: time,
-                    waitedTime: 0
-                });
-            },
-            wakeUp: function () {
-                _this.activitiesQueue.push({
-                    name: "wakeUp",
-                });
-            }
-        };
         _this.transform.pos = pos;
         _this.transform.angle = Math.PI;
-        _this.moveToSpeed = 2;
+        _this.moveToSpeed = 2.5;
         _this.moveToAcceleration = 0.125 / 6;
         _this.squeezing = true;
         _this.closing = true;
@@ -4135,27 +4225,28 @@ var Entity = /** @class */ (function (_super) {
         // and a pre loaded creation method will need to be made
         // this.previousUniqueActivity = {};
         // this.activitiesByGoals = {};
-        _this.possibleActivities.moveTo([700, 500]);
         _this.spriteParameters = {
             armLength: Entity.baseParameters.armLength,
             lineThickness: Entity.baseParameters.lineThickness,
+            // need x/y position offset from actual position for animation purposes
+            // or at least y
+            // it would mess with collision detection though... not sure how to fix that
+            // hmm
+            // okay I think I got it
+            // I'll change the transform directly,
+            // while keeping track of that change within the animation 
+            // that way it can reset when the animation is done...
             bodyAngle: {
                 size: 0,
                 originalSize: 0,
-                changeSize: function (_a) {
-                    var _b = _a.min, min = _b === void 0 ? undefined : _b, _c = _a.max, max = _c === void 0 ? undefined : _c, angleChange = _a.angleChange;
+                changeSize: function (angleChange) {
                     _this.spriteParameters.bodyAngle.size += angleChange;
-                    if (min !== undefined) {
-                        if (_this.spriteParameters.bodyAngle.size < min) {
-                            _this.spriteParameters.bodyAngle.size = min;
-                            return true;
-                        }
+                    var twoPi = 2 * Math.PI;
+                    if (_this.spriteParameters.bodyAngle.size > twoPi) {
+                        _this.spriteParameters.bodyAngle.size - twoPi;
                     }
-                    if (max !== undefined) {
-                        if (_this.spriteParameters.bodyAngle.size > max) {
-                            _this.spriteParameters.bodyAngle.size = max;
-                            return true;
-                        }
+                    else if (_this.spriteParameters.bodyAngle.size < -twoPi) {
+                        _this.spriteParameters.bodyAngle.size + twoPi;
                     }
                 }
             },
@@ -4749,9 +4840,69 @@ var Entity = /** @class */ (function (_super) {
                 }
             }
         };
+        _this.setPossibleActivitiesAndAnimations();
+        _this.possibleActivities.moveTo([700, 400]);
         _this.addLineSprite(new EntitySprite(_this.transform, _this.spriteParameters));
         return _this;
     }
+    Entity.prototype.chopTree = function (tree) {
+        this.possibleActivities.moveTo([tree.transform.pos[0], tree.transform.pos[1]]);
+        this.possibleActivities.chopTree(tree);
+    };
+    Entity.prototype.setPossibleActivitiesAndAnimations = function () {
+        var _this = this;
+        this.possibleAnimations = {
+            moveTo: function () {
+                _this.currentAnimation = (0,_EntityAnimationStates__WEBPACK_IMPORTED_MODULE_4__.createBobAnimation)(_this);
+            },
+            chopping: function () {
+            }
+        };
+        this.possibleActivities = {
+            moveTo: function (location) {
+                var moveToActivity = createMoveToActivity(_this, location);
+                _this.activitiesQueue.push(moveToActivity);
+            },
+            chopTree: function (tree) {
+                var chopTreeActivity = createChopTreeActivity(_this, tree);
+                _this.activitiesQueue.push(chopTreeActivity);
+            }
+            // sleep: (bed: Bed) => {
+            //     this.activitiesQueue.push({
+            //         name: "goToSleep",
+            //         bed,
+            //         subActivities: [
+            //             {
+            //                 name: "moveTo",
+            //                 location: bed.transform.pos
+            //             },
+            //             {
+            //                 name: "goToSleep",
+            //                 bed
+            //             },
+            //             {
+            //                 name: "wait",
+            //                 time: 5000,
+            //                 waitedTime: 0
+            //             }
+            //         ]
+            //     });
+            // },
+            // wait: (time: number) => {
+            //     const waitActivity = new Activity<WaitState>("wait",{time, waitedTime: 0});
+            //     waitActivity.runActivity = (dT: number, activityState) => {
+            //         activityState.waitedTime += dT;
+            //         return activityState.time >= activityState.waitedTime;
+            //     };
+            //     this.activitiesQueue.push(waitActivity);
+            // },
+            // wakeUp: () => {
+            // this.activitiesQueue.push({
+            //     name: "wakeUp",
+            // });
+            // }
+        };
+    };
     Entity.prototype.animationEnded = function () {
     };
     Entity.prototype.animate = function (deltaTime) {
@@ -4764,73 +4915,15 @@ var Entity = /** @class */ (function (_super) {
     Entity.prototype.checkArrived = function (pos) {
         return _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.dist(pos, this.transform.pos) < 2;
     };
-    Entity.prototype.doActivity = function (activity) {
-        if (activity.subActivities) {
-            this.doActivity(activity.subActivities[0]);
-        }
-        else if (activity.name === "moveTo") {
-            if (this.checkArrived(activity.location)) {
-                this.transform.pos[0] = activity.location[0];
-                this.transform.pos[1] = activity.location[1];
-                this.transform.vel[0] = 0;
-                this.transform.vel[1] = 0;
-                this.activitiesQueue.shift();
-            }
-            else {
-                this.moveTowards(activity.location);
-            }
-        }
-        else if (activity.name === "interact") {
-            this.doActivity(activity);
-        }
-    };
-    Entity.prototype.moveTowards = function (location) {
-        // take current velocity
-        // find ideal velocity using max speed, current position, and ship position
-        // get unit vector of current position - ship position
-        // take difference
-        // apply acceleration in that direction
-        // get dV
-        //    mV => max speed in the direction it should be moving
-        //    Vo => current velocity
-        //    dV =  mV - Vo
-        //    alpha = dV angle
-        // knowing the acceleration, and current velocity, and final velocity of 0
-        // I can come up with the distance where it should 
-        // start decelerating
-        // (Vf^2 - Vi^2) / 2a = D
-        var speed = this.moveToSpeed;
-        var pos = this.transform.absolutePosition();
-        var distanceRemaining = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.dist(pos, location);
-        var decelerateDistance = Math.pow(this.transform.vel[0], 2) / (2 * this.moveToAcceleration);
-        if (distanceRemaining < decelerateDistance) {
-            var accelerationDirection = Math.atan2(this.transform.vel[1], this.transform.vel[0]);
-            this.transform.acc[0] -= this.moveToAcceleration * Math.cos(accelerationDirection);
-            this.transform.acc[1] -= this.moveToAcceleration * Math.sin(accelerationDirection);
-        }
-        else {
-            var deltaPosition = [location[0] - pos[0], location[1] - pos[1]];
-            var chaseDirection = Math.atan2(deltaPosition[1], deltaPosition[0]);
-            // Math.atan2 was giving me negative numbers.... when it shouldn't
-            if (chaseDirection < 0) {
-                chaseDirection = 2 * Math.PI + chaseDirection;
-            }
-            // console.log(chaseDirection / (2 * Math.PI) * 360)
-            var Vm = [speed * Math.cos(chaseDirection), speed * Math.sin(chaseDirection)];
-            var Vo = this.transform.vel;
-            var dV = [Vm[0] - Vo[0], Vm[1] - Vo[1]];
-            var accelerationDirection = Math.atan2(dV[1], dV[0]);
-            this.transform.acc[0] += this.moveToAcceleration * Math.cos(accelerationDirection);
-            this.transform.acc[1] += this.moveToAcceleration * Math.sin(accelerationDirection);
-            // console.log(this.transform.acc)
-        }
+    Entity.prototype.doActivity = function (activity, dT) {
+        activity.doActivity(dT);
     };
     Entity.prototype.update = function (dT) {
         // this would be where an entity get's to decide
         // if it is adding something to the top of the activity queue
         // and if it is deleting something from the activity queue
         if (this.activitiesQueue.length) {
-            this.doActivity(this.activitiesQueue[0]);
+            this.doActivity(this.activitiesQueue[0], dT);
         }
         this.animate(dT);
     };
@@ -4951,7 +5044,307 @@ var EntitySprite = /** @class */ (function (_super) {
     return EntitySprite;
 }(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
 
+// okay, clearly the activity needs to control the animation otherwise it'll be hard to 
+// control both and have activities defined outside of the object that's animating
+var createMoveToActivity = function (entity, location) {
+    entity.possibleAnimations['moveTo']();
+    var moveToData = {
+        location: location,
+        entityTransform: entity.transform,
+        moveToSpeed: entity.moveToSpeed,
+        moveToAcceleration: entity.moveToAcceleration
+    };
+    var move = function (time, activityState) {
+        if (_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.dist(activityState.location, activityState.entityTransform.pos) < 2) {
+            activityState.entityTransform.pos[0] = activityState.location[0];
+            activityState.entityTransform.pos[1] = activityState.location[1];
+            activityState.entityTransform.vel[0] = 0;
+            activityState.entityTransform.vel[1] = 0;
+            entity.currentAnimation = null;
+            return true;
+        }
+        else {
+            // take current velocity
+            // find ideal velocity using max speed, current position, and ship position
+            // get unit vector of current position - ship position
+            // take difference
+            // apply acceleration in that direction
+            // get dV
+            //    mV => max speed in the direction it should be moving
+            //    Vo => current velocity
+            //    dV =  mV - Vo
+            //    alpha = dV angle
+            // knowing the acceleration, and current velocity, and final velocity of 0
+            // I can come up with the distance where it should 
+            // start decelerating
+            // (Vf^2 - Vi^2) / 2a = D
+            var speed = activityState.moveToSpeed;
+            var pos = activityState.entityTransform.absolutePosition();
+            var distanceRemaining = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.dist(pos, location);
+            var decelerateDistance = Math.pow(activityState.entityTransform.vel[0], 2) / (2 * activityState.moveToAcceleration);
+            if (distanceRemaining < decelerateDistance) {
+                var accelerationDirection = Math.atan2(activityState.entityTransform.vel[1], activityState.entityTransform.vel[0]);
+                activityState.entityTransform.acc[0] -= activityState.moveToAcceleration * Math.cos(accelerationDirection);
+                activityState.entityTransform.acc[1] -= activityState.moveToAcceleration * Math.sin(accelerationDirection);
+            }
+            else {
+                var deltaPosition = [location[0] - pos[0], location[1] - pos[1]];
+                var chaseDirection = Math.atan2(deltaPosition[1], deltaPosition[0]);
+                if (chaseDirection < 0) {
+                    chaseDirection = 2 * Math.PI + chaseDirection;
+                }
+                // console.log(chaseDirection / (2 * Math.PI) * 360)
+                var Vm = [speed * Math.cos(chaseDirection), speed * Math.sin(chaseDirection)];
+                var Vo = activityState.entityTransform.vel;
+                var dV = [Vm[0] - Vo[0], Vm[1] - Vo[1]];
+                var accelerationDirection = Math.atan2(dV[1], dV[0]);
+                activityState.entityTransform.acc[0] += activityState.moveToAcceleration * Math.cos(accelerationDirection);
+                activityState.entityTransform.acc[1] += activityState.moveToAcceleration * Math.sin(accelerationDirection);
+            }
+            return false;
+        }
+    };
+    return new _game_engine_EntityState_Activity__WEBPACK_IMPORTED_MODULE_3__.Activity('moveTo', moveToData, move);
+};
+var createChopTreeActivity = function (entity, tree) {
+    var chopTreeData = {
+        tree: tree,
+    };
+    var chopLocation = [tree.transform.pos[0] + entity.treeChopLocation[0], tree.transform.pos[1] + entity.treeChopLocation[1]];
+    var chopTreeActivity = new _game_engine_EntityState_Activity__WEBPACK_IMPORTED_MODULE_3__.ParentActivity('ChopTreeActivity');
+    var moveToActivity = createMoveToActivity(entity, chopLocation);
+    var chop = function (time, activityState) {
+        entity.possibleAnimations['chopping']();
+        return true;
+    };
+    var chopActivity = new _game_engine_EntityState_Activity__WEBPACK_IMPORTED_MODULE_3__.Activity('ChopTree', chopTreeData, chop);
+    chopTreeActivity.subActivities.push(moveToActivity, chopActivity);
+    return chopTreeActivity;
+};
 // const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+
+
+/***/ }),
+
+/***/ "./src/game_objects/ClockworkGames/Entity/EntityAnimationStates.ts":
+/*!*************************************************************************!*\
+  !*** ./src/game_objects/ClockworkGames/Entity/EntityAnimationStates.ts ***!
+  \*************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   createBedEntitySpinAnimation: () => (/* binding */ createBedEntitySpinAnimation),
+/* harmony export */   createBobAnimation: () => (/* binding */ createBobAnimation),
+/* harmony export */   createCloseStrained: () => (/* binding */ createCloseStrained),
+/* harmony export */   createGoingToBedAnimation: () => (/* binding */ createGoingToBedAnimation),
+/* harmony export */   createOpenBounceAnimation: () => (/* binding */ createOpenBounceAnimation),
+/* harmony export */   createPauseAnimation: () => (/* binding */ createPauseAnimation),
+/* harmony export */   createSpin: () => (/* binding */ createSpin),
+/* harmony export */   createSpinningAnimation: () => (/* binding */ createSpinningAnimation),
+/* harmony export */   createSqueezeAnimation: () => (/* binding */ createSqueezeAnimation)
+/* harmony export */ });
+/* harmony import */ var _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/EntityState/Animate */ "./src/game_engine/EntityState/Animate.ts");
+/* harmony import */ var _Bed__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Bed */ "./src/game_objects/ClockworkGames/Bed.ts");
+
+
+var createPauseAnimation = function (entity, pauseTime) {
+    var pause = function (dT, pauseState) {
+        pauseState.timePaused += dT;
+        if (pauseState.timePaused >= pauseState.maxPauseTime) {
+            pauseState.timePaused = 0;
+            return true;
+        }
+        return false;
+    };
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('PauseFor', { timePaused: 0, maxPauseTime: pauseTime }, pause);
+};
+// spin is absolute. Kind of assumes you know where the entity is already spin wise
+// could make one that doesn't care but not needed yet?
+// okay, now that I'm doing the bed spin I'm confused about what happens when
+// the entity is spun 360 degrees... maybe changeSize needs to set it to currentAngle - 2*PI when 360 is hit
+// but then the total angle change needs to be kept track in the animation state
+var entitySpinAnimator = function (dT, animationState, spriteParameters) {
+    var angleChange = dT * animationState.spinSpeed;
+    if (angleChange > 0) {
+        animationState.totalSpun -= angleChange;
+        spriteParameters.bodyAngle.changeSize(angleChange);
+        return animationState.totalSpun < animationState.spinAngle;
+    }
+    else {
+        animationState.totalSpun += angleChange;
+        spriteParameters.bodyAngle.changeSize(angleChange);
+        return animationState.totalSpun > animationState.spinAngle;
+    }
+};
+var createSpin = function (entity, spinAngle, spinSpeed) {
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('Spin', { totalSpun: 0, spinSpeed: spinSpeed, spinAngle: spinAngle }, entitySpinAnimator, entity.spriteParameters);
+};
+var createSpinningAnimation = function (entity) {
+    var firstPause = createPauseAnimation(entity, 300);
+    var spinRight = createSpin(entity, Math.PI, 0.8);
+    var spinLeft = createSpin(entity, -Math.PI, -0.8);
+    var secondPause = createPauseAnimation(entity, 500);
+    var animations = [
+        firstPause, spinRight, secondPause, spinLeft
+    ];
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.ParentAnimation('SpinningAnimation', animations);
+};
+var createCloseStrained = function (entity) {
+    var closeStrained = function (dT, animationState, spriteParameters) {
+        var time = dT / 48;
+        var animationScale = time > 3 ? 3 : time;
+        // spin 90 degrees, pause, spin back 90 degrees, pause
+        var squeezedWidth = spriteParameters.lineThickness;
+        var openedWidth = spriteParameters.arms.right.position.x.max() - spriteParameters.arms.left.position.x.min();
+        var currentSqueezeWidth = spriteParameters.arms.right.position.x.size -
+            spriteParameters.arms.left.position.x.size;
+        var animationPercentage = (openedWidth - currentSqueezeWidth - squeezedWidth) / openedWidth;
+        var closeDelta = animationScale * (0.25 + 1.75 * (1 - animationPercentage));
+        spriteParameters.arms.left.position.x.changeSize(closeDelta / 2);
+        spriteParameters.arms.right.position.x.changeSize(-closeDelta / 2);
+        spriteParameters.width.changeSize(-closeDelta / 4);
+        spriteParameters.height.changeSize(closeDelta / 8);
+        spriteParameters.eye.height.changeSize(closeDelta / 16);
+        spriteParameters.eye.width.changeSize(closeDelta / 6);
+        spriteParameters.eye.right.radius.x.changeSize(closeDelta / 16);
+        spriteParameters.eye.right.radius.y.changeSize(-closeDelta / 16);
+        spriteParameters.eye.left.radius.x.changeSize(closeDelta / 32);
+        spriteParameters.eye.left.radius.y.changeSize(closeDelta / 32);
+        if (currentSqueezeWidth < squeezedWidth) {
+            var correctionChange = (currentSqueezeWidth - squeezedWidth) / 2;
+            spriteParameters.arms.left.position.x.changeSize(-correctionChange);
+            spriteParameters.arms.right.position.x.changeSize(correctionChange);
+            return true;
+        }
+        return false;
+    };
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('CloseStrained', {}, closeStrained, entity.spriteParameters);
+};
+var createOpenBounceAnimation = function (entity) {
+    var openBounce = function (dT, animationState, spriteParameters) {
+        var time = dT / 48;
+        var animationScale = time > 3 ? 3 : time;
+        var squeezedWidth = spriteParameters.lineThickness;
+        var openedWidth = spriteParameters.arms.right.position.x.max() - spriteParameters.arms.left.position.x.min();
+        var currentOpenWidth = spriteParameters.arms.right.position.x.size -
+            spriteParameters.arms.left.position.x.size;
+        var animationPercentage = (currentOpenWidth - squeezedWidth) / openedWidth;
+        var openDelta = animationScale * (1 + 3 * animationPercentage);
+        spriteParameters.arms.left.position.x.changeSize(-openDelta / 2);
+        spriteParameters.arms.right.position.x.changeSize(openDelta / 2);
+        spriteParameters.width.changeSize(openDelta / 4);
+        spriteParameters.height.changeSize(-openDelta / 8);
+        spriteParameters.eye.height.changeSize(-openDelta / 16);
+        spriteParameters.eye.width.changeSize(-openDelta / 6);
+        spriteParameters.eye.right.radius.x.changeSize(-openDelta / 16);
+        spriteParameters.eye.right.radius.y.changeSize(openDelta / 16);
+        spriteParameters.eye.left.radius.x.changeSize(-openDelta / 32);
+        spriteParameters.eye.left.radius.y.changeSize(-openDelta / 32);
+        if (currentOpenWidth >= openedWidth) {
+            var correctionChange = (currentOpenWidth - openedWidth) / 2;
+            spriteParameters.arms.left.position.x.changeSize(correctionChange);
+            spriteParameters.arms.right.position.x.changeSize(-correctionChange);
+            spriteParameters.width.size = spriteParameters.width.originalSize;
+            spriteParameters.height.size = spriteParameters.height.originalSize;
+            spriteParameters.eye.left.position.y.size = spriteParameters.eye.left.position.y.originalSize;
+            spriteParameters.eye.right.position.y.size = spriteParameters.eye.right.position.y.originalSize;
+            spriteParameters.eye.left.position.x.size = spriteParameters.eye.left.position.x.originalSize;
+            spriteParameters.eye.right.position.x.size = spriteParameters.eye.right.position.x.originalSize;
+            spriteParameters.eye.left.radius.x.size = spriteParameters.eye.left.radius.x.originalSize;
+            spriteParameters.eye.left.radius.y.size = spriteParameters.eye.left.radius.y.originalSize;
+            spriteParameters.eye.right.radius.x.size = spriteParameters.eye.right.radius.x.originalSize;
+            spriteParameters.eye.right.radius.y.size = spriteParameters.eye.right.radius.y.originalSize;
+            return true;
+        }
+        return false;
+    };
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('OpenBounce', {}, openBounce, entity.spriteParameters);
+};
+var createSqueezeAnimation = function (entity) {
+    var closeStrainedAnimation = createCloseStrained(entity);
+    var openBounceAnimation = createOpenBounceAnimation(entity);
+    var animations = [
+        closeStrainedAnimation,
+        openBounceAnimation
+    ];
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.ParentAnimation('Squeeze', animations);
+};
+var createBedEntitySpinAnimation = function (entity, bed, spinAngle, spinSpeed) {
+    var bedEntitySpinAnimator = function (dT, animationState, spriteParameters) {
+        var spinResult = entitySpinAnimator(dT, { spinAngle: spinAngle, spinSpeed: spinSpeed, totalSpun: 0 }, spriteParameters.entity);
+        (0,_Bed__WEBPACK_IMPORTED_MODULE_1__.bedSpinAnimator)(dT, spriteParameters.entity.bodyAngle, spriteParameters.bed);
+        return spinResult;
+    };
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('BedEntitySpin', { bed: bed, entity: entity }, bedEntitySpinAnimator, { bed: bed.spriteParameters, entity: entity.spriteParameters });
+};
+var createGoingToBedAnimation = function (entity, bed) {
+    var firstPause = createPauseAnimation(entity, 300);
+    var secondPause = createPauseAnimation(entity, 500);
+    var goingToSleepBedEntitySpinAnimation = createBedEntitySpinAnimation(entity, bed, 0.8, Math.PI);
+    var wakingUpBedEntitySpinAnimation = createBedEntitySpinAnimation(entity, bed, -0.8, -Math.PI);
+    var animations = [
+        firstPause,
+        goingToSleepBedEntitySpinAnimation,
+        secondPause,
+        wakingUpBedEntitySpinAnimation
+    ];
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.ParentAnimation('GoingToBedAndWakingUpAnimation', animations);
+};
+var createBobAnimation = function (entity) {
+    var bobAnimationState = {
+        entityTransform: entity.transform,
+        yOffset: 0,
+        maxBob: 10,
+        bobSpeed: entity.moveToSpeed / 100,
+        bobDirection: 1,
+        armBobbingSpeed: 0.8,
+        animationProgress: 0
+        // spot I can add more state if needed I guess
+    };
+    var bobAnimator = function (dT, animationState, spriteParameters) {
+        // should probably split these into two separate animations. 
+        // then I'll have control over how it behaves while bouncing up vs down
+        var entityTransform = animationState.entityTransform;
+        var yOffsetIncrement = dT * animationState.bobSpeed * animationState.bobDirection * (0.4 + (1 - animationState.animationProgress) * 0.8);
+        var possibleNewOffset = animationState.yOffset + yOffsetIncrement;
+        if (animationState.bobDirection === 1) {
+            if (possibleNewOffset >= animationState.maxBob) {
+                yOffsetIncrement = animationState.maxBob - animationState.yOffset;
+                animationState.yOffset = animationState.maxBob;
+                entityTransform.pos[1] += yOffsetIncrement;
+                animationState.bobDirection = -1;
+                animationState.animationProgress = 0;
+                return false;
+            }
+            animationState.animationProgress = animationState.yOffset / animationState.maxBob;
+            spriteParameters.arms.left.angle.changeAngle(dT * animationState.armBobbingSpeed / 1500 * (0.4 + (1 - animationState.animationProgress) * 0.8));
+            spriteParameters.arms.right.angle.changeAngle(dT * animationState.armBobbingSpeed / 1500 * (0.4 + (1 - animationState.animationProgress) * 0.8));
+            animationState.yOffset += yOffsetIncrement;
+            entityTransform.pos[1] += yOffsetIncrement;
+            return false;
+        }
+        else {
+            if (possibleNewOffset <= 0) {
+                yOffsetIncrement = -animationState.yOffset;
+                animationState.yOffset = 0;
+                entityTransform.pos[1] += yOffsetIncrement;
+                animationState.bobDirection = 1;
+                animationState.animationProgress = 0;
+                return false;
+            }
+            animationState.animationProgress = (animationState.maxBob - animationState.yOffset) / animationState.maxBob;
+            spriteParameters.arms.left.angle.changeAngle(dT * -animationState.armBobbingSpeed / 1500 * (0.4 + (1 - animationState.animationProgress) * 0.8));
+            spriteParameters.arms.right.angle.changeAngle(dT * -animationState.armBobbingSpeed / 1500 * (0.4 + (1 - animationState.animationProgress) * 0.8));
+            animationState.yOffset += yOffsetIncrement;
+            entityTransform.pos[1] += yOffsetIncrement;
+            return false;
+        }
+    };
+    var bobAnimation = new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('bob', bobAnimationState, bobAnimator);
+    var moveToAnimation = new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.ParentAnimation('moveTo', [bobAnimation]);
+    moveToAnimation.animations = [bobAnimation];
+};
 
 
 /***/ }),
@@ -5383,6 +5776,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
 /* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/util */ "./src/game_engine/util.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -5400,13 +5794,14 @@ var __extends = (undefined && undefined.__extends) || (function () {
 })();
 
 
+
 var Tree = /** @class */ (function (_super) {
     __extends(Tree, _super);
-    function Tree(engine, pos) {
+    function Tree(engine, pos, yourEntity) {
         var _this = _super.call(this, engine) || this;
         _this.transform.pos = pos;
         _this.transform.angle = 0;
-        _this.addLineSprite(new TreeSprite(_this.transform));
+        _this.yourEntity = yourEntity;
         _this.interactions = {
             chopTree: {
                 startingCondition: {
@@ -5417,67 +5812,158 @@ var Tree = /** @class */ (function (_super) {
                 }
             }
         };
+        var w = Tree.baseParameters.w;
+        var h = Tree.baseParameters.h;
+        _this.spriteParameters = {
+            tip: {
+                getCoordinates: function () { return [0, -Tree.baseParameters.h / 2]; }
+            },
+            right: {
+                topBranch: {
+                    getCoordinates: function () { return [3 / 10 * w, -h / 4]; }
+                },
+                topCorner: {
+                    getCoordinates: function () { return [1 / 5 * w, -h / 4]; }
+                },
+                middleBranch: {
+                    getCoordinates: function () { return [2 / 5 * w, 0]; }
+                },
+                middleCorner: {
+                    getCoordinates: function () { return [3 / 10 * w, 0]; }
+                },
+                bottomBranch: {
+                    getCoordinates: function () { return [1 / 2 * w, h / 4]; }
+                },
+                bottomCorner: {
+                    getCoordinates: function () { return [1 / 30 * w, h / 4]; }
+                },
+                trunk: {
+                    getCoordinates: function () { return [1 / 30 * w, h / 2]; }
+                }
+            },
+            left: {
+                topBranch: {
+                    getCoordinates: function () { return [-3 / 10 * w, -h / 4]; }
+                },
+                topCorner: {
+                    getCoordinates: function () { return [-1 / 5 * w, -h / 4]; }
+                },
+                middleBranch: {
+                    getCoordinates: function () { return [-2 / 5 * w, 0]; }
+                },
+                middleCorner: {
+                    getCoordinates: function () { return [-3 / 10 * w, 0]; }
+                },
+                bottomBranch: {
+                    getCoordinates: function () { return [-1 / 2 * w, h / 4]; }
+                },
+                bottomCorner: {
+                    getCoordinates: function () { return [-1 / 30 * w, h / 4]; }
+                },
+                trunk: {
+                    getCoordinates: function () { return [-1 / 30 * w, h / 2]; }
+                }
+            }
+        };
+        _this.addLineSprite(new TreeSprite(_this.transform, _this.spriteParameters));
+        _this.setPossibleActivitiesAndAnimations();
         return _this;
     }
-    Tree.prototype.update = function () { };
+    Tree.prototype.setPossibleActivitiesAndAnimations = function () {
+        this.possibleAnimations = {
+            // could pass in chopper here
+            chopping: function (chopper) {
+                var choppingAnimationState = {};
+            }
+        };
+    };
+    Tree.prototype.mouseClicked = function (mousePos) {
+        var centerDist = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.dist([this.transform.pos[0], this.transform.pos[1]], mousePos);
+        if (centerDist < this.clickRadius) {
+            this.onMouseClick(mousePos);
+        }
+    };
+    Tree.prototype.onMouseClick = function (mousePos) {
+        this.yourEntity.chopTree(this);
+    };
+    Tree.prototype.update = function (deltaTime) {
+        var _a;
+        (_a = this.currentAnimation) === null || _a === void 0 ? void 0 : _a.animate(deltaTime);
+    };
     Tree.prototype.animate = function () { };
     Tree.prototype.exist = function () {
         this.addCollider("General", this, 5);
+    };
+    Tree.baseParameters = {
+        w: 30,
+        h: 4 / 5 * 30
     };
     return Tree;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
 var TreeSprite = /** @class */ (function (_super) {
     __extends(TreeSprite, _super);
-    function TreeSprite(transform, spawningScale) {
-        if (spawningScale === void 0) { spawningScale = 1; }
+    function TreeSprite(transform, spriteParameters) {
         var _this = _super.call(this, transform) || this;
-        _this.spawningScale = spawningScale;
+        _this.spriteParameters = spriteParameters;
         _this.transform = transform;
         _this.color = "green";
-        _this.width = 30;
-        _this.height = 4 / 5 * _this.width;
+        _this.width = Tree.baseParameters.w;
+        _this.height = Tree.baseParameters.h;
         return _this;
     }
     TreeSprite.prototype.draw = function (ctx) {
         var pos = this.transform.absolutePosition();
-        var w = this.width * this.spawningScale;
-        var h = this.height * this.spawningScale;
         ctx.save();
         ctx.translate(pos[0], pos[1]);
-        this.drawTree(ctx, h, w);
+        this.drawTree(ctx);
         ctx.restore();
     };
-    TreeSprite.prototype.drawTree = function (ctx, h, w) {
+    TreeSprite.prototype.drawTree = function (ctx) {
         ctx.lineWidth = 2;
         ctx.strokeStyle = "#097969";
         ctx.beginPath();
-        ctx.moveTo(0, -h / 2); // 1
-        ctx.lineTo(3 / 10 * w, -h / 4); // 2
-        ctx.lineTo(1 / 5 * w, -h / 4); // 3
-        ctx.lineTo(2 / 5 * w, 0); // 4
-        ctx.lineTo(3 / 10 * w, 0); // 5
-        ctx.lineTo(1 / 2 * w, h / 4); // 6
-        ctx.lineTo(1 / 30 * w, h / 4); // 7
+        ctx.moveTo.apply(ctx, this.spriteParameters.tip.getCoordinates()); // 1
+        ctx.lineTo.apply(// 1
+        ctx, this.spriteParameters.right.topBranch.getCoordinates()); // 2
+        ctx.lineTo.apply(// 2
+        ctx, this.spriteParameters.right.topCorner.getCoordinates()); // 3
+        ctx.lineTo.apply(// 3
+        ctx, this.spriteParameters.right.middleBranch.getCoordinates()); // 4
+        ctx.lineTo.apply(// 4
+        ctx, this.spriteParameters.right.middleCorner.getCoordinates()); // 5
+        ctx.lineTo.apply(// 5
+        ctx, this.spriteParameters.right.bottomBranch.getCoordinates()); // 6
+        ctx.lineTo.apply(// 6
+        ctx, this.spriteParameters.right.bottomCorner.getCoordinates()); // 7
         ctx.stroke();
         ctx.lineWidth = 1.2;
         ctx.strokeStyle = "#E4D00A";
         ctx.beginPath();
-        ctx.moveTo(1 / 30 * w, h / 4);
-        ctx.lineTo(1 / 30 * w, h / 2); // 8
-        ctx.lineTo(-1 / 30 * w, h / 2); // 9
-        ctx.lineTo(-1 / 30 * w, h / 4); // 10
+        ctx.moveTo.apply(ctx, this.spriteParameters.right.bottomCorner.getCoordinates()); // 7
+        ctx.lineTo.apply(// 7
+        ctx, this.spriteParameters.right.trunk.getCoordinates()); // 8
+        ctx.lineTo.apply(// 8
+        ctx, this.spriteParameters.left.trunk.getCoordinates()); // 9
+        ctx.lineTo.apply(// 9
+        ctx, this.spriteParameters.left.bottomCorner.getCoordinates()); // 10
         ctx.stroke();
         ctx.lineWidth = 2;
         ctx.strokeStyle = "#097969";
         ctx.beginPath();
-        ctx.moveTo(-1 / 30 * w, h / 4);
-        ctx.lineTo(-1 / 2 * w, h / 4); // 11
-        ctx.lineTo(-3 / 10 * w, 0); // 12
-        ctx.lineTo(-2 / 5 * w, 0); // 13
-        ctx.lineTo(-1 / 5 * w, -h / 4); // 14
-        ctx.lineTo(-3 / 10 * w, -h / 4); // 15
-        ctx.lineTo(0, -h / 2); // 1
+        ctx.moveTo.apply(ctx, this.spriteParameters.left.bottomCorner.getCoordinates()); // 10
+        ctx.lineTo.apply(// 10
+        ctx, this.spriteParameters.left.bottomBranch.getCoordinates()); // 11
+        ctx.lineTo.apply(// 11
+        ctx, this.spriteParameters.left.middleCorner.getCoordinates()); // 12
+        ctx.lineTo.apply(// 12
+        ctx, this.spriteParameters.left.middleBranch.getCoordinates()); // 13
+        ctx.lineTo.apply(// 13
+        ctx, this.spriteParameters.left.topCorner.getCoordinates()); // 14
+        ctx.lineTo.apply(// 14
+        ctx, this.spriteParameters.left.topBranch.getCoordinates()); // 15
+        ctx.lineTo.apply(// 15
+        ctx, this.spriteParameters.tip.getCoordinates()); // 1
         ctx.stroke();
     };
     return TreeSprite;
@@ -9427,7 +9913,7 @@ var GameScript = /** @class */ (function () {
         }
         this.intervalTime = 0;
         // clockwork content
-        // this.loadClockworkContent();
+        this.loadClockworkContent();
         this.ship.transform.pos = [this.startPosition[0], this.startPosition[1], this.startPosition[2]];
     };
     GameScript.prototype.loadClockworkContent = function () {
@@ -9436,14 +9922,14 @@ var GameScript = /** @class */ (function () {
         new _game_objects_ClockworkGames_Sandwich__WEBPACK_IMPORTED_MODULE_22__.LeftSandwich(this.engine, [110, 107]);
         new _game_objects_ClockworkGames_Sandwich__WEBPACK_IMPORTED_MODULE_22__.RightSandwich(this.engine, [140, 107]);
         new _game_objects_ClockworkGames_Plate__WEBPACK_IMPORTED_MODULE_23__.Plate(this.engine, [120, 95]);
-        var entity = new _game_objects_ClockworkGames_Entity_Entity__WEBPACK_IMPORTED_MODULE_20__.Entity(this.engine, [200, 390]);
-        new _game_objects_ClockworkGames_Bed__WEBPACK_IMPORTED_MODULE_21__.Bed(this.engine, [200, 400], entity);
-        new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [600, 300]);
-        new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [625, 300]);
-        new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [650, 300]);
-        new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [675, 300]);
-        new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [700, 300]);
-        new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [725, 300]);
+        var yourEntity = new _game_objects_ClockworkGames_Entity_Entity__WEBPACK_IMPORTED_MODULE_20__.Entity(this.engine, [200, 390]);
+        new _game_objects_ClockworkGames_Bed__WEBPACK_IMPORTED_MODULE_21__.Bed(this.engine, [200, 400], yourEntity);
+        new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [600, 300], yourEntity);
+        new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [625, 300], yourEntity);
+        new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [650, 300], yourEntity);
+        new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [675, 300], yourEntity);
+        new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [700, 300], yourEntity);
+        new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [725, 300], yourEntity);
     };
     // will need to duck type what happens when the scene is done and the game is over
     GameScript.prototype.loadGameElements = function (serializedGameElements, parentScene) {

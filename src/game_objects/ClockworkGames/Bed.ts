@@ -1,11 +1,12 @@
 import { type AnimationView } from "../../AnimationView";
+import { Animation } from "../../game_engine/EntityState/Animate";
 import { type GameEngine } from "../../game_engine/game_engine";
 import {GameObject} from "../../game_engine/game_object";
 import {LineSprite} from "../../game_engine/line_sprite";
 import { type Transform } from "../../game_engine/transform";
-import { type Entity } from "./Entity/Entity";
+import { EntitySpriteParameters, type Entity } from "./Entity/Entity";
 
-type BedSpriteParameters = {
+export type BedSpriteParameters = {
     width: {
         size: number;
         originalSize: number;
@@ -180,6 +181,26 @@ export class Bed extends GameObject {
         this.addCollider("General", this, 5);
     }
 }
+
+export const bedSpinAnimator = (
+    dT: number, 
+    animationState: EntitySpriteParameters["bodyAngle"], 
+    spriteParameters: BedSpriteParameters
+): false => {
+    const bodySpinAngle = animationState.size;
+
+    const percentageCovered = bodySpinAngle / Math.PI;
+
+    spriteParameters.covers.yOffset.size = -percentageCovered * spriteParameters.covers.yOffset.max();
+    return false;
+};
+
+export const createBedSpinAnimation = (bed: Bed, entity: Entity) => {
+    
+    return new Animation<EntitySpriteParameters["bodyAngle"], BedSpriteParameters>(
+        'BedSpin', entity.spriteParameters.bodyAngle, bedSpinAnimator,
+    );
+};
 
 export class BedSprite extends LineSprite {
     color: string;

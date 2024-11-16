@@ -139,7 +139,7 @@ export class GameScript {
         }
         this.intervalTime = 0;
         // clockwork content
-        // this.loadClockworkContent();
+        this.loadClockworkContent();
         this.ship.transform.pos = [this.startPosition[0], this.startPosition[1], this.startPosition[2]];
     }
 
@@ -149,14 +149,14 @@ export class GameScript {
         new LeftSandwich(this.engine, [110,107]);
         new RightSandwich(this.engine, [140,107]);
         new Plate(this.engine, [120, 95]);
-        const entity = new Entity(this.engine, [200, 390]);
-        new Bed(this.engine, [200, 400], entity);
-        new Tree(this.engine, [600, 300]);
-        new Tree(this.engine, [625, 300]);
-        new Tree(this.engine, [650, 300]);
-        new Tree(this.engine, [675, 300]);
-        new Tree(this.engine, [700, 300]);
-        new Tree(this.engine, [725, 300]);
+        const yourEntity = new Entity(this.engine, [200, 390]);
+        new Bed(this.engine, [200, 400], yourEntity);
+        new Tree(this.engine, [600, 300], yourEntity);
+        new Tree(this.engine, [625, 300], yourEntity);
+        new Tree(this.engine, [650, 300], yourEntity);
+        new Tree(this.engine, [675, 300], yourEntity);
+        new Tree(this.engine, [700, 300], yourEntity);
+        new Tree(this.engine, [725, 300], yourEntity);
     }
 
     // will need to duck type what happens when the scene is done and the game is over

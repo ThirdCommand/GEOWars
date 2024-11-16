@@ -1,21 +1,15 @@
 import {GameObject} from "../../../game_engine/game_object";
 import {LineSprite} from "../../../game_engine/line_sprite";
 import {VectorMath} from "../../../game_engine/util";
-import { Animatable, Animation } from "../../../game_engine/EntityState/Animate";
+import {Animation, ParentAnimation } from "../../../game_engine/EntityState/Animate";
+import {Activity, ParentActivity} from "../../../game_engine/EntityState/Activity";
 import { type GameEngine } from "../../../game_engine/game_engine";
 
 import {type Bed} from "../Bed";
 import { type Transform } from "../../../game_engine/transform";
 import { type AnimationView } from "../../../AnimationView";
-
-type Activity = {
-    name: string;
-    location?: [number, number, number?];
-    time?: number;
-    waitedTime?: number;
-    subActivities?: Activity[];
-    bed?: Bed;
-}
+import { Tree } from "../Tree";
+import { createBobAnimation } from "./EntityAnimationStates";
 
 type BaseParameters = {
     armLength: 40;
@@ -24,7 +18,23 @@ type BaseParameters = {
     height: 40;
 }
 
-export class Entity extends GameObject implements Animatable{
+type MoveToData = {
+    location: [number, number];
+    entityTransform: Transform;
+    moveToSpeed: number;
+    moveToAcceleration: number;
+}
+
+type ChopTreeData = {
+    tree: Tree;
+}
+
+type WaitState = {
+    time: number,
+    waitedTime: number
+}
+
+export class Entity extends GameObject{
     static baseParameters: BaseParameters = {
         armLength: 40,
         lineThickness: 4,
@@ -32,62 +42,30 @@ export class Entity extends GameObject implements Animatable{
         height: 40
     };
 
-    currentAnimation: Animation;
+    currentAnimation: ParentAnimation | Animation<object>;
 
 
     moveToSpeed: number;
     moveToAcceleration: number;
 
+    treeChopLocation: [0, 15];
+
 
     squeezing: boolean;
     closing: boolean;
-    activitiesQueue: Activity[];
+    activitiesQueue: (Activity<MoveToData | WaitState | ChopTreeData> | ParentActivity)[];
     currentBed: Bed;
 
-    possibleActivities = {
-        moveTo: (location: [number, number]) => {
-            this.activitiesQueue.push({
-                name: "moveTo",
-                location
-            });
-        },
-        sleep: (bed: Bed) => {
-            this.activitiesQueue.push({
-                name: "goToSleep",
-                bed,
-                subActivities: [
-                    {
-                        name: "moveTo",
-                        location: bed.transform.pos
-                    },
-                    {
-                        name: "goToSleep",
-                        bed
-                    },
-                    {
-                        name: "wait",
-                        time: 5000,
-                        waitedTime: 0
-                    }
-                ]
-
-            });
-        },
-        wait: (time: number) => {
-            this.activitiesQueue.push({
-                name: "wait",
-                time,
-                waitedTime: 0
-            });
-        },
-        wakeUp: () => {
-            this.activitiesQueue.push({
-                name: "wakeUp",
-            });
-        }
-    };
-
     spriteParameters: EntitySpriteParameters;
+    possibleActivities: {
+        moveTo: (location: [number, number]) => void,
+        chopTree: (tree: Tree) => void,
+
+    };
+    possibleAnimations: {
+        moveTo: () => void
+        chopping: () => void
+    };
 
 
     constructor(engine: GameEngine | AnimationView, pos: [number, number, number?]) {
@@ -95,10 +73,7 @@ export class Entity extends GameObject implements Animatable{
         this.transform.pos = pos;
         this.transform.angle = Math.PI;
 
-
-        
-
-        this.moveToSpeed = 2;
+        this.moveToSpeed = 2.5;
         this.moveToAcceleration = 0.125 / 6;
 
         this.squeezing = true;
@@ -126,30 +101,28 @@ export class Entity extends GameObject implements Animatable{
 
         // this.previousUniqueActivity = {};
         // this.activitiesByGoals = {};
-
-        this.possibleActivities.moveTo([700,500]);
-
         this.spriteParameters = {
 
             armLength: Entity.baseParameters.armLength,
             lineThickness: Entity.baseParameters.lineThickness,
-        
+            // need x/y position offset from actual position for animation purposes
+            // or at least y
+            // it would mess with collision detection though... not sure how to fix that
+            // hmm
+            // okay I think I got it
+            // I'll change the transform directly,
+            // while keeping track of that change within the animation 
+            // that way it can reset when the animation is done...
             bodyAngle: {
                 size: 0,
                 originalSize: 0,
-                changeSize: ({min = undefined, max = undefined, angleChange}) => {
+                changeSize: (angleChange) => {
                     this.spriteParameters.bodyAngle.size += angleChange;
-                    if(min !== undefined) {
-                        if(this.spriteParameters.bodyAngle.size < min) {
-                            this.spriteParameters.bodyAngle.size = min;
-                            return true;
-                        }
-                    }
-                    if(max !== undefined) {
-                        if(this.spriteParameters.bodyAngle.size > max) {
-                            this.spriteParameters.bodyAngle.size = max;
-                            return true;
-                        }
+                    const twoPi = 2 * Math.PI;
+                    if(this.spriteParameters.bodyAngle.size > twoPi) {
+                        this.spriteParameters.bodyAngle.size - twoPi;
+                    } else if (this.spriteParameters.bodyAngle.size < -twoPi) {
+                        this.spriteParameters.bodyAngle.size + twoPi;
                     }
                 }
             },
@@ -756,8 +729,76 @@ export class Entity extends GameObject implements Animatable{
                 }
             }
         };
+        this.setPossibleActivitiesAndAnimations();
+
+        this.possibleActivities.moveTo([700,400]);
+
+
 
         this.addLineSprite(new EntitySprite(this.transform, this.spriteParameters));
+    }
+
+    chopTree(tree: Tree) {
+        this.possibleActivities.moveTo([tree.transform.pos[0],tree.transform.pos[1]]);
+        this.possibleActivities.chopTree(tree);
+    }
+
+    setPossibleActivitiesAndAnimations() {
+        this.possibleAnimations = {
+            moveTo: () => {
+                this.currentAnimation = createBobAnimation(this);
+            },
+            chopping: () => {
+
+            }
+        };
+
+        this.possibleActivities = {
+            moveTo: (location: [number, number]) => {
+                const moveToActivity = createMoveToActivity(this, location);
+                this.activitiesQueue.push(moveToActivity);
+            },
+            chopTree: (tree: Tree) => {
+                const chopTreeActivity = createChopTreeActivity(this, tree);
+                this.activitiesQueue.push(chopTreeActivity);
+            }
+            // sleep: (bed: Bed) => {
+            //     this.activitiesQueue.push({
+            //         name: "goToSleep",
+            //         bed,
+            //         subActivities: [
+            //             {
+            //                 name: "moveTo",
+            //                 location: bed.transform.pos
+            //             },
+            //             {
+            //                 name: "goToSleep",
+            //                 bed
+            //             },
+            //             {
+            //                 name: "wait",
+            //                 time: 5000,
+            //                 waitedTime: 0
+            //             }
+            //         ]
+
+            //     });
+            // },
+            // wait: (time: number) => {
+            
+            //     const waitActivity = new Activity<WaitState>("wait",{time, waitedTime: 0});
+            //     waitActivity.runActivity = (dT: number, activityState) => {
+            //         activityState.waitedTime += dT;
+            //         return activityState.time >= activityState.waitedTime;
+            //     };
+            //     this.activitiesQueue.push(waitActivity);
+            // },
+            // wakeUp: () => {
+            // this.activitiesQueue.push({
+            //     name: "wakeUp",
+            // });
+            // }
+        };
     }
 
     animationEnded() {
@@ -776,77 +817,8 @@ export class Entity extends GameObject implements Animatable{
         return VectorMath.dist(pos,this.transform.pos) < 2;
     }
 
-    doActivity(activity: Activity) {
-        if(activity.subActivities) {
-            this.doActivity(activity.subActivities[0]);
-        } else if(activity.name === "moveTo") {
-            if(this.checkArrived(activity.location)) {
-                this.transform.pos[0] = activity.location[0];
-                this.transform.pos[1] = activity.location[1];
-                this.transform.vel[0] = 0;
-                this.transform.vel[1] = 0;
-                this.activitiesQueue.shift();
-            } else {
-                this.moveTowards(activity.location);
-            }
-        } else if(activity.name === "interact") {
-            this.doActivity(activity);
-        }
-    }
-
-    moveTowards(location: [number, number, number?]) {
-        // take current velocity
-        // find ideal velocity using max speed, current position, and ship position
-        // get unit vector of current position - ship position
-        // take difference
-        // apply acceleration in that direction
-
-        // get dV
-        //    mV => max speed in the direction it should be moving
-        //    Vo => current velocity
-        //    dV =  mV - Vo
-        //    alpha = dV angle
-
-        // knowing the acceleration, and current velocity, and final velocity of 0
-        // I can come up with the distance where it should 
-        // start decelerating
-
-        // (Vf^2 - Vi^2) / 2a = D
-
-        const speed = this.moveToSpeed;
-
-        const pos = this.transform.absolutePosition();
-
-        const distanceRemaining = VectorMath.dist(pos, location);
-        const decelerateDistance = this.transform.vel[0] ** 2 / (2 * this.moveToAcceleration);
-        if(distanceRemaining < decelerateDistance) {
-            const accelerationDirection = Math.atan2(this.transform.vel[1], this.transform.vel[0]);
-            this.transform.acc[0] -= this.moveToAcceleration * Math.cos(accelerationDirection);
-            this.transform.acc[1] -= this.moveToAcceleration * Math.sin(accelerationDirection);
-
-        } else {
-            const deltaPosition = [location[0] - pos[0], location[1] - pos[1]];
-
-            let chaseDirection = Math.atan2(deltaPosition[1], deltaPosition[0]);
-
-            // Math.atan2 was giving me negative numbers.... when it shouldn't
-            if (chaseDirection < 0) {
-                chaseDirection = 2 * Math.PI + chaseDirection;
-            }
-            // console.log(chaseDirection / (2 * Math.PI) * 360)
-            const Vm = [speed * Math.cos(chaseDirection), speed * Math.sin(chaseDirection)];
-            const Vo = this.transform.vel;
-
-            const dV = [Vm[0] - Vo[0], Vm[1] - Vo[1]];
-
-
-            const accelerationDirection = Math.atan2(dV[1], dV[0]);
-            this.transform.acc[0] += this.moveToAcceleration * Math.cos(accelerationDirection);
-            this.transform.acc[1] += this.moveToAcceleration * Math.sin(accelerationDirection);
-        // console.log(this.transform.acc)
-        }
-
-        
+    doActivity(activity: Activity<object> | ParentActivity, dT: number) {
+        activity.doActivity(dT);
     }
 
     update(dT: number) {
@@ -854,7 +826,7 @@ export class Entity extends GameObject implements Animatable{
         // if it is adding something to the top of the activity queue
         // and if it is deleting something from the activity queue
         if(this.activitiesQueue.length) {
-            this.doActivity(this.activitiesQueue[0]);
+            this.doActivity(this.activitiesQueue[0], dT);
         }
         this.animate(dT);
     }
@@ -867,7 +839,7 @@ export type EntitySpriteParameters = {
     bodyAngle: {
         size: number;
         originalSize: 0;
-        changeSize: (changeInput: {min?: number, max?: number, angleChange: number}) => boolean
+        changeSize: (angleChange: number) => void
     }
     width: {
         size: number;
@@ -1310,5 +1282,102 @@ export class EntitySprite extends LineSprite {
     
     
 }
+// okay, clearly the activity needs to control the animation otherwise it'll be hard to 
+// control both and have activities defined outside of the object that's animating
+const createMoveToActivity = (entity: Entity, location: [number, number]) => {
+    entity.possibleAnimations['moveTo']();
+    const moveToData: MoveToData = {
+        location, 
+        entityTransform: entity.transform, 
+        moveToSpeed: entity.moveToSpeed, 
+        moveToAcceleration: entity.moveToAcceleration
+    };
+    const move = (time: number, activityState: MoveToData) => {
+        if(VectorMath.dist(activityState.location, activityState.entityTransform.pos) < 2) {
+            activityState.entityTransform.pos[0] = activityState.location[0];
+            activityState.entityTransform.pos[1] = activityState.location[1];
+            activityState.entityTransform.vel[0] = 0;
+            activityState.entityTransform.vel[1] = 0;
+            entity.currentAnimation = null;
+            return true;
+        } else {
+        // take current velocity
+        // find ideal velocity using max speed, current position, and ship position
+        // get unit vector of current position - ship position
+        // take difference
+        // apply acceleration in that direction
+    
+            // get dV
+            //    mV => max speed in the direction it should be moving
+            //    Vo => current velocity
+            //    dV =  mV - Vo
+            //    alpha = dV angle
+    
+            // knowing the acceleration, and current velocity, and final velocity of 0
+            // I can come up with the distance where it should 
+            // start decelerating
+    
+            // (Vf^2 - Vi^2) / 2a = D
+    
+            const speed = activityState.moveToSpeed;
+    
+            const pos = activityState.entityTransform.absolutePosition();
+    
+            const distanceRemaining = VectorMath.dist(pos, location);
+            const decelerateDistance = activityState.entityTransform.vel[0] ** 2 / (2 * activityState.moveToAcceleration);
+            if(distanceRemaining < decelerateDistance) {
+                const accelerationDirection = Math.atan2(activityState.entityTransform.vel[1], activityState.entityTransform.vel[0]);
+                activityState.entityTransform.acc[0] -= activityState.moveToAcceleration * Math.cos(accelerationDirection);
+                activityState.entityTransform.acc[1] -= activityState.moveToAcceleration * Math.sin(accelerationDirection);
+    
+            } else {
+                const deltaPosition = [location[0] - pos[0], location[1] - pos[1]];
+    
+                let chaseDirection = Math.atan2(deltaPosition[1], deltaPosition[0]);
+    
+                if (chaseDirection < 0) {
+                    chaseDirection = 2 * Math.PI + chaseDirection;
+                }
+                // console.log(chaseDirection / (2 * Math.PI) * 360)
+                const Vm = [speed * Math.cos(chaseDirection), speed * Math.sin(chaseDirection)];
+                const Vo = activityState.entityTransform.vel;
+    
+                const dV = [Vm[0] - Vo[0], Vm[1] - Vo[1]];
+    
+    
+                const accelerationDirection = Math.atan2(dV[1], dV[0]);
+                activityState.entityTransform.acc[0] += activityState.moveToAcceleration * Math.cos(accelerationDirection);
+                activityState.entityTransform.acc[1] += activityState.moveToAcceleration * Math.sin(accelerationDirection);
+    
+            
+            }
+            return false;
+        }
+    };
+    return new Activity<MoveToData>('moveTo', moveToData, move);
+};
+
+const createChopTreeActivity = (entity: Entity, tree: Tree) => {
+    const chopTreeData: ChopTreeData = {
+        tree, 
+    };
+
+    const chopLocation: [number, number] = [tree.transform.pos[0] + entity.treeChopLocation[0], tree.transform.pos[1] + entity.treeChopLocation[1]];
+    const chopTreeActivity = new ParentActivity('ChopTreeActivity');
+    const moveToActivity = createMoveToActivity(entity, chopLocation);
+    const chop = (time: number, activityState: ChopTreeData) => {
+        entity.possibleAnimations['chopping']();
+        return true;
+    };
+    const chopActivity = new Activity<ChopTreeData>('ChopTree', chopTreeData, chop);
+
+    
+
+    chopTreeActivity.subActivities.push(moveToActivity, chopActivity);
+
+    return chopTreeActivity;
+};
+
+
 
 // const NORMAL_FRAME_TIME_DELTA = 1000 / 60;

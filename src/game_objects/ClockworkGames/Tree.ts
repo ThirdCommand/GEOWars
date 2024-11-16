@@ -3,7 +3,18 @@ import { GameEngine } from "../../game_engine/game_engine";
 import { GameObject } from "../../game_engine/game_object";
 import { LineSprite } from "../../game_engine/line_sprite";
 import { type Transform } from "../../game_engine/transform";
+import {Animation, ParentAnimation } from "../../game_engine/EntityState/Animate";
+import { VectorMath } from "../../game_engine/util";
+import { Entity } from "./Entity/Entity";
 
+type BaseParameters = {
+    w: number,
+    h: number
+}
+
+interface PossibleAnimations {
+    [key: string]: () => Animation<object>;
+}
 export class Tree extends GameObject {
     lineSprite: TreeSprite;
     interactions: {
@@ -16,11 +27,25 @@ export class Tree extends GameObject {
             }
         }
     };
-    constructor(engine: GameEngine | AnimationView, pos: [number, number]) {
+
+    clickRadius: 5;
+
+    possibleAnimations: PossibleAnimations;
+
+    spriteParameters: TreeSpriteParameters;
+
+    currentAnimation: ParentAnimation | Animation<object>;
+    static baseParameters: BaseParameters = {
+        w: 30,
+        h: 4/5 * 30
+    };
+    yourEntity: Entity;
+    constructor(engine: GameEngine | AnimationView, pos: [number, number], yourEntity: Entity) {
         super(engine);
         this.transform.pos = pos;
         this.transform.angle = 0;
-        this.addLineSprite(new TreeSprite(this.transform));
+        this.yourEntity = yourEntity;
+
         this.interactions = {
             chopTree: {
                 startingCondition: {
@@ -31,8 +56,95 @@ export class Tree extends GameObject {
                 }
             }
         };
+
+        const w = Tree.baseParameters.w;
+        const h = Tree.baseParameters.h;
+        this.spriteParameters = {
+            tip: { 
+                getCoordinates: () => [0, -Tree.baseParameters.h/2]
+            },
+            right: {
+                topBranch: {
+                    getCoordinates: () => [3/10 * w, -h/4]
+                },
+                topCorner: {
+                    getCoordinates: () => [1/5 * w, -h/4]
+                },
+                middleBranch: {
+                    getCoordinates: () => [2/5 * w, 0]
+                },
+                middleCorner: {
+                    getCoordinates: () => [3/10 * w, 0]
+                },
+                bottomBranch: {
+                    getCoordinates: () => [1/2 * w, h/4]
+                },
+                bottomCorner: {
+                    getCoordinates: () => [1/30 * w, h/4]
+                },
+                trunk : {
+                    getCoordinates: () => [1/30 * w, h/2]
+                }
+            },
+            left: {
+                topBranch: {
+                    getCoordinates: () => [-3/10 * w, -h/4]
+                },
+                topCorner: {
+                    getCoordinates: () => [-1/5 * w, -h/4]
+                },
+                middleBranch: {
+                    getCoordinates: () => [-2/5 * w, 0]
+                },
+                middleCorner: {
+                    getCoordinates: () => [-3/10 * w, 0]
+                },
+                bottomBranch: {
+                    getCoordinates: () => [-1/2 * w, h/4]
+                },
+                bottomCorner: {
+                    getCoordinates: () => [-1/30 * w, h/4]
+                },
+                trunk: {
+                    getCoordinates: () => [-1/30 * w, h/2]
+                }
+            }
+        };
+        this.addLineSprite(new TreeSprite(this.transform, this.spriteParameters));
+        this.setPossibleActivitiesAndAnimations();
+
     }
-    update() {}
+    
+    setPossibleActivitiesAndAnimations() {
+        this.possibleAnimations = {
+            // could pass in chopper here
+            chopping: (chopper) => {
+                
+                const choppingAnimationState = {
+
+                };
+            }
+        };
+    }
+
+
+    mouseClicked(mousePos: [number, number]) {
+        const centerDist = VectorMath.dist(
+            [this.transform.pos[0], this.transform.pos[1]],
+            mousePos
+        );
+        if (centerDist < this.clickRadius) {
+            this.onMouseClick(mousePos);
+        }
+    }
+
+    onMouseClick(mousePos: [number, number]) {
+        this.yourEntity.chopTree(this);
+    }
+
+    update(deltaTime: number) {
+        this.currentAnimation?.animate(deltaTime);
+    }
     animate() {}
 
     exist() {
@@ -40,63 +152,114 @@ export class Tree extends GameObject {
     }
 }
 
+export type TreeSpriteParameters = {
+    tip: { 
+        getCoordinates: () => [number, number]
+    }
+    right: {
+        topBranch: {
+            getCoordinates: () => [number, number]
+        }
+        topCorner: {
+            getCoordinates: () => [number, number]
+        }
+        middleBranch: {
+            getCoordinates: () => [number, number]
+        }
+        middleCorner: {
+            getCoordinates: () => [number, number]
+        }
+        bottomBranch: {
+            getCoordinates: () => [number, number]
+        }
+        bottomCorner: {
+            getCoordinates: () => [number, number]
+        }
+        trunk : {
+            getCoordinates: () => [number, number]
+        }
+    }
+    left: {
+        topBranch: {
+            getCoordinates: () => [number, number]
+        }
+        topCorner: {
+            getCoordinates: () => [number, number]
+        }
+        middleBranch: {
+            getCoordinates: () => [number, number]
+        }
+        middleCorner: {
+            getCoordinates: () => [number, number]
+        }
+        bottomBranch: {
+            getCoordinates: () => [number, number]
+        }
+        bottomCorner: {
+            getCoordinates: () => [number, number]
+        }
+        trunk: {
+            getCoordinates: () => [number, number]
+        }
+    }
+}
+
 export class TreeSprite extends LineSprite {
     color: string;
     width: number;
     height: number;
-    constructor(transform: Transform, spawningScale = 1) {
+    spriteParameters: TreeSpriteParameters;
+    constructor(transform: Transform, spriteParameters: TreeSpriteParameters) {
         super(transform);
-        this.spawningScale = spawningScale;
+        this.spriteParameters = spriteParameters;
         this.transform = transform;
         this.color = "green";
-        this.width = 30;
-        this.height = 4/5 * this.width;
+        this.width = Tree.baseParameters.w;
+        this.height = Tree.baseParameters.h;
     }
 
     draw(ctx: CanvasRenderingContext2D) {
         const pos = this.transform.absolutePosition();
-        const w = this.width * this.spawningScale;
-        const h = this.height * this.spawningScale;
         
         ctx.save();
         ctx.translate(pos[0], pos[1]);
         
-        this.drawTree(ctx, h, w);
+        this.drawTree(ctx);
         ctx.restore();
     }
 
-    drawTree(ctx: CanvasRenderingContext2D, h: number, w: number) {
+    drawTree(ctx: CanvasRenderingContext2D) {
         ctx.lineWidth = 2;
         ctx.strokeStyle = "#097969";
         ctx.beginPath();
-        ctx.moveTo(0, -h/2); // 1
-        ctx.lineTo(3/10 * w, -h/4); // 2
-        ctx.lineTo(1/5 * w, -h/4); // 3
-        ctx.lineTo(2/5 * w, 0); // 4
-        ctx.lineTo(3/10 * w, 0); // 5
-        ctx.lineTo(1/2 * w, h/4); // 6
-        ctx.lineTo(1/30 * w, h/4); // 7
+        ctx.moveTo(...this.spriteParameters.tip.getCoordinates()); // 1
+        ctx.lineTo(...this.spriteParameters.right.topBranch.getCoordinates()); // 2
+        ctx.lineTo(...this.spriteParameters.right.topCorner.getCoordinates()); // 3
+        ctx.lineTo(...this.spriteParameters.right.middleBranch.getCoordinates()); // 4
+        ctx.lineTo(...this.spriteParameters.right.middleCorner.getCoordinates()); // 5
+        ctx.lineTo(...this.spriteParameters.right.bottomBranch.getCoordinates()); // 6
+        ctx.lineTo(...this.spriteParameters.right.bottomCorner.getCoordinates()); // 7
         ctx.stroke();
 
         ctx.lineWidth = 1.2;
         ctx.strokeStyle = "#E4D00A";
         ctx.beginPath();
-        ctx.moveTo(1/30 * w, h/4);
-        ctx.lineTo(1/30 * w, h/2); // 8
-        ctx.lineTo(-1/30 * w, h/2); // 9
-        ctx.lineTo(-1/30 * w, h/4); // 10
+        ctx.moveTo(...this.spriteParameters.right.bottomCorner.getCoordinates()); // 7
+        ctx.lineTo(...this.spriteParameters.right.trunk.getCoordinates()); // 8
+        ctx.lineTo(...this.spriteParameters.left.trunk.getCoordinates()); // 9
+        ctx.lineTo(...this.spriteParameters.left.bottomCorner.getCoordinates()); // 10
         ctx.stroke();
 
         ctx.lineWidth = 2;
         ctx.strokeStyle = "#097969";
         ctx.beginPath();
-        ctx.moveTo(-1/30 * w, h/4);
-        ctx.lineTo(-1/2 * w, h/4); // 11
-        ctx.lineTo(-3/10 * w, 0); // 12
-        ctx.lineTo(-2/5 * w, 0); // 13
-        ctx.lineTo(-1/5 * w, -h/4); // 14
-        ctx.lineTo(-3/10 * w, -h/4); // 15
-        ctx.lineTo(0, -h/2); // 1
+        ctx.moveTo(...this.spriteParameters.left.bottomCorner.getCoordinates()); // 10
+        ctx.lineTo(...this.spriteParameters.left.bottomBranch.getCoordinates()); // 11
+        ctx.lineTo(...this.spriteParameters.left.middleCorner.getCoordinates()); // 12
+        ctx.lineTo(...this.spriteParameters.left.middleBranch.getCoordinates()); // 13
+        ctx.lineTo(...this.spriteParameters.left.topCorner.getCoordinates()); // 14
+        ctx.lineTo(...this.spriteParameters.left.topBranch.getCoordinates()); // 15
+        ctx.lineTo(...this.spriteParameters.tip.getCoordinates()); // 1
         ctx.stroke();
     }
 }

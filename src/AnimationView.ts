@@ -279,6 +279,7 @@ export class AnimationView {
                 // new Plate(this, [120, 95]);
                 // const entity = new Entity(this, [100, 90]);
                 // new Bed(this, [100, 100], entity);
+                new Tree(this, [100,100]);
             },
             Plate: (pos: [number, number]) => new Plate(this, pos)
         };
