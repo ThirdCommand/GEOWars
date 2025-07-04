@@ -4,8 +4,7 @@ import { type GameEngine } from "./game_engine/game_engine";
 import {type DirectionKey} from "./game_objects/Ship/ship";
 
 
-export class GameView {
-    engine: GameEngine;
+export class GameView { engine: GameEngine;
     ctx: CanvasRenderingContext2D;
     lastTime: number;
     animationView: AnimationView;

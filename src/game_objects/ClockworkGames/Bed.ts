@@ -169,11 +169,11 @@ export class Bed extends GameObject {
     animate() {
         // const time = deltaTime / NORMAL_FRAME_TIME_DELTA / 5;
 
-        const bodySpinAngle = this.entity.spriteParameters.bodyAngle.size;
+        // const bodySpinAngle = this.entity.spriteParameters.bodyAngle.size;
 
-        const percentageCovered = bodySpinAngle / Math.PI;
+        // const percentageCovered = bodySpinAngle / Math.PI;
 
-        this.spriteParameters.covers.yOffset.size = -percentageCovered * this.spriteParameters.covers.yOffset.max();
+        // this.spriteParameters.covers.yOffset.size = -percentageCovered * this.spriteParameters.covers.yOffset.max();
 
     } 
 
@@ -198,7 +198,7 @@ export const bedSpinAnimator = (
 export const createBedSpinAnimation = (bed: Bed, entity: Entity) => {
     
     return new Animation<EntitySpriteParameters["bodyAngle"], BedSpriteParameters>(
-        'BedSpin', entity.spriteParameters.bodyAngle, bedSpinAnimator,
+        'BedSpin', entity.spriteParameters.bodyAngle, bedSpinAnimator, () => null
     );
 };
 

@@ -24,10 +24,11 @@ import { Entity } from "./game_objects/ClockworkGames/Entity/Entity";
 import {Bed} from "./game_objects/ClockworkGames/Bed";
 import {LeftSandwich, RightSandwich} from "./game_objects/ClockworkGames/Sandwich";
 import {Plate} from "./game_objects/ClockworkGames/Plate";
-import {Tree} from "./game_objects/ClockworkGames/Tree";
+import {Tree} from "./game_objects/Tree/Tree";
 import { type GameEngine } from "./game_engine/game_engine";
 import { type GameObject } from "./game_engine/game_object";
 import { Transform } from "./game_engine/transform";
+import { Machinery } from "./game_objects/ClockworkGames/Machine";
 
 type EnemyCreator = (pos: [number, number, number] | [number, number], angle?: number) => GameObject;
 
@@ -143,6 +144,10 @@ export class GameScript {
         this.ship.transform.pos = [this.startPosition[0], this.startPosition[1], this.startPosition[2]];
     }
 
+    loadStrikeTimeContent() {
+        
+    }
+
     loadClockworkContent() {
         new LeftSandwich(this.engine, [100,80]);
         new RightSandwich(this.engine, [130,80]);
@@ -152,11 +157,26 @@ export class GameScript {
         const yourEntity = new Entity(this.engine, [200, 390]);
         new Bed(this.engine, [200, 400], yourEntity);
         new Tree(this.engine, [600, 300], yourEntity);
-        new Tree(this.engine, [625, 300], yourEntity);
-        new Tree(this.engine, [650, 300], yourEntity);
-        new Tree(this.engine, [675, 300], yourEntity);
         new Tree(this.engine, [700, 300], yourEntity);
-        new Tree(this.engine, [725, 300], yourEntity);
+        new Tree(this.engine, [800, 300], yourEntity);
+        new Tree(this.engine, [900, 300], yourEntity);
+        new Tree(this.engine, [1000, 300], yourEntity);
+        new Tree(this.engine, [1100, 300], yourEntity);
+        // new Machinery(this.engine, [500, 300], false);
+        // new Machinery(this.engine, [500, 200], false);
+        // new Machinery(this.engine, [500, 100], false);
+
+        // new Machinery(this.engine, [700, 300], true );
+        // new Machinery(this.engine, [700, 200],true);
+        // new Machinery(this.engine, [700, 100],true);
+
+        // new Machinery(this.engine, [200, 300],false);
+        // new Machinery(this.engine, [200, 200],false);
+        // new Machinery(this.engine, [200, 100],false);
+        // new Machinery(this.engine, [200, 400],false);
+
+        new Machinery(this.engine, [595, 390], false);
+        new Machinery(this.engine, [705, 390],true);
     }
 
     // will need to duck type what happens when the scene is done and the game is over
@@ -221,7 +241,7 @@ export class GameScript {
         if(this.playFromRootScene) {
             this.rootScene.update(deltaTime);
         } else {
-            this.spawnSequence(deltaTime);
+            // this.spawnSequence(deltaTime);
         }
         this.changeExplosionColor();
     }

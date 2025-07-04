@@ -19,12 +19,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./game_objects/enemies/Weaver/weaver */ "./src/game_objects/enemies/Weaver/weaver.ts");
 /* harmony import */ var _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/singularity */ "./src/game_objects/enemies/Singularity/singularity.ts");
 /* harmony import */ var _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/alien_ship */ "./src/game_objects/enemies/Singularity/alien_ship.ts");
-/* harmony import */ var _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./game_objects/ClockworkGames/Tree */ "./src/game_objects/ClockworkGames/Tree.ts");
+/* harmony import */ var _game_objects_Tree_Tree__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./game_objects/Tree/Tree */ "./src/game_objects/Tree/Tree.ts");
 /* harmony import */ var _game_objects_enemies_RandomRandom__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./game_objects/enemies/RandomRandom */ "./src/game_objects/enemies/RandomRandom.ts");
 /* harmony import */ var _game_objects_ClockworkGames_Entity_Entity__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./game_objects/ClockworkGames/Entity/Entity */ "./src/game_objects/ClockworkGames/Entity/Entity.ts");
 /* harmony import */ var _game_objects_ClockworkGames_Bed__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./game_objects/ClockworkGames/Bed */ "./src/game_objects/ClockworkGames/Bed.ts");
 /* harmony import */ var _game_objects_ClockworkGames_Plate__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./game_objects/ClockworkGames/Plate */ "./src/game_objects/ClockworkGames/Plate.ts");
 /* harmony import */ var _game_engine_transform__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./game_engine/transform */ "./src/game_engine/transform.ts");
+/* harmony import */ var _game_objects_ClockworkGames_Machine__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./game_objects/ClockworkGames/Machine */ "./src/game_objects/ClockworkGames/Machine.ts");
+/* harmony import */ var _game_objects_ClockworkGames_SawMachine_TreeGrip__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./game_objects/ClockworkGames/SawMachine/TreeGrip */ "./src/game_objects/ClockworkGames/SawMachine/TreeGrip.ts");
 var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from, pack) {
     if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
         if (ar || !(i in from)) {
@@ -48,6 +50,8 @@ var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from
 // import {LeftSandwich, RightSandwich} from "./game_objects/ClockworkGames/Sandwich";
 
 
+
+
 var AnimationView = /** @class */ (function () {
     function AnimationView(ctx) {
         this.ctx = ctx;
@@ -55,6 +59,7 @@ var AnimationView = /** @class */ (function () {
         this.gameObjects = [];
         this.lineSprites = [];
         this.paused = false;
+        this.focusPaused = false;
         this.muted = false;
         this.gameScript = {
             tallyScore: function () { },
@@ -71,7 +76,7 @@ var AnimationView = /** @class */ (function () {
             },
             death: function () { }
         };
-        this.zoomScale = 1;
+        this.zoomScale = 2;
         this.ship = {
             transform: new _game_engine_transform__WEBPACK_IMPORTED_MODULE_12__.Transform()
         };
@@ -84,7 +89,7 @@ var AnimationView = /** @class */ (function () {
             StartingAngle: 0,
         };
         this.overlayTextCleared = true;
-        this.addEnemy("LeftSandwich");
+        this.addEnemy("Grabber");
     }
     AnimationView.prototype.enemyPlacerSelected = function (enemyPlacer) {
         this.clear();
@@ -111,6 +116,9 @@ var AnimationView = /** @class */ (function () {
         };
     };
     AnimationView.prototype.animate = function (timeDelta) {
+        if (this.paused || this.focusPaused) {
+            return;
+        }
         this.animateGameObjects(timeDelta);
         this.clearCanvas();
         this.renderLineSprites(this.ctx);
@@ -172,6 +180,12 @@ var AnimationView = /** @class */ (function () {
         this.ctx.restore();
         // ctx.scale(1,1)
     };
+    AnimationView.prototype.focusUnPause = function () {
+        this.focusPaused = false;
+    };
+    AnimationView.prototype.focusPause = function () {
+        this.focusPaused = true;
+    };
     AnimationView.prototype.addGameObject = function (gameObject) {
         this.gameObjects.push(gameObject);
     };
@@ -215,7 +229,7 @@ var AnimationView = /** @class */ (function () {
             Singularity: function (pos) { return new _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_5__.Singularity(_this, pos); },
             AlienShip: function (pos) { return new _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_6__.AlienShip(_this, pos, [0, 0], _this.ship.transform); },
             RANDOM: function (pos) { return new _game_objects_enemies_RandomRandom__WEBPACK_IMPORTED_MODULE_8__.RandomRandom(_this, pos); },
-            Tree: function (pos) { return new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_7__.Tree(_this, pos); },
+            Tree: function (pos) { return new _game_objects_Tree_Tree__WEBPACK_IMPORTED_MODULE_7__.Tree(_this, pos, new _game_objects_ClockworkGames_Entity_Entity__WEBPACK_IMPORTED_MODULE_9__.Entity(_this, pos)); },
             Entity: function (pos) { return new _game_objects_ClockworkGames_Entity_Entity__WEBPACK_IMPORTED_MODULE_9__.Entity(_this, pos); },
             Bed: function (pos) { return new _game_objects_ClockworkGames_Bed__WEBPACK_IMPORTED_MODULE_10__.Bed(_this, pos, new _game_objects_ClockworkGames_Entity_Entity__WEBPACK_IMPORTED_MODULE_9__.Entity(_this, pos)); },
             LeftSandwich: function () {
@@ -226,11 +240,13 @@ var AnimationView = /** @class */ (function () {
                 // new Plate(this, [120, 95]);
                 // const entity = new Entity(this, [100, 90]);
                 // new Bed(this, [100, 100], entity);
-                new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_7__.Tree(_this, [100, 100]);
+                // new Tree(this, [100,100]);
             },
-            Plate: function (pos) { return new _game_objects_ClockworkGames_Plate__WEBPACK_IMPORTED_MODULE_11__.Plate(_this, pos); }
+            Plate: function (pos) { return new _game_objects_ClockworkGames_Plate__WEBPACK_IMPORTED_MODULE_11__.Plate(_this, pos); },
+            Machine: function (pos) { return new _game_objects_ClockworkGames_Machine__WEBPACK_IMPORTED_MODULE_13__.Machinery(_this, pos); },
+            Grabber: function (pos) { return new _game_objects_ClockworkGames_SawMachine_TreeGrip__WEBPACK_IMPORTED_MODULE_14__.TreeGrip(_this, pos); }
         };
-        enemyMap[type]([100, 100]);
+        enemyMap[type]([100 / this.zoomScale, 100 / this.zoomScale]);
     };
     return AnimationView;
 }());
@@ -251,14 +267,25 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   ParentActivity: () => (/* binding */ ParentActivity)
 /* harmony export */ });
 var Activity = /** @class */ (function () {
-    function Activity(name, activityState, activator) {
+    function Activity(name, activityState, activator, onActivityStart, onActivityEnd) {
+        this.onActivityStart = onActivityStart;
+        this.onActivityEnd = onActivityEnd;
         this.name = name;
         this.activityState = activityState;
         this.runActivity = activator;
+        this.activityStarted = false;
     }
     // return true if completed
     Activity.prototype.doActivity = function (dT) {
-        return this.runActivity(dT, this.activityState);
+        if (!this.activityStarted) {
+            this.activityStarted = true;
+            this.onActivityStart(this.activityState);
+        }
+        if (this.runActivity(dT, this.activityState)) {
+            this.onActivityEnd(dT, this.activityState);
+            return true;
+        }
+        return false;
     };
     return Activity;
 }());
@@ -275,9 +302,13 @@ var ParentActivity = /** @class */ (function () {
     }
     // returns true if this parent activity is done
     ParentActivity.prototype.doActivity = function (dT) {
-        var _a;
-        var currentActivityCompleted = ((_a = this.subActivities[this.currentActivityIndex]) === null || _a === void 0 ? void 0 : _a.doActivity(dT)) || true;
+        if (!this.activityStarted) {
+            this.activityStarted = true;
+        }
+        var currentActivity = this.subActivities[this.currentActivityIndex];
+        var currentActivityCompleted = currentActivity.doActivity(dT);
         if (currentActivityCompleted) {
+            currentActivity.activityStarted = false;
             if (this.currentActivityIndex < this.subActivities.length - 1) {
                 this.currentActivityIndex++;
                 return false;
@@ -310,29 +341,51 @@ __webpack_require__.r(__webpack_exports__);
 // I could contain two entity sprite parameters and or transforms in one animation
 // that could be nice
 var Animation = /** @class */ (function () {
-    function Animation(name, animationState, animator, spriteParameters, parentAnimation) {
+    function Animation(name, animationState, animator, onAnimationEnd, spriteParameters, parentAnimation) {
         this.name = name;
         this.spriteParameters = spriteParameters;
         this.parentAnimation = parentAnimation;
         this.animationState = animationState;
         this.runAnimation = animator;
+        this.onAnimationEnd = onAnimationEnd;
     }
+    ;
     Animation.prototype.animate = function (dT) {
-        return this.runAnimation(dT, this.animationState, this.spriteParameters) ? this.endAnimation(this.animationState) : false;
+        if (this.runAnimation(dT, this.animationState, this.spriteParameters)) {
+            this.endAnimation();
+            return true;
+        }
+        return false;
+    };
+    Animation.prototype.endAnimation = function () {
+        this.onAnimationEnd(this.animationState, this.spriteParameters);
     };
     return Animation;
 }());
 
+// Last animation decides whether to clear out the current animation with onAnimationEnd
+// has to be done in onAnimationEnd otherwise the parent animation will loop
 var ParentAnimation = /** @class */ (function () {
     function ParentAnimation(name, animations, parentAnimation, currentAnimationIndex) {
         this.name = name;
         this.parentAnimation = parentAnimation;
         this.animations = animations || [];
         this.currentAnimationIndex = currentAnimationIndex || 0;
+        this.animationInterrupted = false;
     }
+    ParentAnimation.prototype.endAnimation = function () {
+        this.animations[this.currentAnimationIndex].endAnimation();
+    };
+    ParentAnimation.prototype.interruptAnimation = function () {
+        this.animationInterrupted = true;
+    };
     ParentAnimation.prototype.animate = function (dT) {
-        var _a;
-        var currentAnimationStateComplete = ((_a = this.animations[this.currentAnimationIndex]) === null || _a === void 0 ? void 0 : _a.animate(dT)) || true;
+        var currentAnimation = this.animations[this.currentAnimationIndex];
+        if (this.animationInterrupted) {
+            this.endAnimation();
+            return true;
+        }
+        var currentAnimationStateComplete = currentAnimation.animate(dT);
         if (currentAnimationStateComplete) {
             if (this.currentAnimationIndex < this.animations.length - 1) {
                 this.currentAnimationIndex++;
@@ -2963,7 +3016,7 @@ var GameEngine = /** @class */ (function () {
     };
     GameEngine.prototype.tick = function (delta) {
         this.updateGraphicSetting(delta);
-        if (this.paused) {
+        if (this.paused || this.focusPaused) {
             this.updateControlListeners();
             return;
         }
@@ -3191,6 +3244,12 @@ var GameEngine = /** @class */ (function () {
         this.startButtonListeners.forEach(function (listener) {
             listener.updateStartButtonListener(pressed);
         });
+    };
+    GameEngine.prototype.focusUnPause = function () {
+        this.focusPaused = false;
+    };
+    GameEngine.prototype.focusPause = function () {
+        this.focusPaused = true;
     };
     // called by game view
     GameEngine.prototype.updateMousePos = function (mousePos) {
@@ -4107,9 +4166,9 @@ var Bed = /** @class */ (function (_super) {
     };
     Bed.prototype.animate = function () {
         // const time = deltaTime / NORMAL_FRAME_TIME_DELTA / 5;
-        var bodySpinAngle = this.entity.spriteParameters.bodyAngle.size;
-        var percentageCovered = bodySpinAngle / Math.PI;
-        this.spriteParameters.covers.yOffset.size = -percentageCovered * this.spriteParameters.covers.yOffset.max();
+        // const bodySpinAngle = this.entity.spriteParameters.bodyAngle.size;
+        // const percentageCovered = bodySpinAngle / Math.PI;
+        // this.spriteParameters.covers.yOffset.size = -percentageCovered * this.spriteParameters.covers.yOffset.max();
     };
     Bed.prototype.exist = function () {
         this.addCollider("General", this, 5);
@@ -4124,7 +4183,7 @@ var bedSpinAnimator = function (dT, animationState, spriteParameters) {
     return false;
 };
 var createBedSpinAnimation = function (bed, entity) {
-    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('BedSpin', entity.spriteParameters.bodyAngle, bedSpinAnimator);
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('BedSpin', entity.spriteParameters.bodyAngle, bedSpinAnimator, function () { return null; });
 };
 var BedSprite = /** @class */ (function (_super) {
     __extends(BedSprite, _super);
@@ -4176,8 +4235,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
 /* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 /* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
-/* harmony import */ var _game_engine_EntityState_Activity__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../game_engine/EntityState/Activity */ "./src/game_engine/EntityState/Activity.ts");
-/* harmony import */ var _EntityAnimationStates__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./EntityAnimationStates */ "./src/game_objects/ClockworkGames/Entity/EntityAnimationStates.ts");
+/* harmony import */ var _EntityAnimationStates__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./EntityAnimationStates */ "./src/game_objects/ClockworkGames/Entity/EntityAnimationStates.ts");
+/* harmony import */ var _EntityActivityStates__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./EntityActivityStates */ "./src/game_objects/ClockworkGames/Entity/EntityActivityStates.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -4205,6 +4264,7 @@ var Entity = /** @class */ (function (_super) {
         _this.transform.pos = pos;
         _this.transform.angle = Math.PI;
         _this.moveToSpeed = 2.5;
+        _this.treeChopLocation = [0, 85];
         _this.moveToAcceleration = 0.125 / 6;
         _this.squeezing = true;
         _this.closing = true;
@@ -4212,20 +4272,51 @@ var Entity = /** @class */ (function (_super) {
         _this.addPhysicsComponent();
         _this.currentBed;
         _this.currentAnimation = null;
-        // I need to figure out shared animations
-        // and how to reference a real bed since I don't want to 
-        // craft how a user or entity would find and tell the entity or itself to use it
-        // yet
-        // this array will have to be created
-        // all-righty, this should be constructed the same way
-        // as the scene generator and rootScene
-        // each activity type with its own object
-        // and update being the function that they all have
-        // then that means creation of the objects will be the same
-        // and a pre loaded creation method will need to be made
         // this.previousUniqueActivity = {};
         // this.activitiesByGoals = {};
         _this.spriteParameters = {
+            getDrawCoordinates: function () {
+                return {
+                    // TODO: add control flow for which side the arm is on and how to get start and end coordinate when on that side
+                    // TODO: label these with the numbers they correspond to in the sprite doc
+                    rightArmEnd: _this.spriteParameters.arms.right.endPosition.getCoordinate(),
+                    leftArmEnd: _this.spriteParameters.arms.left.endPosition.getCoordinate(),
+                    rightArmStart: [
+                        _this.spriteParameters.arms.right.position.x.size,
+                        _this.spriteParameters.arms.right.position.y.getSize()
+                    ],
+                    leftArmStart: [
+                        _this.spriteParameters.arms.left.position.x.size,
+                        _this.spriteParameters.arms.left.position.y.getSize()
+                    ],
+                    curveTopRight: _this.spriteParameters.curves.right.top.getCoordinate(),
+                    curvePointTopRight: _this.spriteParameters.curves.right.topCurvePoint.getCoordinate(),
+                    curvePointBottomRight: _this.spriteParameters.curves.right.bottomCurvePoint.getCoordinate(),
+                    curveBottomRight: _this.spriteParameters.curves.right.bottom.getCoordinate(),
+                    curveBottomLeft: _this.spriteParameters.curves.left.bottom.getCoordinate(),
+                    curvePointBottomLeft: _this.spriteParameters.curves.left.bottomCurvePoint.getCoordinate(),
+                    curvePointTopLeft: _this.spriteParameters.curves.left.topCurvePoint.getCoordinate(),
+                    curveTopLeft: _this.spriteParameters.curves.left.top.getCoordinate(),
+                    rightEyePosition: [
+                        _this.spriteParameters.eye.right.position.x.size,
+                        _this.spriteParameters.eye.right.position.y.size
+                    ],
+                    rightEyeRadius: [
+                        _this.spriteParameters.eye.right.radius.x.size,
+                        _this.spriteParameters.eye.right.radius.y.size
+                    ],
+                    leftEyePosition: [
+                        _this.spriteParameters.eye.left.position.x.size,
+                        _this.spriteParameters.eye.left.position.y.size
+                    ],
+                    leftEyeRadius: [
+                        _this.spriteParameters.eye.left.radius.x.size,
+                        _this.spriteParameters.eye.left.radius.y.size
+                    ],
+                    bodyAngle: _this.spriteParameters.bodyAngle.size,
+                    lineThickness: _this.spriteParameters.lineThickness
+                };
+            },
             armLength: Entity.baseParameters.armLength,
             lineThickness: Entity.baseParameters.lineThickness,
             // need x/y position offset from actual position for animation purposes
@@ -4310,6 +4401,7 @@ var Entity = /** @class */ (function (_super) {
                     return isOutOfRange;
                 }
             },
+            // why didn't I label these sheesh
             curves: {
                 left: {
                     top: {
@@ -4317,19 +4409,19 @@ var Entity = /** @class */ (function (_super) {
                             -_this.spriteParameters.width.size / 3,
                             _this.spriteParameters.height.size / 2
                         ]); }
-                    },
+                    }, // 15
                     topCurvePoint: {
                         getCoordinate: function () { return ([
                             -5 / 9 * _this.spriteParameters.width.size,
                             1 / 3 * _this.spriteParameters.height.size
                         ]); }
-                    },
+                    }, // 14
                     bottomCurvePoint: {
                         getCoordinate: function () { return ([
                             -5 / 9 * _this.spriteParameters.width.size,
                             -1 / 3 * _this.spriteParameters.height.size
                         ]); }
-                    },
+                    }, // 6
                     bottom: {
                         getCoordinate: function () { return ([
                             -_this.spriteParameters.width.size / 3,
@@ -4398,8 +4490,8 @@ var Entity = /** @class */ (function (_super) {
                         x: {
                             size: -Entity.baseParameters.width / 2 / 2, // width / 2 / 2
                             originalSize: -Entity.baseParameters.width / 2 / 2,
-                            max: function () { return (_this.spriteParameters.width.size / 2 / 2 - _this.spriteParameters.lineThickness * 1.5); },
-                            min: function () { return (-_this.spriteParameters.width.size / 2 / 2); },
+                            max: function () { return (_this.spriteParameters.width.size / 3); },
+                            min: function () { return (-_this.spriteParameters.width.size / 3); },
                             checkSet: {
                                 max: function () {
                                     var max = _this.spriteParameters.arms.left.position.x.max();
@@ -4425,10 +4517,116 @@ var Entity = /** @class */ (function (_super) {
                             // size: this.height / 2, 
                             // originalSize: this.height / 2, 
                             // setSize: () => {spriteParameters.arms.left.position.y.size = spriteParameters.height.size / 2;}
-                            size: 0,
+                            getSize: function () {
+                                if (_this.spriteParameters.arms.right.sidePosition.side === 'TOP') {
+                                    return _this.spriteParameters.height.size / 2;
+                                }
+                                else if (_this.spriteParameters.arms.right.sidePosition.side === 'BOTTOM') {
+                                    return -_this.spriteParameters.height.size / 2;
+                                    // WIP
+                                }
+                                else if (_this.spriteParameters.arms.right.sidePosition.side === 'LEFT') {
+                                    return -_this.spriteParameters.height.size / 2;
+                                }
+                                else if (_this.spriteParameters.arms.right.sidePosition.side === 'RIGHT') {
+                                    return -_this.spriteParameters.height.size / 2;
+                                }
+                            },
                             originalSize: 0,
                             // setSize: () => {this.spriteParameters.arms.left.position.y.size = 0;}
-                        }
+                        },
+                    },
+                    sidePosition: {
+                        side: 'TOP',
+                        changeSide: function (nextSide) {
+                            _this.spriteParameters.arms.left.sidePosition.side = nextSide;
+                        },
+                        sideAngle: {
+                            size: 0,
+                            originalSize: 0,
+                            max: function () { return _this.spriteParameters.arms.left.sidePosition.side === "RIGHT" ? Math.PI : Math.PI * 2; },
+                            min: function () { return _this.spriteParameters.arms.left.sidePosition.side === "RIGHT" ? 0 : Math.PI; },
+                            checkSet: {
+                                max: function () {
+                                    var max = _this.spriteParameters.arms.right.sidePosition.sideAngle.max();
+                                    if (_this.spriteParameters.arms.right.sidePosition.sideAngle.size > max) {
+                                        _this.spriteParameters.arms.right.sidePosition.sideAngle.size = _this.spriteParameters.arms.left.sidePosition.side === "RIGHT" ? Math.PI : 0;
+                                        return true;
+                                    }
+                                },
+                                min: function () {
+                                    var min = _this.spriteParameters.arms.right.sidePosition.sideAngle.min();
+                                    if (_this.spriteParameters.arms.right.sidePosition.sideAngle.size < min) {
+                                        _this.spriteParameters.arms.right.sidePosition.sideAngle.size = _this.spriteParameters.arms.left.sidePosition.side === "RIGHT" ? 0 : Math.PI;
+                                        return true;
+                                    }
+                                }
+                            },
+                            changeAngle: function (angleDifference) {
+                                _this.spriteParameters.arms.right.sidePosition.sideAngle.size += angleDifference;
+                                return _this.spriteParameters.arms.right.sidePosition.sideAngle.checkSet.max() || _this.spriteParameters.arms.right.sidePosition.sideAngle.checkSet.min();
+                            }
+                        },
+                        startPoint: {
+                            // only for RIGHT and LEFT
+                            getCoordinate: function () {
+                                if (_this.spriteParameters.arms.right.sidePosition.side === 'LEFT') {
+                                    return [-_this.spriteParameters.width.size / 3, 0];
+                                }
+                                else if (_this.spriteParameters.arms.right.sidePosition.side === 'RIGHT') {
+                                    return [_this.spriteParameters.width.size / 3, 0];
+                                }
+                                else {
+                                    console.error('side must be LEFT or RIGHT at this point');
+                                }
+                            }
+                        },
+                        endPoint: {
+                            // this has to be in progress here... woof
+                            getCoordinate: function () {
+                                if (_this.spriteParameters.arms.right.sidePosition.side === 'LEFT') {
+                                    return [
+                                        -_this.spriteParameters.width.size / 3,
+                                        0
+                                    ];
+                                }
+                                else if (_this.spriteParameters.arms.right.sidePosition.side === 'RIGHT') {
+                                    return [
+                                        _this.spriteParameters.width.size / 3,
+                                        0
+                                    ];
+                                }
+                                else {
+                                    console.error('side must be LEFT or RIGHT at this point');
+                                }
+                            }
+                        },
+                        length: {
+                            originalLength: 40,
+                            size: 20 * 2, // TODO
+                            max: function () { return (150); },
+                            min: function () { return (0); },
+                            checkSet: {
+                                max: function () {
+                                    var max = _this.spriteParameters.arms.left.sidePosition.length.max();
+                                    if (_this.spriteParameters.arms.left.sidePosition.length.size > max) {
+                                        _this.spriteParameters.arms.left.sidePosition.length.size = max;
+                                        return true;
+                                    }
+                                },
+                                min: function () {
+                                    var min = _this.spriteParameters.arms.left.sidePosition.length.min();
+                                    if (_this.spriteParameters.arms.left.sidePosition.length.size < min) {
+                                        _this.spriteParameters.arms.left.sidePosition.length.size = min;
+                                        return true;
+                                    }
+                                }
+                            },
+                            changeLength: function (lengthDifference) {
+                                _this.spriteParameters.arms.left.length.size += lengthDifference;
+                                return _this.spriteParameters.arms.left.length.checkSet.max() || _this.spriteParameters.arms.left.length.checkSet.min();
+                            }
+                        },
                     },
                     angle: {
                         size: Math.PI / 2,
@@ -4457,10 +4655,33 @@ var Entity = /** @class */ (function (_super) {
                         }
                     },
                     endPosition: {
-                        getCoordinate: function () { return [
-                            _this.spriteParameters.arms.left.position.x.size + Math.cos(_this.spriteParameters.arms.left.angle.size) * (_this.spriteParameters.arms.left.length.size + _this.spriteParameters.height.size / 2),
-                            _this.spriteParameters.arms.left.position.y.size + Math.sin(_this.spriteParameters.arms.left.angle.size) * (_this.spriteParameters.arms.left.length.size + _this.spriteParameters.height.size / 2)
-                        ]; }
+                        getCoordinate: function () {
+                            if (_this.spriteParameters.arms.left.sidePosition.side === 'TOP') {
+                                return [
+                                    _this.spriteParameters.arms.left.position.x.size + Math.cos(_this.spriteParameters.arms.left.angle.size) * (_this.spriteParameters.arms.left.length.size + _this.spriteParameters.height.size / 2),
+                                    _this.spriteParameters.arms.left.position.y.getSize() + Math.sin(_this.spriteParameters.arms.left.angle.size) * (_this.spriteParameters.arms.left.length.size)
+                                ];
+                            }
+                            else if (_this.spriteParameters.arms.left.sidePosition.side === 'BOTTOM') {
+                                return [
+                                    _this.spriteParameters.arms.left.position.x.size + Math.cos(_this.spriteParameters.arms.left.angle.size) * (_this.spriteParameters.arms.left.length.size + _this.spriteParameters.height.size / 2),
+                                    _this.spriteParameters.arms.left.position.y.getSize() + Math.sin(_this.spriteParameters.arms.left.angle.size) * (_this.spriteParameters.arms.left.length.size)
+                                ];
+                                // WIP
+                            }
+                            else if (_this.spriteParameters.arms.left.sidePosition.side === 'LEFT') {
+                                return [
+                                    _this.spriteParameters.arms.left.position.x.size + Math.cos(_this.spriteParameters.arms.left.angle.size) * (_this.spriteParameters.arms.left.length.size + _this.spriteParameters.height.size / 2),
+                                    -_this.spriteParameters.arms.left.position.y.getSize() - Math.sin(_this.spriteParameters.arms.left.angle.size) * (_this.spriteParameters.arms.left.length.size + _this.spriteParameters.height.size / 2)
+                                ];
+                            }
+                            else if (_this.spriteParameters.arms.left.sidePosition.side === 'RIGHT') {
+                                return [
+                                    _this.spriteParameters.arms.left.position.x.size + Math.cos(_this.spriteParameters.arms.left.angle.size) * (_this.spriteParameters.arms.left.length.size + _this.spriteParameters.height.size / 2),
+                                    _this.spriteParameters.arms.left.position.y.getSize() + Math.sin(_this.spriteParameters.arms.left.angle.size) * (_this.spriteParameters.arms.left.length.size + _this.spriteParameters.height.size / 2)
+                                ];
+                            }
+                        }
                     }
                 },
                 right: {
@@ -4490,12 +4711,13 @@ var Entity = /** @class */ (function (_super) {
                             return (_this.spriteParameters.arms.right.length.checkSet.max() || _this.spriteParameters.arms.right.length.checkSet.min());
                         }
                     },
+                    // start position for TOP and BOTTOM
                     position: {
                         x: {
                             size: Entity.baseParameters.width / 2 / 2,
                             originalSize: Entity.baseParameters.width / 2 / 2,
-                            max: function () { return (_this.spriteParameters.width.size / 2 / 2); },
-                            min: function () { return (-_this.spriteParameters.width.size / 2 / 2 + _this.spriteParameters.lineThickness * 1.5); },
+                            max: function () { return (_this.spriteParameters.width.size / 3); },
+                            min: function () { return (-_this.spriteParameters.width.size / 3); },
                             checkSet: {
                                 max: function () {
                                     var max = _this.spriteParameters.arms.right.position.x.max();
@@ -4518,10 +4740,116 @@ var Entity = /** @class */ (function (_super) {
                             }
                         },
                         y: {
-                            size: 0,
+                            getSize: function () {
+                                if (_this.spriteParameters.arms.right.sidePosition.side === 'TOP') {
+                                    return _this.spriteParameters.height.size / 2;
+                                }
+                                else if (_this.spriteParameters.arms.right.sidePosition.side === 'BOTTOM') {
+                                    return -_this.spriteParameters.height.size / 2;
+                                    // WIP
+                                    // the arm now pivots about point 16/17
+                                }
+                                else if (_this.spriteParameters.arms.right.sidePosition.side === 'LEFT') {
+                                    return _this.spriteParameters.height.size / 2;
+                                }
+                                else if (_this.spriteParameters.arms.right.sidePosition.side === 'RIGHT') {
+                                    return _this.spriteParameters.height.size / 2;
+                                }
+                            },
                             originalSize: 0,
                             // setSize: () => {this.spriteParameters.arms.right.position.y.size = 0;}
-                        }
+                        },
+                    },
+                    sidePosition: {
+                        side: "TOP",
+                        changeSide: function (nextSide) {
+                            _this.spriteParameters.arms.left.sidePosition.side = nextSide;
+                        },
+                        sideAngle: {
+                            size: 0,
+                            originalSize: 0,
+                            max: function () { return Math.PI; },
+                            min: function () { return 0; },
+                            checkSet: {
+                                max: function () {
+                                    var max = _this.spriteParameters.arms.right.sidePosition.sideAngle.max();
+                                    if (_this.spriteParameters.arms.right.sidePosition.sideAngle.size > max) {
+                                        _this.spriteParameters.arms.right.sidePosition.sideAngle.size = max;
+                                        return true;
+                                    }
+                                },
+                                min: function () {
+                                    var min = _this.spriteParameters.arms.right.sidePosition.sideAngle.min();
+                                    if (_this.spriteParameters.arms.right.sidePosition.sideAngle.size < min) {
+                                        _this.spriteParameters.arms.right.sidePosition.sideAngle.size = min;
+                                        return true;
+                                    }
+                                }
+                            },
+                            changeAngle: function (angleDifference) {
+                                _this.spriteParameters.arms.right.sidePosition.sideAngle.size += angleDifference;
+                                return _this.spriteParameters.arms.right.sidePosition.sideAngle.checkSet.max() || _this.spriteParameters.arms.right.sidePosition.sideAngle.checkSet.min();
+                            }
+                        },
+                        startPoint: {
+                            // only for RIGHT and LEFT
+                            getCoordinate: function () {
+                                if (_this.spriteParameters.arms.right.sidePosition.side === 'LEFT') {
+                                    return [-_this.spriteParameters.width.size / 3, 0];
+                                }
+                                else if (_this.spriteParameters.arms.right.sidePosition.side === 'RIGHT') {
+                                    return [_this.spriteParameters.width.size / 3, 0];
+                                }
+                                else {
+                                    console.error('side must be LEFT or RIGHT at this point');
+                                }
+                            }
+                        },
+                        endPoint: {
+                            getCoordinate: function () {
+                                if (_this.spriteParameters.arms.right.sidePosition.side === 'LEFT') {
+                                    return [
+                                        -_this.spriteParameters.width.size / 3,
+                                        0
+                                    ];
+                                }
+                                else if (_this.spriteParameters.arms.right.sidePosition.side === 'RIGHT') {
+                                    return [
+                                        _this.spriteParameters.width.size / 3,
+                                        0
+                                    ];
+                                }
+                                else {
+                                    console.error('side must be LEFT or RIGHT at this point');
+                                }
+                            }
+                        },
+                        length: {
+                            originalLength: 40,
+                            size: 20 * 2, // TODO
+                            max: function () { return (150); },
+                            min: function () { return (0); },
+                            checkSet: {
+                                max: function () {
+                                    var max = _this.spriteParameters.arms.right.sidePosition.length.max();
+                                    if (_this.spriteParameters.arms.right.sidePosition.length.size > max) {
+                                        _this.spriteParameters.arms.right.sidePosition.length.size = max;
+                                        return true;
+                                    }
+                                },
+                                min: function () {
+                                    var min = _this.spriteParameters.arms.right.sidePosition.length.min();
+                                    if (_this.spriteParameters.arms.right.sidePosition.length.size < min) {
+                                        _this.spriteParameters.arms.right.sidePosition.length.size = min;
+                                        return true;
+                                    }
+                                }
+                            },
+                            changeLength: function (lengthDifference) {
+                                _this.spriteParameters.arms.right.length.size += lengthDifference;
+                                return _this.spriteParameters.arms.right.length.checkSet.max() || _this.spriteParameters.arms.right.length.checkSet.min();
+                            }
+                        },
                     },
                     angle: {
                         size: Math.PI / 2,
@@ -4550,10 +4878,33 @@ var Entity = /** @class */ (function (_super) {
                         }
                     },
                     endPosition: {
-                        getCoordinate: function () { return [
-                            _this.spriteParameters.arms.right.position.x.size + Math.cos(_this.spriteParameters.arms.right.angle.size) * (_this.spriteParameters.arms.right.length.size + _this.spriteParameters.height.size / 2),
-                            _this.spriteParameters.arms.right.position.y.size + Math.sin(_this.spriteParameters.arms.right.angle.size) * (_this.spriteParameters.arms.right.length.size + _this.spriteParameters.height.size / 2)
-                        ]; }
+                        getCoordinate: function () {
+                            if (_this.spriteParameters.arms.right.sidePosition.side === 'TOP') {
+                                return [
+                                    _this.spriteParameters.arms.right.position.x.size + Math.cos(_this.spriteParameters.arms.right.angle.size) * (_this.spriteParameters.arms.right.length.size + _this.spriteParameters.height.size / 2),
+                                    _this.spriteParameters.arms.right.position.y.getSize() + Math.sin(_this.spriteParameters.arms.right.angle.size) * (_this.spriteParameters.arms.right.length.size)
+                                ];
+                            }
+                            else if (_this.spriteParameters.arms.right.sidePosition.side === 'BOTTOM') {
+                                return [
+                                    _this.spriteParameters.arms.right.position.x.size + Math.cos(_this.spriteParameters.arms.right.angle.size) * (_this.spriteParameters.arms.right.length.size + _this.spriteParameters.height.size / 2),
+                                    _this.spriteParameters.arms.right.position.y.getSize() + Math.sin(_this.spriteParameters.arms.right.angle.size) * (_this.spriteParameters.arms.right.length.size)
+                                ];
+                                // WIP
+                            }
+                            else if (_this.spriteParameters.arms.right.sidePosition.side === 'LEFT') {
+                                return [
+                                    _this.spriteParameters.arms.right.position.x.size + Math.cos(_this.spriteParameters.arms.right.angle.size) * (_this.spriteParameters.arms.right.length.size + _this.spriteParameters.height.size / 2),
+                                    _this.spriteParameters.arms.right.position.y.getSize() - Math.sin(_this.spriteParameters.arms.right.angle.size) * (_this.spriteParameters.arms.right.length.size + _this.spriteParameters.height.size / 2)
+                                ];
+                            }
+                            else if (_this.spriteParameters.arms.right.sidePosition.side === 'RIGHT') {
+                                return [
+                                    _this.spriteParameters.arms.right.position.x.size + Math.cos(_this.spriteParameters.arms.right.angle.size) * (_this.spriteParameters.arms.right.length.size + _this.spriteParameters.height.size / 2),
+                                    _this.spriteParameters.arms.right.position.y.getSize() - Math.sin(_this.spriteParameters.arms.right.angle.size) * (_this.spriteParameters.arms.right.length.size + _this.spriteParameters.height.size / 2)
+                                ];
+                            }
+                        }
                     }
                 },
             },
@@ -4840,32 +5191,50 @@ var Entity = /** @class */ (function (_super) {
                 }
             }
         };
-        _this.setPossibleActivitiesAndAnimations();
-        _this.possibleActivities.moveTo([700, 400]);
         _this.addLineSprite(new EntitySprite(_this.transform, _this.spriteParameters));
+        _this.setPossibleActivitiesAndAnimations();
         return _this;
+        // this.possibleAnimations.spinningForFun();
     }
     Entity.prototype.chopTree = function (tree) {
-        this.possibleActivities.moveTo([tree.transform.pos[0], tree.transform.pos[1]]);
         this.possibleActivities.chopTree(tree);
+    };
+    Entity.prototype.holdTree = function (tree) {
+        this.treeHeld = tree;
     };
     Entity.prototype.setPossibleActivitiesAndAnimations = function () {
         var _this = this;
         this.possibleAnimations = {
             moveTo: function () {
-                _this.currentAnimation = (0,_EntityAnimationStates__WEBPACK_IMPORTED_MODULE_4__.createBobAnimation)(_this);
+                _this.currentAnimation = (0,_EntityAnimationStates__WEBPACK_IMPORTED_MODULE_3__.createBobAnimation)(_this);
             },
-            chopping: function () {
+            chopping: function (tree) {
+                _this.currentAnimation = (0,_EntityAnimationStates__WEBPACK_IMPORTED_MODULE_3__.createChopAnimation)(_this, tree);
+            },
+            spinningForFun: function () {
+                _this.currentAnimation = (0,_EntityAnimationStates__WEBPACK_IMPORTED_MODULE_3__.createSpinningAnimation)(_this);
+            },
+            none: function () {
+                // standby animation at some point
+                _this.currentAnimation = null;
+            },
+            goingToSleep: function (bed) {
+                var bedSpinAnimation = (0,_EntityAnimationStates__WEBPACK_IMPORTED_MODULE_3__.createGoingToBedAnimation)(_this, bed);
+            },
+            sleeping: function () {
             }
         };
         this.possibleActivities = {
             moveTo: function (location) {
-                var moveToActivity = createMoveToActivity(_this, location);
+                var moveToActivity = (0,_EntityActivityStates__WEBPACK_IMPORTED_MODULE_4__.createMoveToActivity)(_this, location);
                 _this.activitiesQueue.push(moveToActivity);
             },
             chopTree: function (tree) {
-                var chopTreeActivity = createChopTreeActivity(_this, tree);
+                var chopTreeActivity = (0,_EntityActivityStates__WEBPACK_IMPORTED_MODULE_4__.createChopTreeActivity)(_this, tree);
                 _this.activitiesQueue.push(chopTreeActivity);
+            },
+            goToSleep: function (bed) {
+                var goToSleepActivity = (0,_EntityActivityStates__WEBPACK_IMPORTED_MODULE_4__.createGoToSleepActivity)(_this, bed);
             }
             // sleep: (bed: Bed) => {
             //     this.activitiesQueue.push({
@@ -4916,14 +5285,16 @@ var Entity = /** @class */ (function (_super) {
         return _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.dist(pos, this.transform.pos) < 2;
     };
     Entity.prototype.doActivity = function (activity, dT) {
-        activity.doActivity(dT);
+        return activity.doActivity(dT);
     };
     Entity.prototype.update = function (dT) {
         // this would be where an entity get's to decide
         // if it is adding something to the top of the activity queue
         // and if it is deleting something from the activity queue
         if (this.activitiesQueue.length) {
-            this.doActivity(this.activitiesQueue[0], dT);
+            if (this.doActivity(this.activitiesQueue[0], dT)) {
+                this.activitiesQueue.shift();
+            }
         }
         this.animate(dT);
     };
@@ -4955,50 +5326,16 @@ var EntitySprite = /** @class */ (function (_super) {
     };
     EntitySprite.prototype.drawEntity = function (ctx, spriteParameters) {
         var _this = this;
-        var rightArmEnd = spriteParameters.arms.right.endPosition.getCoordinate();
-        var rightArmPosition = [
-            spriteParameters.arms.right.position.x.size,
-            spriteParameters.arms.right.position.y.size
-        ];
-        var leftArmEnd = spriteParameters.arms.left.endPosition.getCoordinate();
-        var leftArmPosition = [
-            spriteParameters.arms.left.position.x.size,
-            spriteParameters.arms.left.position.y.size
-        ];
-        var curveTopRight = spriteParameters.curves.right.top.getCoordinate();
-        var curvePointTopRight = spriteParameters.curves.right.topCurvePoint.getCoordinate();
-        var curvePointBottomRight = spriteParameters.curves.right.bottomCurvePoint.getCoordinate();
-        var curveBottomRight = spriteParameters.curves.right.bottom.getCoordinate();
-        var curveBottomLeft = spriteParameters.curves.left.bottom.getCoordinate();
-        var curvePointBottomLeft = spriteParameters.curves.left.bottomCurvePoint.getCoordinate();
-        var curvePointTopLeft = spriteParameters.curves.left.topCurvePoint.getCoordinate();
-        var curveTopLeft = spriteParameters.curves.left.top.getCoordinate();
-        var rightEyePosition = [
-            spriteParameters.eye.right.position.x.size,
-            spriteParameters.eye.right.position.y.size
-        ];
-        var rightEyeRadius = [
-            spriteParameters.eye.right.radius.x.size,
-            spriteParameters.eye.right.radius.y.size
-        ];
-        var leftEyePosition = [
-            spriteParameters.eye.left.position.x.size,
-            spriteParameters.eye.left.position.y.size
-        ];
-        var leftEyeRadius = [
-            spriteParameters.eye.left.radius.x.size,
-            spriteParameters.eye.left.radius.y.size
-        ];
-        var bodyAngle = spriteParameters.bodyAngle.size;
-        ctx.lineWidth = spriteParameters.lineThickness;
+        var _a = spriteParameters.getDrawCoordinates(), rightArmEnd = _a.rightArmEnd, leftArmEnd = _a.leftArmEnd, rightArmStart = _a.rightArmStart, leftArmStart = _a.leftArmStart, curveTopRight = _a.curveTopRight, curvePointTopRight = _a.curvePointTopRight, curvePointBottomRight = _a.curvePointBottomRight, curveBottomRight = _a.curveBottomRight, curveBottomLeft = _a.curveBottomLeft, curvePointBottomLeft = _a.curvePointBottomLeft, curvePointTopLeft = _a.curvePointTopLeft, curveTopLeft = _a.curveTopLeft, rightEyePosition = _a.rightEyePosition, rightEyeRadius = _a.rightEyeRadius, leftEyePosition = _a.leftEyePosition, leftEyeRadius = _a.leftEyeRadius, bodyAngle = _a.bodyAngle, lineThickness = _a.lineThickness;
+        ctx.lineWidth = lineThickness;
         ctx.strokeStyle = this.color;
         ctx.fillStyle = this.color;
         ctx.beginPath();
         // Arms
         ctx.moveTo(rightArmEnd[0], rightArmEnd[1]); // 1
-        ctx.lineTo(rightArmPosition[0], rightArmPosition[1]); // 2 
+        ctx.lineTo(rightArmStart[0], rightArmStart[1]); // 2 
         ctx.moveTo(leftArmEnd[0], leftArmEnd[1]); // 11
-        ctx.lineTo(leftArmPosition[0], leftArmPosition[1]); // 9
+        ctx.lineTo(leftArmStart[0], leftArmStart[1]); // 9
         ctx.stroke();
         var drawBody = function (ctx) {
             ctx.fillStyle = "#000000";
@@ -5044,84 +5381,113 @@ var EntitySprite = /** @class */ (function (_super) {
     return EntitySprite;
 }(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
 
+// const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+
+
+/***/ }),
+
+/***/ "./src/game_objects/ClockworkGames/Entity/EntityActivityStates.ts":
+/*!************************************************************************!*\
+  !*** ./src/game_objects/ClockworkGames/Entity/EntityActivityStates.ts ***!
+  \************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   createChopTreeActivity: () => (/* binding */ createChopTreeActivity),
+/* harmony export */   createGoToSleepActivity: () => (/* binding */ createGoToSleepActivity),
+/* harmony export */   createMoveToActivity: () => (/* binding */ createMoveToActivity)
+/* harmony export */ });
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
+/* harmony import */ var _game_engine_EntityState_Activity__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/EntityState/Activity */ "./src/game_engine/EntityState/Activity.ts");
+
+
 // okay, clearly the activity needs to control the animation otherwise it'll be hard to 
 // control both and have activities defined outside of the object that's animating
 var createMoveToActivity = function (entity, location) {
-    entity.possibleAnimations['moveTo']();
     var moveToData = {
         location: location,
         entityTransform: entity.transform,
         moveToSpeed: entity.moveToSpeed,
         moveToAcceleration: entity.moveToAcceleration
     };
+    var onMoveToEnd = function (dT, activityState) {
+        activityState.entityTransform.pos[0] = activityState.location[0];
+        activityState.entityTransform.pos[1] = activityState.location[1];
+        activityState.entityTransform.vel[0] = 0;
+        activityState.entityTransform.vel[1] = 0;
+        entity.currentAnimation.endAnimation();
+        entity.possibleAnimations['none']();
+    };
+    var onMoveToStart = function (activityState) { return entity.possibleAnimations['moveTo'](); };
     var move = function (time, activityState) {
-        if (_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.dist(activityState.location, activityState.entityTransform.pos) < 2) {
-            activityState.entityTransform.pos[0] = activityState.location[0];
-            activityState.entityTransform.pos[1] = activityState.location[1];
-            activityState.entityTransform.vel[0] = 0;
-            activityState.entityTransform.vel[1] = 0;
-            entity.currentAnimation = null;
+        if (_game_engine_util__WEBPACK_IMPORTED_MODULE_0__.VectorMath.dist(activityState.location, activityState.entityTransform.pos) < 2)
             return true;
+        // take current velocity
+        // find ideal velocity using max speed, current position, and ship position
+        // get unit vector of current position - ship position
+        // take difference
+        // apply acceleration in that direction
+        // get dV
+        //    mV => max speed in the direction it should be moving
+        //    Vo => current velocity
+        //    dV =  mV - Vo
+        //    alpha = dV angle
+        // knowing the acceleration, and current velocity, and final velocity of 0
+        // I can come up with the distance where it should 
+        // start decelerating
+        // (Vf^2 - Vi^2) / 2a = D
+        var speed = activityState.moveToSpeed;
+        var pos = activityState.entityTransform.absolutePosition();
+        var distanceRemaining = _game_engine_util__WEBPACK_IMPORTED_MODULE_0__.VectorMath.dist(pos, location);
+        var decelerateDistance = Math.pow(activityState.entityTransform.vel[0], 2) / (2 * activityState.moveToAcceleration);
+        if (distanceRemaining < decelerateDistance) {
+            var accelerationDirection = Math.atan2(activityState.entityTransform.vel[1], activityState.entityTransform.vel[0]);
+            activityState.entityTransform.acc[0] -= activityState.moveToAcceleration * Math.cos(accelerationDirection);
+            activityState.entityTransform.acc[1] -= activityState.moveToAcceleration * Math.sin(accelerationDirection);
         }
         else {
-            // take current velocity
-            // find ideal velocity using max speed, current position, and ship position
-            // get unit vector of current position - ship position
-            // take difference
-            // apply acceleration in that direction
-            // get dV
-            //    mV => max speed in the direction it should be moving
-            //    Vo => current velocity
-            //    dV =  mV - Vo
-            //    alpha = dV angle
-            // knowing the acceleration, and current velocity, and final velocity of 0
-            // I can come up with the distance where it should 
-            // start decelerating
-            // (Vf^2 - Vi^2) / 2a = D
-            var speed = activityState.moveToSpeed;
-            var pos = activityState.entityTransform.absolutePosition();
-            var distanceRemaining = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.dist(pos, location);
-            var decelerateDistance = Math.pow(activityState.entityTransform.vel[0], 2) / (2 * activityState.moveToAcceleration);
-            if (distanceRemaining < decelerateDistance) {
-                var accelerationDirection = Math.atan2(activityState.entityTransform.vel[1], activityState.entityTransform.vel[0]);
-                activityState.entityTransform.acc[0] -= activityState.moveToAcceleration * Math.cos(accelerationDirection);
-                activityState.entityTransform.acc[1] -= activityState.moveToAcceleration * Math.sin(accelerationDirection);
+            var deltaPosition = [location[0] - pos[0], location[1] - pos[1]];
+            var chaseDirection = Math.atan2(deltaPosition[1], deltaPosition[0]);
+            if (chaseDirection < 0) {
+                chaseDirection = 2 * Math.PI + chaseDirection;
             }
-            else {
-                var deltaPosition = [location[0] - pos[0], location[1] - pos[1]];
-                var chaseDirection = Math.atan2(deltaPosition[1], deltaPosition[0]);
-                if (chaseDirection < 0) {
-                    chaseDirection = 2 * Math.PI + chaseDirection;
-                }
-                // console.log(chaseDirection / (2 * Math.PI) * 360)
-                var Vm = [speed * Math.cos(chaseDirection), speed * Math.sin(chaseDirection)];
-                var Vo = activityState.entityTransform.vel;
-                var dV = [Vm[0] - Vo[0], Vm[1] - Vo[1]];
-                var accelerationDirection = Math.atan2(dV[1], dV[0]);
-                activityState.entityTransform.acc[0] += activityState.moveToAcceleration * Math.cos(accelerationDirection);
-                activityState.entityTransform.acc[1] += activityState.moveToAcceleration * Math.sin(accelerationDirection);
-            }
-            return false;
+            // console.log(chaseDirection / (2 * Math.PI) * 360)
+            var Vm = [speed * Math.cos(chaseDirection), speed * Math.sin(chaseDirection)];
+            var Vo = activityState.entityTransform.vel;
+            var dV = [Vm[0] - Vo[0], Vm[1] - Vo[1]];
+            var accelerationDirection = Math.atan2(dV[1], dV[0]);
+            activityState.entityTransform.acc[0] += activityState.moveToAcceleration * Math.cos(accelerationDirection);
+            activityState.entityTransform.acc[1] += activityState.moveToAcceleration * Math.sin(accelerationDirection);
         }
+        return false;
     };
-    return new _game_engine_EntityState_Activity__WEBPACK_IMPORTED_MODULE_3__.Activity('moveTo', moveToData, move);
+    return new _game_engine_EntityState_Activity__WEBPACK_IMPORTED_MODULE_1__.Activity('moveTo', moveToData, move, onMoveToStart, onMoveToEnd);
 };
 var createChopTreeActivity = function (entity, tree) {
     var chopTreeData = {
         tree: tree,
     };
     var chopLocation = [tree.transform.pos[0] + entity.treeChopLocation[0], tree.transform.pos[1] + entity.treeChopLocation[1]];
-    var chopTreeActivity = new _game_engine_EntityState_Activity__WEBPACK_IMPORTED_MODULE_3__.ParentActivity('ChopTreeActivity');
     var moveToActivity = createMoveToActivity(entity, chopLocation);
     var chop = function (time, activityState) {
-        entity.possibleAnimations['chopping']();
+        entity.possibleAnimations['chopping'](tree);
         return true;
     };
-    var chopActivity = new _game_engine_EntityState_Activity__WEBPACK_IMPORTED_MODULE_3__.Activity('ChopTree', chopTreeData, chop);
-    chopTreeActivity.subActivities.push(moveToActivity, chopActivity);
-    return chopTreeActivity;
+    var chopActivity = new _game_engine_EntityState_Activity__WEBPACK_IMPORTED_MODULE_1__.Activity('ChopTree', chopTreeData, chop, function () { return null; }, function () { return null; });
+    var subActivities = [
+        moveToActivity,
+        chopActivity
+    ];
+    return new _game_engine_EntityState_Activity__WEBPACK_IMPORTED_MODULE_1__.ParentActivity('ChopTreeActivity', subActivities);
 };
-// const NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+var createGoToSleepActivity = function (entity, bed) {
+    var sleepLocation = [bed.transform.pos[0] + entity.sleepLocation[0], bed.transform.pos[1] + entity.sleepLocation[1]];
+    var moveToActivity = createMoveToActivity(entity, sleepLocation);
+    var setUpBed = function (time, activityState) {
+        entity.possibleAnimations['goingToSleep'](bed);
+    };
+};
 
 
 /***/ }),
@@ -5134,8 +5500,10 @@ var createChopTreeActivity = function (entity, tree) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   createArmDemoAnimation: () => (/* binding */ createArmDemoAnimation),
 /* harmony export */   createBedEntitySpinAnimation: () => (/* binding */ createBedEntitySpinAnimation),
 /* harmony export */   createBobAnimation: () => (/* binding */ createBobAnimation),
+/* harmony export */   createChopAnimation: () => (/* binding */ createChopAnimation),
 /* harmony export */   createCloseStrained: () => (/* binding */ createCloseStrained),
 /* harmony export */   createGoingToBedAnimation: () => (/* binding */ createGoingToBedAnimation),
 /* harmony export */   createOpenBounceAnimation: () => (/* binding */ createOpenBounceAnimation),
@@ -5157,7 +5525,7 @@ var createPauseAnimation = function (entity, pauseTime) {
         }
         return false;
     };
-    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('PauseFor', { timePaused: 0, maxPauseTime: pauseTime }, pause);
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('PauseFor', { timePaused: 0, maxPauseTime: pauseTime }, pause, function () { return null; });
 };
 // spin is absolute. Kind of assumes you know where the entity is already spin wise
 // could make one that doesn't care but not needed yet?
@@ -5165,26 +5533,38 @@ var createPauseAnimation = function (entity, pauseTime) {
 // the entity is spun 360 degrees... maybe changeSize needs to set it to currentAngle - 2*PI when 360 is hit
 // but then the total angle change needs to be kept track in the animation state
 var entitySpinAnimator = function (dT, animationState, spriteParameters) {
-    var angleChange = dT * animationState.spinSpeed;
-    if (angleChange > 0) {
-        animationState.totalSpun -= angleChange;
-        spriteParameters.bodyAngle.changeSize(angleChange);
-        return animationState.totalSpun < animationState.spinAngle;
-    }
-    else {
+    var angleChange = dT * animationState.spinSpeed / 1000;
+    if (animationState.spinAngle > 0) {
         animationState.totalSpun += angleChange;
         spriteParameters.bodyAngle.changeSize(angleChange);
-        return animationState.totalSpun > animationState.spinAngle;
+        if (animationState.totalSpun > animationState.spinAngle) {
+            spriteParameters.bodyAngle.changeSize(animationState.spinAngle - animationState.totalSpun);
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    else {
+        animationState.totalSpun -= angleChange;
+        spriteParameters.bodyAngle.changeSize(-angleChange);
+        if (animationState.totalSpun < animationState.spinAngle) {
+            spriteParameters.bodyAngle.changeSize(animationState.totalSpun - animationState.spinAngle);
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 };
 var createSpin = function (entity, spinAngle, spinSpeed) {
-    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('Spin', { totalSpun: 0, spinSpeed: spinSpeed, spinAngle: spinAngle }, entitySpinAnimator, entity.spriteParameters);
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('Spin', { totalSpun: 0, spinSpeed: spinSpeed, spinAngle: spinAngle }, entitySpinAnimator, function () { return null; }, entity.spriteParameters);
 };
 var createSpinningAnimation = function (entity) {
-    var firstPause = createPauseAnimation(entity, 300);
-    var spinRight = createSpin(entity, Math.PI, 0.8);
-    var spinLeft = createSpin(entity, -Math.PI, -0.8);
-    var secondPause = createPauseAnimation(entity, 500);
+    var firstPause = createPauseAnimation(entity, 2000);
+    var spinRight = createSpin(entity, Math.PI, 1);
+    var spinLeft = createSpin(entity, -Math.PI, 1);
+    var secondPause = createPauseAnimation(entity, 3000);
     var animations = [
         firstPause, spinRight, secondPause, spinLeft
     ];
@@ -5219,7 +5599,7 @@ var createCloseStrained = function (entity) {
         }
         return false;
     };
-    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('CloseStrained', {}, closeStrained, entity.spriteParameters);
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('CloseStrained', {}, closeStrained, function () { return null; }, entity.spriteParameters);
 };
 var createOpenBounceAnimation = function (entity) {
     var openBounce = function (dT, animationState, spriteParameters) {
@@ -5259,7 +5639,7 @@ var createOpenBounceAnimation = function (entity) {
         }
         return false;
     };
-    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('OpenBounce', {}, openBounce, entity.spriteParameters);
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('OpenBounce', {}, openBounce, function () { return null; }, entity.spriteParameters);
 };
 var createSqueezeAnimation = function (entity) {
     var closeStrainedAnimation = createCloseStrained(entity);
@@ -5276,7 +5656,10 @@ var createBedEntitySpinAnimation = function (entity, bed, spinAngle, spinSpeed) 
         (0,_Bed__WEBPACK_IMPORTED_MODULE_1__.bedSpinAnimator)(dT, spriteParameters.entity.bodyAngle, spriteParameters.bed);
         return spinResult;
     };
-    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('BedEntitySpin', { bed: bed, entity: entity }, bedEntitySpinAnimator, { bed: bed.spriteParameters, entity: entity.spriteParameters });
+    var endBedSpinAnimation = function (animationState, spriteParameters) {
+        return null;
+    };
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('BedEntitySpin', { bed: bed, entity: entity }, bedEntitySpinAnimator, endBedSpinAnimation, { bed: bed.spriteParameters, entity: entity.spriteParameters });
 };
 var createGoingToBedAnimation = function (entity, bed) {
     var firstPause = createPauseAnimation(entity, 300);
@@ -5294,6 +5677,7 @@ var createGoingToBedAnimation = function (entity, bed) {
 var createBobAnimation = function (entity) {
     var bobAnimationState = {
         entityTransform: entity.transform,
+        entity: entity,
         yOffset: 0,
         maxBob: 10,
         bobSpeed: entity.moveToSpeed / 100,
@@ -5305,6 +5689,9 @@ var createBobAnimation = function (entity) {
     var bobAnimator = function (dT, animationState, spriteParameters) {
         // should probably split these into two separate animations. 
         // then I'll have control over how it behaves while bouncing up vs down
+        if (bobAnimationState.entity.treeHeld) {
+            return false;
+        }
         var entityTransform = animationState.entityTransform;
         var yOffsetIncrement = dT * animationState.bobSpeed * animationState.bobDirection * (0.4 + (1 - animationState.animationProgress) * 0.8);
         var possibleNewOffset = animationState.yOffset + yOffsetIncrement;
@@ -5341,10 +5728,271 @@ var createBobAnimation = function (entity) {
             return false;
         }
     };
-    var bobAnimation = new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('bob', bobAnimationState, bobAnimator);
-    var moveToAnimation = new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.ParentAnimation('moveTo', [bobAnimation]);
-    moveToAnimation.animations = [bobAnimation];
+    var endBobAnimation = function (animationState, spriteParameters) {
+        // animationState.entityTransform.pos[1] -= animationState.yOffset;
+        var resetLeftAngle = spriteParameters.arms.left.angle.originalSize - spriteParameters.arms.left.angle.size;
+        spriteParameters.arms.left.angle.changeAngle(resetLeftAngle);
+        var resetRightAngle = spriteParameters.arms.right.angle.originalSize - spriteParameters.arms.right.angle.size;
+        spriteParameters.arms.right.angle.changeAngle(resetRightAngle);
+        console.log({ resetLeftAngle: resetLeftAngle, resetRightAngle: resetRightAngle });
+    };
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('Bob', bobAnimationState, bobAnimator, endBobAnimation, entity.spriteParameters);
 };
+var createChopAnimation = function (entity, tree) {
+    var firstPause = createPauseAnimation(entity, 300);
+    var secondPause = createPauseAnimation(entity, 300);
+    var chopAnimationState = {
+        // measured absolutely so that it looks like a chop even if the start angle is "wrong"
+        chopEndAngle: Math.PI * 3.5 / 8,
+        chopStartAngle: Math.PI / 2,
+        chopCount: 0,
+        maxChops: 4,
+    };
+    var chop = function (dT, animationState, spriteParameters) {
+        // not accounting for when one arm is off from another. A real animation should account for that
+        if (spriteParameters.arms.left.angle.size > animationState.chopEndAngle) {
+            spriteParameters.arms.left.angle.changeAngle(-dT * 0.8 / 1500);
+            spriteParameters.arms.right.angle.changeAngle(dT * 0.8 / 1500);
+            return false;
+        }
+        animationState.chopCount += 1;
+        tree.possibleAnimations.shakeTree();
+        if (animationState.chopCount >= animationState.maxChops) {
+            entity.currentAnimation = null;
+            tree.chopper = entity;
+            entity.holdTree(tree);
+            entity.possibleActivities.moveTo([entity.transform.pos[0], entity.transform.pos[1] + 80]);
+        }
+        return true;
+    };
+    var chopBackswing = function (dT, animationState, spriteParameters) {
+        if (spriteParameters.arms.left.angle.size < animationState.chopStartAngle) {
+            spriteParameters.arms.left.angle.changeAngle(dT * 0.8 / 1500);
+            spriteParameters.arms.right.angle.changeAngle(-dT * 0.8 / 1500);
+            return false;
+        }
+        else {
+            return true;
+        }
+    };
+    var animations = [
+        firstPause,
+        new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('Chop', chopAnimationState, chop, function () { return null; }, entity.spriteParameters),
+        secondPause,
+        new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('ChopBackswing', chopAnimationState, chopBackswing, function () { return null; }, entity.spriteParameters)
+    ];
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.ParentAnimation('Chop', animations);
+};
+var entityChopAnimator = function (dT, animationState) {
+    // arms spin towards each other 
+    animationState.arms.left.angle.changeAngle(dT * 0.8 / 1500);
+};
+// lets do a demo animation of the arm around the entity to show it works
+var createArmDemoAnimation = function (entity) {
+    var nextArmSideClockwise = function (leftOrRightArm) {
+        var sideChangeMap = {
+            RIGHT: "BOTTOM",
+            BOTTOM: "LEFT",
+            LEFT: "TOP",
+            TOP: "RIGHT"
+        };
+        if (leftOrRightArm === 'left') {
+            entity.spriteParameters.arms.left.sidePosition.side = sideChangeMap[entity.spriteParameters.arms.left.sidePosition.side];
+        }
+        else {
+            entity.spriteParameters.arms.right.sidePosition.side = sideChangeMap[entity.spriteParameters.arms.right.sidePosition.side];
+        }
+    };
+    var nextArmSideCounterClockwise = function (leftOrRightArm) {
+        var sideChangeMap = {
+            RIGHT: "TOP",
+            BOTTOM: "RIGHT",
+            LEFT: "BOTTOM",
+            TOP: "LEFT"
+        };
+        if (leftOrRightArm === 'left') {
+            entity.spriteParameters.arms.left.sidePosition.side = sideChangeMap[entity.spriteParameters.arms.left.sidePosition.side];
+        }
+        else {
+            entity.spriteParameters.arms.right.sidePosition.side = sideChangeMap[entity.spriteParameters.arms.right.sidePosition.side];
+        }
+    };
+    var armDemoAnimationState = {};
+    var moveLeftArmClockwise = function (dT, animationState, spriteParameters) {
+        // starts TOP close to the end
+        // move right until limit
+        // change side
+        // move down until limit
+        // change side
+        // move left until limit
+        // change side
+        // move up until limit
+        // change side
+        // repeat
+        var armMoveSpeed = 0.8 / 1500;
+        if (spriteParameters.arms.left.sidePosition.side === 'TOP') {
+            if (spriteParameters.arms.left.position.x.changeSize(dT * armMoveSpeed)) {
+                // not sure if this is 0 or PI/2
+                spriteParameters.arms.left.sidePosition.sideAngle.size = 0;
+                nextArmSideCounterClockwise('left');
+            }
+        }
+        else if (spriteParameters.arms.left.sidePosition.side === 'RIGHT') {
+            if (spriteParameters.arms.left.sidePosition.sideAngle.changeAngle(dT * armMoveSpeed / spriteParameters.arms.left.sidePosition.length.size)) {
+                spriteParameters.arms.left.angle.size = Math.PI;
+                nextArmSideCounterClockwise('left');
+            }
+        }
+        else if (spriteParameters.arms.left.sidePosition.side === 'BOTTOM') {
+            if (spriteParameters.arms.left.position.x.changeSize(dT * -armMoveSpeed)) {
+                nextArmSideClockwise('left');
+            }
+        }
+        else if (spriteParameters.arms.left.sidePosition.side === 'LEFT') {
+            if (spriteParameters.arms.left.sidePosition.sideAngle.changeAngle(dT * armMoveSpeed / spriteParameters.arms.left.sidePosition.length.size)) {
+                spriteParameters.arms.left.angle.size = 0;
+                nextArmSideCounterClockwise('left');
+            }
+        }
+        return false;
+    };
+};
+
+
+/***/ }),
+
+/***/ "./src/game_objects/ClockworkGames/Machine.ts":
+/*!****************************************************!*\
+  !*** ./src/game_objects/ClockworkGames/Machine.ts ***!
+  \****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Machinery: () => (/* binding */ Machinery),
+/* harmony export */   MachineryLineSprite: () => (/* binding */ MachineryLineSprite)
+/* harmony export */ });
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+/* harmony import */ var _SawMachine_TreeGrip__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./SawMachine/TreeGrip */ "./src/game_objects/ClockworkGames/SawMachine/TreeGrip.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+// make a class function later
+var getCoordinates = function (machineAngle, driverAngle, body, driverArm, coupler, rocker, couplerPointLength, couplePointHeight, mirrored) {
+    var a = driverArm;
+    var b = coupler;
+    var c = rocker;
+    var d = body;
+    var theta_2 = driverAngle;
+    var theta_1 = machineAngle;
+    var A_x = a * Math.cos(theta_2);
+    var A_y = a * Math.sin(theta_2);
+    var S = (Math.pow(a, 2) - Math.pow(b, 2) + Math.pow(c, 2) - Math.pow(d, 2)) / (2 * (A_x - d));
+    var Q = 2 * A_y * (d - S) / (A_x - d);
+    var R = Math.pow((d - S), 2) - Math.pow(c, 2);
+    var P = Math.pow(A_y, 2) / (Math.pow((A_x - d), 2)) + 1;
+    var B_y = (-Q - Math.sqrt(Math.pow(Q, 2) - 4 * P * R)) / (2 * P);
+    var B_x = S - A_y * B_y / (A_x - d);
+    var couplerAngle = Math.atan2(B_y - A_y, B_x - A_x);
+    var coupler_x = A_x + couplerPointLength * Math.cos(couplerAngle) + couplePointHeight * Math.sin(couplerAngle);
+    var coupler_y = A_y - couplePointHeight * Math.cos(couplerAngle) + couplerPointLength * Math.sin(couplerAngle);
+    var mirrorFactor = mirrored ? -1 : 1;
+    return {
+        driverArmCoordinate: [mirrorFactor * A_x, A_y],
+        rockerCoordinate: [mirrorFactor * B_x, B_y],
+        couplerPoint: [mirrorFactor * coupler_x, coupler_y],
+    };
+};
+var Machinery = /** @class */ (function (_super) {
+    __extends(Machinery, _super);
+    function Machinery(engine, pos, mirrored) {
+        var _this = _super.call(this, engine) || this;
+        _this.transform.pos = [pos[0] - 50, pos[1]];
+        var scale = 0.2;
+        _this.spriteParameters = {
+            machineAngle: 0, // reference frame angle
+            driverAngle: Math.PI / 3, // theta_2
+            body: 478 * scale, // d 
+            driverArm: 150 * scale,
+            coupler: 222 * scale,
+            rocker: 407 * scale,
+            couplerPointLength: 372 * scale,
+            couplerPointHeight: 200 * scale,
+            mirrored: mirrored || false,
+            get_AB_Coordinates: function () { return getCoordinates(_this.spriteParameters.machineAngle, _this.spriteParameters.driverAngle, _this.spriteParameters.body, _this.spriteParameters.driverArm, _this.spriteParameters.coupler, _this.spriteParameters.rocker, _this.spriteParameters.couplerPointLength, _this.spriteParameters.couplerPointHeight, _this.spriteParameters.mirrored); }
+        };
+        _this.addLineSprite(new MachineryLineSprite(_this.transform, _this.spriteParameters));
+        var gripAngle = !mirrored ? Math.PI / 2 : 3 * Math.PI / 2;
+        _this.treeGripper = new _SawMachine_TreeGrip__WEBPACK_IMPORTED_MODULE_2__.TreeGrip(engine, [0, 0], gripAngle);
+        return _this;
+    }
+    Machinery.prototype.update = function (dT) {
+        this.spriteParameters.driverAngle += dT * 0.001;
+        this.spriteParameters.driverAngle = this.spriteParameters.driverAngle > 2 * Math.PI ? 0 : this.spriteParameters.driverAngle;
+        // could cache last used value;
+        var couplerPoint = this.spriteParameters.get_AB_Coordinates().couplerPoint;
+        this.treeGripper.transform.pos = [this.transform.pos[0] + couplerPoint[0], this.transform.pos[1] + couplerPoint[1]];
+    };
+    Machinery.prototype.animate = function (dT) {
+        this.spriteParameters.driverAngle += dT * 0.001;
+    };
+    return Machinery;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
+
+var MachineryLineSprite = /** @class */ (function (_super) {
+    __extends(MachineryLineSprite, _super);
+    function MachineryLineSprite(transform, spriteParameters) {
+        var _this = _super.call(this, transform) || this;
+        _this.spriteParameters = spriteParameters;
+        return _this;
+    }
+    MachineryLineSprite.prototype.draw = function (ctx) {
+        var pos = this.transform.absolutePosition();
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+        ctx.rotate(this.spriteParameters.machineAngle);
+        this.drawMachine(ctx);
+        ctx.restore();
+    };
+    MachineryLineSprite.prototype.drawMachine = function (ctx) {
+        var _a = this.spriteParameters.get_AB_Coordinates(), driverArmCoordinate = _a.driverArmCoordinate, rockerCoordinate = _a.rockerCoordinate, couplerPoint = _a.couplerPoint;
+        var mirrorFactor = this.spriteParameters.mirrored ? -1 : 1;
+        ctx.strokeStyle = "#5D3FD3";
+        ctx.lineWidth = 2;
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.lineTo(0, 0);
+        ctx.lineTo.apply(ctx, driverArmCoordinate);
+        ctx.lineTo.apply(ctx, rockerCoordinate);
+        ctx.lineTo(mirrorFactor * this.spriteParameters.body, 0);
+        // ctx.lineTo(0,0);
+        ctx.stroke();
+        ctx.strokeStyle = "#6D3FD3";
+        ctx.beginPath();
+        ctx.moveTo.apply(ctx, driverArmCoordinate);
+        ctx.lineTo.apply(ctx, couplerPoint);
+        ctx.lineTo.apply(ctx, rockerCoordinate);
+        ctx.stroke();
+    };
+    return MachineryLineSprite;
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
+
 
 
 /***/ }),
@@ -5763,20 +6411,19 @@ var NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 /***/ }),
 
-/***/ "./src/game_objects/ClockworkGames/Tree.ts":
-/*!*************************************************!*\
-  !*** ./src/game_objects/ClockworkGames/Tree.ts ***!
-  \*************************************************/
+/***/ "./src/game_objects/ClockworkGames/SawMachine/TreeGrip.ts":
+/*!****************************************************************!*\
+  !*** ./src/game_objects/ClockworkGames/SawMachine/TreeGrip.ts ***!
+  \****************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   Tree: () => (/* binding */ Tree),
-/* harmony export */   TreeSprite: () => (/* binding */ TreeSprite)
+/* harmony export */   TreeGrip: () => (/* binding */ TreeGrip),
+/* harmony export */   TreeGripSprite: () => (/* binding */ TreeGripSprite)
 /* harmony export */ });
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/util */ "./src/game_engine/util.ts");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -5794,179 +6441,90 @@ var __extends = (undefined && undefined.__extends) || (function () {
 })();
 
 
-
-var Tree = /** @class */ (function (_super) {
-    __extends(Tree, _super);
-    function Tree(engine, pos, yourEntity) {
+var TreeGrip = /** @class */ (function (_super) {
+    __extends(TreeGrip, _super);
+    function TreeGrip(engine, pos, angle) {
         var _this = _super.call(this, engine) || this;
-        _this.transform.pos = pos;
-        _this.transform.angle = 0;
-        _this.yourEntity = yourEntity;
-        _this.interactions = {
-            chopTree: {
-                startingCondition: {
-                    interactionLocation: {
-                        getLocation: function () { return (_this.transform.absolutePosition()); }
-                    },
-                    interactionOrientation: Math.PI * 2 * 3 / 4
-                }
-            }
-        };
-        var w = Tree.baseParameters.w;
-        var h = Tree.baseParameters.h;
+        _this.transform.pos = [pos[0], pos[1]];
+        _this.transform.angle = angle;
         _this.spriteParameters = {
-            tip: {
-                getCoordinates: function () { return [0, -Tree.baseParameters.h / 2]; }
-            },
-            right: {
-                topBranch: {
-                    getCoordinates: function () { return [3 / 10 * w, -h / 4]; }
-                },
-                topCorner: {
-                    getCoordinates: function () { return [1 / 5 * w, -h / 4]; }
-                },
-                middleBranch: {
-                    getCoordinates: function () { return [2 / 5 * w, 0]; }
-                },
-                middleCorner: {
-                    getCoordinates: function () { return [3 / 10 * w, 0]; }
-                },
-                bottomBranch: {
-                    getCoordinates: function () { return [1 / 2 * w, h / 4]; }
-                },
-                bottomCorner: {
-                    getCoordinates: function () { return [1 / 30 * w, h / 4]; }
-                },
-                trunk: {
-                    getCoordinates: function () { return [1 / 30 * w, h / 2]; }
-                }
-            },
-            left: {
-                topBranch: {
-                    getCoordinates: function () { return [-3 / 10 * w, -h / 4]; }
-                },
-                topCorner: {
-                    getCoordinates: function () { return [-1 / 5 * w, -h / 4]; }
-                },
-                middleBranch: {
-                    getCoordinates: function () { return [-2 / 5 * w, 0]; }
-                },
-                middleCorner: {
-                    getCoordinates: function () { return [-3 / 10 * w, 0]; }
-                },
-                bottomBranch: {
-                    getCoordinates: function () { return [-1 / 2 * w, h / 4]; }
-                },
-                bottomCorner: {
-                    getCoordinates: function () { return [-1 / 30 * w, h / 4]; }
-                },
-                trunk: {
-                    getCoordinates: function () { return [-1 / 30 * w, h / 2]; }
-                }
-            }
+            w: 40,
+            h: 30
         };
-        _this.addLineSprite(new TreeSprite(_this.transform, _this.spriteParameters));
-        _this.setPossibleActivitiesAndAnimations();
+        _this.addLineSprite(new TreeGripSprite(_this.transform, _this.spriteParameters));
         return _this;
     }
-    Tree.prototype.setPossibleActivitiesAndAnimations = function () {
-        this.possibleAnimations = {
-            // could pass in chopper here
-            chopping: function (chopper) {
-                var choppingAnimationState = {};
-            }
-        };
+    TreeGrip.prototype.animate = function () {
     };
-    Tree.prototype.mouseClicked = function (mousePos) {
-        var centerDist = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.dist([this.transform.pos[0], this.transform.pos[1]], mousePos);
-        if (centerDist < this.clickRadius) {
-            this.onMouseClick(mousePos);
-        }
+    TreeGrip.prototype.update = function () {
     };
-    Tree.prototype.onMouseClick = function (mousePos) {
-        this.yourEntity.chopTree(this);
-    };
-    Tree.prototype.update = function (deltaTime) {
-        var _a;
-        (_a = this.currentAnimation) === null || _a === void 0 ? void 0 : _a.animate(deltaTime);
-    };
-    Tree.prototype.animate = function () { };
-    Tree.prototype.exist = function () {
-        this.addCollider("General", this, 5);
-    };
-    Tree.baseParameters = {
-        w: 30,
-        h: 4 / 5 * 30
-    };
-    return Tree;
+    return TreeGrip;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
-var TreeSprite = /** @class */ (function (_super) {
-    __extends(TreeSprite, _super);
-    function TreeSprite(transform, spriteParameters) {
+var TreeGripSprite = /** @class */ (function (_super) {
+    __extends(TreeGripSprite, _super);
+    function TreeGripSprite(transform, spriteParameters) {
         var _this = _super.call(this, transform) || this;
         _this.spriteParameters = spriteParameters;
-        _this.transform = transform;
-        _this.color = "green";
-        _this.width = Tree.baseParameters.w;
-        _this.height = Tree.baseParameters.h;
+        _this.color = "blue";
+        _this.zoomScale = 0.4;
         return _this;
     }
-    TreeSprite.prototype.draw = function (ctx) {
+    TreeGripSprite.prototype.draw = function (ctx) {
         var pos = this.transform.absolutePosition();
         ctx.save();
         ctx.translate(pos[0], pos[1]);
-        this.drawTree(ctx);
+        ctx.rotate(this.transform.angle);
+        this.drawNewFancyCurve(ctx);
+        this.drawAxle(ctx);
+        this.drawTeeth(ctx);
         ctx.restore();
     };
-    TreeSprite.prototype.drawTree = function (ctx) {
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = "#097969";
+    TreeGripSprite.prototype.drawAxle = function (ctx) {
+        var zoomScale = this.zoomScale;
+        ctx.save();
         ctx.beginPath();
-        ctx.moveTo.apply(ctx, this.spriteParameters.tip.getCoordinates()); // 1
-        ctx.lineTo.apply(// 1
-        ctx, this.spriteParameters.right.topBranch.getCoordinates()); // 2
-        ctx.lineTo.apply(// 2
-        ctx, this.spriteParameters.right.topCorner.getCoordinates()); // 3
-        ctx.lineTo.apply(// 3
-        ctx, this.spriteParameters.right.middleBranch.getCoordinates()); // 4
-        ctx.lineTo.apply(// 4
-        ctx, this.spriteParameters.right.middleCorner.getCoordinates()); // 5
-        ctx.lineTo.apply(// 5
-        ctx, this.spriteParameters.right.bottomBranch.getCoordinates()); // 6
-        ctx.lineTo.apply(// 6
-        ctx, this.spriteParameters.right.bottomCorner.getCoordinates()); // 7
-        ctx.stroke();
-        ctx.lineWidth = 1.2;
-        ctx.strokeStyle = "#E4D00A";
-        ctx.beginPath();
-        ctx.moveTo.apply(ctx, this.spriteParameters.right.bottomCorner.getCoordinates()); // 7
-        ctx.lineTo.apply(// 7
-        ctx, this.spriteParameters.right.trunk.getCoordinates()); // 8
-        ctx.lineTo.apply(// 8
-        ctx, this.spriteParameters.left.trunk.getCoordinates()); // 9
-        ctx.lineTo.apply(// 9
-        ctx, this.spriteParameters.left.bottomCorner.getCoordinates()); // 10
-        ctx.stroke();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = "#097969";
-        ctx.beginPath();
-        ctx.moveTo.apply(ctx, this.spriteParameters.left.bottomCorner.getCoordinates()); // 10
-        ctx.lineTo.apply(// 10
-        ctx, this.spriteParameters.left.bottomBranch.getCoordinates()); // 11
-        ctx.lineTo.apply(// 11
-        ctx, this.spriteParameters.left.middleCorner.getCoordinates()); // 12
-        ctx.lineTo.apply(// 12
-        ctx, this.spriteParameters.left.middleBranch.getCoordinates()); // 13
-        ctx.lineTo.apply(// 13
-        ctx, this.spriteParameters.left.topCorner.getCoordinates()); // 14
-        ctx.lineTo.apply(// 14
-        ctx, this.spriteParameters.left.topBranch.getCoordinates()); // 15
-        ctx.lineTo.apply(// 15
-        ctx, this.spriteParameters.tip.getCoordinates()); // 1
-        ctx.stroke();
+        ctx.arc(0, 0, 1 / 5 * this.spriteParameters.h * zoomScale, 0, Math.PI * 2, true);
+        ctx.closePath();
+        ctx.fillStyle = "#5D3FD3";
+        ctx.fill();
+        ctx.restore();
     };
-    return TreeSprite;
+    TreeGripSprite.prototype.drawNewFancyCurve = function (ctx) {
+        ctx.save();
+        var _a = this.spriteParameters, h = _a.h, w = _a.w;
+        var h_scaled = h * this.zoomScale;
+        var w_scaled = w * this.zoomScale;
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#D22B2B";
+        ctx.beginPath();
+        ctx.moveTo(-w_scaled / 2, -2 / 3 * h_scaled);
+        ctx.bezierCurveTo(-w_scaled / 2, 2 / 3 * h_scaled, w_scaled / 2, 2 / 3 * h_scaled, w_scaled / 2, -2 / 3 * h_scaled);
+        ctx.closePath();
+        ctx.fillStyle = "#D22B2B";
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+    };
+    TreeGripSprite.prototype.drawTeeth = function (ctx) {
+        var teethCount = 6;
+        var zoomScale = this.zoomScale;
+        var _a = this.spriteParameters, h = _a.h, w = _a.w;
+        var h_scaled = h * zoomScale;
+        var w_scaled = w * zoomScale;
+        ctx.save();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "#D22B2B";
+        ctx.beginPath();
+        ctx.moveTo(-w_scaled / 2, 2 / 3 * -h_scaled);
+        for (var i = 1; i <= teethCount * 2; i++) {
+            var height = i % 2 === 0 ? -2 / 3 * h_scaled : -2 / 3 * h_scaled - h_scaled / 6;
+            ctx.lineTo(-w_scaled / 2 + i * w_scaled / (teethCount * 2), height);
+        }
+        ctx.stroke();
+        ctx.restore();
+    };
+    return TreeGripSprite;
 }(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
 
 
@@ -6496,6 +7054,476 @@ var ShipSprite = /** @class */ (function (_super) {
     return ShipSprite;
 }(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__.LineSprite));
 
+
+
+/***/ }),
+
+/***/ "./src/game_objects/Tree/Tree.ts":
+/*!***************************************!*\
+  !*** ./src/game_objects/Tree/Tree.ts ***!
+  \***************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Tree: () => (/* binding */ Tree),
+/* harmony export */   TreeSprite: () => (/* binding */ TreeSprite)
+/* harmony export */ });
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/util */ "./src/game_engine/util.ts");
+/* harmony import */ var _TreeAnimationStates__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./TreeAnimationStates */ "./src/game_objects/Tree/TreeAnimationStates.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+
+var Tree = /** @class */ (function (_super) {
+    __extends(Tree, _super);
+    function Tree(engine, pos, yourEntity) {
+        var _this = _super.call(this, engine) || this;
+        _this.transform.pos = pos;
+        _this.transform.angle = 0;
+        _this.yourEntity = yourEntity;
+        _this.clickRadius = 50;
+        _this.chopper = null;
+        _this.demoAnimationTime = 3000;
+        _this.demoAnimationTimeCompleted = 0;
+        _this.interactions = {
+            chopTree: {
+                startingCondition: {
+                    interactionLocation: {
+                        getLocation: function () { return (_this.transform.absolutePosition()); }
+                    },
+                    interactionOrientation: Math.PI * 2 * 3 / 4
+                }
+            }
+        };
+        var w = Tree.baseParameters.w;
+        var h = Tree.baseParameters.h;
+        _this.spriteParameters = {
+            tip: {
+                getCoordinates: function () { return [0, -Tree.baseParameters.h / 2]; } // 1
+            },
+            tipWithoutBranches: {
+                left: {
+                    getCoordinates: function () { return [-1 / 30 * w, -Tree.baseParameters.h / 2]; } // 16
+                },
+                right: {
+                    getCoordinates: function () { return [1 / 30 * w, -Tree.baseParameters.h / 2]; } // 17
+                }
+            },
+            branchlessOne: {
+                left: {
+                    getCoordinates: function () { return [-1 / 30 * w, -Tree.baseParameters.h / 4]; } // 18
+                },
+                right: {
+                    getCoordinates: function () { return [1 / 30 * w, -Tree.baseParameters.h / 4]; } // 19
+                }
+            },
+            branchlessTwo: {
+                left: {
+                    getCoordinates: function () { return [-1 / 30 * w, 0]; } // 21
+                },
+                right: {
+                    getCoordinates: function () { return [1 / 30 * w, 0]; } // 22
+                }
+            },
+            branchState: 3,
+            trunkShakeOffset: {
+                size: 0,
+                originalSize: 0,
+                max: function () { return (1 / 30 * w); },
+                min: function () { return (-1 / 30 * w); },
+                checkSet: {
+                    max: function () {
+                        var max = _this.spriteParameters.trunkShakeOffset.max();
+                        if (_this.spriteParameters.trunkShakeOffset.size >= max) {
+                            _this.spriteParameters.trunkShakeOffset.size = max;
+                            return true;
+                        }
+                    },
+                    min: function () {
+                        var min = _this.spriteParameters.trunkShakeOffset.min();
+                        if (_this.spriteParameters.trunkShakeOffset.size <= min) {
+                            _this.spriteParameters.trunkShakeOffset.size = min;
+                            return true;
+                        }
+                    },
+                },
+                changeSize: function (shakeDifference) {
+                    _this.spriteParameters.trunkShakeOffset.size += shakeDifference;
+                    return _this.spriteParameters.trunkShakeOffset.checkSet.max() || _this.spriteParameters.trunkShakeOffset.checkSet.min();
+                }
+            },
+            right: {
+                topBranch: {
+                    getCoordinates: function () { return [3 / 10 * w, -h / 4]; } // 2
+                },
+                topCorner: {
+                    getCoordinates: function () { return [1 / 5 * w, -h / 4]; } // 3
+                },
+                middleBranch: {
+                    getCoordinates: function () { return [2 / 5 * w, 0]; } // 4
+                },
+                middleCorner: {
+                    getCoordinates: function () { return [3 / 10 * w, 0]; } // 5
+                },
+                bottomBranch: {
+                    getCoordinates: function () { return [1 / 2 * w, h / 4]; } // 6
+                },
+                bottomCorner: {
+                    getCoordinates: function () { return [1 / 30 * w + _this.spriteParameters.trunkShakeOffset.size, h / 4]; } // 7
+                },
+                trunk: {
+                    getCoordinates: function () { return [1 / 30 * w + _this.spriteParameters.trunkShakeOffset.size, h / 2]; } // 8
+                }
+            },
+            left: {
+                topBranch: {
+                    getCoordinates: function () { return [-3 / 10 * w, -h / 4]; } // 15
+                },
+                topCorner: {
+                    getCoordinates: function () { return [-1 / 5 * w, -h / 4]; } // 14
+                },
+                middleBranch: {
+                    getCoordinates: function () { return [-2 / 5 * w, 0]; } // 13
+                },
+                middleCorner: {
+                    getCoordinates: function () { return [-3 / 10 * w, 0]; } // 12
+                },
+                bottomBranch: {
+                    getCoordinates: function () { return [-1 / 2 * w, h / 4]; } // 11
+                },
+                bottomCorner: {
+                    getCoordinates: function () { return [-1 / 30 * w + _this.spriteParameters.trunkShakeOffset.size, h / 4]; } // 10 
+                },
+                trunk: {
+                    getCoordinates: function () { return [-1 / 30 * w + _this.spriteParameters.trunkShakeOffset.size, h / 2]; } // 9
+                }
+            }
+        };
+        _this.addLineSprite(new TreeSprite(_this.transform, _this.spriteParameters));
+        _this.setPossibleActivitiesAndAnimations();
+        _this.addClickListener();
+        return _this;
+    }
+    Tree.prototype.chopped = function (entity) {
+        this.chopper = entity;
+    };
+    Tree.prototype.setPossibleActivitiesAndAnimations = function () {
+        var _this = this;
+        this.possibleAnimations = {
+            shakeTree: function () {
+                _this.currentAnimation = (0,_TreeAnimationStates__WEBPACK_IMPORTED_MODULE_3__.createShakeAnimation)(_this);
+            }
+        };
+    };
+    Tree.prototype.mouseClicked = function (mousePos) {
+        var centerDist = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.dist([this.transform.pos[0], this.transform.pos[1]], mousePos);
+        // console.log({
+        //     centerDist,
+        //     clickRadius: this.clickRadius,
+        //     inRadius: centerDist < this.clickRadius
+        // });
+        if (centerDist < this.clickRadius) {
+            // console.log('we clicked tree');
+            this.onMouseClick(mousePos);
+        }
+    };
+    Tree.prototype.onMouseClick = function (mousePos) {
+        // console.log(mousePos);
+        this.yourEntity.chopTree(this);
+    };
+    Tree.prototype.update = function (deltaTime) {
+        var _a;
+        (_a = this.currentAnimation) === null || _a === void 0 ? void 0 : _a.animate(deltaTime);
+        if (this.chopper) {
+            this.transform.pos = [this.chopper.transform.pos[0], this.chopper.transform.pos[1] - this.chopper.treeChopLocation[1]]; // tree hold location later
+        }
+        this.demoAnimationTimeCompleted += deltaTime;
+        if (this.demoAnimationTimeCompleted > this.demoAnimationTime) {
+            this.spriteParameters.branchState = this.spriteParameters.branchState - 1;
+            if (this.spriteParameters.branchState < 0) {
+                this.spriteParameters.branchState = 3;
+            }
+            this.demoAnimationTimeCompleted = 0;
+        }
+    };
+    Tree.prototype.animate = function () { };
+    Tree.prototype.exist = function () {
+        this.addCollider("General", this, 5);
+    };
+    Tree.baseParameters = {
+        w: 30 * 4,
+        h: 4 / 5 * 30 * 4
+    };
+    return Tree;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
+
+var TreeSprite = /** @class */ (function (_super) {
+    __extends(TreeSprite, _super);
+    function TreeSprite(transform, spriteParameters) {
+        var _this = _super.call(this, transform) || this;
+        _this.spriteParameters = spriteParameters;
+        _this.color = "green";
+        _this.width = Tree.baseParameters.w;
+        _this.height = Tree.baseParameters.h;
+        return _this;
+    }
+    TreeSprite.prototype.draw = function (ctx) {
+        var pos = this.transform.absolutePosition();
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+        if (this.spriteParameters.branchState === 3) {
+            this.drawTree(ctx);
+        }
+        else if (this.spriteParameters.branchState === 2) {
+            this.drawTwoBranchTree(ctx);
+        }
+        else if (this.spriteParameters.branchState === 1) {
+            this.drawOneBranchTree(ctx);
+        }
+        else if (this.spriteParameters.branchState === 0) {
+            this.drawBranchlessTree(ctx);
+        }
+        ctx.restore();
+    };
+    TreeSprite.prototype.drawBranchlessTree = function (ctx) {
+        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = "#E4D00A";
+        ctx.beginPath();
+        ctx.moveTo.apply(ctx, this.spriteParameters.tipWithoutBranches.left.getCoordinates()); // 16
+        ctx.lineTo.apply(// 16
+        ctx, this.spriteParameters.tipWithoutBranches.right.getCoordinates()); // 17
+        ctx.lineTo.apply(// 17
+        ctx, this.spriteParameters.right.trunk.getCoordinates()); // 8
+        ctx.lineTo.apply(// 8
+        ctx, this.spriteParameters.left.trunk.getCoordinates()); // 9
+        ctx.lineTo.apply(// 9
+        ctx, this.spriteParameters.tipWithoutBranches.left.getCoordinates()); // 16
+        ctx.stroke();
+    };
+    TreeSprite.prototype.drawTwoBranchTree = function (ctx) {
+        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = "#E4D00A";
+        ctx.beginPath();
+        ctx.moveTo.apply(ctx, this.spriteParameters.branchlessOne.left.getCoordinates()); // 19
+        ctx.lineTo.apply(// 19
+        ctx, this.spriteParameters.tipWithoutBranches.left.getCoordinates()); // 16
+        ctx.lineTo.apply(// 16
+        ctx, this.spriteParameters.tipWithoutBranches.right.getCoordinates()); // 17
+        ctx.lineTo.apply(// 17
+        ctx, this.spriteParameters.branchlessOne.right.getCoordinates()); // 18
+        ctx.stroke();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#097969";
+        ctx.beginPath();
+        ctx.moveTo.apply(ctx, this.spriteParameters.branchlessOne.right.getCoordinates()); // 18
+        ctx.lineTo.apply(// 18
+        ctx, this.spriteParameters.right.topCorner.getCoordinates()); // 3
+        ctx.lineTo.apply(// 3
+        ctx, this.spriteParameters.right.middleBranch.getCoordinates()); // 4
+        ctx.lineTo.apply(// 4
+        ctx, this.spriteParameters.right.middleCorner.getCoordinates()); // 5
+        ctx.lineTo.apply(// 5
+        ctx, this.spriteParameters.right.bottomBranch.getCoordinates()); // 6
+        ctx.lineTo.apply(// 6
+        ctx, this.spriteParameters.right.bottomCorner.getCoordinates()); // 7
+        ctx.stroke();
+        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = "#E4D00A";
+        ctx.beginPath();
+        ctx.moveTo.apply(ctx, this.spriteParameters.right.bottomCorner.getCoordinates()); // 7
+        ctx.lineTo.apply(// 7
+        ctx, this.spriteParameters.right.trunk.getCoordinates()); // 8
+        ctx.lineTo.apply(// 8
+        ctx, this.spriteParameters.left.trunk.getCoordinates()); // 9
+        ctx.lineTo.apply(// 9
+        ctx, this.spriteParameters.left.bottomCorner.getCoordinates()); // 10
+        ctx.stroke();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#097969";
+        ctx.beginPath();
+        ctx.moveTo.apply(ctx, this.spriteParameters.left.bottomCorner.getCoordinates()); // 10
+        ctx.lineTo.apply(// 10
+        ctx, this.spriteParameters.left.bottomBranch.getCoordinates()); // 11
+        ctx.lineTo.apply(// 11
+        ctx, this.spriteParameters.left.middleCorner.getCoordinates()); // 12
+        ctx.lineTo.apply(// 12
+        ctx, this.spriteParameters.left.middleBranch.getCoordinates()); // 13
+        ctx.lineTo.apply(// 13
+        ctx, this.spriteParameters.left.topCorner.getCoordinates()); // 14
+        ctx.lineTo.apply(// 14
+        ctx, this.spriteParameters.branchlessOne.left.getCoordinates()); // 19
+        ctx.stroke();
+    };
+    TreeSprite.prototype.drawOneBranchTree = function (ctx) {
+        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = "#E4D00A";
+        ctx.beginPath();
+        ctx.moveTo.apply(ctx, this.spriteParameters.branchlessTwo.left.getCoordinates()); // 21
+        ctx.lineTo.apply(// 21
+        ctx, this.spriteParameters.tipWithoutBranches.left.getCoordinates()); // 16
+        ctx.lineTo.apply(// 16
+        ctx, this.spriteParameters.tipWithoutBranches.right.getCoordinates()); // 17
+        ctx.lineTo.apply(// 17
+        ctx, this.spriteParameters.branchlessTwo.right.getCoordinates()); // 20
+        ctx.stroke();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#097969";
+        ctx.beginPath();
+        ctx.moveTo.apply(ctx, this.spriteParameters.branchlessTwo.right.getCoordinates()); // 20
+        ctx.lineTo.apply(// 20
+        ctx, this.spriteParameters.right.middleCorner.getCoordinates()); // 5
+        ctx.lineTo.apply(// 5
+        ctx, this.spriteParameters.right.bottomBranch.getCoordinates()); // 6
+        ctx.lineTo.apply(// 6
+        ctx, this.spriteParameters.right.bottomCorner.getCoordinates()); // 7
+        ctx.stroke();
+        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = "#E4D00A";
+        ctx.beginPath();
+        ctx.moveTo.apply(ctx, this.spriteParameters.right.bottomCorner.getCoordinates()); // 7
+        ctx.lineTo.apply(// 7
+        ctx, this.spriteParameters.right.trunk.getCoordinates()); // 8
+        ctx.lineTo.apply(// 8
+        ctx, this.spriteParameters.left.trunk.getCoordinates()); // 9
+        ctx.lineTo.apply(// 9
+        ctx, this.spriteParameters.left.bottomCorner.getCoordinates()); // 10
+        ctx.stroke();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#097969";
+        ctx.beginPath();
+        ctx.moveTo.apply(ctx, this.spriteParameters.left.bottomCorner.getCoordinates()); // 10
+        ctx.lineTo.apply(// 10
+        ctx, this.spriteParameters.left.bottomBranch.getCoordinates()); // 11
+        ctx.lineTo.apply(// 11
+        ctx, this.spriteParameters.left.middleCorner.getCoordinates()); // 12
+        ctx.lineTo.apply(// 12
+        ctx, this.spriteParameters.branchlessTwo.left.getCoordinates()); // 21
+        ctx.stroke();
+    };
+    TreeSprite.prototype.drawTree = function (ctx) {
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#097969";
+        ctx.beginPath();
+        ctx.moveTo.apply(ctx, this.spriteParameters.tip.getCoordinates()); // 1
+        ctx.lineTo.apply(// 1
+        ctx, this.spriteParameters.right.topBranch.getCoordinates()); // 2
+        ctx.lineTo.apply(// 2
+        ctx, this.spriteParameters.right.topCorner.getCoordinates()); // 3
+        ctx.lineTo.apply(// 3
+        ctx, this.spriteParameters.right.middleBranch.getCoordinates()); // 4
+        ctx.lineTo.apply(// 4
+        ctx, this.spriteParameters.right.middleCorner.getCoordinates()); // 5
+        ctx.lineTo.apply(// 5
+        ctx, this.spriteParameters.right.bottomBranch.getCoordinates()); // 6
+        ctx.lineTo.apply(// 6
+        ctx, this.spriteParameters.right.bottomCorner.getCoordinates()); // 7
+        ctx.stroke();
+        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = "#E4D00A";
+        ctx.beginPath();
+        ctx.moveTo.apply(ctx, this.spriteParameters.right.bottomCorner.getCoordinates()); // 7
+        ctx.lineTo.apply(// 7
+        ctx, this.spriteParameters.right.trunk.getCoordinates()); // 8
+        ctx.lineTo.apply(// 8
+        ctx, this.spriteParameters.left.trunk.getCoordinates()); // 9
+        ctx.lineTo.apply(// 9
+        ctx, this.spriteParameters.left.bottomCorner.getCoordinates()); // 10
+        ctx.stroke();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#097969";
+        ctx.beginPath();
+        ctx.moveTo.apply(ctx, this.spriteParameters.left.bottomCorner.getCoordinates()); // 10
+        ctx.lineTo.apply(// 10
+        ctx, this.spriteParameters.left.bottomBranch.getCoordinates()); // 11
+        ctx.lineTo.apply(// 11
+        ctx, this.spriteParameters.left.middleCorner.getCoordinates()); // 12
+        ctx.lineTo.apply(// 12
+        ctx, this.spriteParameters.left.middleBranch.getCoordinates()); // 13
+        ctx.lineTo.apply(// 13
+        ctx, this.spriteParameters.left.topCorner.getCoordinates()); // 14
+        ctx.lineTo.apply(// 14
+        ctx, this.spriteParameters.left.topBranch.getCoordinates()); // 15
+        ctx.lineTo.apply(// 15
+        ctx, this.spriteParameters.tip.getCoordinates()); // 1
+        ctx.stroke();
+    };
+    return TreeSprite;
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
+
+
+
+/***/ }),
+
+/***/ "./src/game_objects/Tree/TreeAnimationStates.ts":
+/*!******************************************************!*\
+  !*** ./src/game_objects/Tree/TreeAnimationStates.ts ***!
+  \******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   createShakeAnimation: () => (/* binding */ createShakeAnimation)
+/* harmony export */ });
+/* harmony import */ var _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/EntityState/Animate */ "./src/game_engine/EntityState/Animate.ts");
+
+var createShakeLeftAnimation = function (tree) {
+    var shakeRight = function (dT) {
+        var offset = -dT / 10;
+        return tree.spriteParameters.trunkShakeOffset.changeSize(offset);
+    };
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('ShakeRight', { tree: tree }, shakeRight, function () { return null; });
+};
+var createShakeRightAnimation = function (tree) {
+    var shakeRight = function (dT) {
+        var offset = dT / 10;
+        return tree.spriteParameters.trunkShakeOffset.changeSize(offset);
+    };
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('ShakeRight', {}, shakeRight, function () { return null; });
+};
+var createShakeCenterAnimation = function (tree) {
+    var shakeCenter = function (dT) {
+        var offset = -dT / 10;
+        tree.spriteParameters.trunkShakeOffset.size += offset;
+        if (tree.spriteParameters.trunkShakeOffset.size <= 0) {
+            tree.spriteParameters.trunkShakeOffset.size = 0;
+            return true;
+        }
+        return false;
+    };
+    var onShakeAnimationEnd = function () {
+        tree.currentAnimation = null;
+    };
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.Animation('ShakeCenter', { tree: tree }, shakeCenter, onShakeAnimationEnd);
+};
+var createShakeAnimation = function (tree) {
+    var shakeLeft = createShakeLeftAnimation(tree);
+    var shakeRight = createShakeRightAnimation(tree);
+    var shakeCenter = createShakeCenterAnimation(tree);
+    var animations = [
+        shakeLeft,
+        shakeRight,
+        shakeCenter
+    ];
+    return new _game_engine_EntityState_Animate__WEBPACK_IMPORTED_MODULE_0__.ParentAnimation('TreeShakeAnimation', animations);
+};
 
 
 /***/ }),
@@ -9837,7 +10865,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_objects_ClockworkGames_Bed__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./game_objects/ClockworkGames/Bed */ "./src/game_objects/ClockworkGames/Bed.ts");
 /* harmony import */ var _game_objects_ClockworkGames_Sandwich__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./game_objects/ClockworkGames/Sandwich */ "./src/game_objects/ClockworkGames/Sandwich.ts");
 /* harmony import */ var _game_objects_ClockworkGames_Plate__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./game_objects/ClockworkGames/Plate */ "./src/game_objects/ClockworkGames/Plate.ts");
-/* harmony import */ var _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./game_objects/ClockworkGames/Tree */ "./src/game_objects/ClockworkGames/Tree.ts");
+/* harmony import */ var _game_objects_Tree_Tree__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./game_objects/Tree/Tree */ "./src/game_objects/Tree/Tree.ts");
+/* harmony import */ var _game_objects_ClockworkGames_Machine__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./game_objects/ClockworkGames/Machine */ "./src/game_objects/ClockworkGames/Machine.ts");
+
 
 
 
@@ -9916,6 +10946,8 @@ var GameScript = /** @class */ (function () {
         this.loadClockworkContent();
         this.ship.transform.pos = [this.startPosition[0], this.startPosition[1], this.startPosition[2]];
     };
+    GameScript.prototype.loadStrikeTimeContent = function () {
+    };
     GameScript.prototype.loadClockworkContent = function () {
         new _game_objects_ClockworkGames_Sandwich__WEBPACK_IMPORTED_MODULE_22__.LeftSandwich(this.engine, [100, 80]);
         new _game_objects_ClockworkGames_Sandwich__WEBPACK_IMPORTED_MODULE_22__.RightSandwich(this.engine, [130, 80]);
@@ -9924,12 +10956,24 @@ var GameScript = /** @class */ (function () {
         new _game_objects_ClockworkGames_Plate__WEBPACK_IMPORTED_MODULE_23__.Plate(this.engine, [120, 95]);
         var yourEntity = new _game_objects_ClockworkGames_Entity_Entity__WEBPACK_IMPORTED_MODULE_20__.Entity(this.engine, [200, 390]);
         new _game_objects_ClockworkGames_Bed__WEBPACK_IMPORTED_MODULE_21__.Bed(this.engine, [200, 400], yourEntity);
-        new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [600, 300], yourEntity);
-        new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [625, 300], yourEntity);
-        new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [650, 300], yourEntity);
-        new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [675, 300], yourEntity);
-        new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [700, 300], yourEntity);
-        new _game_objects_ClockworkGames_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [725, 300], yourEntity);
+        new _game_objects_Tree_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [600, 300], yourEntity);
+        new _game_objects_Tree_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [700, 300], yourEntity);
+        new _game_objects_Tree_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [800, 300], yourEntity);
+        new _game_objects_Tree_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [900, 300], yourEntity);
+        new _game_objects_Tree_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [1000, 300], yourEntity);
+        new _game_objects_Tree_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [1100, 300], yourEntity);
+        // new Machinery(this.engine, [500, 300], false);
+        // new Machinery(this.engine, [500, 200], false);
+        // new Machinery(this.engine, [500, 100], false);
+        // new Machinery(this.engine, [700, 300], true );
+        // new Machinery(this.engine, [700, 200],true);
+        // new Machinery(this.engine, [700, 100],true);
+        // new Machinery(this.engine, [200, 300],false);
+        // new Machinery(this.engine, [200, 200],false);
+        // new Machinery(this.engine, [200, 100],false);
+        // new Machinery(this.engine, [200, 400],false);
+        new _game_objects_ClockworkGames_Machine__WEBPACK_IMPORTED_MODULE_25__.Machinery(this.engine, [595, 390], false);
+        new _game_objects_ClockworkGames_Machine__WEBPACK_IMPORTED_MODULE_25__.Machinery(this.engine, [705, 390], true);
     };
     // will need to duck type what happens when the scene is done and the game is over
     GameScript.prototype.loadGameElements = function (serializedGameElements, parentScene) {
@@ -9994,7 +11038,7 @@ var GameScript = /** @class */ (function () {
             this.rootScene.update(deltaTime);
         }
         else {
-            this.spawnSequence(deltaTime);
+            // this.spawnSequence(deltaTime);
         }
         this.changeExplosionColor();
     };
@@ -10842,7 +11886,7 @@ class BulletSprite extends _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+// This entry needs to be wrapped in an IIFE because it needs to be isolated against other modules in the chunk.
 (() => {
 /*!************************!*\
   !*** ./src/GEOWars.ts ***!
@@ -10870,6 +11914,16 @@ document.addEventListener("DOMContentLoaded", function () {
     var animationView = new _AnimationView__WEBPACK_IMPORTED_MODULE_4__.AnimationView(animationWindow);
     var levelDesigner = new _game_engine_Levels_levelDesigner__WEBPACK_IMPORTED_MODULE_3__.LevelDesigner(gameEngine, animationView, levelDesignerCtx);
     gameEngine.levelDesigner = levelDesigner;
+    window.addEventListener('focus', function () {
+        console.log('focussed');
+        gameEngine.focusUnPause();
+        animationView.focusUnPause();
+    });
+    window.addEventListener('blur', function () {
+        console.log('blurred');
+        gameEngine.focusPause();
+        animationView.focusPause();
+    });
     new _game_view__WEBPACK_IMPORTED_MODULE_1__.GameView(gameEngine, ctx, canvasEl, levelDesigner, animationView).start();
 });
 

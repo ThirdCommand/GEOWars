@@ -5,7 +5,7 @@ import { Grunt } from "./game_objects/enemies/Grunt/grunt";
 import { Weaver } from "./game_objects/enemies/Weaver/weaver";
 import { Singularity } from "./game_objects/enemies/Singularity/singularity";
 import { AlienShip } from "./game_objects/enemies/Singularity/alien_ship";
-import { Tree } from "./game_objects/ClockworkGames/Tree";
+import { Tree } from "./game_objects/Tree/Tree";
 import { RandomRandom } from "./game_objects/enemies/RandomRandom";
 import { Entity } from "./game_objects/ClockworkGames/Entity/Entity";
 import {Bed} from "./game_objects/ClockworkGames/Bed";
@@ -16,6 +16,8 @@ import { type LineSprite } from "./game_engine/line_sprite";
 import { type EnemyPlacer } from "./game_engine/Levels/LevelDesign/EnemyPlacer";
 import { type SpawnSerialized } from "./game_engine/Levels/DesignElements/Spawn";
 import { Transform } from "./game_engine/transform";
+import { Machinery } from "./game_objects/ClockworkGames/Machine";
+import { TreeGrip } from "./game_objects/ClockworkGames/SawMachine/TreeGrip";
 
 
 export class AnimationView {
@@ -43,6 +45,7 @@ export class AnimationView {
         }
         death(): void;
     };
+    focusPaused: boolean;
     
 
     overlayText: {
@@ -65,6 +68,7 @@ export class AnimationView {
         this.gameObjects = [];
         this.lineSprites = [];
         this.paused = false;
+        this.focusPaused = false;
         this.muted = false;
         this.gameScript = {
             tallyScore: () => {},
@@ -81,7 +85,7 @@ export class AnimationView {
             },
             death: () => {}
         };
-        this.zoomScale = 1;
+        this.zoomScale = 2;
         this.ship = {
             transform: new Transform()
         };
@@ -94,7 +98,7 @@ export class AnimationView {
             StartingAngle: 0,
         };
         this.overlayTextCleared = true;
-        this.addEnemy("LeftSandwich");
+        this.addEnemy("Grabber");
     }
 
     enemyPlacerSelected(enemyPlacer: EnemyPlacer) {
@@ -124,6 +128,9 @@ export class AnimationView {
     }
 
     animate(timeDelta: number) {
+        if(this.paused || this.focusPaused) {
+           return;
+        }
         this.animateGameObjects(timeDelta);
         this.clearCanvas();
         this.renderLineSprites(this.ctx);
@@ -218,6 +225,14 @@ export class AnimationView {
     // ctx.scale(1,1)
     }
 
+    focusUnPause() {
+        this.focusPaused = false;
+    }
+
+    focusPause() {
+        this.focusPaused = true;
+    }
+
     addGameObject(gameObject: GameObject) {
         this.gameObjects.push(gameObject);
     }
@@ -268,7 +283,7 @@ export class AnimationView {
             Singularity: (pos: [number, number]) => new Singularity(this, pos),
             AlienShip: (pos: [number, number]) => new AlienShip(this, pos, [0, 0], this.ship.transform),
             RANDOM: (pos: [number, number]) => new RandomRandom(this, pos),
-            Tree: (pos: [number, number]) => new Tree(this, pos),
+            Tree: (pos: [number, number]) => new Tree(this, pos, new Entity(this, pos)),
             Entity: (pos: [number, number]) => new Entity(this, pos),
             Bed: (pos: [number, number]) => new Bed(this, pos, new Entity(this, pos)),
             LeftSandwich: () => {
@@ -279,11 +294,13 @@ export class AnimationView {
                 // new Plate(this, [120, 95]);
                 // const entity = new Entity(this, [100, 90]);
                 // new Bed(this, [100, 100], entity);
-                new Tree(this, [100,100]);
+                // new Tree(this, [100,100]);
             },
-            Plate: (pos: [number, number]) => new Plate(this, pos)
+            Plate: (pos: [number, number]) => new Plate(this, pos),
+            Machine: (pos: [number, number]) => new Machinery(this, pos),
+            Grabber: (pos: [number, number]) => new TreeGrip(this, pos)
         };
-        enemyMap[type]([100, 100]);
+        enemyMap[type]([100 / this.zoomScale, 100 / this.zoomScale]);
     }
 }
 export type Types = 
@@ -299,6 +316,8 @@ export type Types =
 "Entity" | 
 "Bed" | 
 "LeftSandwich" | 
-"Plate";
+"Plate" | 
+"Machine" |
+"Grabber"
 
 

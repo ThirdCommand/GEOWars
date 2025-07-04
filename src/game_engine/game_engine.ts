@@ -76,6 +76,7 @@ export class GameEngine {
 
     gameScript: GameScript;
     paused: boolean;
+    focusPaused: boolean;
 
     defaultZoomScale: number; // TODO wtf is going on here
     zoomScale: number; // TODO wtf is going on here
@@ -178,7 +179,7 @@ export class GameEngine {
 
     tick(delta: number) {
         this.updateGraphicSetting(delta);
-        if (this.paused) {
+        if (this.paused || this.focusPaused) {
             this.updateControlListeners();
             return;
         }
@@ -463,6 +464,14 @@ export class GameEngine {
         this.startButtonListeners.forEach((listener) => {
             listener.updateStartButtonListener(pressed);
         });
+    }
+
+    focusUnPause() {
+        this.focusPaused = false;
+    }
+
+    focusPause() {
+        this.focusPaused = true;
     }
 
     // called by game view

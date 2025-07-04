@@ -1,12 +1,12 @@
 import { Entity, type EntitySpriteParameters } from "./Entity";
 import {Animation, ParentAnimation} from "../../../game_engine/EntityState/Animate";
 import { Bed, BedSpriteParameters, bedSpinAnimator } from "../Bed";
+import { Tree } from "../../Tree/Tree";
 
 type PauseForAnimationState = {
     timePaused: number;
     maxPauseTime: number;
 }
-
 
 export const createPauseAnimation = (entity: Entity, pauseTime: number) => {
     const pause = (dT: number, pauseState: PauseForAnimationState): boolean => {
@@ -17,7 +17,7 @@ export const createPauseAnimation = (entity: Entity, pauseTime: number) => {
         }
         return false;
     };
-    return new Animation<PauseForAnimationState>('PauseFor', {timePaused: 0, maxPauseTime: pauseTime}, pause);
+    return new Animation<PauseForAnimationState>('PauseFor', {timePaused: 0, maxPauseTime: pauseTime}, pause, () => null);
 };
 
 type SpinState = {
@@ -31,27 +31,37 @@ type SpinState = {
 // the entity is spun 360 degrees... maybe changeSize needs to set it to currentAngle - 2*PI when 360 is hit
 // but then the total angle change needs to be kept track in the animation state
 const entitySpinAnimator = (dT: number, animationState: SpinState, spriteParameters: EntitySpriteParameters): boolean => {
-    const angleChange = dT * animationState.spinSpeed;
-    if(angleChange > 0) {
-        animationState.totalSpun -= angleChange;
-        spriteParameters.bodyAngle.changeSize(angleChange);
-        return animationState.totalSpun < animationState.spinAngle;
-    } else {
+    const angleChange = dT * animationState.spinSpeed / 1000;
+    if(animationState.spinAngle > 0) {
         animationState.totalSpun += angleChange;
         spriteParameters.bodyAngle.changeSize(angleChange);
-        return animationState.totalSpun > animationState.spinAngle;
+        if(animationState.totalSpun > animationState.spinAngle) {
+            spriteParameters.bodyAngle.changeSize(animationState.spinAngle - animationState.totalSpun);
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        animationState.totalSpun -= angleChange;
+        spriteParameters.bodyAngle.changeSize(-angleChange);
+        if(animationState.totalSpun < animationState.spinAngle) {
+            spriteParameters.bodyAngle.changeSize(animationState.totalSpun - animationState.spinAngle);
+            return true;
+        } else {
+            return false;
+        }
     }
 };
 
 export const createSpin = (entity: Entity, spinAngle: number, spinSpeed: number) => {
-    return new Animation<SpinState, EntitySpriteParameters>('Spin', {totalSpun: 0, spinSpeed, spinAngle}, entitySpinAnimator, entity.spriteParameters);
+    return new Animation<SpinState, EntitySpriteParameters>('Spin', {totalSpun: 0, spinSpeed, spinAngle}, entitySpinAnimator, () => null, entity.spriteParameters);
 };
 
 export const createSpinningAnimation = (entity: Entity) => {
-    const firstPause = createPauseAnimation(entity, 300);
-    const spinRight = createSpin(entity, Math.PI, 0.8);
-    const spinLeft = createSpin(entity, -Math.PI, -0.8);
-    const secondPause = createPauseAnimation(entity, 500);
+    const firstPause = createPauseAnimation(entity, 2000);
+    const spinRight = createSpin(entity, Math.PI, 1);
+    const spinLeft = createSpin(entity, -Math.PI, 1);
+    const secondPause = createPauseAnimation(entity, 3000);
     const animations = [
         firstPause, spinRight, secondPause, spinLeft
     ];
@@ -99,7 +109,7 @@ export const createCloseStrained = (entity: Entity) => {
         }
         return false;
     };
-    return new Animation<object, EntitySpriteParameters>('CloseStrained', {}, closeStrained, entity.spriteParameters);
+    return new Animation<object, EntitySpriteParameters>('CloseStrained', {}, closeStrained, () => null, entity.spriteParameters);
 };
 
 export const createOpenBounceAnimation = (entity: Entity) => {
@@ -149,7 +159,7 @@ export const createOpenBounceAnimation = (entity: Entity) => {
 
     };
 
-    return new Animation<object, EntitySpriteParameters>('OpenBounce', {}, openBounce,entity.spriteParameters);
+    return new Animation<object, EntitySpriteParameters>('OpenBounce', {}, openBounce, () => null, entity.spriteParameters);
 };
 
 export const createSqueezeAnimation = (entity: Entity) => {
@@ -177,6 +187,7 @@ export const createSqueezeAnimation = (entity: Entity) => {
 //         }
 //     }
 // };
+
 type BedEntitySpinAnimationState =  {bed: Bed; entity: Entity};
 type BedEntitySpinSpriteParameters = {bed: BedSpriteParameters, entity: EntitySpriteParameters};
 export const createBedEntitySpinAnimation = (
@@ -197,10 +208,17 @@ export const createBedEntitySpinAnimation = (
         bedSpinAnimator(dT,spriteParameters.entity.bodyAngle, spriteParameters.bed);
         return spinResult;
     };
-    return new Animation<BedEntitySpinAnimationState,BedEntitySpinSpriteParameters>(
+    const endBedSpinAnimation = (
+        animationState: BedEntitySpinAnimationState, 
+        spriteParameters: BedEntitySpinSpriteParameters
+    ): null  => {
+        return null;
+    };
+    return new Animation<BedEntitySpinAnimationState, BedEntitySpinSpriteParameters>(
         'BedEntitySpin', 
         {bed, entity}, 
         bedEntitySpinAnimator,
+        endBedSpinAnimation,
         {bed: bed.spriteParameters, entity: entity.spriteParameters}
     );
     
@@ -224,6 +242,7 @@ export const createGoingToBedAnimation = (entity: Entity, bed: Bed) => {
 export const createBobAnimation = (entity: Entity) => {
     const bobAnimationState = {
         entityTransform: entity.transform,
+        entity: entity,
         yOffset: 0,
         maxBob: 10,
         bobSpeed: entity.moveToSpeed/100,
@@ -232,9 +251,12 @@ export const createBobAnimation = (entity: Entity) => {
         animationProgress: 0
         // spot I can add more state if needed I guess
     };
-    const bobAnimator = (dT: number, animationState: typeof bobAnimationState, spriteParameters: EntitySpriteParameters) => {
+    const bobAnimator = (dT: number, animationState: typeof bobAnimationState, spriteParameters: EntitySpriteParameters): false => {
         // should probably split these into two separate animations. 
         // then I'll have control over how it behaves while bouncing up vs down
+        if(bobAnimationState.entity.treeHeld) {
+            return false;
+        }
         const entityTransform = animationState.entityTransform;
         let yOffsetIncrement = dT * animationState.bobSpeed * animationState.bobDirection * (0.4 + (1 - animationState.animationProgress) * 0.8);
         
@@ -274,9 +296,155 @@ export const createBobAnimation = (entity: Entity) => {
         
         
     };
-    const bobAnimation = new Animation<typeof bobAnimationState>('bob', bobAnimationState, bobAnimator);
-    
-    const moveToAnimation = new ParentAnimation('moveTo', [bobAnimation]);
-    moveToAnimation.animations = [bobAnimation];
+    const endBobAnimation = (animationState: typeof bobAnimationState, spriteParameters: EntitySpriteParameters) => {
+        // animationState.entityTransform.pos[1] -= animationState.yOffset;
+        const resetLeftAngle = spriteParameters.arms.left.angle.originalSize - spriteParameters.arms.left.angle.size;
+        spriteParameters.arms.left.angle.changeAngle(resetLeftAngle);
+        const resetRightAngle = spriteParameters.arms.right.angle.originalSize - spriteParameters.arms.right.angle.size;
+        spriteParameters.arms.right.angle.changeAngle(resetRightAngle);
+        console.log({resetLeftAngle, resetRightAngle});
+    };
+    return new Animation<typeof bobAnimationState, EntitySpriteParameters>('Bob', bobAnimationState, bobAnimator, endBobAnimation, entity.spriteParameters);
 };
+
+export const createChopAnimation = (entity: Entity, tree: Tree) => {
+    const firstPause = createPauseAnimation(entity, 300);
+    const secondPause = createPauseAnimation(entity, 300);
+    const chopAnimationState = {
+        // measured absolutely so that it looks like a chop even if the start angle is "wrong"
+        chopEndAngle: Math.PI * 3.5/8,
+        chopStartAngle: Math.PI/2,
+        chopCount: 0,
+        maxChops: 4,
+
+    }
+    const chop = (dT: number, animationState: typeof chopAnimationState, spriteParameters: EntitySpriteParameters): boolean => {
+        // not accounting for when one arm is off from another. A real animation should account for that
+        if(spriteParameters.arms.left.angle.size > animationState.chopEndAngle) {
+            spriteParameters.arms.left.angle.changeAngle(-dT * 0.8/1500);
+            spriteParameters.arms.right.angle.changeAngle(dT * 0.8/1500);
+            return false
+        }
+        animationState.chopCount += 1;
+        tree.possibleAnimations.shakeTree();
+        if(animationState.chopCount >= animationState.maxChops) {
+            entity.currentAnimation = null;
+            tree.chopper = entity;
+            entity.holdTree(tree);
+            entity.possibleActivities.moveTo([entity.transform.pos[0], entity.transform.pos[1] + 80])
+        }
+        return true;
+    };
+
+    const chopBackswing = (dT: number, animationState: typeof chopAnimationState, spriteParameters: EntitySpriteParameters): boolean => {
+        if(spriteParameters.arms.left.angle.size < animationState.chopStartAngle) {
+            spriteParameters.arms.left.angle.changeAngle(dT * 0.8/1500);
+            spriteParameters.arms.right.angle.changeAngle(-dT * 0.8/1500);
+            return false;
+        } else {
+            return true;
+        }
+    };
+    
+    const animations = [
+        firstPause,
+        new Animation<typeof chopAnimationState, EntitySpriteParameters>(
+            'Chop', 
+            chopAnimationState, 
+            chop, 
+            () => null, 
+            entity.spriteParameters
+        ),
+        secondPause,
+        new Animation<typeof chopAnimationState, EntitySpriteParameters>('ChopBackswing', chopAnimationState, chopBackswing, () => null, entity.spriteParameters)
+    ];
+    return new ParentAnimation('Chop', animations);
+};
+
+const entityChopAnimator = (dT: number, animationState: EntitySpriteParameters) => {
+    // arms spin towards each other 
+    animationState.arms.left.angle.changeAngle(dT * 0.8/1500);
+}
+
+// lets do a demo animation of the arm around the entity to show it works
+
+export const createArmDemoAnimation = (entity: Entity) => {
+
+    const nextArmSideClockwise = (leftOrRightArm: 'left' | 'right') => {
+        const sideChangeMap: {[key: string]: 'RIGHT' | 'BOTTOM' | 'LEFT' | 'TOP'} = {
+            RIGHT: "BOTTOM",
+            BOTTOM: "LEFT",
+            LEFT: "TOP",
+            TOP: "RIGHT"
+        }
+
+        if(leftOrRightArm === 'left') {
+            entity.spriteParameters.arms.left.sidePosition.side = sideChangeMap[entity.spriteParameters.arms.left.sidePosition.side];
+        }
+        else {
+            entity.spriteParameters.arms.right.sidePosition.side = sideChangeMap[entity.spriteParameters.arms.right.sidePosition.side];
+        }
+    }
+    const nextArmSideCounterClockwise = (leftOrRightArm: 'left' | 'right') => {
+        const sideChangeMap: {[key: string]: 'RIGHT' | 'BOTTOM' | 'LEFT' | 'TOP'} = {
+            RIGHT: "TOP",
+            BOTTOM: "RIGHT",
+            LEFT: "BOTTOM",
+            TOP: "LEFT"
+        }
+
+        if(leftOrRightArm === 'left') {
+            entity.spriteParameters.arms.left.sidePosition.side = sideChangeMap[entity.spriteParameters.arms.left.sidePosition.side];
+        }
+        else {
+            entity.spriteParameters.arms.right.sidePosition.side = sideChangeMap[entity.spriteParameters.arms.right.sidePosition.side];
+        }
+    }
+
+    const armDemoAnimationState = {
+    };
+
+    const moveLeftArmClockwise = (dT: number, animationState: typeof armDemoAnimationState, spriteParameters: EntitySpriteParameters) => {
+        // starts TOP close to the end
+        // move right until limit
+        // change side
+        // move down until limit
+        // change side
+        // move left until limit
+        // change side
+        // move up until limit
+        // change side
+        // repeat
+        const armMoveSpeed = 0.8/1500;
+        if (spriteParameters.arms.left.sidePosition.side === 'TOP') {
+            if (spriteParameters.arms.left.position.x.changeSize(dT * armMoveSpeed)) {
+                // not sure if this is 0 or PI/2
+                spriteParameters.arms.left.sidePosition.sideAngle.size = 0;
+                nextArmSideCounterClockwise('left');
+            }
+        }
+        else if(spriteParameters.arms.left.sidePosition.side === 'RIGHT') {
+            if(spriteParameters.arms.left.sidePosition.sideAngle.changeAngle(dT * armMoveSpeed / spriteParameters.arms.left.sidePosition.length.size)) {
+                spriteParameters.arms.left.angle.size = Math.PI;
+                nextArmSideCounterClockwise('left');
+            } 
+        }
+        else if(spriteParameters.arms.left.sidePosition.side === 'BOTTOM') {
+            if(spriteParameters.arms.left.position.x.changeSize(dT * -armMoveSpeed)) {
+                nextArmSideClockwise('left');
+            }
+        }
+        else if(spriteParameters.arms.left.sidePosition.side === 'LEFT') {
+            if(spriteParameters.arms.left.sidePosition.sideAngle.changeAngle(dT * armMoveSpeed / spriteParameters.arms.left.sidePosition.length.size)) {
+                spriteParameters.arms.left.angle.size = 0;
+                nextArmSideCounterClockwise('left');
+            } 
+        }
+       
+        return false;
+    }
+
+
+
+}
 

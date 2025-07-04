@@ -7,5 +7,7 @@
       "allowJs": true,
       "moduleResolution": "node",
       "sourceMap": true,
+      "noUnusedLocals": false,
+      "noUnusedParameters": false
     }
   }

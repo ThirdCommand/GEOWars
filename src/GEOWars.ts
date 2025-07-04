@@ -18,5 +18,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const levelDesigner = new LevelDesigner(gameEngine, animationView, levelDesignerCtx);
     gameEngine.levelDesigner = levelDesigner;
 
+    window.addEventListener('focus', () => {
+        console.log('focussed')
+        gameEngine.focusUnPause();
+        animationView.focusUnPause();
+    });
+    
+    window.addEventListener('blur', () => {
+        console.log('blurred')
+        gameEngine.focusPause();
+        animationView.focusPause();
+    });
+
     new GameView(gameEngine, ctx, canvasEl, levelDesigner, animationView).start();
 });
