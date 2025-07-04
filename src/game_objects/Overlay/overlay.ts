@@ -29,7 +29,7 @@ export class Overlay extends GameObject {
         this.currentFrameRateUpdateTime = 0; 
         this.currentFrameCount = 0;
         this.frameRate = 0;
-        this.addLineSprite(new OverlaySprite(this.shipTransform, GameScript.DIM_X, GameScript.DIM_Y, this.gameEngine));
+        this.addLineSprite(new OverlaySprite(this.shipTransform, GameScript.DIM_X, GameScript.DIM_Y, engine));
     }
 
     update(deltaTime: number) {
@@ -53,7 +53,7 @@ export class Overlay extends GameObject {
 
 
 export class OverlaySprite extends LineSprite {
-    gameEngine: GameEngine | AnimationView;
+    gameEngine: GameEngine;
     width: number;
     height: number;
     score: number;
@@ -63,7 +63,7 @@ export class OverlaySprite extends LineSprite {
     fontStyle: string;
     shadowColor: Color;
     color: Color;
-    constructor(transform: Transform, DIM_X: number, DIM_Y: number, gameEngine: GameEngine | AnimationView) {
+    constructor(transform: Transform, DIM_X: number, DIM_Y: number, gameEngine: GameEngine) {
         super(transform);
         this.gameEngine = gameEngine;
         this.transform = transform;
@@ -84,9 +84,9 @@ export class OverlaySprite extends LineSprite {
 
     draw(ctx: CanvasRenderingContext2D) {
         ctx.save();
-        ctx.scale(1 / this.gameEngine.zoomScale, 1 / this.gameEngine.zoomScale);
+        ctx.scale(1 / this.gameEngine.activeCamera.zoomScale, 1 / this.gameEngine.activeCamera.zoomScale);
         const zoomFactor = this.gameEngine instanceof GameEngine ? 
-            this.gameEngine.zoomScale / this.gameEngine.defaultZoomScale : 
+            this.gameEngine.activeCamera.zoomScale / this.gameEngine.activeCamera.defaultZoomScale : 
             1;
         ctx.font = this.fontSize * 1.3 + "px " + this.fontStyle;
         ctx.fillStyle = this.color.evaluateColor();
@@ -96,8 +96,8 @@ export class OverlaySprite extends LineSprite {
         // }
         ctx.fillText(
             displayText,
-            (this.transform.pos[0] - 350 / zoomFactor) * this.gameEngine.zoomScale, 
-            (this.transform.pos[1] - 150 / zoomFactor) * this.gameEngine.zoomScale
+            (this.transform.pos[0] - 350 / zoomFactor) * this.gameEngine.activeCamera.zoomScale, 
+            (this.transform.pos[1] - 150 / zoomFactor) * this.gameEngine.activeCamera.zoomScale
         );
         ctx.restore();
     }

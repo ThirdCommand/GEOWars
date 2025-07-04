@@ -7,14 +7,12 @@ import { type Transform } from "../../game_engine/transform";
 import { type AnimationView } from "../../AnimationView";
 
 export class ParticleExplosion extends GameObject{
-    cameraTransform: Transform;
     currentColor: Color;
     particleNum: number;
     constructor(engine: GameEngine | AnimationView, pos: [number, number, number?]){
         super(engine);
         this.transform.pos[0] = pos[0];
         this.transform.pos[1] = pos[1];
-        this.cameraTransform = engine.gameScript.ship.cameraTransform;
         const startingH = (this.gameEngine.gameScript.explosionColorWheel + Math.random() * 60)% 360;
         const opacity = Math.random() * 0.35 + 0.6;
         this.currentColor = new Color(

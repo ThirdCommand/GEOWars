@@ -18,6 +18,7 @@ import { type SpawnSerialized } from "./game_engine/Levels/DesignElements/Spawn"
 import { Transform } from "./game_engine/transform";
 import { Machinery } from "./game_objects/ClockworkGames/Machine";
 import { TreeGrip } from "./game_objects/ClockworkGames/SawMachine/TreeGrip";
+import { Camera } from "./game_engine/camera";
 
 
 export class AnimationView {
@@ -61,6 +62,7 @@ export class AnimationView {
     graphicQuality: number;
     paused: boolean;
     muted: boolean;
+    activeCamera: Camera;
 
     constructor(ctx: CanvasRenderingContext2D) {
         this.ctx = ctx;

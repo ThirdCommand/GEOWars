@@ -140,7 +140,7 @@ export class GameScript {
         }
         this.intervalTime = 0;
         // clockwork content
-        this.loadClockworkContent();
+        // this.loadClockworkContent();
         this.ship.transform.pos = [this.startPosition[0], this.startPosition[1], this.startPosition[2]];
     }
 
@@ -241,7 +241,7 @@ export class GameScript {
         if(this.playFromRootScene) {
             this.rootScene.update(deltaTime);
         } else {
-            // this.spawnSequence(deltaTime);
+            this.spawnSequence(deltaTime);
         }
         this.changeExplosionColor();
     }
@@ -652,7 +652,7 @@ export class GameScript {
     }
 
     createShip() {
-        return new Ship(this.engine, this.startPosition, this.initialCameraZPos);
+        return new Ship(this.engine, this.startPosition);
     }
 
     createWalls() {

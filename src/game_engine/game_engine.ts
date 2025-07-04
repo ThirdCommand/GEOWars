@@ -5,6 +5,8 @@ import { type PhysicsComponent } from "./physics_component";
 import {type Collider} from "./collider";
 import { type Sound } from "./sound";
 import { type LevelDesigner } from "./Levels/levelDesigner";
+import { Camera } from "./camera";
+import { Transform } from "./transform";
 
 declare global {
     interface Window {
@@ -45,6 +47,8 @@ interface StartButtonListenable {
 
 export class GameEngine {
     ctx: CanvasRenderingContext2D;
+    cameras: Camera[];
+    activeCamera: Camera;
     gameObjects: GameObject[];
     physicsComponents: PhysicsComponent[];
     lineSprites: LineSprite[];
@@ -95,11 +99,13 @@ export class GameEngine {
 
     controller: object | null;
 
-    stillCanDie: boolean; // gameScript stuff I think
-
     constructor(ctx: CanvasRenderingContext2D) {
         this.ctx = ctx;
         window.engine = this;
+        this.defaultZoomScale = 1.3;
+        this.zoomScale = 1.3;
+        this.cameras = [];
+        this.activeCamera = new Camera(this, new Transform());
         this.gameObjects = [];
         this.physicsComponents = [];
         this.lineSprites = [];
@@ -128,16 +134,13 @@ export class GameEngine {
         // this.toRemoveQueue = [];
         this.paused = false;
         // this.currentCamera = null;
-        this.defaultZoomScale = 1.3;
-        this.zoomScale = 1.3;
+        
         this.graphicQuality = 1;
         this.setupController();
         this.setupPerformance();
         this.gameEditorOpened = false;
         this.frameCountForPerformance = 0;
         this.levelDesigner = null;
-
-        this.stillCanDie = false;
     }
 
     setupPerformance() {
@@ -278,22 +281,6 @@ export class GameEngine {
     togglePause() {
     // console.log("pausetoggle")
         this.paused ? this.unPause() : this.pause();
-    }
-
-    clearCanvas() {
-        this.ctx.clearRect(
-            -GameScript.DIM_X,
-            -GameScript.DIM_Y,
-            GameScript.DIM_X * this.zoomScale * 4,
-            GameScript.DIM_Y * this.zoomScale * 4
-        );
-        this.ctx.fillStyle = GameScript.BG_COLOR;
-        this.ctx.fillRect(
-            -GameScript.DIM_X,
-            -GameScript.DIM_Y,
-            GameScript.DIM_X * this.zoomScale * 4,
-            GameScript.DIM_Y * this.zoomScale * 4
-        );
     }
 
     addLeftControlStickListener(object: LeftControlStickListenable) {
@@ -545,13 +532,9 @@ export class GameEngine {
         // }
         const subscribers = this.subscribers;
         const colliders = this.colliders;
-        this.stillCanDie = false;
+        
         // console.log(this.subscribers)
         subscribers.forEach((subscriber) => {
-            if (subscriber.type === "ShipDeath") { // gameScript stuff
-                this.stillCanDie = true;
-                // console.log("CAN DIE")
-            }
             subscriber.subscriptions.forEach((subscription) => {
                 colliders[subscription] = colliders[subscription] || {};
                 subscriber.subscribedColliderTypes.forEach((colliderType) => {
@@ -563,23 +546,6 @@ export class GameEngine {
                 });
             });
         });
-        if (!this.stillCanDie) {
-            // console.log(this.gameScript.ship.collider)
-            this.gameScript.ship.addCollider(
-                "General",
-                this.gameScript.ship,
-                this.gameScript.ship.radius,
-                null,
-                null
-            );
-            this.gameScript.ship.addCollider(
-                "ShipDeath",
-                this.gameScript.ship,
-                this.gameScript.ship.radius,
-                ["BoxBox", "Singularity", "Weaver", "Grunt", "Arrow", "Pinwheel"],
-                ["General"]
-            );
-        }
     }
 
     updateGameObjects(delta: number) {
@@ -599,12 +565,27 @@ export class GameEngine {
         this.soundsToPlay = {};
     }
 
+    addCamera(camera: Camera) {
+        this.cameras.push(camera);
+        if (this.cameras.length === 1) {
+            camera.makeActiveCamera();
+        }
+    }
+
+    setActiveCamera(camera: Camera) {
+        this.cameras.forEach((cam) => {
+            cam.activeCamera = false;
+        })
+        this.activeCamera = camera;
+    }
+
+
     renderLineSprites(ctx: CanvasRenderingContext2D) {
         // ctx.scale = gameEngine.currentCamera.zoomScale
-        this.clearCanvas();
+        this.activeCamera.clearView(ctx);
         this.ctx.save();
+        this.activeCamera.setZoomScale(ctx);
         // this belongs in the camera #camera
-        this.ctx.scale(this.zoomScale, this.zoomScale);
         this.lineSprites.forEach((sprite) => {
             sprite.draw(ctx);
         });

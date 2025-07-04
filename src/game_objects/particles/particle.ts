@@ -32,6 +32,7 @@ export class Particle extends GameObject{
         this.transform.pos[1] = pos[1];
         this.transform.pos[2] = pos[2] || 0;
         
+        // explosion paralax
         if(engine instanceof GameEngine) {
             this.transform.cameraTransform = engine.gameScript.ship.cameraTransform;
         }

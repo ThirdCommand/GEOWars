@@ -73,7 +73,7 @@ export class Machinery extends GameObject {
     spriteParameters: MachinerySpriteParameters;
 
     treeGripper: TreeGrip;
-    constructor (engine: GameEngine | AnimationView, pos: [number, number], mirrored: boolean) {
+    constructor (engine: GameEngine | AnimationView, pos: [number, number], mirrored: boolean = false) {
         super(engine);
         this.transform.pos = [pos[0] - 50, pos[1]]
         const scale = 0.2

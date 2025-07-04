@@ -7,12 +7,15 @@ import { LineSprite } from "../../game_engine/line_sprite";
 import { GameEngine } from "../../game_engine/game_engine";
 import { GameScript } from "../../game_script";
 import { type Collider } from "../../game_engine/collider";
+import { Camera } from "../../game_engine/camera";
 
 export type DirectionKey = 'w' | 'a' | 's' | 'd'
+
 export class Ship extends GameObject {
     lineSprite: ShipSprite;
     cameraTransform: Transform;
     radius: number;
+    camera: Camera;
     maxSpeed: number;
     mousePos: [number,number];
     fireAngle: number;
@@ -47,12 +50,14 @@ export class Ship extends GameObject {
         d: [1, 0],
     };
 
-    constructor(engine: GameEngine, pos: [number, number, number?], initialCameraZPos: number) { 
+    constructor(engine: GameEngine, pos: [number, number, number?]) { 
         super(engine);
         this.transform.pos = pos;
         this.transform.pos[2] = 0;
-        this.cameraTransform = new Transform();
-        this.cameraTransform.pos = [pos[0], pos[1], initialCameraZPos];
+
+        this.camera = new Camera(engine, new Transform(null, [pos[0], pos[1]]));
+        this.cameraTransform = this.camera.transform; 
+
         this.addPhysicsComponent();
         this.addMousePosListener();
         this.addLeftControlStickListener();
@@ -176,12 +181,12 @@ export class Ship extends GameObject {
         this.gameEngine.ctx.save();
         const shipXPos = this.transform.pos[0];
         const shipYPos = this.transform.pos[1];
-        const zoomScale = this.gameEngine.zoomScale;
+        const zoomScale = this.gameEngine.activeCamera.zoomScale;
         const width = GameScript.DIM_X;
         const height = GameScript.DIM_Y;
 
-        this.cameraTransform.pos[0] = shipXPos;
-        this.cameraTransform.pos[1] = shipYPos;
+        this.camera.transform.pos[0] = shipXPos;
+        this.camera.transform.pos[1] = shipYPos;
         // this.cameraTransform.pos[2] = based on zoomScale
 
         this.gameEngine.ctx.translate(
@@ -210,11 +215,10 @@ export class Ship extends GameObject {
         const smallestZoomScale = 0.75; // of the origional zoomscale
         const smallest = this.findSmallestDistanceToAWall();
         if (smallest < distanceToZoomChange) {
-            if(this.gameEngine instanceof GameEngine)
-                this.gameEngine.zoomScale = this.gameEngine.defaultZoomScale * (smallest / distanceToZoomChange * (1 - smallestZoomScale) + smallestZoomScale);
+            this.gameEngine.activeCamera.zoomScale = this.gameEngine.activeCamera.defaultZoomScale * (smallest / distanceToZoomChange * (1 - smallestZoomScale) + smallestZoomScale);
         } else {
-            if(this.gameEngine instanceof GameEngine)
-                this.gameEngine.zoomScale = this.gameEngine.defaultZoomScale;
+            this.gameEngine.activeCamera.zoomScale = this.gameEngine.activeCamera.defaultZoomScale
+                
         }
 
         // this should also update the camera's Z position
@@ -346,7 +350,7 @@ export class Ship extends GameObject {
         }
         const shipXPos = this.transform.pos[0];
         const shipYPos = this.transform.pos[1];
-        const zoomScale = this.gameEngine.zoomScale;
+        const zoomScale = this.gameEngine.activeCamera.zoomScale;
         const width = GameScript.DIM_X;
         const height = GameScript.DIM_Y;
 

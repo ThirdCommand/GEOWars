@@ -13,7 +13,7 @@ export class TreeGrip extends GameObject {
     lineSprite: TreeGripSprite;
     spriteParameters: TreeGripSpriteParameters;
 
-    constructor(engine: GameEngine | AnimationView, pos: [number, number], angle: number) {
+    constructor(engine: GameEngine | AnimationView, pos: [number, number], angle: number = 0) {
         super(engine);
         this.transform.pos = [pos[0], pos[1]];
         this.transform.angle = angle;
