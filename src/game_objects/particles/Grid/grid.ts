@@ -13,7 +13,7 @@ export class Grid extends GameObject {
     elasticity: number;
     dampening: number;
     gridPoints: GridPoint[][];
-    constructor(engine: GameEngine, cameraTransform: Transform) {
+    constructor(engine: GameEngine) {
         super(engine);
 
         this.transform.pos = [0,0];
@@ -22,9 +22,9 @@ export class Grid extends GameObject {
         this.elasticity = 0.1; // force provided to pull particle back into place
         this.dampening = 0.1; // force produced from velocity (allows things to eventuall fall to rest)
 
-        this.gridPoints = this.createGridPoints(cameraTransform);
+        this.gridPoints = this.createGridPoints();
 
-        this.addLineSprite(new GridSprite(this.transform, this.gridPoints, cameraTransform));
+        this.addLineSprite(new GridSprite(this.transform, this.gridPoints));
         // this.addPhysicsComponent()
         // this.addCollider("General", this, this.radius)
     }
@@ -85,7 +85,7 @@ export class Grid extends GameObject {
         // gridPoint.transform.vel[2] = velContribution[2];
     }
 
-    createGridPoints(cameraTransform: Transform){
+    createGridPoints(){
         const columnCount = 90; // 40
         const rowCount = 45; // 24
         const gridPoints = [];
@@ -99,7 +99,7 @@ export class Grid extends GameObject {
                     continue;
                 }
                 const position: [number,number,number] = [xPosition, yPosition, 0];
-                gridRow.push(new GridPoint(this.gameEngine, position, cameraTransform));
+                gridRow.push(new GridPoint(this.gameEngine, position));
             }
             
             gridPoints.push(gridRow.slice());
@@ -118,13 +118,10 @@ export class Grid extends GameObject {
 
 export class GridSprite extends LineSprite {
     color: Color;
-    cameraTransform: Transform;
-    // I think gridpoints are an array of an array of grid points
     gridPoints: GridPoint[][];
-    constructor(transform: Transform, gridPoints: GridPoint[][], cameraTransform: Transform) {
+    constructor(transform: Transform, gridPoints: GridPoint[][]) {
         super(transform);
         this.gridPoints = gridPoints;
-        this.cameraTransform = cameraTransform;
 
         this.color = new Color(
             "hsla", [202, 100, 70, 0.2]
@@ -135,6 +132,19 @@ export class GridSprite extends LineSprite {
         ctx.save();
         ctx.strokeStyle = this.color.evaluateColor();
         ctx.lineWidth = 2;
+
+        const firstGridPoint = this.gridPoints[0][0];
+        if(isNaN(firstGridPoint.transform.absolutePosition()[0])) {
+            console.log('position: ',firstGridPoint.transform.pos)
+            console.log('cameraPosition: ',firstGridPoint.transform.cameraTransform.pos)
+        };
+        if(this.gridPoints[0][0].transform.cameraTransform !== this.transform.cameraTransform) {
+            this.gridPoints.forEach((row) => {
+                row.forEach((point) => {
+                    point.transform.cameraTransform = this.transform.cameraTransform;
+                });
+            })
+        }
         this.drawRows(ctx);
         this.drawColumns(ctx);
         ctx.restore();

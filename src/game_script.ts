@@ -103,7 +103,7 @@ export class GameScript {
         this.ship = this.createShip();
         this.createStars();
         this.walls = this.createWalls();
-        this.grid = this.createGrid(this.ship.cameraTransform);
+        this.grid = this.createGrid();
         this.overlay = this.createOverlay();
         this.enemyCreatorMap = this.createEnemyCreators();
         this.engine.addXButtonListener(this);
@@ -211,7 +211,7 @@ export class GameScript {
             const Y = (runoffFactor * Math.random() - runoffFactor/2) * GameScript.DIM_Y;
             // const Z = -this.initialCameraZPos * 0.25 + -this.initialCameraZPos * 2 * Math.random();
             const Z = -this.initialCameraZPos * (0.5 + 2* Math.random());
-            new Star(this.engine, [X, Y, Z], this.ship.cameraTransform);
+            new Star(this.engine, [X, Y, Z]);
         }
     }
 
@@ -238,11 +238,12 @@ export class GameScript {
             } else {
                 deltaTime = 0;
             }
-        } 
+        }
 
         if(this.playFromRootScene) {
             this.rootScene.update(deltaTime);
         } else {
+            this.gameTime += deltaTime;
             this.spawnSequence(deltaTime);
             if(this.secondShipCreated === false && this.gameTime > 5000) {
                 this.secondShipCreated = true;
@@ -416,7 +417,7 @@ export class GameScript {
             Weaver: (pos: [number, number]) => new Weaver(engine, pos, this.ship.transform),
             Singularity: (pos: [number, number]) => new Singularity(engine, pos),
             AlienShip: (pos: [number, number]) =>
-                new AlienShip(engine, pos, [0, 0], this.ship.transform),
+                new AlienShip(engine, pos, [0, 0]),
         };
     }
 
@@ -539,8 +540,6 @@ export class GameScript {
 
     spawnSequence(delta: number) {
         this.intervalTime += delta;
-
-        this.gameTime += delta;
 
         if (this.sequenceCount === 1) {
             this.enemyCreatorMap["Singularity"]([700, 300]);
@@ -665,12 +664,12 @@ export class GameScript {
         return new Walls(this.engine);
     }
 
-    createGrid(cameraTransform: Transform) {
-        return new Grid(this.engine, cameraTransform);
+    createGrid() {
+        return new Grid(this.engine);
     }
 
     createOverlay() {
-        return new Overlay(this.engine, this, this.ship.transform);
+        return new Overlay(this.engine, this);
     }
 
     static isOutOfBounds(pos: [number, number, number?], radius: number) {

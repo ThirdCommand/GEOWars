@@ -283,7 +283,7 @@ export class AnimationView {
             Grunt: (pos: [number, number]) => new Grunt(this, pos, this.ship.transform),
             Weaver: (pos: [number, number]) => new Weaver(this, pos, this.ship.transform),
             Singularity: (pos: [number, number]) => new Singularity(this, pos),
-            AlienShip: (pos: [number, number]) => new AlienShip(this, pos, [0, 0], this.ship.transform),
+            AlienShip: (pos: [number, number]) => new AlienShip(this, pos, [0, 0]),
             RANDOM: (pos: [number, number]) => new RandomRandom(this, pos),
             Tree: (pos: [number, number]) => new Tree(this, pos, new Entity(this, pos)),
             Entity: (pos: [number, number]) => new Entity(this, pos),

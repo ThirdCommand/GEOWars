@@ -6,22 +6,18 @@ import { type Transform } from "../../../game_engine/transform";
 // import { Util } from "../../../game_engine/util";
 
 export class AlienShip extends GameObject {
-
-    shipTransform: Transform;
     radius: number;
     points: number;
     chaseSpeed: number;
     chaseAcceleration: number;
     lineSprite: AlienShipSprite;
 
-    constructor(engine: GameEngine | AnimationView, pos: [number, number, number?], velocity: [number, number], shipTransform?: Transform) {
+    constructor(engine: GameEngine | AnimationView, pos: [number, number, number?], velocity: [number, number]) {
         super(engine);
         this.transform.pos[0] = pos[0];
         this.transform.pos[1] = pos[1];
         this.transform.vel[0] = velocity[0];
         this.transform.vel[1] = velocity[1];
-
-        this.shipTransform = shipTransform;
         this.radius = 4;
         this.points = 120;
         this.chaseSpeed = 3.5;
@@ -64,7 +60,7 @@ export class AlienShip extends GameObject {
 
         const speed = this.chaseSpeed;
 
-        const shipPos = this.shipTransform.absolutePosition();
+        const shipPos = this.transform.cameraTransform.pos; // will need this to grab the camera's object in the future
         const pos = this.transform.absolutePosition();
         const deltaPosition = [shipPos[0] - pos[0], shipPos[1] - pos[1]];
         let chaseDirection = Math.atan2(deltaPosition[1], deltaPosition[0]);

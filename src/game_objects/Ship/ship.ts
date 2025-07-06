@@ -60,6 +60,9 @@ export class Ship extends GameObject {
         
         this.cameraTransform = this.camera.transform; 
         this.setAsControllableGameObject();
+        // when you add it as a focus controllable game object, 
+        // I think you're forced to add functions to handle the different focussed input
+        // like mouse position, left control stick input, right control stick input, etc.
         if(engine.activeCamera?.name !== "ShipCamera") {
             this.makeFocussedGameObject();
         }
@@ -67,9 +70,11 @@ export class Ship extends GameObject {
         this.addPhysicsComponent();
 
         this.addMousePosListener();
-        this.addLeftControlStickListener();
 
-        this.addRightControlStickListener();
+        // will need to differentiate between direct focus and not
+        // this.addLeftControlStickListener();
+        // this.addRightControlStickListener();
+
         this.addStartButtonListener();
         this.radius = 10;
         this.addCollider("General", this, this.radius);

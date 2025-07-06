@@ -57,7 +57,7 @@ export class Transform {
         let absPos: [number, number] = [0,0];
        
         if (this.parentTransform == null) {
-            if (this.cameraTransform) {
+            if (this.pos[2] !== 0 && !isNaN(this.pos[2])) {
                 const Xc = this.cameraTransform.pos[0];
                 const Yc = this.cameraTransform.pos[1];
                 const Zc = this.cameraTransform.pos[2];

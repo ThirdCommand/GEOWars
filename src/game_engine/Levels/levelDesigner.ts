@@ -774,7 +774,7 @@ export class LevelDesigner {
     // }
 
     createOverlay() {
-        return new Overlay(this.engine, this, this.ship.transform);
+        return new Overlay(this.engine, this);
     }
 
     isOutOfBounds(pos: [number, number], radius: number) {

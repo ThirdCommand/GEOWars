@@ -227,7 +227,7 @@ var AnimationView = /** @class */ (function () {
             Grunt: function (pos) { return new _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_3__.Grunt(_this, pos, _this.ship.transform); },
             Weaver: function (pos) { return new _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_4__.Weaver(_this, pos, _this.ship.transform); },
             Singularity: function (pos) { return new _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_5__.Singularity(_this, pos); },
-            AlienShip: function (pos) { return new _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_6__.AlienShip(_this, pos, [0, 0], _this.ship.transform); },
+            AlienShip: function (pos) { return new _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_6__.AlienShip(_this, pos, [0, 0]); },
             RANDOM: function (pos) { return new _game_objects_enemies_RandomRandom__WEBPACK_IMPORTED_MODULE_8__.RandomRandom(_this, pos); },
             Tree: function (pos) { return new _game_objects_Tree_Tree__WEBPACK_IMPORTED_MODULE_7__.Tree(_this, pos, new _game_objects_ClockworkGames_Entity_Entity__WEBPACK_IMPORTED_MODULE_9__.Entity(_this, pos)); },
             Entity: function (pos) { return new _game_objects_ClockworkGames_Entity_Entity__WEBPACK_IMPORTED_MODULE_9__.Entity(_this, pos); },
@@ -2517,7 +2517,7 @@ var LevelDesigner = /** @class */ (function () {
     //     return new Grid(this.engine, new Transform());
     // }
     LevelDesigner.prototype.createOverlay = function () {
-        return new _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_1__.Overlay(this.engine, this, this.ship.transform);
+        return new _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_1__.Overlay(this.engine, this);
     };
     LevelDesigner.prototype.isOutOfBounds = function (pos, radius) {
         var max = [_game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.DIM_X - radius, _game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.DIM_Y - radius];
@@ -3009,13 +3009,13 @@ var GameEngine = /** @class */ (function () {
         window.engine = this;
         this.defaultZoomScale = 1.3;
         this.zoomScale = 1.3;
+        this.lineSprites = [];
         this.cameras = [];
         this.activeCamera = new _camera__WEBPACK_IMPORTED_MODULE_1__.Camera(this, new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(), 'first camera');
         this.controllableGameObjects = [];
         this.controlledGameObject = null;
         this.gameObjects = [];
         this.physicsComponents = [];
-        this.lineSprites = [];
         this.soundsToPlay = {};
         this.colliders = {};
         this.subscribers = [];
@@ -3455,6 +3455,9 @@ var GameEngine = /** @class */ (function () {
             this.activeCamera.isActive = false;
         camera.isActive = true;
         this.activeCamera = camera;
+        this.lineSprites.forEach(function (sprite) {
+            sprite.transform.cameraTransform = camera.transform;
+        });
     };
     GameEngine.prototype.renderLineSprites = function (ctx) {
         // ctx.scale = gameEngine.currentCamera.zoomScale
@@ -3482,6 +3485,7 @@ var GameEngine = /** @class */ (function () {
         this.physicsComponents.push(physicsComponent);
     };
     GameEngine.prototype.addLineSprite = function (lineSprite) {
+        lineSprite.transform.cameraTransform = this.activeCamera.transform;
         this.lineSprites.push(lineSprite);
     };
     GameEngine.prototype.queueSound = function (sound) {
@@ -3871,7 +3875,7 @@ var Transform = /** @class */ (function () {
     Transform.prototype.absolutePosition = function () {
         var absPos = [0, 0];
         if (this.parentTransform == null) {
-            if (this.cameraTransform) {
+            if (this.pos[2] !== 0 && !isNaN(this.pos[2])) {
                 var Xc = this.cameraTransform.pos[0];
                 var Yc = this.cameraTransform.pos[1];
                 var Zc = this.cameraTransform.pos[2];
@@ -6671,8 +6675,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
 /* harmony import */ var _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_engine */ "./src/game_engine/game_engine.ts");
 /* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.ts");
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
-/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.ts");
+/* harmony import */ var _game_engine_transform__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/transform */ "./src/game_engine/transform.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -6693,18 +6698,18 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
+
 var Overlay = /** @class */ (function (_super) {
     __extends(Overlay, _super);
-    function Overlay(engine, gameScript, shipTransform) {
+    function Overlay(engine, gameScript) {
         var _this = _super.call(this, engine) || this;
         _this.gameScript = gameScript;
-        _this.shipTransform = shipTransform;
         _this.transform.pos = [0, 0];
         _this.frameRateUpdateRate = 500;
         _this.currentFrameRateUpdateTime = 0;
         _this.currentFrameCount = 0;
         _this.frameRate = 0;
-        _this.addLineSprite(new OverlaySprite(_this.shipTransform, _game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.DIM_X, _game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.DIM_Y, engine));
+        _this.addLineSprite(new OverlaySprite(_game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.DIM_X, _game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.DIM_Y, engine));
         return _this;
     }
     Overlay.prototype.update = function (deltaTime) {
@@ -6728,10 +6733,9 @@ var Overlay = /** @class */ (function (_super) {
 
 var OverlaySprite = /** @class */ (function (_super) {
     __extends(OverlaySprite, _super);
-    function OverlaySprite(transform, DIM_X, DIM_Y, gameEngine) {
-        var _this = _super.call(this, transform) || this;
+    function OverlaySprite(DIM_X, DIM_Y, gameEngine) {
+        var _this = _super.call(this, new _game_engine_transform__WEBPACK_IMPORTED_MODULE_3__.Transform()) || this;
         _this.gameEngine = gameEngine;
-        _this.transform = transform;
         _this.width = DIM_X;
         _this.height = DIM_Y;
         _this.score = 0;
@@ -6739,8 +6743,8 @@ var OverlaySprite = /** @class */ (function (_super) {
         _this.frameRate = 0;
         _this.fontSize = 20;
         _this.fontStyle = "Arial";
-        _this.shadowColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_4__.Color("hsla", [202, 100, 70, 1]);
-        _this.color = new _game_engine_color__WEBPACK_IMPORTED_MODULE_4__.Color("hsla", [202, 100, 70, 0.5]);
+        _this.shadowColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_5__.Color("hsla", [202, 100, 70, 1]);
+        _this.color = new _game_engine_color__WEBPACK_IMPORTED_MODULE_5__.Color("hsla", [202, 100, 70, 0.5]);
         return _this;
     }
     OverlaySprite.prototype.draw = function (ctx) {
@@ -6755,11 +6759,11 @@ var OverlaySprite = /** @class */ (function (_super) {
         // if(this.gameEngine.gameScript.testing) {
         //     displayText += "      " + "FPS: " + this.frameRate;
         // }
-        ctx.fillText(displayText, (this.transform.pos[0] - 350 / zoomFactor) * this.gameEngine.activeCamera.zoomScale, (this.transform.pos[1] - 150 / zoomFactor) * this.gameEngine.activeCamera.zoomScale);
+        ctx.fillText(displayText, (this.transform.cameraTransform.pos[0] - 350 / zoomFactor) * this.gameEngine.activeCamera.zoomScale, (this.transform.cameraTransform.pos[1] - 150 / zoomFactor) * this.gameEngine.activeCamera.zoomScale);
         ctx.restore();
     };
     return OverlaySprite;
-}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_3__.LineSprite));
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__.LineSprite));
 
 
 
@@ -6818,13 +6822,17 @@ var Ship = /** @class */ (function (_super) {
         _this.camera = new _game_engine_camera__WEBPACK_IMPORTED_MODULE_7__.Camera(engine, new _game_engine_transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, [pos[0], pos[1]]), "ShipCamera");
         _this.cameraTransform = _this.camera.transform;
         _this.setAsControllableGameObject();
+        // when you add it as a focus controllable game object, 
+        // I think you're forced to add functions to handle the different focussed input
+        // like mouse position, left control stick input, right control stick input, etc.
         if (((_a = engine.activeCamera) === null || _a === void 0 ? void 0 : _a.name) !== "ShipCamera") {
             _this.makeFocussedGameObject();
         }
         _this.addPhysicsComponent();
         _this.addMousePosListener();
-        _this.addLeftControlStickListener();
-        _this.addRightControlStickListener();
+        // will need to differentiate between direct focus and not
+        // this.addLeftControlStickListener();
+        // this.addRightControlStickListener();
         _this.addStartButtonListener();
         _this.radius = 10;
         _this.addCollider("General", _this, _this.radius);
@@ -9232,13 +9240,12 @@ var __extends = (undefined && undefined.__extends) || (function () {
 // import { Util } from "../../../game_engine/util";
 var AlienShip = /** @class */ (function (_super) {
     __extends(AlienShip, _super);
-    function AlienShip(engine, pos, velocity, shipTransform) {
+    function AlienShip(engine, pos, velocity) {
         var _this = _super.call(this, engine) || this;
         _this.transform.pos[0] = pos[0];
         _this.transform.pos[1] = pos[1];
         _this.transform.vel[0] = velocity[0];
         _this.transform.vel[1] = velocity[1];
-        _this.shipTransform = shipTransform;
         _this.radius = 4;
         _this.points = 120;
         _this.chaseSpeed = 3.5;
@@ -9273,7 +9280,7 @@ var AlienShip = /** @class */ (function (_super) {
         //    dV =  mV - Vo
         //    alpha = dV angle
         var speed = this.chaseSpeed;
-        var shipPos = this.shipTransform.absolutePosition();
+        var shipPos = this.transform.cameraTransform.pos; // will need this to grab the camera's object in the future
         var pos = this.transform.absolutePosition();
         var deltaPosition = [shipPos[0] - pos[0], shipPos[1] - pos[1]];
         var chaseDirection = Math.atan2(deltaPosition[1], deltaPosition[0]);
@@ -9543,7 +9550,7 @@ var Singularity = /** @class */ (function (_super) {
         for (var i = 0; i < this.alienSpawnAmount; i++) {
             var angle = Math.random() * Math.PI * 2;
             var velocity = [this.alienSpawnSpeed * Math.cos(angle), this.alienSpawnSpeed * Math.sin(angle)];
-            new _alien_ship__WEBPACK_IMPORTED_MODULE_8__.AlienShip(this.gameEngine, this.transform.pos, velocity, this.gameEngine.activeCamera.transform); // set this to be the camera's object in the future
+            new _alien_ship__WEBPACK_IMPORTED_MODULE_8__.AlienShip(this.gameEngine, this.transform.pos, velocity);
         }
         this.remove();
     };
@@ -9904,14 +9911,14 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 var Grid = /** @class */ (function (_super) {
     __extends(Grid, _super);
-    function Grid(engine, cameraTransform) {
+    function Grid(engine) {
         var _this = _super.call(this, engine) || this;
         _this.transform.pos = [0, 0];
         _this.arenaDimensions = [_game_script__WEBPACK_IMPORTED_MODULE_3__.GameScript.DIM_X, _game_script__WEBPACK_IMPORTED_MODULE_3__.GameScript.DIM_Y];
         _this.elasticity = 0.1; // force provided to pull particle back into place
         _this.dampening = 0.1; // force produced from velocity (allows things to eventuall fall to rest)
-        _this.gridPoints = _this.createGridPoints(cameraTransform);
-        _this.addLineSprite(new GridSprite(_this.transform, _this.gridPoints, cameraTransform));
+        _this.gridPoints = _this.createGridPoints();
+        _this.addLineSprite(new GridSprite(_this.transform, _this.gridPoints));
         return _this;
         // this.addPhysicsComponent()
         // this.addCollider("General", this, this.radius)
@@ -9969,7 +9976,7 @@ var Grid = /** @class */ (function (_super) {
         gridPoint.transform.vel[1] = velContribution[1];
         // gridPoint.transform.vel[2] = velContribution[2];
     };
-    Grid.prototype.createGridPoints = function (cameraTransform) {
+    Grid.prototype.createGridPoints = function () {
         var columnCount = 90; // 40
         var rowCount = 45; // 24
         var gridPoints = [];
@@ -9981,7 +9988,7 @@ var Grid = /** @class */ (function (_super) {
                     continue;
                 }
                 var position = [xPosition, yPosition, 0];
-                gridRow.push(new _grid_point__WEBPACK_IMPORTED_MODULE_1__.GridPoint(this.gameEngine, position, cameraTransform));
+                gridRow.push(new _grid_point__WEBPACK_IMPORTED_MODULE_1__.GridPoint(this.gameEngine, position));
             }
             gridPoints.push(gridRow.slice());
             gridRow = [];
@@ -9995,17 +10002,30 @@ var Grid = /** @class */ (function (_super) {
 
 var GridSprite = /** @class */ (function (_super) {
     __extends(GridSprite, _super);
-    function GridSprite(transform, gridPoints, cameraTransform) {
+    function GridSprite(transform, gridPoints) {
         var _this = _super.call(this, transform) || this;
         _this.gridPoints = gridPoints;
-        _this.cameraTransform = cameraTransform;
         _this.color = new _game_engine_color__WEBPACK_IMPORTED_MODULE_5__.Color("hsla", [202, 100, 70, 0.2]);
         return _this;
     }
     GridSprite.prototype.draw = function (ctx) {
+        var _this = this;
         ctx.save();
         ctx.strokeStyle = this.color.evaluateColor();
         ctx.lineWidth = 2;
+        var firstGridPoint = this.gridPoints[0][0];
+        if (isNaN(firstGridPoint.transform.absolutePosition()[0])) {
+            console.log('position: ', firstGridPoint.transform.pos);
+            console.log('cameraPosition: ', firstGridPoint.transform.cameraTransform.pos);
+        }
+        ;
+        if (this.gridPoints[0][0].transform.cameraTransform !== this.transform.cameraTransform) {
+            this.gridPoints.forEach(function (row) {
+                row.forEach(function (point) {
+                    point.transform.cameraTransform = _this.transform.cameraTransform;
+                });
+            });
+        }
         this.drawRows(ctx);
         this.drawColumns(ctx);
         ctx.restore();
@@ -10083,14 +10103,13 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 var GridPoint = /** @class */ (function (_super) {
     __extends(GridPoint, _super);
-    function GridPoint(engine, pos, cameraTransform) {
+    function GridPoint(engine, pos) {
         var _this = _super.call(this, engine) || this;
         _this.originalPosition = [0, 0, 0];
         _this.originalPosition[0] = pos[0];
         _this.originalPosition[1] = pos[1];
         _this.originalPosition[2] = pos[2];
         _this.transform.pos = pos;
-        _this.transform.cameraTransform = cameraTransform;
         _this.radius = 2;
         _this.elasticity = -0.0025; // force provided to pull particle back into place
         _this.dampening = -0.04; // force produced from velocity (allows things to eventually fall to rest)
@@ -10920,13 +10939,12 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 var Star = /** @class */ (function (_super) {
     __extends(Star, _super);
-    function Star(engine, pos, cameraTransform) {
+    function Star(engine, pos) {
         if (pos === void 0) { pos = [0, 0, 0]; }
         var _this = _super.call(this, engine) || this;
         _this.transform.pos[0] = pos[0];
         _this.transform.pos[1] = pos[1];
         _this.transform.pos[2] = pos[2];
-        _this.transform.cameraTransform = cameraTransform;
         _this.addLineSprite(new StarSprite(_this.transform));
         return _this;
         // add random good colors
@@ -11049,7 +11067,7 @@ var GameScript = /** @class */ (function () {
         this.ship = this.createShip();
         this.createStars();
         this.walls = this.createWalls();
-        this.grid = this.createGrid(this.ship.cameraTransform);
+        this.grid = this.createGrid();
         this.overlay = this.createOverlay();
         this.enemyCreatorMap = this.createEnemyCreators();
         this.engine.addXButtonListener(this);
@@ -11148,7 +11166,7 @@ var GameScript = /** @class */ (function () {
             var Y = (runoffFactor * Math.random() - runoffFactor / 2) * GameScript.DIM_Y;
             // const Z = -this.initialCameraZPos * 0.25 + -this.initialCameraZPos * 2 * Math.random();
             var Z = -this.initialCameraZPos * (0.5 + 2 * Math.random());
-            new _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_14__.Star(this.engine, [X, Y, Z], this.ship.cameraTransform);
+            new _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_14__.Star(this.engine, [X, Y, Z]);
         }
     };
     GameScript.prototype.updateXButtonListener = function (pressed) {
@@ -11178,6 +11196,7 @@ var GameScript = /** @class */ (function () {
             this.rootScene.update(deltaTime);
         }
         else {
+            this.gameTime += deltaTime;
             this.spawnSequence(deltaTime);
             if (this.secondShipCreated === false && this.gameTime > 5000) {
                 this.secondShipCreated = true;
@@ -11341,7 +11360,7 @@ var GameScript = /** @class */ (function () {
             Weaver: function (pos) { return new _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_9__.Weaver(engine, pos, _this.ship.transform); },
             Singularity: function (pos) { return new _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__.Singularity(engine, pos); },
             AlienShip: function (pos) {
-                return new _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_11__.AlienShip(engine, pos, [0, 0], _this.ship.transform);
+                return new _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_11__.AlienShip(engine, pos, [0, 0]);
             },
         };
     };
@@ -11449,7 +11468,6 @@ var GameScript = /** @class */ (function () {
     GameScript.prototype.spawnSequence = function (delta) {
         var _this = this;
         this.intervalTime += delta;
-        this.gameTime += delta;
         if (this.sequenceCount === 1) {
             this.enemyCreatorMap["Singularity"]([700, 300]);
             this.sequenceCount += 1;
@@ -11561,11 +11579,11 @@ var GameScript = /** @class */ (function () {
     GameScript.prototype.createWalls = function () {
         return new _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_2__.Walls(this.engine);
     };
-    GameScript.prototype.createGrid = function (cameraTransform) {
-        return new _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_4__.Grid(this.engine, cameraTransform);
+    GameScript.prototype.createGrid = function () {
+        return new _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_4__.Grid(this.engine);
     };
     GameScript.prototype.createOverlay = function () {
-        return new _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_3__.Overlay(this.engine, this, this.ship.transform);
+        return new _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_3__.Overlay(this.engine, this);
     };
     GameScript.isOutOfBounds = function (pos, radius) {
         var max = [GameScript.DIM_X - radius, GameScript.DIM_Y - radius];

@@ -1,7 +1,7 @@
 import { GameObject } from "../../game_engine/game_object";
 import { GameEngine } from "../../game_engine/game_engine";
 import { GameScript } from "../../game_script";
-import { type Transform } from "../../game_engine/transform";
+import { Transform } from "../../game_engine/transform";
 
 import { LineSprite } from "../../game_engine/line_sprite";
 import { Color } from "../../game_engine/color";
@@ -20,16 +20,15 @@ export class Overlay extends GameObject {
     frameRate: number;
     lineSprite: OverlaySprite;
 
-    constructor(engine: GameEngine, gameScript: Scoreboardable, shipTransform: Transform) {
+    constructor(engine: GameEngine, gameScript: Scoreboardable) {
         super(engine);
         this.gameScript = gameScript;
-        this.shipTransform = shipTransform;
         this.transform.pos = [0, 0];
         this.frameRateUpdateRate = 500;
         this.currentFrameRateUpdateTime = 0; 
         this.currentFrameCount = 0;
         this.frameRate = 0;
-        this.addLineSprite(new OverlaySprite(this.shipTransform, GameScript.DIM_X, GameScript.DIM_Y, engine));
+        this.addLineSprite(new OverlaySprite(GameScript.DIM_X, GameScript.DIM_Y, engine));
     }
 
     update(deltaTime: number) {
@@ -63,10 +62,9 @@ export class OverlaySprite extends LineSprite {
     fontStyle: string;
     shadowColor: Color;
     color: Color;
-    constructor(transform: Transform, DIM_X: number, DIM_Y: number, gameEngine: GameEngine) {
-        super(transform);
+    constructor(DIM_X: number, DIM_Y: number, gameEngine: GameEngine) {
+        super(new Transform());
         this.gameEngine = gameEngine;
-        this.transform = transform;
         this.width = DIM_X;
         this.height = DIM_Y;
         this.score = 0;
@@ -96,8 +94,8 @@ export class OverlaySprite extends LineSprite {
         // }
         ctx.fillText(
             displayText,
-            (this.transform.pos[0] - 350 / zoomFactor) * this.gameEngine.activeCamera.zoomScale, 
-            (this.transform.pos[1] - 150 / zoomFactor) * this.gameEngine.activeCamera.zoomScale
+            (this.transform.cameraTransform.pos[0] - 350 / zoomFactor) * this.gameEngine.activeCamera.zoomScale, 
+            (this.transform.cameraTransform.pos[1] - 150 / zoomFactor) * this.gameEngine.activeCamera.zoomScale
         );
         ctx.restore();
     }

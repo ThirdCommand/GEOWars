@@ -214,7 +214,7 @@ export class Singularity extends GameObject {
         for (let i = 0; i < this.alienSpawnAmount; i++) {
             const angle = Math.random() * Math.PI * 2;
             const velocity: [number, number] = [this.alienSpawnSpeed * Math.cos(angle), this.alienSpawnSpeed * Math.sin(angle)];
-            new AlienShip(this.gameEngine, this.transform.pos, velocity, this.gameEngine.activeCamera.transform); // set this to be the camera's object in the future
+            new AlienShip(this.gameEngine, this.transform.pos, velocity);
         }
         this.remove();
 

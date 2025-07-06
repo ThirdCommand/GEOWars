@@ -4,12 +4,11 @@ import { LineSprite } from "../../game_engine/line_sprite";
 import { Transform } from "../../game_engine/transform";
 
 export class Star extends GameObject {
-    constructor(engine: GameEngine, pos: [number, number, number] = [0,0,0], cameraTransform: Transform) {
+    constructor(engine: GameEngine, pos: [number, number, number] = [0,0,0]) {
         super(engine);
         this.transform.pos[0] = pos[0];
         this.transform.pos[1] = pos[1];
         this.transform.pos[2] = pos[2];
-        this.transform.cameraTransform = cameraTransform;
         this.addLineSprite(new StarSprite(this.transform));
         // add random good colors
     }

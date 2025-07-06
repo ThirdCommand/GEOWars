@@ -113,13 +113,13 @@ export class GameEngine {
         window.engine = this;
         this.defaultZoomScale = 1.3;
         this.zoomScale = 1.3;
+        this.lineSprites = [];
         this.cameras = [];
         this.activeCamera = new Camera(this, new Transform(), 'first camera');
         this.controllableGameObjects = [];
         this.controlledGameObject = null;
         this.gameObjects = [];
         this.physicsComponents = [];
-        this.lineSprites = [];
         this.soundsToPlay = {};
         this.colliders = {};
         this.subscribers = [];
@@ -629,6 +629,9 @@ export class GameEngine {
         if(this.activeCamera) this.activeCamera.isActive = false;
         camera.isActive = true;
         this.activeCamera = camera;
+        this.lineSprites.forEach((sprite) => {
+            sprite.transform.cameraTransform = camera.transform;
+        });
     }
 
 
@@ -663,6 +666,7 @@ export class GameEngine {
     }
 
     addLineSprite(lineSprite: LineSprite) {
+        lineSprite.transform.cameraTransform = this.activeCamera.transform;
         this.lineSprites.push(lineSprite);
     }
 

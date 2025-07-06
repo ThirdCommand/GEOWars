@@ -1,20 +1,18 @@
 import { type AnimationView } from "../../../AnimationView";
 import { type  GameEngine } from "../../../game_engine/game_engine";
 import {GameObject} from "../../../game_engine/game_object";
-import { type Transform } from "../../../game_engine/transform";
 export class GridPoint extends GameObject {
     originalPosition: [number,number,number];
     radius: number;
     elasticity: number;
     dampening: number;
-    constructor(engine: GameEngine | AnimationView, pos: [number, number, number], cameraTransform: Transform) {
+    constructor(engine: GameEngine | AnimationView, pos: [number, number, number]) {
         super(engine);
         this.originalPosition = [0,0,0];
         this.originalPosition[0] = pos[0];
         this.originalPosition[1] = pos[1];
         this.originalPosition[2] = pos[2];
         this.transform.pos = pos;
-        this.transform.cameraTransform = cameraTransform;
 
         this.radius = 2;
         this.elasticity = -0.0025; // force provided to pull particle back into place
