@@ -66,8 +66,8 @@ export class Spawn {
             } else {
                 location = [Number(this.location[0]), Number(this.location[1])];
                 if(isShipRelative) {
-                    location[0] += this.gameEngine.gameScript.ship.transform.pos[0] - GameScript.DIM_X / 2; // TODO Camera?
-                    location[1] += this.gameEngine.gameScript.ship.transform.pos[1] - GameScript.DIM_Y / 2; // TODO Camera?
+                    location[0] += this.gameEngine.activeCamera.transform.pos[0] - GameScript.DIM_X / 2;
+                    location[1] += this.gameEngine.activeCamera.transform.pos[1] - GameScript.DIM_Y / 2;
 
                     // check if off edge of map
                     if(location[0] > GameScript.DIM_X  - 100) {

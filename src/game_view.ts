@@ -60,7 +60,8 @@ export class GameView { engine: GameEngine;
     updateMovementDirection(move: DirectionKey, down: boolean) {
         if (!this.gameEditorOpened) {
             // check this function
-            this.engine.gameScript.ship.updateLeftControlStickInput(move, down);
+            // have this be the controlled gameObject instead
+            this.engine.controlledGameObject.updateLeftControlStickInput(move, down);
         }
     }
 
@@ -93,6 +94,10 @@ export class GameView { engine: GameEngine;
                 if (unitVector) {
                     this.updateMovementDirection(e.key, down);
                 }
+            }
+
+            if(e.key === 'f') {
+                this.engine.updateFKeyListener(down);
             }
             
             if (e.key === "p") {
@@ -143,6 +148,7 @@ export class GameView { engine: GameEngine;
         window.addEventListener("dblclick", (e) => {
             this.engine.mouseDoubleClicked(e);
         });
+    }
 
         // function preventDefault(e) {
         //   e = e || window.event;
@@ -165,7 +171,6 @@ export class GameView { engine: GameEngine;
     // window.onwheel = preventDefault; // modern standard
     // window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
     // window.ontouchmove = preventDefault; // mobile
-    }
 
     start() {
         this.lastTime = 0;

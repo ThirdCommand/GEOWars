@@ -16,6 +16,11 @@ declare global {
     }
 }
 
+type FocusableGameObject = GameObject & {
+    isFocussedGameObject: boolean;
+    camera: Camera;
+}
+
 interface mousePositionListenable {
     updateMousePos(mousePos: [number, number]): void
 }
@@ -30,7 +35,7 @@ interface ClickListenable {
 
 // Controller
 interface LeftControlStickListenable {
-    updateLeftControlStickInput(direction: [number, number]): void
+    updateLeftControlStickInput(direction: [number, number], pressed: boolean | null): void
 }
 interface RightControlStickListenable {
     updateRightControlStickInput(direction: [number, number]): void
@@ -49,6 +54,8 @@ export class GameEngine {
     ctx: CanvasRenderingContext2D;
     cameras: Camera[];
     activeCamera: Camera;
+    controlledGameObject: GameObject | null;
+    controllableGameObjects: GameObject[]; 
     gameObjects: GameObject[];
     physicsComponents: PhysicsComponent[];
     lineSprites: LineSprite[];
@@ -105,7 +112,9 @@ export class GameEngine {
         this.defaultZoomScale = 1.3;
         this.zoomScale = 1.3;
         this.cameras = [];
-        this.activeCamera = new Camera(this, new Transform());
+        this.activeCamera = new Camera(this, new Transform(), 'first camera');
+        this.controllableGameObjects = [];
+        this.controlledGameObject = null;
         this.gameObjects = [];
         this.physicsComponents = [];
         this.lineSprites = [];
@@ -141,6 +150,26 @@ export class GameEngine {
         this.gameEditorOpened = false;
         this.frameCountForPerformance = 0;
         this.levelDesigner = null;
+    }
+
+    addControllableGameObject(gameObject: GameObject) {
+        this.controllableGameObjects.push(gameObject);
+    }
+
+    focusControllableGameObject(gameObject: GameObject) {
+        // will want to be able to control multiple at same time 
+        // in the future
+        if (this.controllableGameObjects.includes(gameObject)) {
+            if(this.controlledGameObject) {
+                this.controlledGameObject.isFocussedGameObject = false;
+                this.controlledGameObject = null;
+            }
+            this.controlledGameObject = gameObject;
+            gameObject.isFocussedGameObject = true;
+            this.setActiveCamera(gameObject.camera);
+        } else {
+            console.error("GameObject is not controllable");
+        }
     }
 
     setupPerformance() {
@@ -366,6 +395,19 @@ export class GameEngine {
         }
     }
 
+    updateFKeyListener(pressed: boolean) {
+        if(pressed) {
+            // focus on next controllable game object
+            if (this.controllableGameObjects.length > 0) {
+                const currentIndex = this.controllableGameObjects.indexOf(this.controlledGameObject);
+                const nextIndex = (currentIndex + 1) % this.controllableGameObjects.length;
+                this.focusControllableGameObject(this.controllableGameObjects[nextIndex]);
+            } else {
+                console.log("No controllable game objects to focus on.");
+            }
+        }
+    }
+
     mouseUnClicked(e: MouseEvent) { 
         if (e.target instanceof HTMLElement) {
             if (e.target.classList[0] === "level-editor-canvas") {
@@ -428,7 +470,7 @@ export class GameEngine {
 
     updateLeftControlStickListeners(unitVector: [number, number]) {
         this.leftControlStickListeners.forEach((listener) => {
-            listener.updateLeftControlStickInput(unitVector);
+            listener.updateLeftControlStickInput(unitVector, null);
         });
     }
 
@@ -573,9 +615,8 @@ export class GameEngine {
     }
 
     setActiveCamera(camera: Camera) {
-        this.cameras.forEach((cam) => {
-            cam.activeCamera = false;
-        })
+        if(this.activeCamera) this.activeCamera.isActive = false;
+        camera.isActive = true;
         this.activeCamera = camera;
     }
 
@@ -590,6 +631,7 @@ export class GameEngine {
             sprite.draw(ctx);
         });
         this.ctx.restore();
+        this.activeCamera.update(ctx);
     // ctx.scale(1,1)
     }
 

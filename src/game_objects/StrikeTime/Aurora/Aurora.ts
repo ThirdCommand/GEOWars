@@ -46,9 +46,6 @@ export class AuroraSprite extends LineSprite {
         if(!this.visible) return;
         const pos = this.transform.absolutePosition();
 
-        
-        
-
         const r = 255;
         const g = 255;
         const b = 50;

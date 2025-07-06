@@ -1425,8 +1425,8 @@ var Spawn = /** @class */ (function () {
             else {
                 location_1 = [Number(this.location[0]), Number(this.location[1])];
                 if (isShipRelative) {
-                    location_1[0] += this.gameEngine.gameScript.ship.transform.pos[0] - _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X / 2; // TODO Camera?
-                    location_1[1] += this.gameEngine.gameScript.ship.transform.pos[1] - _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / 2; // TODO Camera?
+                    location_1[0] += this.gameEngine.activeCamera.transform.pos[0] - _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X / 2;
+                    location_1[1] += this.gameEngine.activeCamera.transform.pos[1] - _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / 2;
                     // check if off edge of map
                     if (location_1[0] > _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X - 100) {
                         location_1[0] = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X - 100;
@@ -2799,8 +2799,9 @@ __webpack_require__.r(__webpack_exports__);
 
 var Camera = /** @class */ (function () {
     // it's like a game object, but it gets updated last
-    function Camera(gameEngine, transform, gameObjectToFollow) {
+    function Camera(gameEngine, transform, name, gameObjectToFollow) {
         if (gameObjectToFollow === void 0) { gameObjectToFollow = null; }
+        this.name = name;
         this.gameEngine = gameEngine;
         this.gameEngine.addCamera(this);
         this.gameObjectToFollow = gameObjectToFollow;
@@ -2814,7 +2815,7 @@ var Camera = /** @class */ (function () {
     }
     Camera.prototype.makeActiveCamera = function () {
         this.gameEngine.setActiveCamera(this);
-        this.activeCamera = true;
+        this.isActive = true;
     };
     Camera.prototype.update = function (ctx) {
         ctx.restore();
@@ -2825,7 +2826,6 @@ var Camera = /** @class */ (function () {
         var width = this.cameraWidth;
         var height = this.cameraHeight;
         ctx.translate(-xPos * zoomScale + width / 2, -yPos * zoomScale + height / 2);
-        ctx.scale(this.zoomScale, this.zoomScale);
     };
     Camera.prototype.clearView = function (ctx) {
         ctx.clearRect(-this.cameraHeight, -this.cameraWidth, this.cameraHeight * this.zoomScale * 4, this.cameraWidth * this.zoomScale * 4);
@@ -3010,7 +3010,9 @@ var GameEngine = /** @class */ (function () {
         this.defaultZoomScale = 1.3;
         this.zoomScale = 1.3;
         this.cameras = [];
-        this.activeCamera = new _camera__WEBPACK_IMPORTED_MODULE_1__.Camera(this, new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform());
+        this.activeCamera = new _camera__WEBPACK_IMPORTED_MODULE_1__.Camera(this, new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(), 'first camera');
+        this.controllableGameObjects = [];
+        this.controlledGameObject = null;
         this.gameObjects = [];
         this.physicsComponents = [];
         this.lineSprites = [];
@@ -3042,6 +3044,25 @@ var GameEngine = /** @class */ (function () {
         this.frameCountForPerformance = 0;
         this.levelDesigner = null;
     }
+    GameEngine.prototype.addControllableGameObject = function (gameObject) {
+        this.controllableGameObjects.push(gameObject);
+    };
+    GameEngine.prototype.focusControllableGameObject = function (gameObject) {
+        // will want to be able to control multiple at same time 
+        // in the future
+        if (this.controllableGameObjects.includes(gameObject)) {
+            if (this.controlledGameObject) {
+                this.controlledGameObject.isFocussedGameObject = false;
+                this.controlledGameObject = null;
+            }
+            this.controlledGameObject = gameObject;
+            gameObject.isFocussedGameObject = true;
+            this.setActiveCamera(gameObject.camera);
+        }
+        else {
+            console.error("GameObject is not controllable");
+        }
+    };
     GameEngine.prototype.setupPerformance = function () {
         this.frameCountForPerformance = 0;
         this.collisionTime = 0;
@@ -3223,6 +3244,19 @@ var GameEngine = /** @class */ (function () {
             }
         }
     };
+    GameEngine.prototype.updateFKeyListener = function (pressed) {
+        if (pressed) {
+            // focus on next controllable game object
+            if (this.controllableGameObjects.length > 0) {
+                var currentIndex = this.controllableGameObjects.indexOf(this.controlledGameObject);
+                var nextIndex = (currentIndex + 1) % this.controllableGameObjects.length;
+                this.focusControllableGameObject(this.controllableGameObjects[nextIndex]);
+            }
+            else {
+                console.log("No controllable game objects to focus on.");
+            }
+        }
+    };
     GameEngine.prototype.mouseUnClicked = function (e) {
         if (e.target instanceof HTMLElement) {
             if (e.target.classList[0] === "level-editor-canvas") {
@@ -3283,7 +3317,7 @@ var GameEngine = /** @class */ (function () {
     // ******** end of mouse stuff *******
     GameEngine.prototype.updateLeftControlStickListeners = function (unitVector) {
         this.leftControlStickListeners.forEach(function (listener) {
-            listener.updateLeftControlStickInput(unitVector);
+            listener.updateLeftControlStickInput(unitVector, null);
         });
     };
     GameEngine.prototype.updateRightControlStickListeners = function (unitVector) {
@@ -3408,9 +3442,9 @@ var GameEngine = /** @class */ (function () {
         }
     };
     GameEngine.prototype.setActiveCamera = function (camera) {
-        this.cameras.forEach(function (cam) {
-            cam.activeCamera = false;
-        });
+        if (this.activeCamera)
+            this.activeCamera.isActive = false;
+        camera.isActive = true;
         this.activeCamera = camera;
     };
     GameEngine.prototype.renderLineSprites = function (ctx) {
@@ -3423,6 +3457,7 @@ var GameEngine = /** @class */ (function () {
             sprite.draw(ctx);
         });
         this.ctx.restore();
+        this.activeCamera.update(ctx);
         // ctx.scale(1,1)
     };
     GameEngine.prototype.addMouseListener = function (object) {
@@ -3526,6 +3561,8 @@ __webpack_require__.r(__webpack_exports__);
 
 var GameObject = /** @class */ (function () {
     function GameObject(engine) {
+        this.isControllable = false;
+        this.isFocussedGameObject = false;
         this.gameEngine = engine;
         this.gameEngine.addGameObject(this);
         this.transform = new _transform__WEBPACK_IMPORTED_MODULE_0__.Transform();
@@ -3539,6 +3576,18 @@ var GameObject = /** @class */ (function () {
         this.physicsComponent = new _physics_component__WEBPACK_IMPORTED_MODULE_1__.PhysicsComponent(this.transform);
         this.gameEngine.addPhysicsComponent(this.physicsComponent);
     };
+    GameObject.prototype.setAsControllableGameObject = function () {
+        if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine) {
+            this.isControllable = true;
+            this.gameEngine.addControllableGameObject(this);
+        }
+    };
+    GameObject.prototype.makeFocussedGameObject = function () {
+        if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine) {
+            this.isFocussedGameObject = true;
+            this.gameEngine.focusControllableGameObject(this);
+        }
+    };
     GameObject.prototype.addLineSprite = function (lineSprite) {
         this.lineSprite = lineSprite;
         this.gameEngine.addLineSprite(this.lineSprite);
@@ -3551,7 +3600,8 @@ var GameObject = /** @class */ (function () {
         if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
             this.gameEngine.removeMouseListener(this);
     };
-    GameObject.prototype.addLeftControlStickListener = function () {
+    GameObject.prototype.addLeftControlStickListener = function (isControllableGameObject) {
+        if (isControllableGameObject === void 0) { isControllableGameObject = true; }
         if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
             this.gameEngine.addLeftControlStickListener(this);
     };
@@ -3568,7 +3618,7 @@ var GameObject = /** @class */ (function () {
             this.gameEngine.addStartButtonListener(this);
     };
     GameObject.prototype.updateRightControlStickInput = function (direction) { return console.log(direction, 'overwright updateRightControlStickInput'); }; // TODO include object name
-    GameObject.prototype.updateLeftControlStickInput = function (direction) { return console.log(direction, 'overwrite updateLeftControlStickInput'); }; // TODO include object name
+    GameObject.prototype.updateLeftControlStickInput = function (direction, pressed) { return console.log(direction, pressed, 'overwrite updateLeftControlStickInput'); }; // TODO include object name
     GameObject.prototype.updateXButtonListener = function (pressed) { return console.log(pressed, "overwright updateXButtonListener"); }; // TODO include object name
     GameObject.prototype.updateStartButtonListener = function (pressed) { return console.log(pressed, 'overwright updateStartButtonListener'); }; // TODO include object name
     GameObject.prototype.updateMousePos = function (mousePos) { return console.log(mousePos, 'overwrite updateMousePos'); }; // TODO include object name
@@ -6744,12 +6794,17 @@ var __extends = (undefined && undefined.__extends) || (function () {
 var Ship = /** @class */ (function (_super) {
     __extends(Ship, _super);
     function Ship(engine, pos) {
+        var _a;
         var _this = _super.call(this, engine) || this;
         _this.controlsDirection = [0, 0];
         _this.transform.pos = pos;
         _this.transform.pos[2] = 0;
-        _this.camera = new _game_engine_camera__WEBPACK_IMPORTED_MODULE_7__.Camera(engine, new _game_engine_transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, [pos[0], pos[1]]));
+        _this.camera = new _game_engine_camera__WEBPACK_IMPORTED_MODULE_7__.Camera(engine, new _game_engine_transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, [pos[0], pos[1]]), "ShipCamera");
         _this.cameraTransform = _this.camera.transform;
+        _this.setAsControllableGameObject();
+        if (((_a = engine.activeCamera) === null || _a === void 0 ? void 0 : _a.name) !== "ShipCamera") {
+            _this.makeFocussedGameObject();
+        }
         _this.addPhysicsComponent();
         _this.addMousePosListener();
         _this.addLeftControlStickListener();
@@ -6849,22 +6904,24 @@ var Ship = /** @class */ (function (_super) {
             this.wallGraze();
         }
         else {
-            this.movementMechanics();
+            if (this.isFocussedGameObject) {
+                this.movementMechanics();
+            }
+            else {
+                // slow to stop. This is wrong, but maybe an okay start?
+                var Vo = this.transform.absoluteVelocity();
+                var dV = [0 - Vo[0], 0 - Vo[1]];
+                var alpha = Math.atan2(dV[1], dV[0]);
+                this.transform.acc[0] += this.shipEngineAcceleration * Math.cos(alpha);
+                this.transform.acc[1] += this.shipEngineAcceleration * Math.sin(alpha);
+            }
         }
         // if ship is out of x bounds, maintain y speed, keep x at edge value
         this.updateZoomScale();
-        // stuff that belongs in camera #camera
-        this.gameEngine.ctx.restore();
-        this.gameEngine.ctx.save();
         var shipXPos = this.transform.pos[0];
         var shipYPos = this.transform.pos[1];
-        var zoomScale = this.gameEngine.activeCamera.zoomScale;
-        var width = _game_script__WEBPACK_IMPORTED_MODULE_6__.GameScript.DIM_X;
-        var height = _game_script__WEBPACK_IMPORTED_MODULE_6__.GameScript.DIM_Y;
         this.camera.transform.pos[0] = shipXPos;
         this.camera.transform.pos[1] = shipYPos;
-        // this.cameraTransform.pos[2] = based on zoomScale
-        this.gameEngine.ctx.translate(-shipXPos * zoomScale + width / 2, -shipYPos * zoomScale + height / 2);
     };
     Ship.prototype.upgradeBullets = function () {
         this.powerLevel += 1;
@@ -6884,10 +6941,10 @@ var Ship = /** @class */ (function (_super) {
         var smallestZoomScale = 0.75; // of the origional zoomscale
         var smallest = this.findSmallestDistanceToAWall();
         if (smallest < distanceToZoomChange) {
-            this.gameEngine.activeCamera.zoomScale = this.gameEngine.activeCamera.defaultZoomScale * (smallest / distanceToZoomChange * (1 - smallestZoomScale) + smallestZoomScale);
+            this.camera.zoomScale = this.camera.defaultZoomScale * (smallest / distanceToZoomChange * (1 - smallestZoomScale) + smallestZoomScale);
         }
         else {
-            this.gameEngine.activeCamera.zoomScale = this.gameEngine.activeCamera.defaultZoomScale;
+            this.camera.zoomScale = this.camera.defaultZoomScale;
         }
         // this should also update the camera's Z position
     };
@@ -7008,7 +7065,7 @@ var Ship = /** @class */ (function (_super) {
         }
         var shipXPos = this.transform.pos[0];
         var shipYPos = this.transform.pos[1];
-        var zoomScale = this.gameEngine.activeCamera.zoomScale;
+        var zoomScale = this.camera.zoomScale;
         var width = _game_script__WEBPACK_IMPORTED_MODULE_6__.GameScript.DIM_X;
         var height = _game_script__WEBPACK_IMPORTED_MODULE_6__.GameScript.DIM_Y;
         var mouseX = mousePos[0] / zoomScale + shipXPos - width / (2 * zoomScale);
@@ -9464,7 +9521,7 @@ var Singularity = /** @class */ (function (_super) {
         for (var i = 0; i < this.alienSpawnAmount; i++) {
             var angle = Math.random() * Math.PI * 2;
             var velocity = [this.alienSpawnSpeed * Math.cos(angle), this.alienSpawnSpeed * Math.sin(angle)];
-            new _alien_ship__WEBPACK_IMPORTED_MODULE_8__.AlienShip(this.gameEngine, this.transform.pos, velocity, this.gameEngine.gameScript.ship.transform);
+            new _alien_ship__WEBPACK_IMPORTED_MODULE_8__.AlienShip(this.gameEngine, this.transform.pos, velocity, this.gameEngine.activeCamera.transform); // set this to be the camera's object in the future
         }
         this.remove();
     };
@@ -10316,7 +10373,7 @@ var Particle = /** @class */ (function (_super) {
         _this.transform.pos[2] = pos[2] || 0;
         // explosion paralax
         if (engine instanceof _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine) {
-            _this.transform.cameraTransform = engine.gameScript.ship.cameraTransform;
+            _this.transform.cameraTransform = engine.activeCamera.transform;
         }
         _this.color = color;
         _this.movementAngle = _this.createMovementAngle(wallHit); // [plane, out of plane]
@@ -10955,6 +11012,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var GameScript = /** @class */ (function () {
     function GameScript(engine) {
+        this.secondShipCreated = false;
         this.serializedGame = "";
         this.theme = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Geometry_OST.mp3", 1, engine.muted);
         this.gameOverSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Game_over.wav", 1, engine.muted);
@@ -11099,6 +11157,10 @@ var GameScript = /** @class */ (function () {
         }
         else {
             this.spawnSequence(deltaTime);
+            if (this.secondShipCreated === false && this.gameTime > 5000) {
+                this.secondShipCreated = true;
+                this.createShip();
+            }
         }
         this.changeExplosionColor();
     };
@@ -11635,7 +11697,8 @@ var GameView = /** @class */ (function () {
     GameView.prototype.updateMovementDirection = function (move, down) {
         if (!this.gameEditorOpened) {
             // check this function
-            this.engine.gameScript.ship.updateLeftControlStickInput(move, down);
+            // have this be the controlled gameObject instead
+            this.engine.controlledGameObject.updateLeftControlStickInput(move, down);
         }
     };
     /*
@@ -11667,6 +11730,9 @@ var GameView = /** @class */ (function () {
                 if (unitVector) {
                     _this.updateMovementDirection(e.key, down);
                 }
+            }
+            if (e.key === 'f') {
+                _this.engine.updateFKeyListener(down);
             }
             if (e.key === "p") {
                 _this.engine.updateStartButtonListeners(down);
@@ -11710,26 +11776,26 @@ var GameView = /** @class */ (function () {
         window.addEventListener("dblclick", function (e) {
             _this.engine.mouseDoubleClicked(e);
         });
-        // function preventDefault(e) {
-        //   e = e || window.event;
-        //   if (e.preventDefault)
-        //     e.preventDefault();
-        //   e.returnValue = false;
-        // }
-        // function disableScroll() {
-        //   if (window.addEventListener) // older FF
-        //     window.addEventListener('DOMMouseScroll', preventDefault, false);
-        //   // window.onwheel = preventDefault; // modern standard
-        //   // window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
-        //   // window.ontouchmove = preventDefault; // mobile
-        //   // document.onkeydown = preventDefaultForScrollKeys;
-        // }
-        // if (window.addEventListener) // older FF
-        //   window.addEventListener('DOMMouseScroll', preventDefault, false);
-        // window.onwheel = preventDefault; // modern standard
-        // window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
-        // window.ontouchmove = preventDefault; // mobile
     };
+    // function preventDefault(e) {
+    //   e = e || window.event;
+    //   if (e.preventDefault)
+    //     e.preventDefault();
+    //   e.returnValue = false;
+    // }
+    // function disableScroll() {
+    //   if (window.addEventListener) // older FF
+    //     window.addEventListener('DOMMouseScroll', preventDefault, false);
+    //   // window.onwheel = preventDefault; // modern standard
+    //   // window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
+    //   // window.ontouchmove = preventDefault; // mobile
+    //   // document.onkeydown = preventDefaultForScrollKeys;
+    // }
+    // if (window.addEventListener) // older FF
+    //   window.addEventListener('DOMMouseScroll', preventDefault, false);
+    // window.onwheel = preventDefault; // modern standard
+    // window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
+    // window.ontouchmove = preventDefault; // mobile
     GameView.prototype.start = function () {
         var _this = this;
         this.lastTime = 0;

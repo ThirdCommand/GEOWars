@@ -6,17 +6,19 @@ import { type Transform } from "./transform";
 export class Camera {
     transform: Transform;
     zoomScale: number;
-    activeCamera: boolean;
+    isActive: boolean;
     gameEngine: GameEngine;
     defaultZoomScale: number;
     cameraWidth: number;
     cameraHeight: number;
     initialCameraZPos: number;
+    name: string;
     gameObjectToFollow: GameObject | null;
     
 
     // it's like a game object, but it gets updated last
-    constructor(gameEngine: GameEngine, transform: Transform, gameObjectToFollow: GameObject | null = null) {
+    constructor(gameEngine: GameEngine, transform: Transform, name: string | null, gameObjectToFollow: GameObject | null = null) {
+        this.name = name;
         this.gameEngine = gameEngine;
         this.gameEngine.addCamera(this);
         this.gameObjectToFollow = gameObjectToFollow;
@@ -31,7 +33,7 @@ export class Camera {
 
     makeActiveCamera() {
         this.gameEngine.setActiveCamera(this);
-        this.activeCamera = true;
+        this.isActive = true;
     }
 
     update(ctx: CanvasRenderingContext2D) {
@@ -47,7 +49,6 @@ export class Camera {
             -xPos * zoomScale + width / 2,
             -yPos * zoomScale + height / 2
         );
-        ctx.scale(this.zoomScale, this.zoomScale);
     }
 
     clearView(ctx: CanvasRenderingContext2D) {

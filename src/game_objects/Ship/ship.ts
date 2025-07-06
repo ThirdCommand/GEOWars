@@ -39,6 +39,7 @@ export class Ship extends GameObject {
     flashTime: number;
     flashing: boolean;
     flashIntervalTime: number;
+    clickWhatToFocus: string;
     flashInterval: number;
     spawnTime: number;
     controllerInUse: boolean;
@@ -55,9 +56,14 @@ export class Ship extends GameObject {
         this.transform.pos = pos;
         this.transform.pos[2] = 0;
 
-        this.camera = new Camera(engine, new Transform(null, [pos[0], pos[1]]));
+        this.camera = new Camera(engine, new Transform(null, [pos[0], pos[1]]), "ShipCamera");
+        
         this.cameraTransform = this.camera.transform; 
-
+        this.setAsControllableGameObject();
+        if(engine.activeCamera?.name !== "ShipCamera") {
+            this.makeFocussedGameObject();
+        }
+        
         this.addPhysicsComponent();
         this.addMousePosListener();
         this.addLeftControlStickListener();
@@ -169,30 +175,27 @@ export class Ship extends GameObject {
         if (this.isOutOfBounds()) {
             this.wallGraze();
         } else {
-            this.movementMechanics();
-      
+            if(this.isFocussedGameObject) {
+                this.movementMechanics();
+            } else {
+                // slow to stop. This is wrong, but maybe an okay start?
+                const Vo = this.transform.absoluteVelocity();
+                const dV = [0 - Vo[0], 0 - Vo[1]];
+                const alpha = Math.atan2(dV[1], dV[0]);
+                this.transform.acc[0] += this.shipEngineAcceleration * Math.cos(alpha);
+                this.transform.acc[1] += this.shipEngineAcceleration * Math.sin(alpha);
+            }
         }
         // if ship is out of x bounds, maintain y speed, keep x at edge value
 
         this.updateZoomScale();
 
-        // stuff that belongs in camera #camera
-        this.gameEngine.ctx.restore();
-        this.gameEngine.ctx.save();
         const shipXPos = this.transform.pos[0];
         const shipYPos = this.transform.pos[1];
-        const zoomScale = this.gameEngine.activeCamera.zoomScale;
-        const width = GameScript.DIM_X;
-        const height = GameScript.DIM_Y;
 
         this.camera.transform.pos[0] = shipXPos;
         this.camera.transform.pos[1] = shipYPos;
-        // this.cameraTransform.pos[2] = based on zoomScale
-
-        this.gameEngine.ctx.translate(
-            -shipXPos * zoomScale + width / 2,
-            -shipYPos * zoomScale + height / 2
-        );
+        
     }
 
     upgradeBullets() {
@@ -215,9 +218,9 @@ export class Ship extends GameObject {
         const smallestZoomScale = 0.75; // of the origional zoomscale
         const smallest = this.findSmallestDistanceToAWall();
         if (smallest < distanceToZoomChange) {
-            this.gameEngine.activeCamera.zoomScale = this.gameEngine.activeCamera.defaultZoomScale * (smallest / distanceToZoomChange * (1 - smallestZoomScale) + smallestZoomScale);
+            this.camera.zoomScale = this.camera.defaultZoomScale * (smallest / distanceToZoomChange * (1 - smallestZoomScale) + smallestZoomScale);
         } else {
-            this.gameEngine.activeCamera.zoomScale = this.gameEngine.activeCamera.defaultZoomScale
+            this.camera.zoomScale = this.camera.defaultZoomScale
                 
         }
 
@@ -350,7 +353,7 @@ export class Ship extends GameObject {
         }
         const shipXPos = this.transform.pos[0];
         const shipYPos = this.transform.pos[1];
-        const zoomScale = this.gameEngine.activeCamera.zoomScale;
+        const zoomScale = this.camera.zoomScale;
         const width = GameScript.DIM_X;
         const height = GameScript.DIM_Y;
 

@@ -85,8 +85,10 @@ export class GameScript {
 
     playFromRootScene: boolean;
     rootScene: Scene;
+    secondShipCreated: boolean;
 
     constructor(engine: GameEngine) {
+        this.secondShipCreated = false;
         this.serializedGame = "";
         this.theme = new Sound("sounds/Geometry_OST.mp3", 1, engine.muted);
         this.gameOverSound = new Sound("sounds/Game_over.wav", 1, engine.muted);
@@ -242,6 +244,10 @@ export class GameScript {
             this.rootScene.update(deltaTime);
         } else {
             this.spawnSequence(deltaTime);
+            if(this.secondShipCreated === false && this.gameTime > 5000) {
+                this.secondShipCreated = true;
+                this.createShip();
+            }
         }
         this.changeExplosionColor();
     }

@@ -8,11 +8,12 @@ import { Collider } from "./collider";
 import { Sound } from "./sound";
 import { GameEngine } from "./game_engine";
 import { AnimationView } from "../AnimationView";
+import { Camera } from "./camera";
 
 interface controllable {
     updateXButtonListener: (pressed: boolean) => void;
     updateRightControlStickInput: (direction: [number, number]) => void;
-    updateLeftControlStickInput: (direction: [number, number] | string) => void; // will accept WASD or controller left stick input
+    updateLeftControlStickInput: (direction: [number, number] | string, pressed: boolean | null) => void; // will accept WASD or controller left stick input
     updateStartButtonListener: (pressed: boolean) => void;
     updateMousePos: (mousePos: [number, number]) => void;
 }
@@ -20,12 +21,15 @@ interface controllable {
 
 export abstract class GameObject implements controllable{
     gameEngine: GameEngine | AnimationView;
+    camera: Camera | null;
     transform: Transform;
     childObjects: Array<GameObject> | null;
     parentObject: GameObject | null;
     physicsComponent: PhysicsComponent | null;
     lineSprite: LineSprite | null;
     colliders: Array<Collider>;
+    isControllable: boolean = false;
+    isFocussedGameObject: boolean = false;
 
     constructor(engine: GameEngine | AnimationView) {
         this.gameEngine = engine;
@@ -45,6 +49,20 @@ export abstract class GameObject implements controllable{
         this.gameEngine.addPhysicsComponent(this.physicsComponent);
     }
 
+    setAsControllableGameObject() {
+        if(this.gameEngine instanceof GameEngine) {
+            this.isControllable = true;
+            this.gameEngine.addControllableGameObject(this);
+        }
+    }
+
+    makeFocussedGameObject(){
+        if(this.gameEngine instanceof GameEngine) {
+            this.isFocussedGameObject = true;
+            this.gameEngine.focusControllableGameObject(this);
+        }
+    }
+ 
     addLineSprite(lineSprite: LineSprite) {
         this.lineSprite = lineSprite;
         this.gameEngine.addLineSprite(this.lineSprite);
@@ -60,7 +78,7 @@ export abstract class GameObject implements controllable{
             this.gameEngine.removeMouseListener(this);
     }
 
-    addLeftControlStickListener() {
+    addLeftControlStickListener(isControllableGameObject: boolean = true) {
         if(this.gameEngine instanceof GameEngine)
             this.gameEngine.addLeftControlStickListener(this);
     }
@@ -83,7 +101,7 @@ export abstract class GameObject implements controllable{
 
     updateRightControlStickInput(direction: [number, number]){return console.log(direction, 'overwright updateRightControlStickInput');} // TODO include object name
 
-    updateLeftControlStickInput(direction: [number, number]){return console.log(direction, 'overwrite updateLeftControlStickInput');} // TODO include object name
+    updateLeftControlStickInput(direction: [number, number] | string, pressed: boolean | null){return console.log(direction,pressed,  'overwrite updateLeftControlStickInput');} // TODO include object name
 
     updateXButtonListener(pressed: boolean){return console.log(pressed, `overwright updateXButtonListener`);} // TODO include object name
 
