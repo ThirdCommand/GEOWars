@@ -83,6 +83,12 @@ export abstract class GameObject implements controllable{
             this.gameEngine.addLeftControlStickListener(this);
     }
 
+    addLeftControlStickFocussedListener() {
+        // only listens when focussed on
+        if(this.gameEngine instanceof GameEngine)
+            this.gameEngine.addLeftControlStickFocussedListener(this);
+    }
+
     addRightControlStickListener() {
         if(this.gameEngine instanceof GameEngine)
             this.gameEngine.addRightControlStickListener(this);
@@ -99,6 +105,8 @@ export abstract class GameObject implements controllable{
             this.gameEngine.addStartButtonListener(this);
     }
 
+    updateLeftControlFocussedStickInput(direction: [number, number] | string, pressed: boolean | null) {console.log(direction, pressed, 'overwrite updateLeftControlFocussedStickInput');} // TODO include object name;
+
     updateRightControlStickInput(direction: [number, number]){return console.log(direction, 'overwright updateRightControlStickInput');} // TODO include object name
 
     updateLeftControlStickInput(direction: [number, number] | string, pressed: boolean | null){return console.log(direction,pressed,  'overwrite updateLeftControlStickInput');} // TODO include object name
@@ -108,6 +116,8 @@ export abstract class GameObject implements controllable{
     updateStartButtonListener(pressed: boolean) {return console.log(pressed, 'overwright updateStartButtonListener');} // TODO include object name
 
     updateMousePos(mousePos: [number, number]){ return console.log(mousePos, 'overwrite updateMousePos');} // TODO include object name
+
+    updateFocussedMousePos(mousePos: [number, number]){ return console.log(mousePos, 'overwrite updateFocussedMousePos');} // TODO include object name
 
     addClickListener() {
         if(this.gameEngine instanceof GameEngine) 

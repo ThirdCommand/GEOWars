@@ -801,7 +801,7 @@ export class LevelDesigner {
         this.UIActionsToRun = [];
     }
 
-    animate() {
+    animate(timeDelta: number) {
         // it might be cool to animate the tiny enemies in the spawn card
         // this.animateGameObjects(timeDelta);
 

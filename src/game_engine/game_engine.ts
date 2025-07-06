@@ -35,7 +35,7 @@ interface ClickListenable {
 
 // Controller
 interface LeftControlStickListenable {
-    updateLeftControlStickInput(direction: [number, number], pressed: boolean | null): void
+    updateLeftControlStickInput(direction: [number, number] | string, pressed: boolean | null): void
 }
 interface RightControlStickListenable {
     updateRightControlStickInput(direction: [number, number]): void
@@ -68,6 +68,7 @@ export class GameEngine {
     subscribers: Collider[];
     muted: boolean;
     mouseListeners: mousePositionListenable[]; 
+    mouseFocussedListeners: mousePositionListenable[]; 
 
     gameClickListeners: ClickListenable[]; 
     gameClickListenersToAdd: ClickListenable[]; 
@@ -81,6 +82,7 @@ export class GameEngine {
     levelDesignerDoubleClickListeners: DoubleClickListenable[]; 
 
     leftControlStickListeners: LeftControlStickListenable[]; 
+    leftControlStickFocussedListeners: LeftControlStickListenable[]; 
     rightControlStickListeners: RightControlStickListenable[]; 
     xButtonListeners: XButtonListenable[]; 
     startButtonListeners: StartButtonListenable[]; 
@@ -123,6 +125,7 @@ export class GameEngine {
         this.subscribers = [];
         this.muted = true;
         this.mouseListeners = [];
+        this.mouseFocussedListeners = [];
 
         this.gameClickListeners = [];
         this.gameClickListenersToAdd = [];
@@ -314,6 +317,11 @@ export class GameEngine {
 
     addLeftControlStickListener(object: LeftControlStickListenable) {
         this.leftControlStickListeners.push(object);
+        this.leftControlStickListeners.push(object);
+    }
+
+    addLeftControlStickFocussedListener(object: LeftControlStickListenable) {
+        this.leftControlStickFocussedListeners.push(object);
     }
 
     addRightControlStickListener(object: RightControlStickListenable) {
@@ -468,10 +476,11 @@ export class GameEngine {
 
     // ******** end of mouse stuff *******
 
-    updateLeftControlStickListeners(unitVector: [number, number]) {
+    updateLeftControlStickListeners(unitVector: [number, number] | string, down: boolean | null) {
         this.leftControlStickListeners.forEach((listener) => {
-            listener.updateLeftControlStickInput(unitVector, null);
+            listener.updateLeftControlStickInput(unitVector, down);
         });
+        this.controlledGameObject.updateLeftControlFocussedStickInput(unitVector, down);
     }
 
     updateRightControlStickListeners(unitVector: [number, number]) {
@@ -505,9 +514,11 @@ export class GameEngine {
 
     // called by game view
     updateMousePos(mousePos: [number, number]) {
+        // I need to check if it's supposed to be directly controlled, or just listening 
         this.mouseListeners.forEach((object) => {
             object.updateMousePos(mousePos);
         });
+        this.controlledGameObject?.updateFocussedMousePos(mousePos);
     }
 
     removeMouseListener(object: GameObject) {
@@ -523,7 +534,7 @@ export class GameEngine {
             const xButton: boolean = window.controller.buttons[0].pressed;
             const startButton: boolean = window.controller.buttons[9].pressed;
             this.updateXButtonListeners(xButton);
-            this.updateLeftControlStickListeners(leftAxis);
+            this.updateLeftControlStickListeners(leftAxis, null);
             this.updateRightControlStickListeners(rightAxis);
             this.updateStartButtonListeners(startButton);
         }

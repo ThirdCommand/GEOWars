@@ -61,7 +61,8 @@ export class GameView { engine: GameEngine;
         if (!this.gameEditorOpened) {
             // check this function
             // have this be the controlled gameObject instead
-            this.engine.controlledGameObject.updateLeftControlStickInput(move, down);
+            this.engine.updateLeftControlStickListeners(move, down);
+            
         }
     }
 
@@ -249,13 +250,12 @@ export class GameView { engine: GameEngine;
             this.levelDesigner.loadGameDesign(json);
             this.levelDesignLoaded = true;
         };
-
     }
 
     animate(time: number) {
         const timeDelta = time - this.lastTime;
         this.engine.tick(timeDelta);
-        this.levelDesigner.animate();
+        this.levelDesigner.animate(timeDelta);
         this.animationView.animate(timeDelta);
         this.lastTime = time;
         // every call to animate requests causes another call to animate

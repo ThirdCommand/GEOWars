@@ -65,8 +65,10 @@ export class Ship extends GameObject {
         }
         
         this.addPhysicsComponent();
+
         this.addMousePosListener();
         this.addLeftControlStickListener();
+
         this.addRightControlStickListener();
         this.addStartButtonListener();
         this.radius = 10;
@@ -270,7 +272,13 @@ export class Ship extends GameObject {
         return GameScript.isOutOfBounds(this.transform.pos, this.radius);
     }
 
-    override updateMousePos(mousePos: [number, number]){
+    updateMousePos(mousePos: [number, number]){
+        // this is what happens when not focussed on. 
+        // I can call a different function that targets the same spot
+        // this.setFireAngle(mousePos);
+    }
+    
+    updateFocussedMousePos(mousePos: [number, number]){
         this.setFireAngle(mousePos);
     }
 
@@ -283,7 +291,9 @@ export class Ship extends GameObject {
         }
     }
 
-    updateLeftControlStickInput(key: DirectionKey | [number, number], down = true) {
+    // updateLeftControlStickInput for when you're listening but not focussed... 
+
+    updateLeftControlFocussedStickInput(key: DirectionKey | [number, number], down = true) {
         if(key === 'w' || key === 'a' || key === 's' || key === 'd'){
             // accelerates to V = [0,0] when not pressed
             if (down) {

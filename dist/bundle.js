@@ -2538,7 +2538,7 @@ var LevelDesigner = /** @class */ (function () {
         this.UIActionsToRun.forEach(function (action) { return action(); });
         this.UIActionsToRun = [];
     };
-    LevelDesigner.prototype.animate = function () {
+    LevelDesigner.prototype.animate = function (timeDelta) {
         // it might be cool to animate the tiny enemies in the spawn card
         // this.animateGameObjects(timeDelta);
         this.clearCanvas();
@@ -3021,6 +3021,7 @@ var GameEngine = /** @class */ (function () {
         this.subscribers = [];
         this.muted = true;
         this.mouseListeners = [];
+        this.mouseFocussedListeners = [];
         this.gameClickListeners = [];
         this.gameClickListenersToAdd = [];
         this.gameClickListenersToRemove = [];
@@ -3175,6 +3176,10 @@ var GameEngine = /** @class */ (function () {
     };
     GameEngine.prototype.addLeftControlStickListener = function (object) {
         this.leftControlStickListeners.push(object);
+        this.leftControlStickListeners.push(object);
+    };
+    GameEngine.prototype.addLeftControlStickFocussedListener = function (object) {
+        this.leftControlStickFocussedListeners.push(object);
     };
     GameEngine.prototype.addRightControlStickListener = function (object) {
         this.rightControlStickListeners.push(object);
@@ -3315,10 +3320,11 @@ var GameEngine = /** @class */ (function () {
             this.levelDesignerDoubleClickListeners.splice(index, 1);
     };
     // ******** end of mouse stuff *******
-    GameEngine.prototype.updateLeftControlStickListeners = function (unitVector) {
+    GameEngine.prototype.updateLeftControlStickListeners = function (unitVector, down) {
         this.leftControlStickListeners.forEach(function (listener) {
-            listener.updateLeftControlStickInput(unitVector, null);
+            listener.updateLeftControlStickInput(unitVector, down);
         });
+        this.controlledGameObject.updateLeftControlFocussedStickInput(unitVector, down);
     };
     GameEngine.prototype.updateRightControlStickListeners = function (unitVector) {
         this.rightControlStickListeners.forEach(function (listener) {
@@ -3344,9 +3350,12 @@ var GameEngine = /** @class */ (function () {
     };
     // called by game view
     GameEngine.prototype.updateMousePos = function (mousePos) {
+        var _a;
+        // I need to check if it's supposed to be directly controlled, or just listening 
         this.mouseListeners.forEach(function (object) {
             object.updateMousePos(mousePos);
         });
+        (_a = this.controlledGameObject) === null || _a === void 0 ? void 0 : _a.updateFocussedMousePos(mousePos);
     };
     GameEngine.prototype.removeMouseListener = function (object) {
         var index = this.mouseListeners.indexOf(object);
@@ -3361,7 +3370,7 @@ var GameEngine = /** @class */ (function () {
             var xButton = window.controller.buttons[0].pressed;
             var startButton = window.controller.buttons[9].pressed;
             this.updateXButtonListeners(xButton);
-            this.updateLeftControlStickListeners(leftAxis);
+            this.updateLeftControlStickListeners(leftAxis, null);
             this.updateRightControlStickListeners(rightAxis);
             this.updateStartButtonListeners(startButton);
         }
@@ -3605,6 +3614,11 @@ var GameObject = /** @class */ (function () {
         if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
             this.gameEngine.addLeftControlStickListener(this);
     };
+    GameObject.prototype.addLeftControlStickFocussedListener = function () {
+        // only listens when focussed on
+        if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
+            this.gameEngine.addLeftControlStickFocussedListener(this);
+    };
     GameObject.prototype.addRightControlStickListener = function () {
         if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
             this.gameEngine.addRightControlStickListener(this);
@@ -3617,11 +3631,13 @@ var GameObject = /** @class */ (function () {
         if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
             this.gameEngine.addStartButtonListener(this);
     };
+    GameObject.prototype.updateLeftControlFocussedStickInput = function (direction, pressed) { console.log(direction, pressed, 'overwrite updateLeftControlFocussedStickInput'); }; // TODO include object name;
     GameObject.prototype.updateRightControlStickInput = function (direction) { return console.log(direction, 'overwright updateRightControlStickInput'); }; // TODO include object name
     GameObject.prototype.updateLeftControlStickInput = function (direction, pressed) { return console.log(direction, pressed, 'overwrite updateLeftControlStickInput'); }; // TODO include object name
     GameObject.prototype.updateXButtonListener = function (pressed) { return console.log(pressed, "overwright updateXButtonListener"); }; // TODO include object name
     GameObject.prototype.updateStartButtonListener = function (pressed) { return console.log(pressed, 'overwright updateStartButtonListener'); }; // TODO include object name
     GameObject.prototype.updateMousePos = function (mousePos) { return console.log(mousePos, 'overwrite updateMousePos'); }; // TODO include object name
+    GameObject.prototype.updateFocussedMousePos = function (mousePos) { return console.log(mousePos, 'overwrite updateFocussedMousePos'); }; // TODO include object name
     GameObject.prototype.addClickListener = function () {
         if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
             this.gameEngine.addClickListener(this);
@@ -6986,6 +7002,11 @@ var Ship = /** @class */ (function (_super) {
         return _game_script__WEBPACK_IMPORTED_MODULE_6__.GameScript.isOutOfBounds(this.transform.pos, this.radius);
     };
     Ship.prototype.updateMousePos = function (mousePos) {
+        // this is what happens when not focussed on. 
+        // I can call a different function that targets the same spot
+        // this.setFireAngle(mousePos);
+    };
+    Ship.prototype.updateFocussedMousePos = function (mousePos) {
         this.setFireAngle(mousePos);
     };
     Ship.prototype.updateRightControlStickInput = function (vector) {
@@ -6997,7 +7018,8 @@ var Ship = /** @class */ (function (_super) {
             this.dontShoot = true;
         }
     };
-    Ship.prototype.updateLeftControlStickInput = function (key, down) {
+    // updateLeftControlStickInput for when you're listening but not focussed... 
+    Ship.prototype.updateLeftControlFocussedStickInput = function (key, down) {
         if (down === void 0) { down = true; }
         if (key === 'w' || key === 'a' || key === 's' || key === 'd') {
             // accelerates to V = [0,0] when not pressed
@@ -11698,7 +11720,7 @@ var GameView = /** @class */ (function () {
         if (!this.gameEditorOpened) {
             // check this function
             // have this be the controlled gameObject instead
-            this.engine.controlledGameObject.updateLeftControlStickInput(move, down);
+            this.engine.updateLeftControlStickListeners(move, down);
         }
     };
     /*
@@ -11868,7 +11890,7 @@ var GameView = /** @class */ (function () {
     GameView.prototype.animate = function (time) {
         var timeDelta = time - this.lastTime;
         this.engine.tick(timeDelta);
-        this.levelDesigner.animate();
+        this.levelDesigner.animate(timeDelta);
         this.animationView.animate(timeDelta);
         this.lastTime = time;
         // every call to animate requests causes another call to animate
