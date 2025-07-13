@@ -1,4 +1,4 @@
-import {Particle} from "./particle";
+import {GEOParticle} from "./particle";
 import {GameObject} from "../../game_engine/game_object";
 import {Sound} from "../../game_engine/sound";
 import {Color} from "../../game_engine/color";
@@ -48,7 +48,7 @@ export class ParticleExplosion extends GameObject{
             const x = this.transform.absolutePosition()[0];
             const y = this.transform.absolutePosition()[1];
             const z = 0;
-            this.addChildGameObject(new Particle(this.gameEngine, [x,y,z], speed, color));
+            this.addChildGameObject(new GEOParticle(this.gameEngine, [x,y,z], speed, color));
         }
     }
 

@@ -262,6 +262,9 @@ export class AnimationView {
 
     addPhysicsComponent() {}
 
+    addReplayablePhysicsComponent() {}
+
+
     remove(gameObject: GameObject) {
         if (gameObject.lineSprite) {
             const lineSpriteIndex = this.lineSprites.indexOf(gameObject.lineSprite);

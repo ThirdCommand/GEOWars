@@ -1,4 +1,4 @@
-import { Particle } from "./particle";
+import { GEOParticle } from "./particle";
 import { GameObject } from "../../game_engine/game_object";
 import { Sound } from "../../game_engine/sound";
 import { Color } from "../../game_engine/color";
@@ -41,7 +41,7 @@ export class ParticleExplosion extends GameObject {
             color.a = Math.random() * 0.35 + 0.6;
             color.h = (color.h + colorVarience) % 360;
 
-            this.addChildGameObject(new Particle(this.gameEngine, this.transform.absolutePosition(), speed, color));
+            this.addChildGameObject(new GEOParticle(this.gameEngine, this.transform.absolutePosition(), speed, color));
         }
     }
 

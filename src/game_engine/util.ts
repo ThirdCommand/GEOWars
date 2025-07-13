@@ -78,3 +78,6 @@ export const VectorMath = {
     scale,
 
 };
+
+
+export const getNumberFromRange = (baseNumber: number, range: number): number => ((baseNumber - range/2  + Math.random()*range))

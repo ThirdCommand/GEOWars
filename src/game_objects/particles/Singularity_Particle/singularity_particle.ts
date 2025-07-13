@@ -2,10 +2,10 @@ import { type AnimationView } from "../../../AnimationView";
 import { Color } from "../../../game_engine/color";
 import { GameEngine } from "../../../game_engine/game_engine";
 import { GameScript } from "../../../game_script";
-import {Particle} from "../particle";
+import {GEOParticle} from "../particle";
 import { SingularityParticles } from "../singularity_particles";
 
-export class SingularityParticle extends Particle {
+export class SingularityParticle extends GEOParticle {
     parentObject: SingularityParticles;
     constructor(engine: GameEngine | AnimationView, pos: [number, number, number?], vel: [number, number, number?], color: Color) {
         super(engine, pos, 0, color);
@@ -32,9 +32,7 @@ export class SingularityParticle extends Particle {
         this.transform.acc = [0,0,0];
         this.checkBounds();
     }
-    aniimate() {
-        
-    }
+
     checkBounds() {
         if (GameScript.isOutOfBounds(this.transform.absolutePosition(), -0.5)) {
             this.remove();

@@ -1,6 +1,6 @@
 
 
-import {Particle} from "./particle";
+import {GEOParticle} from "./particle";
 import {GameObject} from "../../game_engine/game_object";
 import {Sound} from "../../game_engine/sound";
 import {Color} from "../../game_engine/color";
@@ -58,7 +58,7 @@ export class BulletWallExplosion extends GameObject{
             const y = this.transform.absolutePosition()[1];
             const z = 0;
       
-            this.addChildGameObject(new Particle(this.gameEngine, [x,y,z], speed, color, this.wallHit));
+            this.addChildGameObject(new GEOParticle(this.gameEngine, [x,y,z], speed, color, this.wallHit));
         }
     }
 

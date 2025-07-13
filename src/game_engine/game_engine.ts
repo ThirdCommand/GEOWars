@@ -1,7 +1,7 @@
 import { GameScript } from "../game_script";
 import {type GameObject } from "./game_object";
 import { type LineSprite } from "./line_sprite";
-import { type PhysicsComponent } from "./physics_component";
+import { ReplayablePhysicsComponent, type PhysicsComponent } from "./physics_component";
 import {type Collider} from "./collider";
 import { type Sound } from "./sound";
 import { type LevelDesigner } from "./Levels/levelDesigner";
@@ -43,6 +43,9 @@ interface RightControlStickListenable {
 interface XButtonListenable {
     updateXButtonListener(pressed: boolean): void
 }
+interface AButtonListenable {
+    updateAButtonListener(pressed: boolean): void
+}
 interface StartButtonListenable {
     updateStartButtonListener(pressed: boolean): void
 }
@@ -52,12 +55,19 @@ interface StartButtonListenable {
 
 export class GameEngine {
     ctx: CanvasRenderingContext2D;
+    buttonState: {
+        aButtonPressed: boolean;
+        xButtonPressed: boolean;
+        startButtonPressed: boolean;
+    }
+    isControllerConnected: boolean = false;
     cameras: Camera[];
     activeCamera: Camera;
     controlledGameObject: GameObject | null;
     controllableGameObjects: GameObject[]; 
     gameObjects: GameObject[];
     physicsComponents: PhysicsComponent[];
+    replayablePhysicsComponents: ReplayablePhysicsComponent[] = [];
     lineSprites: LineSprite[];
     soundsToPlay: {[key: string]: Sound};
     colliders: {
@@ -85,6 +95,7 @@ export class GameEngine {
     leftControlStickFocussedListeners: LeftControlStickListenable[]; 
     rightControlStickListeners: RightControlStickListenable[]; 
     xButtonListeners: XButtonListenable[]; 
+    aButtonListeners: AButtonListenable[]; 
     startButtonListeners: StartButtonListenable[]; 
 
     gameScript: GameScript;
@@ -106,11 +117,16 @@ export class GameEngine {
     gameEditorOpened: boolean;
     levelDesigner: LevelDesigner;
 
-    controller: object | null;
+    controller: any | null;
 
     constructor(ctx: CanvasRenderingContext2D) {
         this.ctx = ctx;
         window.engine = this;
+        this.buttonState = {
+            aButtonPressed: false,
+            xButtonPressed: false,
+            startButtonPressed: false,
+        };
         this.defaultZoomScale = 1.3;
         this.zoomScale = 1.3;
         this.lineSprites = [];
@@ -141,6 +157,7 @@ export class GameEngine {
         this.leftControlStickListeners = [];
         this.rightControlStickListeners = [];
         this.xButtonListeners = [];
+        this.aButtonListeners = [];
         this.startButtonListeners = [];
         this.gameScript = new GameScript(this);
         // this.toRemoveQueue = [];
@@ -189,15 +206,15 @@ export class GameEngine {
         
         window.addEventListener("gamepadconnected", function (e) {
             window.controller = e.gamepad;
-            window.engine.controller = e.gamepad;
+            window.engine.isControllerConnected = true;
             // Gamepad connected
-            console.log("Gamepad connected", e.gamepad);
+            // console.log("Gamepad connected", e.gamepad);
         });
 
         window.addEventListener("gamepaddisconnected", function (e) {
             // Gamepad disconnected
-            window.engine.controller = null;
-            console.log("Gamepad disconnected", e.gamepad);
+            window.engine.isControllerConnected = false;
+            // console.log("Gamepad disconnected", e.gamepad);
         });
     }
 
@@ -240,6 +257,7 @@ export class GameEngine {
         const beforePhysicsCalcs = performance.now();
         const collisionTime = beforePhysicsCalcs - beforeCollisionTime;
         this.movePhysicsComponents(delta);
+        this.moveReplayablePhysicsComponents(delta, this.gameScript.gameTime);
         const beforeUpdate = performance.now();
         const physicsCalcTime = beforeUpdate - beforePhysicsCalcs;
         this.updateGameObjects(delta);
@@ -402,7 +420,7 @@ export class GameEngine {
             }
         }
     }
-
+    // this belongs in the ship. we should call the listeners here, including the ship
     updateFKeyListener(pressed: boolean) {
         if(pressed) {
             // focus on next controllable game object
@@ -486,13 +504,21 @@ export class GameEngine {
     updateRightControlStickListeners(unitVector: [number, number]) {
         this.rightControlStickListeners.forEach((listener) => {
             listener.updateRightControlStickInput(unitVector);
-        });
+        }); 
+        this.controlledGameObject.updateRightControlFocussedStickInput(unitVector);
     }
 
     updateXButtonListeners(xButton: boolean) {
         this.xButtonListeners.forEach((listener) => {
             listener.updateXButtonListener(xButton);
         });
+    }
+
+    updateAButtonListeners(aButton: boolean) { 
+        this.aButtonListeners.forEach((listener) => {
+            listener.updateAButtonListener(aButton);
+        });
+        this.updateFKeyListener(aButton); // TODO this is a hacky way to do this
     }
 
 
@@ -527,13 +553,24 @@ export class GameEngine {
     }
 
     updateControlListeners() {
-        navigator.getGamepads();
-        if (this.controller) {
-            const leftAxis: [number, number] = [window.controller.axes[0], window.controller.axes[1]];
-            const rightAxis: [number, number] = [window.controller.axes[2], window.controller.axes[3]];
-            const xButton: boolean = window.controller.buttons[0].pressed;
-            const startButton: boolean = window.controller.buttons[9].pressed;
-            this.updateXButtonListeners(xButton);
+        this.controller = navigator.getGamepads()[0];
+        // should only update button listeners when the state changes. 
+        // I should keep track of the state of the buttons
+        if (this.isControllerConnected) {
+            const leftAxis: [number, number] = [this.controller.axes[0], this.controller.axes[1]];
+            const rightAxis: [number, number] = [this.controller.axes[2], this.controller.axes[3]];
+            const aButton: boolean = this.controller.buttons[0].pressed;
+            // const xButton: boolean = this.controller.buttons[0].pressed;
+            if(this.buttonState.aButtonPressed !== aButton) {
+                this.buttonState.aButtonPressed = aButton;
+                this.updateAButtonListeners(aButton);
+            }
+            
+            const startButton: boolean = this.controller.buttons[9].pressed;
+
+            // this.updateStartButtonListeners(aButton);
+            // this.updateXButtonListeners(xButton);
+            
             this.updateLeftControlStickListeners(leftAxis, null);
             this.updateRightControlStickListeners(rightAxis);
             this.updateStartButtonListeners(startButton);
@@ -543,6 +580,12 @@ export class GameEngine {
     movePhysicsComponents(delta: number) {
         this.physicsComponents.forEach((component) => {
             component.move(delta);
+        });
+    }
+
+    moveReplayablePhysicsComponents(delta: number, gameTime: number) {
+        this.replayablePhysicsComponents.forEach((component) => {
+            component.move(delta, gameTime);
         });
     }
 
@@ -660,6 +703,10 @@ export class GameEngine {
     addGameObject(object: GameObject) {
         this.gameObjects.push(object);
     }
+
+    addReplayablePhysicsComponent(replayablePhysicsComponent: ReplayablePhysicsComponent) {
+        this.replayablePhysicsComponents.push(replayablePhysicsComponent);
+    } 
 
     addPhysicsComponent(physicsComponent: PhysicsComponent) {
         this.physicsComponents.push(physicsComponent);

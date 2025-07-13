@@ -2,7 +2,7 @@
 // import { Sound } from "./sound";
 
 import { Transform } from "./transform";
-import { PhysicsComponent } from "./physics_component";
+import { PhysicsComponent, ReplayablePhysicsComponent } from "./physics_component";
 import { type LineSprite } from "./line_sprite";
 import { Collider } from "./collider";
 import { Sound } from "./sound";
@@ -31,6 +31,8 @@ export abstract class GameObject implements controllable{
     isControllable: boolean = false;
     isFocussedGameObject: boolean = false;
 
+    replayablePhysicsComponent: ReplayablePhysicsComponent | null = null;
+
     constructor(engine: GameEngine | AnimationView) {
         this.gameEngine = engine;
         this.gameEngine.addGameObject(this);
@@ -47,6 +49,11 @@ export abstract class GameObject implements controllable{
     addPhysicsComponent() {
         this.physicsComponent = new PhysicsComponent(this.transform);
         this.gameEngine.addPhysicsComponent(this.physicsComponent);
+    }
+
+    addReplayablePhysicsComponent() {
+        this.replayablePhysicsComponent = new ReplayablePhysicsComponent(this.transform);
+        this.gameEngine.addReplayablePhysicsComponent(this.replayablePhysicsComponent);
     }
 
     setAsControllableGameObject() {
@@ -104,6 +111,8 @@ export abstract class GameObject implements controllable{
         if(this.gameEngine instanceof GameEngine)
             this.gameEngine.addStartButtonListener(this);
     }
+
+    updateRightControlFocussedStickInput(direction: [number, number]) {console.log(direction, 'overwrite updateRightControlFocussedStickInput');} // TODO include object name
 
     updateLeftControlFocussedStickInput(direction: [number, number] | string, pressed: boolean | null) {console.log(direction, pressed, 'overwrite updateLeftControlFocussedStickInput');} // TODO include object name;
 

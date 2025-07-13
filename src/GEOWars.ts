@@ -19,13 +19,11 @@ document.addEventListener("DOMContentLoaded", () => {
     gameEngine.levelDesigner = levelDesigner;
 
     window.addEventListener('focus', () => {
-        console.log('focussed')
         gameEngine.focusUnPause();
         animationView.focusUnPause();
     });
     
     window.addEventListener('blur', () => {
-        console.log('blurred')
         gameEngine.focusPause();
         animationView.focusPause();
     });

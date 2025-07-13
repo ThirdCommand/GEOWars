@@ -29,6 +29,7 @@ import { type GameEngine } from "./game_engine/game_engine";
 import { type GameObject } from "./game_engine/game_object";
 import { Transform } from "./game_engine/transform";
 import { Machinery } from "./game_objects/ClockworkGames/Machine";
+import { Aurora } from "./game_objects/StrikeTime/Aurora/Aurora";
 
 type EnemyCreator = (pos: [number, number, number] | [number, number], angle?: number) => GameObject;
 
@@ -216,17 +217,17 @@ export class GameScript {
     }
 
     updateXButtonListener(pressed: boolean) {
-        if (pressed) {
-            if (this.engine.paused) {
-                const modal = document.getElementById("endModal");
+        // if (pressed) {
+        //     if (this.engine.paused) {
+        //         const modal = document.getElementById("endModal");
 
-                modal.style.display = "none";
-                this.engine.paused = false;
-                if (!this.engine.muted) {
-                    this.engine.gameScript.theme.play();
-                }
-            }
-        }
+        //         modal.style.display = "none";
+        //         this.engine.paused = false;
+        //         if (!this.engine.muted) {
+        //             this.engine.gameScript.theme.play();
+        //         }
+        //     }
+        // }
     }
 
     update(deltaTime: number) {
@@ -243,11 +244,14 @@ export class GameScript {
         if(this.playFromRootScene) {
             this.rootScene.update(deltaTime);
         } else {
+            // will need to change all this for the new game.. I guess it'll be a 
+            // new game script 
             this.gameTime += deltaTime;
-            this.spawnSequence(deltaTime);
-            if(this.secondShipCreated === false && this.gameTime > 5000) {
+            // this.spawnSequence(deltaTime);
+            if(this.secondShipCreated === false && this.gameTime > 1000) {
                 this.secondShipCreated = true;
-                this.createShip();
+                this.createAurora();
+                // this.createShip();
             }
         }
         this.changeExplosionColor();
@@ -658,6 +662,10 @@ export class GameScript {
 
     createShip() {
         return new Ship(this.engine, this.startPosition);
+    }
+
+    createAurora() {
+        return new Aurora(this.engine, [500, 200]);
     }
 
     createWalls() {

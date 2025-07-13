@@ -205,6 +205,7 @@ var AnimationView = /** @class */ (function () {
     };
     AnimationView.prototype.addCollider = function () { };
     AnimationView.prototype.addPhysicsComponent = function () { };
+    AnimationView.prototype.addReplayablePhysicsComponent = function () { };
     AnimationView.prototype.remove = function (gameObject) {
         if (gameObject.lineSprite) {
             var lineSpriteIndex = this.lineSprites.indexOf(gameObject.lineSprite);
@@ -2923,6 +2924,9 @@ var Color = /** @class */ (function () {
         this.colorType = colorType;
         this.extractColorInfo(colorType, colorNumbers);
     }
+    Color.GetColorRange = function (baseHue, hueRange) {
+        return baseHue - hueRange / 2 + hueRange * Math.random();
+    };
     Color.prototype.dup = function () {
         var dupColors;
         var dupColorType = this.colorType;
@@ -3005,8 +3009,15 @@ __webpack_require__.r(__webpack_exports__);
 
 var GameEngine = /** @class */ (function () {
     function GameEngine(ctx) {
+        this.isControllerConnected = false;
+        this.replayablePhysicsComponents = [];
         this.ctx = ctx;
         window.engine = this;
+        this.buttonState = {
+            aButtonPressed: false,
+            xButtonPressed: false,
+            startButtonPressed: false,
+        };
         this.defaultZoomScale = 1.3;
         this.zoomScale = 1.3;
         this.lineSprites = [];
@@ -3033,6 +3044,7 @@ var GameEngine = /** @class */ (function () {
         this.leftControlStickListeners = [];
         this.rightControlStickListeners = [];
         this.xButtonListeners = [];
+        this.aButtonListeners = [];
         this.startButtonListeners = [];
         this.gameScript = new _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript(this);
         // this.toRemoveQueue = [];
@@ -3076,14 +3088,14 @@ var GameEngine = /** @class */ (function () {
     GameEngine.prototype.setupController = function () {
         window.addEventListener("gamepadconnected", function (e) {
             window.controller = e.gamepad;
-            window.engine.controller = e.gamepad;
+            window.engine.isControllerConnected = true;
             // Gamepad connected
-            console.log("Gamepad connected", e.gamepad);
+            // console.log("Gamepad connected", e.gamepad);
         });
         window.addEventListener("gamepaddisconnected", function (e) {
             // Gamepad disconnected
-            window.engine.controller = null;
-            console.log("Gamepad disconnected", e.gamepad);
+            window.engine.isControllerConnected = false;
+            // console.log("Gamepad disconnected", e.gamepad);
         });
     };
     GameEngine.prototype.updateGraphicSetting = function (delta) {
@@ -3123,6 +3135,7 @@ var GameEngine = /** @class */ (function () {
         var beforePhysicsCalcs = performance.now();
         var collisionTime = beforePhysicsCalcs - beforeCollisionTime;
         this.movePhysicsComponents(delta);
+        this.moveReplayablePhysicsComponents(delta, this.gameScript.gameTime);
         var beforeUpdate = performance.now();
         var physicsCalcTime = beforeUpdate - beforePhysicsCalcs;
         this.updateGameObjects(delta);
@@ -3249,6 +3262,7 @@ var GameEngine = /** @class */ (function () {
             }
         }
     };
+    // this belongs in the ship. we should call the listeners here, including the ship
     GameEngine.prototype.updateFKeyListener = function (pressed) {
         if (pressed) {
             // focus on next controllable game object
@@ -3330,11 +3344,18 @@ var GameEngine = /** @class */ (function () {
         this.rightControlStickListeners.forEach(function (listener) {
             listener.updateRightControlStickInput(unitVector);
         });
+        this.controlledGameObject.updateRightControlFocussedStickInput(unitVector);
     };
     GameEngine.prototype.updateXButtonListeners = function (xButton) {
         this.xButtonListeners.forEach(function (listener) {
             listener.updateXButtonListener(xButton);
         });
+    };
+    GameEngine.prototype.updateAButtonListeners = function (aButton) {
+        this.aButtonListeners.forEach(function (listener) {
+            listener.updateAButtonListener(aButton);
+        });
+        this.updateFKeyListener(aButton); // TODO this is a hacky way to do this
     };
     GameEngine.prototype.updateStartButtonListeners = function (pressed) {
         // console.log([startButton, down])
@@ -3363,13 +3384,21 @@ var GameEngine = /** @class */ (function () {
             this.mouseListeners.splice(index, 1);
     };
     GameEngine.prototype.updateControlListeners = function () {
-        navigator.getGamepads();
-        if (this.controller) {
-            var leftAxis = [window.controller.axes[0], window.controller.axes[1]];
-            var rightAxis = [window.controller.axes[2], window.controller.axes[3]];
-            var xButton = window.controller.buttons[0].pressed;
-            var startButton = window.controller.buttons[9].pressed;
-            this.updateXButtonListeners(xButton);
+        this.controller = navigator.getGamepads()[0];
+        // should only update button listeners when the state changes. 
+        // I should keep track of the state of the buttons
+        if (this.isControllerConnected) {
+            var leftAxis = [this.controller.axes[0], this.controller.axes[1]];
+            var rightAxis = [this.controller.axes[2], this.controller.axes[3]];
+            var aButton = this.controller.buttons[0].pressed;
+            // const xButton: boolean = this.controller.buttons[0].pressed;
+            if (this.buttonState.aButtonPressed !== aButton) {
+                this.buttonState.aButtonPressed = aButton;
+                this.updateAButtonListeners(aButton);
+            }
+            var startButton = this.controller.buttons[9].pressed;
+            // this.updateStartButtonListeners(aButton);
+            // this.updateXButtonListeners(xButton);
             this.updateLeftControlStickListeners(leftAxis, null);
             this.updateRightControlStickListeners(rightAxis);
             this.updateStartButtonListeners(startButton);
@@ -3378,6 +3407,11 @@ var GameEngine = /** @class */ (function () {
     GameEngine.prototype.movePhysicsComponents = function (delta) {
         this.physicsComponents.forEach(function (component) {
             component.move(delta);
+        });
+    };
+    GameEngine.prototype.moveReplayablePhysicsComponents = function (delta, gameTime) {
+        this.replayablePhysicsComponents.forEach(function (component) {
+            component.move(delta, gameTime);
         });
     };
     GameEngine.prototype.addCollider = function (collider) {
@@ -3481,6 +3515,9 @@ var GameEngine = /** @class */ (function () {
     GameEngine.prototype.addGameObject = function (object) {
         this.gameObjects.push(object);
     };
+    GameEngine.prototype.addReplayablePhysicsComponent = function (replayablePhysicsComponent) {
+        this.replayablePhysicsComponents.push(replayablePhysicsComponent);
+    };
     GameEngine.prototype.addPhysicsComponent = function (physicsComponent) {
         this.physicsComponents.push(physicsComponent);
     };
@@ -3576,6 +3613,7 @@ var GameObject = /** @class */ (function () {
     function GameObject(engine) {
         this.isControllable = false;
         this.isFocussedGameObject = false;
+        this.replayablePhysicsComponent = null;
         this.gameEngine = engine;
         this.gameEngine.addGameObject(this);
         this.transform = new _transform__WEBPACK_IMPORTED_MODULE_0__.Transform();
@@ -3588,6 +3626,10 @@ var GameObject = /** @class */ (function () {
     GameObject.prototype.addPhysicsComponent = function () {
         this.physicsComponent = new _physics_component__WEBPACK_IMPORTED_MODULE_1__.PhysicsComponent(this.transform);
         this.gameEngine.addPhysicsComponent(this.physicsComponent);
+    };
+    GameObject.prototype.addReplayablePhysicsComponent = function () {
+        this.replayablePhysicsComponent = new _physics_component__WEBPACK_IMPORTED_MODULE_1__.ReplayablePhysicsComponent(this.transform);
+        this.gameEngine.addReplayablePhysicsComponent(this.replayablePhysicsComponent);
     };
     GameObject.prototype.setAsControllableGameObject = function () {
         if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine) {
@@ -3635,6 +3677,7 @@ var GameObject = /** @class */ (function () {
         if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
             this.gameEngine.addStartButtonListener(this);
     };
+    GameObject.prototype.updateRightControlFocussedStickInput = function (direction) { console.log(direction, 'overwrite updateRightControlFocussedStickInput'); }; // TODO include object name
     GameObject.prototype.updateLeftControlFocussedStickInput = function (direction, pressed) { console.log(direction, pressed, 'overwrite updateLeftControlFocussedStickInput'); }; // TODO include object name;
     GameObject.prototype.updateRightControlStickInput = function (direction) { return console.log(direction, 'overwright updateRightControlStickInput'); }; // TODO include object name
     GameObject.prototype.updateLeftControlStickInput = function (direction, pressed) { return console.log(direction, pressed, 'overwrite updateLeftControlStickInput'); }; // TODO include object name
@@ -3735,7 +3778,8 @@ var LineSprite = /** @class */ (function () {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   PhysicsComponent: () => (/* binding */ PhysicsComponent)
+/* harmony export */   PhysicsComponent: () => (/* binding */ PhysicsComponent),
+/* harmony export */   ReplayablePhysicsComponent: () => (/* binding */ ReplayablePhysicsComponent)
 /* harmony export */ });
 var PhysicsComponent = /** @class */ (function () {
     function PhysicsComponent(transform) {
@@ -3758,6 +3802,267 @@ var PhysicsComponent = /** @class */ (function () {
         this.transform.aAcc = 0;
     };
     return PhysicsComponent;
+}());
+
+var ReplayablePhysicsComponent = /** @class */ (function () {
+    function ReplayablePhysicsComponent(transform) {
+        this.isAccelerating = false;
+        this.isTurning = false;
+        this.movementTangentAngle = null;
+        // This will need to be carefully updated
+        // since it kind of implies things
+        this.restSpeed = null;
+        this.transform = transform;
+        this.accelerationInformation = {};
+        this.turnInformation = {};
+    }
+    // to reverse time, I can replay the commands in reverse. in game time is the same
+    // and have them in the opposite direction
+    // game object will have to provide the rotation point.
+    // this makes sense since only it will know what that should be depending on game feel
+    // the command to rotate will start with accelerating/decelerating to tangent speed
+    // then startArchRotation is called
+    ReplayablePhysicsComponent.prototype.startArchRotation = function (turnParams) {
+        var rotationPoint = turnParams.rotationPoint, turnRadius = turnParams.turnRadius, isTurningRight = turnParams.isTurningRight, tangentSpeed = turnParams.tangentSpeed, startAngle = turnParams.startAngle, endAngle = turnParams.endAngle, gameTimeArchStarted = turnParams.gameTimeArchStarted, pointWhereArchStarted = turnParams.pointWhereArchStarted, nextInstruction = turnParams.nextInstruction, currentGameTime = turnParams.currentGameTime;
+        if (this.isTurning) {
+            return this.interruptTurn({
+                rotationPoint: rotationPoint,
+                turnRadius: turnRadius,
+                isTurningRight: isTurningRight,
+                tangentSpeed: tangentSpeed,
+                startAngle: startAngle,
+                endAngle: endAngle,
+                gameTimeArchStarted: gameTimeArchStarted,
+                pointWhereArchStarted: pointWhereArchStarted,
+            });
+        }
+        // will have a precise time and location when the arch started while playing back controls
+        // in that case we'll have to piece wise connect the arch and previous section
+        console.log('input for startArchRotation', {
+            rotationPoint: rotationPoint,
+            tangentSpeed: tangentSpeed,
+            endAngle: endAngle,
+            gameTimeArchStarted: gameTimeArchStarted,
+            pointWhereArchStarted: pointWhereArchStarted,
+        });
+        // isRotating should have been made false by the interruption of the rotation
+        this.isAccelerating = false;
+        this.isTurning = true;
+        if (isTurningRight && startAngle > endAngle) {
+            endAngle = endAngle + Math.PI * 2;
+        }
+        else if (!isTurningRight && endAngle > startAngle) {
+            startAngle = startAngle + Math.PI * 2;
+        }
+        var angleDifference = endAngle - startAngle;
+        // when replaying an action, we'll need a catchup time function which will be like the move function
+        // we'd run the move function for the previous action up to the time of the new action start
+        // then run the new action's move function for the rest of the time
+        this.turnInformation.startingPoint = pointWhereArchStarted;
+        this.turnInformation.turnRadius = turnRadius;
+        var rotationDirection = isTurningRight ? 1 : -1;
+        this.turnInformation.rotationDirection = rotationDirection;
+        this.transform.archAngleVelocity = tangentSpeed / this.turnInformation.turnRadius * rotationDirection;
+        this.turnInformation.tangentSpeed = tangentSpeed;
+        this.turnInformation.rotationPoint = [rotationPoint[0], rotationPoint[1]];
+        this.turnInformation.endAngleFromRotationPointIfUninterrupted = endAngle;
+        this.turnInformation.gameTimeWhenTurnEnds = gameTimeArchStarted + Math.abs((angleDifference) / this.transform.archAngleVelocity);
+        this.turnInformation.gameTimeWhenTurnStarted = gameTimeArchStarted;
+        this.turnInformation.startAngle = startAngle;
+        this.turnInformation.nextInstruction = nextInstruction;
+        this.turnInformation.endPoint = [
+            rotationPoint[0] + this.turnInformation.turnRadius * Math.cos(endAngle - Math.PI / 2) * rotationDirection,
+            rotationPoint[1] + this.turnInformation.turnRadius * Math.sin(endAngle - Math.PI / 2) * rotationDirection
+        ];
+        if (currentGameTime) {
+            this.move(currentGameTime - gameTimeArchStarted, currentGameTime);
+        }
+        console.log('colected turn information', this.turnInformation);
+    };
+    ReplayablePhysicsComponent.prototype.interruptTurn = function (interruptTurnParams) {
+        var rotationPoint = interruptTurnParams.rotationPoint, turnRadius = interruptTurnParams.turnRadius, isTurningRight = interruptTurnParams.isTurningRight, tangentSpeed = interruptTurnParams.tangentSpeed, startAngle = interruptTurnParams.startAngle, endAngle = interruptTurnParams.endAngle, gameTimeArchStarted = interruptTurnParams.gameTimeArchStarted, pointWhereArchStarted = interruptTurnParams.pointWhereArchStarted;
+    };
+    ReplayablePhysicsComponent.prototype.startAcceleration = function (accelerationParams) {
+        // what if acceleration is negative
+        // I don't think I want external forces to be applied for replayable physics components
+        var acceleration = accelerationParams.acceleration, endSpeed = accelerationParams.endSpeed, gameTimeAccelerationStarted = accelerationParams.gameTimeAccelerationStarted, currentGameTime = accelerationParams.currentGameTime, direction = accelerationParams.direction, nextInstruction = accelerationParams.nextInstruction;
+        this.accelerationInformation.isDecelerating = acceleration < 0;
+        var currentSpeed = null;
+        var velocityAngle = null;
+        if (direction) {
+            currentSpeed = 0;
+            velocityAngle = direction;
+        }
+        else {
+            currentSpeed = Math.sqrt(Math.pow(this.transform.vel[0], 2) + Math.pow(this.transform.vel[1], 2));
+            velocityAngle = Math.atan2(this.transform.vel[1], this.transform.vel[0]);
+        }
+        // isRotating should have been made false by the interruption of the rotation
+        this.isTurning = false;
+        this.isAccelerating = true;
+        this.accelerationInformation.nextInstruction = nextInstruction;
+        var timeUntilAccelerationEnds = (endSpeed - currentSpeed) / acceleration;
+        this.accelerationInformation.gameTimeWhenAccelerationEnds = timeUntilAccelerationEnds + gameTimeAccelerationStarted;
+        var accelerationDistanceIfUninterrupted = currentSpeed * timeUntilAccelerationEnds + 0.5 * acceleration * Math.pow(timeUntilAccelerationEnds, 2);
+        this.accelerationInformation.accelerationEndPositionIfUninterrupted = [
+            this.transform.pos[0] + Math.cos(velocityAngle) * accelerationDistanceIfUninterrupted,
+            this.transform.pos[1] + Math.sin(velocityAngle) * accelerationDistanceIfUninterrupted
+        ];
+        this.accelerationInformation.endVelocityIfUninterrupted = [
+            Math.cos(velocityAngle) * endSpeed,
+            Math.sin(velocityAngle) * endSpeed
+        ];
+        // I don't think I want external forces to be applied for replayable physics components
+        this.transform.acc[0] = Math.cos(velocityAngle) * acceleration;
+        this.transform.acc[1] = Math.sin(velocityAngle) * acceleration;
+        this.accelerationInformation.endSpeedIfUninterrupted = endSpeed;
+        if (currentGameTime) {
+            this.move(currentGameTime - gameTimeAccelerationStarted, currentGameTime);
+        }
+    };
+    ReplayablePhysicsComponent.prototype.move = function (timeDelta, gameTime) {
+        // const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+        var originalPosition = [this.transform.pos[0], this.transform.pos[1]];
+        if (this.isAccelerating) {
+            var _a = this.accelerationInformation, endVelocityIfUninterrupted = _a.endVelocityIfUninterrupted, gameTimeWhenAccelerationEnds = _a.gameTimeWhenAccelerationEnds, accelerationEndPositionIfUninterrupted = _a.accelerationEndPositionIfUninterrupted, endSpeedIfUninterrupted = _a.endSpeedIfUninterrupted, nextInstruction = _a.nextInstruction;
+            // if the game time is after the acceleration should have finished
+            if (gameTime >= gameTimeWhenAccelerationEnds) {
+                // if the game time is after the acceleration should have finished
+                console.log('Acceleration ended', {
+                    currentPosition: this.transform.pos,
+                    settingPosition: this.accelerationInformation.accelerationEndPositionIfUninterrupted,
+                    gameTimeWhenAccelerationEnds: this.accelerationInformation.gameTimeWhenAccelerationEnds,
+                    gameTime: gameTime
+                });
+                var timeSinceAccelerationEnded = gameTime - gameTimeWhenAccelerationEnds;
+                if (nextInstruction) {
+                    // finish rotation and then:
+                    this.isAccelerating = false;
+                    this.transform.vel[0] = endVelocityIfUninterrupted[0];
+                    this.transform.vel[1] = endVelocityIfUninterrupted[1];
+                    this.transform.pos[0] = accelerationEndPositionIfUninterrupted[0];
+                    this.transform.pos[1] = accelerationEndPositionIfUninterrupted[1];
+                    this.transform.acc[0] = 0;
+                    this.transform.acc[1] = 0;
+                    this.accelerationInformation = {};
+                    this.restSpeed = endSpeedIfUninterrupted;
+                    this.applyNextInstruction(nextInstruction, gameTime, gameTimeWhenAccelerationEnds);
+                }
+                else {
+                    this.isAccelerating = false;
+                    this.transform.vel[0] = endVelocityIfUninterrupted[0];
+                    this.transform.vel[1] = endVelocityIfUninterrupted[1];
+                    this.transform.pos[0] = accelerationEndPositionIfUninterrupted[0] + timeSinceAccelerationEnded * this.transform.vel[0];
+                    this.transform.pos[1] = accelerationEndPositionIfUninterrupted[1] + timeSinceAccelerationEnded * this.transform.vel[1];
+                    this.transform.acc[0] = 0;
+                    this.transform.acc[1] = 0;
+                    this.accelerationInformation = {};
+                    this.restSpeed = endSpeedIfUninterrupted;
+                }
+            }
+            else {
+                // apply the acceleration
+                this.transform.pos[0] += this.transform.vel[0] * timeDelta + (this.transform.acc[0] * (timeDelta * timeDelta)) / 2;
+                this.transform.pos[1] += this.transform.vel[1] * timeDelta + (this.transform.acc[1] * (timeDelta * timeDelta)) / 2;
+                this.transform.vel[0] += this.transform.acc[0] * timeDelta;
+                this.transform.vel[1] += this.transform.acc[1] * timeDelta;
+                // this.transform.pos[0] += this.transform.vel[0] * timeScale + (this.transform.acc[0] * (timeScale * timeScale)) / 2;
+                // this.transform.pos[1] += this.transform.vel[1] * timeScale + (this.transform.acc[1] * (timeScale * timeScale)) / 2;
+                // this.transform.vel[0] += this.transform.acc[0] * timeScale;
+                // this.transform.vel[1] += this.transform.acc[1] * timeScale;
+            }
+        }
+        else if (this.isTurning) {
+            var _b = this.turnInformation, endAngleFromRotationPointIfUninterrupted = _b.endAngleFromRotationPointIfUninterrupted, tangentSpeed = _b.tangentSpeed, rotationPoint = _b.rotationPoint, turnRadius = _b.turnRadius, endPoint = _b.endPoint, gameTimeWhenTurnEnds = _b.gameTimeWhenTurnEnds, nextInstruction = _b.nextInstruction;
+            // great... at the end of the rotation it accelerates to max speed
+            // so when I piece together the rotation + straight I have to account for that
+            // I just need to find the time that the rotation ended vs the current time
+            // if rotation, rotate around the rotation point
+            // using archAngleVelocity
+            // in reverse, I'll also have to know the time that the acceleration ended
+            // to apply it in reverse
+            if (gameTime > gameTimeWhenTurnEnds) {
+                this.transform.pos[0] = endPoint[0];
+                this.transform.pos[1] = endPoint[1];
+                var timeSinceTurnEnded = gameTime - gameTimeWhenTurnEnds;
+                console.log('Turning ended');
+                this.movementTangentAngle = endAngleFromRotationPointIfUninterrupted;
+                var endVelocityIfUninterrupted = [
+                    tangentSpeed * Math.cos(endAngleFromRotationPointIfUninterrupted),
+                    tangentSpeed * Math.sin(endAngleFromRotationPointIfUninterrupted)
+                ];
+                this.isTurning = false;
+                this.transform.vel[0] = endVelocityIfUninterrupted[0];
+                this.transform.vel[1] = endVelocityIfUninterrupted[1];
+                // then we need to do the next instruction, which will be a straight acceleration
+                // for the aurora
+                // if no next instruction given, then maintain the current speed
+                if (nextInstruction) {
+                    // finish rotation and then:
+                    this.applyNextInstruction(nextInstruction, gameTime, gameTimeWhenTurnEnds);
+                }
+                else {
+                    this.transform.pos[0] += timeSinceTurnEnded * this.transform.vel[0];
+                    this.transform.pos[1] += timeSinceTurnEnded * this.transform.vel[1];
+                    this.restSpeed = tangentSpeed;
+                    this.turnInformation = {};
+                }
+            }
+            else {
+                // I'll need starting game time, and current game time. Then 
+                // I think I need to apply the movement based on where it should be at what game time,
+                // instead of incrementing
+                var timeSinceTurnStarted = (gameTime - this.turnInformation.gameTimeWhenTurnStarted);
+                var archAngleVelocity = this.transform.archAngleVelocity;
+                var newArchAngle = this.turnInformation.startAngle - Math.PI / 2 + archAngleVelocity * timeSinceTurnStarted;
+                // likely the issue:
+                this.transform.pos[0] = rotationPoint[0] + this.turnInformation.rotationDirection * turnRadius * Math.cos(newArchAngle);
+                this.transform.pos[1] = rotationPoint[1] + this.turnInformation.rotationDirection * turnRadius * Math.sin(newArchAngle);
+                console.log('speed?', this.transform.archAngleVelocity);
+            }
+        }
+        else {
+            // no acceleration, so just moving
+            this.transform.pos[0] += this.transform.vel[0] * timeDelta;
+            this.transform.pos[1] += this.transform.vel[1] * timeDelta;
+            // this.transform.pos[0] += this.transform.vel[0] * timeScale;
+            // this.transform.pos[1] += this.transform.vel[1] * timeScale;
+        }
+        this.movementTangentAngle = (Math.atan2(this.transform.pos[1] - originalPosition[1], this.transform.pos[0] - originalPosition[0]) + Math.PI * 2) % (Math.PI * 2);
+    };
+    ReplayablePhysicsComponent.prototype.applyNextInstruction = function (nextInstruction, currentGameTime, gameTimeItStarts) {
+        if (nextInstruction.type === 'accelerate') {
+            this.startAcceleration({
+                acceleration: nextInstruction.acceleration,
+                endSpeed: nextInstruction.endSpeed,
+                currentGameTime: currentGameTime,
+                gameTimeAccelerationStarted: gameTimeItStarts
+            });
+        }
+        if (nextInstruction.type === 'turn') {
+            var turnRadius = nextInstruction.turnRadius, isTurningRight = nextInstruction.isTurningRight, tangentSpeed = nextInstruction.tangentSpeed, endAngle = nextInstruction.endAngle, startAngle = nextInstruction.startAngle, followupInstruction = nextInstruction.nextInstruction;
+            var currentPosition = [this.transform.pos[0], this.transform.pos[1]];
+            var pointWhereArchStarted = [currentPosition[0], currentPosition[1]];
+            var normalAngle = isTurningRight ? startAngle + Math.PI / 2 : startAngle - Math.PI / 2;
+            var rotationPoint = [
+                pointWhereArchStarted[0] + turnRadius * Math.cos(normalAngle),
+                pointWhereArchStarted[1] + turnRadius * Math.sin(normalAngle)
+            ];
+            this.startArchRotation({
+                turnRadius: turnRadius,
+                isTurningRight: isTurningRight,
+                tangentSpeed: tangentSpeed,
+                startAngle: startAngle,
+                endAngle: endAngle,
+                pointWhereArchStarted: pointWhereArchStarted, // try to create this later
+                rotationPoint: rotationPoint, // try to create this later
+                gameTimeArchStarted: gameTimeItStarts, // try to create this later
+                currentGameTime: currentGameTime,
+                nextInstruction: followupInstruction
+            });
+        }
+    };
+    return ReplayablePhysicsComponent;
 }());
 
 var NORMAL_FRAME_TIME_DELTA = 1000 / 60;
@@ -3844,6 +4149,7 @@ var Transform = /** @class */ (function () {
         if (aVel === void 0) { aVel = 0; }
         if (aAcc === void 0) { aAcc = 0; }
         if (parentTransform === void 0) { parentTransform = null; }
+        this.archAngleVelocity = null;
         this.cameraTransform = cameraTransform;
         this.parentTransform = parentTransform;
         this.angle = angle;
@@ -3954,7 +4260,8 @@ var Transform = /** @class */ (function () {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   VectorMath: () => (/* binding */ VectorMath)
+/* harmony export */   VectorMath: () => (/* binding */ VectorMath),
+/* harmony export */   getNumberFromRange: () => (/* binding */ getNumberFromRange)
 /* harmony export */ });
 // Normalize the length of the vector to 1, maintaining direction.
 function dir(vec) {
@@ -4015,6 +4322,7 @@ var VectorMath = {
     randomVec: randomVec,
     scale: scale,
 };
+var getNumberFromRange = function (baseNumber, range) { return ((baseNumber - range / 2 + Math.random() * range)); };
 
 
 /***/ }),
@@ -6819,8 +7127,8 @@ var Ship = /** @class */ (function (_super) {
         _this.controlsDirection = [0, 0];
         _this.transform.pos = pos;
         _this.transform.pos[2] = 0;
+        // I should add this to GameObject as this.addCamera
         _this.camera = new _game_engine_camera__WEBPACK_IMPORTED_MODULE_7__.Camera(engine, new _game_engine_transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, [pos[0], pos[1]]), "ShipCamera");
-        _this.cameraTransform = _this.camera.transform;
         _this.setAsControllableGameObject();
         // when you add it as a focus controllable game object, 
         // I think you're forced to add functions to handle the different focussed input
@@ -6848,13 +7156,11 @@ var Ship = /** @class */ (function (_super) {
         _this.controlsDirection = [0, 0];
         _this.powerLevel = 1;
         _this.bulletNumber = 0;
-        _this.controlsPointing = true;
         _this.speed;
         _this.shipEngineAcceleration = 0.5; // 0.125
         _this.dontShoot = false;
         _this.keysPressed = [];
         _this.pauseKeyedUp = true;
-        _this.zooming = true;
         _this.spawning = true;
         _this.spawningTime = 0;
         _this.flashingTime = 0;
@@ -6891,7 +7197,7 @@ var Ship = /** @class */ (function (_super) {
         }
         this.bulletTimeCheck += deltaTime;
         // game state stuff that doesn't belong in the ship #gamestate
-        if (this.bulletTimeCheck >= this.bulletInterval && !this.spawning && this.controlsPointing && !this.dontShoot) {
+        if (this.bulletTimeCheck >= this.bulletInterval && !this.spawning && !this.dontShoot) {
             this.bulletNumber += 1;
             this.bulletTimeCheck = 0;
             this.fireBullet();
@@ -7018,15 +7324,23 @@ var Ship = /** @class */ (function (_super) {
         this.setFireAngle(mousePos);
     };
     Ship.prototype.updateRightControlStickInput = function (vector) {
-        if (Math.abs(vector[0]) + Math.abs(vector[1]) > 0.10) {
+        // if (Math.abs(vector[0]) + Math.abs(vector[1]) > 0.10) {
+        //     this.dontShoot = false;
+        //     this.fireAngle = Math.atan2(vector[1], vector[0]);
+        // } else {
+        //     this.dontShoot = true;
+        // }
+    };
+    // updateLeftControlStickInput for when you're listening but not focussed... 
+    Ship.prototype.updateRightControlFocussedStickInput = function (direction) {
+        if (Math.abs(direction[0]) + Math.abs(direction[1]) > 0.10) {
             this.dontShoot = false;
-            this.fireAngle = Math.atan2(vector[1], vector[0]);
+            this.fireAngle = Math.atan2(direction[1], direction[0]);
         }
         else {
             this.dontShoot = true;
         }
     };
-    // updateLeftControlStickInput for when you're listening but not focussed... 
     Ship.prototype.updateLeftControlFocussedStickInput = function (key, down) {
         if (down === void 0) { down = true; }
         if (key === 'w' || key === 'a' || key === 's' || key === 'd') {
@@ -7200,6 +7514,480 @@ var ShipSprite = /** @class */ (function (_super) {
     };
     return ShipSprite;
 }(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__.LineSprite));
+
+
+
+/***/ }),
+
+/***/ "./src/game_objects/StrikeTime/Aurora/Aurora.ts":
+/*!******************************************************!*\
+  !*** ./src/game_objects/StrikeTime/Aurora/Aurora.ts ***!
+  \******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Aurora: () => (/* binding */ Aurora),
+/* harmony export */   AuroraSprite: () => (/* binding */ AuroraSprite)
+/* harmony export */ });
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+/* harmony import */ var _game_engine_transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/transform */ "./src/game_engine/transform.ts");
+/* harmony import */ var _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../game_engine/game_engine */ "./src/game_engine/game_engine.ts");
+/* harmony import */ var _game_engine_camera__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../game_engine/camera */ "./src/game_engine/camera.ts");
+/* harmony import */ var _EngineExhaust__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./EngineExhaust */ "./src/game_objects/StrikeTime/Aurora/EngineExhaust.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+
+
+
+var Aurora = /** @class */ (function (_super) {
+    __extends(Aurora, _super);
+    function Aurora(engine, pos, angle) {
+        if (angle === void 0) { angle = Math.random() * Math.PI * 2; }
+        var _this = _super.call(this, engine) || this;
+        _this.controlsDirection = [0, 0];
+        _this.controlsAngle = null;
+        _this.transform.pos = pos;
+        _this.transform.angle = angle;
+        _this.transform.vel = [0, 0];
+        _this.radius = 40;
+        _this.minSpeed = 1;
+        _this.maxSpeed = 0.025 * 6;
+        _this.controlsDirection = [0, 0];
+        _this.jetAcceleration = 0.0001;
+        _this.controllerInUse = false;
+        _this.gameEditorHasBeenOpened = false;
+        _this.isTurning = false;
+        _this.isAccelerating = false;
+        _this.camera = new _game_engine_camera__WEBPACK_IMPORTED_MODULE_4__.Camera(engine, new _game_engine_transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, [pos[0], pos[1]]), "Aurora Camera");
+        _this.setAsControllableGameObject();
+        _this.addReplayablePhysicsComponent();
+        _this.addLineSprite(new AuroraSprite(_this.transform));
+        _this.leftExhaust = new _EngineExhaust__WEBPACK_IMPORTED_MODULE_5__.EngineExhaust(engine, _this.transform, [
+            -_this.lineSprite.length / 8,
+            17 / 18 * _this.lineSprite.length
+        ], 5);
+        _this.rightExhaust = new _EngineExhaust__WEBPACK_IMPORTED_MODULE_5__.EngineExhaust(engine, _this.transform, [
+            _this.lineSprite.length / 8,
+            17 / 18 * _this.lineSprite.length
+        ], 5);
+        return _this;
+    }
+    Aurora.prototype.animate = function (delta) {
+        var movementDirection = 0;
+        if (this.transform.vel[0] === 0 && this.transform.vel[1] === 0) {
+            movementDirection = this.transform.angle;
+        }
+        else {
+            movementDirection = Math.atan2(this.transform.vel[0], -this.transform.vel[1]);
+        }
+        this.transform.angle = movementDirection;
+    };
+    Aurora.prototype.update = function (delta) {
+        if (this.controlsAngle !== null) {
+            // compare angle with controls angle
+            // if angle is greater than 
+            this.transform.angle;
+        }
+        if (this.replayablePhysicsComponent.movementTangentAngle !== null) {
+            this.transform.angle = this.replayablePhysicsComponent.movementTangentAngle;
+        }
+        if (this.isFocussedGameObject) {
+            this.movementMechanics();
+        }
+        var shipXPos = this.transform.pos[0];
+        var shipYPos = this.transform.pos[1];
+        this.camera.transform.pos[0] = shipXPos;
+        this.camera.transform.pos[1] = shipYPos;
+        if (this.replayablePhysicsComponent.isAccelerating) {
+            if (this.replayablePhysicsComponent.accelerationInformation.isDecelerating) {
+                this.leftExhaust.isDecelerating = true;
+                this.rightExhaust.isDecelerating = true;
+                this.leftExhaust.isAccelerating = false;
+                this.rightExhaust.isAccelerating = false;
+            }
+            else {
+                this.leftExhaust.isAccelerating = true;
+                this.rightExhaust.isAccelerating = true;
+            }
+        }
+        else {
+            this.leftExhaust.isAccelerating = false;
+            this.rightExhaust.isAccelerating = false;
+            this.leftExhaust.isDecelerating = false;
+            this.rightExhaust.isDecelerating = false;
+        }
+        if (this.replayablePhysicsComponent.isTurning) {
+            if (this.replayablePhysicsComponent.turnInformation.rotationDirection > 0) {
+                this.leftExhaust.isAccelerating = true;
+                this.rightExhaust.isAccelerating = false;
+            }
+            else {
+                this.leftExhaust.isAccelerating = false;
+                this.rightExhaust.isAccelerating = true;
+            }
+        }
+    };
+    Aurora.prototype.updateRightControlFocussedStickInput = function (direction) { };
+    Aurora.prototype.updateFocussedMousePos = function (pos) { };
+    Aurora.prototype.roundAngleTo16thsDegrees = function (radians) {
+        return ((Math.round(radians / (2 * Math.PI) * 16) % 16) / 16) * 360;
+    };
+    Aurora.prototype.movementMechanics = function () {
+        // there might be a way to make it feel a little better if 
+        // I allow changing the direction constantly
+        // of if I don't immediately accelerate to max speed
+        // to allow constant direction change, I'll need an "interupt" state where
+        // the plane is still turning until it's facing one of the 16 directions. 
+        // so it would be an interrupt instruction
+        // but it's going to be a lot easier to make it feel nice if I have complete control
+        // a crap... how would it work on mobile though
+        // okay... maybe this would work for mobile, but it doesn't feel great with a controller
+        // maybe with some added visuals I can get it to feel better
+        // visuals like, a path showing you result of the current instruction
+        // and the arrow of the direction you're pointing maybe
+        // worth checking out.... but only after I get time reversal going and other stuff
+        // if(!this.controllerInUse){
+        //     return;
+        // }
+        if (this.replayablePhysicsComponent.isAccelerating) {
+            return;
+        }
+        if (this.controlsAngle === null) {
+            return;
+        }
+        // we have a direction to move in
+        if (this.gameEngine instanceof _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine) {
+            var gameTime = this.gameEngine.gameScript.gameTime;
+            if (this.transform.vel[0] === 0 && this.transform.vel[1] === 0) {
+                console.log('Only the first acceleration');
+                var controlsAngleRoundedRadians = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 2 * Math.PI;
+                this.replayablePhysicsComponent.startAcceleration({ acceleration: this.jetAcceleration, endSpeed: this.maxSpeed, gameTimeAccelerationStarted: gameTime, direction: controlsAngleRoundedRadians });
+            }
+            else {
+                // get the controls angle and compare it to the current direction
+                // get the absolute velocity and compare it to the max
+                // that could be memoized
+                // when it's not rotating, we can use transform.vel. Thankfully we always have to speed up or slow down before adjusting the turn angle
+                // so this should be valid, but it might not work for other units
+                var currentDirection = (Math.atan2(this.transform.vel[1], this.transform.vel[0]) + Math.PI * 2) % (Math.PI * 2);
+                var currentDirectionRounded = this.roundAngleTo16thsDegrees(currentDirection);
+                var controlsAngleRounded = this.roundAngleTo16thsDegrees(this.controlsAngle);
+                // might be needed later
+                var endAngle = this.replayablePhysicsComponent.turnInformation.endAngleFromRotationPointIfUninterrupted;
+                // this determines if we are inputting an acceleration
+                // I don't think it will ever happen though since every turn will result in a straight acceleration automatically
+                // oh! it could be slowing down, and we could be interrupting it!
+                if (currentDirectionRounded === controlsAngleRounded) {
+                    // check that we didn't already speed up to this speed
+                    if (this.maxSpeed !== this.replayablePhysicsComponent.restSpeed) {
+                        this.replayablePhysicsComponent.startAcceleration({ acceleration: this.jetAcceleration, endSpeed: this.maxSpeed, gameTimeAccelerationStarted: gameTime });
+                    }
+                }
+                else if (
+                // if it's turning already, make sure the controls direction is different from the end turn direction before interrupting the turn
+                // also have to account for the 2PI that's added when turning right and the start angle is greater than the end angle
+                !this.replayablePhysicsComponent.isAccelerating &&
+                    !this.replayablePhysicsComponent.isTurning) {
+                    // I need to check that the rest speed is correct for the turn angle
+                    // then accelerate to that speed
+                    // I need to turn this into a function that can be called later with the right
+                    //         || (endAngle > 2 * Math.PI && this.roundAngleTo16thsDegrees(endAngle - 2 * Math.PI) !== controlsAngleRounded) || 
+                    //         (this.roundAngleTo16thsDegrees(endAngle) !== controlsAngleRounded))
+                    // on second thought, I need to get the straight acceleration interrupt working first
+                    // and likely, the callback/next operation working as well
+                    var angleDifference = controlsAngleRounded - currentDirectionRounded;
+                    var isTurningRight = !(angleDifference > 180 || (angleDifference < 0 && angleDifference > -180));
+                    // turning right means that the rotation point is to the right relative to the movement direction
+                    // always at a 90 degree angle
+                    var tangentAngle = this.replayablePhysicsComponent.movementTangentAngle;
+                    // const tangentSpeed = 4/5 * this.maxSpeed;
+                    var _a = this.getTurnRadiusAndSpeed(Math.abs(angleDifference)), turnRadius = _a.turnRadius, tangentSpeed = _a.tangentSpeed;
+                    // check tangent speed with current speed,
+                    // then decelerate/accelerate
+                    var endAngle_1 = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 2 * Math.PI;
+                    var nextInstruction = {
+                        type: 'accelerate',
+                        endSpeed: this.maxSpeed,
+                        acceleration: this.jetAcceleration
+                    };
+                    if (this.replayablePhysicsComponent.restSpeed !== tangentSpeed) {
+                        var acceleration = this.replayablePhysicsComponent.restSpeed > tangentSpeed ? this.jetAcceleration * -1 : this.jetAcceleration;
+                        var endSpeed = tangentSpeed;
+                        var followupInstruction = {
+                            type: 'turn',
+                            tangentSpeed: tangentSpeed,
+                            turnRadius: turnRadius,
+                            isTurningRight: isTurningRight,
+                            endAngle: endAngle_1,
+                            startAngle: tangentAngle,
+                            nextInstruction: nextInstruction
+                        };
+                        this.replayablePhysicsComponent.startAcceleration({
+                            acceleration: acceleration,
+                            endSpeed: endSpeed,
+                            gameTimeAccelerationStarted: gameTime,
+                            nextInstruction: followupInstruction
+                        });
+                    }
+                    else {
+                        // needed for playback 
+                        var pointWhereArchStarted = [this.transform.pos[0], this.transform.pos[1]];
+                        var normalAngle = isTurningRight ? tangentAngle + Math.PI / 2 : tangentAngle - Math.PI / 2;
+                        var rotationPoint = [
+                            pointWhereArchStarted[0] + turnRadius * Math.cos(normalAngle),
+                            pointWhereArchStarted[1] + turnRadius * Math.sin(normalAngle)
+                        ];
+                        // console.log("Angle Difference", {startAngle: tangentAngle * 360 / (2 * Math.PI), endAngle: endAngle * 360 / (2 * Math.PI), Difference: endAngle* 360 / (2 * Math.PI) - tangentAngle * 360 / (2 * Math.PI)})
+                        // I need this to be able to be called later with a nextInstruction
+                        this.replayablePhysicsComponent.startArchRotation({
+                            turnRadius: turnRadius,
+                            isTurningRight: isTurningRight,
+                            tangentSpeed: tangentSpeed,
+                            startAngle: tangentAngle,
+                            endAngle: endAngle_1,
+                            pointWhereArchStarted: pointWhereArchStarted, // try to create this later
+                            rotationPoint: rotationPoint, // try to create this later
+                            gameTimeArchStarted: gameTime, // try to create this later
+                            nextInstruction: nextInstruction
+                        });
+                    }
+                }
+                // const angleDifference = controlsAngleRounded - currentDirectionRounded;
+                // const turningRight = !(angleDifference > 180 || (angleDifference < 0 && angleDifference > -180));
+                // const tangentAngle = this.replayablePhysicsComponent.movementTangentAngle / (2 * Math.PI) * 360;
+                // const endAngleFromRotationPointIfUninterrupted = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 360;
+                // const normalAngle = turningRight ? tangentAngle/360 * Math.PI * 2 + Math.PI / 2 : tangentAngle/ 360 * Math.PI * 2 - Math.PI / 2 
+                // const pointWhereArchStarted = [this.transform.pos[0], this.transform.pos[1]];
+                // const turnRadius = 300;
+                // const rotationPoint: [number, number] = [
+                //     pointWhereArchStarted[0] + turnRadius * Math.cos(normalAngle),
+                //     pointWhereArchStarted[1] + turnRadius * Math.sin(normalAngle) 
+                // ]
+                // console.log("Angles", {
+                //     startX: pointWhereArchStarted[0],
+                //     startY: pointWhereArchStarted[1],
+                //     turnRadius,
+                //     rotX: rotationPoint[0],
+                //     rotY: rotationPoint[1]
+                // });
+                // if the rounded difference
+            }
+        }
+    };
+    Aurora.prototype.getTurnRadiusAndSpeed = function (angleChangeDegrees) {
+        var tightestRadius = 100;
+        var tangentSpeed = 0;
+        var fastestTurnSpeed = this.maxSpeed * 4 / 5;
+        var radii = [
+            tightestRadius * 4,
+            tightestRadius * 3,
+            tightestRadius * 2,
+            tightestRadius
+        ];
+        if (angleChangeDegrees >= 90) {
+            tangentSpeed = Math.sqrt(radii[3] / radii[0]) * fastestTurnSpeed;
+            return { turnRadius: tightestRadius, tangentSpeed: tangentSpeed };
+        }
+        else if (angleChangeDegrees >= 67.5) {
+            tangentSpeed = Math.sqrt(radii[2] / radii[0]) * fastestTurnSpeed;
+            return { turnRadius: radii[2], tangentSpeed: tangentSpeed };
+        }
+        else if (angleChangeDegrees >= 45) {
+            tangentSpeed = Math.sqrt(radii[1] / radii[0]) * fastestTurnSpeed;
+            return { turnRadius: radii[1], tangentSpeed: tangentSpeed };
+        }
+        else if (angleChangeDegrees >= 22.5) {
+            tangentSpeed = fastestTurnSpeed;
+            return { turnRadius: radii[0], tangentSpeed: tangentSpeed };
+        }
+    };
+    Aurora.prototype.updateLeftControlFocussedStickInput = function (direction) {
+        if (Math.abs(direction[0]) + Math.abs(direction[1]) > 0.20) {
+            // round to nearest 1/16th of a circle
+            var angle = (Math.atan2(direction[1], direction[0]) + Math.PI * 2) % (Math.PI * 2);
+            var roundedAngle = ((Math.round((angle / (2 * Math.PI)) * 16) % 16) / 16) * 2 * Math.PI;
+            this.controlsAngle = roundedAngle;
+        }
+        else {
+            this.controlsAngle = null;
+        }
+    };
+    return Aurora;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
+
+var AuroraSprite = /** @class */ (function (_super) {
+    __extends(AuroraSprite, _super);
+    function AuroraSprite(transform) {
+        var _this = _super.call(this, transform) || this;
+        _this.length = 60;
+        _this.acceleration = 0;
+        _this.color = "rgb(255, 255, 255)";
+        return _this;
+    }
+    AuroraSprite.prototype.draw = function (ctx) {
+        if (!this.visible)
+            return;
+        var pos = this.transform.absolutePosition();
+        var r = 255;
+        var g = 255;
+        var b = 50;
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+        ctx.rotate(this.transform.angle);
+        this.drawAurora(ctx);
+        ctx.restore();
+    };
+    AuroraSprite.prototype.drawAurora = function (ctx) {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 2;
+        var l = this.length;
+        var w = this.length / 2;
+        ctx.lineTo(-l, w / 2);
+        ctx.lineTo(-l, -w / 2);
+        ctx.lineTo(0, 0);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(-13 / 18 * l, 0, 2 / 9 * w / 2, -Math.PI / 2, Math.PI / 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-13 / 18 * l, 2 / 9 * w / 2);
+        ctx.lineTo(-13 / 18 * l - 2 / 9 * w / 2 * 0.5, 2 / 9 * w / 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-13 / 18 * l, -2 / 9 * w / 2);
+        ctx.lineTo(-13 / 18 * l - 2 / 9 * w / 2 * 0.5, -2 / 9 * w / 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(-13 / 18 * l - 2 / 9 * w / 2 * 0.5, 0, 2 / 9 * w / 2, Math.PI / 2, 3 * Math.PI / 2);
+        ctx.stroke();
+    };
+    return AuroraSprite;
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
+
+
+
+/***/ }),
+
+/***/ "./src/game_objects/StrikeTime/Aurora/EngineExhaust.ts":
+/*!*************************************************************!*\
+  !*** ./src/game_objects/StrikeTime/Aurora/EngineExhaust.ts ***!
+  \*************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   EngineExhaust: () => (/* binding */ EngineExhaust)
+/* harmony export */ });
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/color */ "./src/game_engine/color.ts");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
+/* harmony import */ var _particles_particle__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/particle */ "./src/game_objects/particles/particle.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+
+/*
+
+        ^
+     /     \
+    /       \
+   / _    _  \
+    iii   iii
+    iii   iii
+
+*/
+var EngineExhaust = /** @class */ (function (_super) {
+    __extends(EngineExhaust, _super);
+    // the position of the exhaust is the middle of the exhaust
+    function EngineExhaust(engine, transform, position, width) {
+        var _this = _super.call(this, engine) || this;
+        _this.transform = transform;
+        _this.noAccelerationHue = 50;
+        _this.isAccelerating = false;
+        _this.acceleratingHue = 300;
+        _this.colorRange = 40;
+        _this.baseOpacity = 0.6;
+        _this.opacityRange = 0.35;
+        _this.maxParticleCount = 20;
+        _this.currentParticleCount = 0;
+        _this.positionOnPlane = position;
+        _this.width = width;
+        _this.currentTime = 0;
+        _this.exhaustRate = 100;
+        _this.isDecelerating = false;
+        return _this;
+    }
+    // every so often, make more particles
+    EngineExhaust.prototype.animate = function () { };
+    EngineExhaust.prototype.update = function (deltaTime) {
+        this.currentTime += deltaTime;
+        if (this.currentTime > this.exhaustRate) {
+            this.currentTime = 0;
+            var numberToCreate = 10;
+            if (!this.isDecelerating) {
+                for (var i = 0; i < numberToCreate; i++) {
+                    this.addEngineExhaustParticle();
+                }
+            }
+        }
+    };
+    EngineExhaust.prototype.addEngineExhaustParticle = function () {
+        var linePosition = Math.random() * this.width - this.width / 2;
+        var angle = this.transform.angle;
+        // const position: [number, number] = [
+        //     this.transform.pos[0] + (this.positionOnPlane[0] + linePosition) * Math.cos(angle - Math.PI),
+        //     this.transform.pos[1] + -(this.positionOnPlane[1]) * Math.sin(angle)
+        // ]
+        var exhaustPositionAngle = Math.atan2(this.positionOnPlane[1], this.positionOnPlane[0] + linePosition) - Math.PI / 2;
+        var exhaustPositionLength = Math.sqrt(Math.pow(this.positionOnPlane[0], 2) + Math.pow((this.positionOnPlane[1] + linePosition), 2));
+        var position = [
+            this.transform.pos[0] - exhaustPositionLength * Math.cos(angle + exhaustPositionAngle),
+            this.transform.pos[1] - exhaustPositionLength * Math.sin(angle + exhaustPositionAngle)
+        ];
+        var initialSpeed = this.isAccelerating ? Math.random() * 1 + 4 : Math.random() * 0.5 + 2;
+        var initialVelocity = [initialSpeed * Math.cos(angle + Math.PI), initialSpeed * Math.sin(angle + Math.PI)];
+        var hue = this.isAccelerating ? (0,_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.getNumberFromRange)(this.acceleratingHue, this.colorRange) : (0,_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.getNumberFromRange)(this.noAccelerationHue, this.colorRange);
+        var opacity = (0,_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.getNumberFromRange)(this.baseOpacity, this.opacityRange);
+        var color = new _game_engine_color__WEBPACK_IMPORTED_MODULE_0__.Color("hsla", [hue, 100, 50, opacity]);
+        new _particles_particle__WEBPACK_IMPORTED_MODULE_3__.Particle(this.gameEngine, position, initialVelocity, color, null, -0.045 * 2, 0.005);
+    };
+    return EngineExhaust;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
 
 
 
@@ -10186,15 +10974,13 @@ var SingularityParticle = /** @class */ (function (_super) {
         this.transform.acc = [0, 0, 0];
         this.checkBounds();
     };
-    SingularityParticle.prototype.aniimate = function () {
-    };
     SingularityParticle.prototype.checkBounds = function () {
         if (_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.isOutOfBounds(this.transform.absolutePosition(), -0.5)) {
             this.remove();
         }
     };
     return SingularityParticle;
-}(_particle__WEBPACK_IMPORTED_MODULE_1__.Particle));
+}(_particle__WEBPACK_IMPORTED_MODULE_1__.GEOParticle));
 
 
 
@@ -10278,7 +11064,7 @@ var BulletWallExplosion = /** @class */ (function (_super) {
             var x = this.transform.absolutePosition()[0];
             var y = this.transform.absolutePosition()[1];
             var z = 0;
-            this.addChildGameObject(new _particle__WEBPACK_IMPORTED_MODULE_0__.Particle(this.gameEngine, [x, y, z], speed, color, this.wallHit));
+            this.addChildGameObject(new _particle__WEBPACK_IMPORTED_MODULE_0__.GEOParticle(this.gameEngine, [x, y, z], speed, color, this.wallHit));
         }
     };
     BulletWallExplosion.prototype.animate = function () { };
@@ -10368,6 +11154,7 @@ var NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   GEOParticle: () => (/* binding */ GEOParticle),
 /* harmony export */   Particle: () => (/* binding */ Particle),
 /* harmony export */   ParticleSprite: () => (/* binding */ ParticleSprite)
 /* harmony export */ });
@@ -10407,7 +11194,48 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 var Particle = /** @class */ (function (_super) {
     __extends(Particle, _super);
-    function Particle(engine, pos, initialSpeed, color, wallHit) {
+    function Particle(engine, pos, initialVelocity, color, removeCallback, dampening, opacityDropSpeed) {
+        var _this = _super.call(this, engine) || this;
+        _this.transform.pos[0] = pos[0];
+        _this.transform.pos[1] = pos[1];
+        _this.transform.pos[2] = pos[2] || 0;
+        _this.transform.vel[0] = initialVelocity[0];
+        _this.transform.vel[1] = initialVelocity[1];
+        _this.transform.vel[2] = initialVelocity[2] || 0;
+        _this.removeCallback = removeCallback || (removeCallback = function () { });
+        _this.opacityDropSpeed = opacityDropSpeed || 0.0005;
+        // explosion paralax
+        if (engine instanceof _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine) {
+            _this.transform.cameraTransform = engine.activeCamera.transform;
+        }
+        _this.color = color;
+        _this.radius = 3;
+        _this.transform.acc = [0, 0, 0];
+        _this.addLineSprite(new ParticleSprite(_this.transform, _this.color));
+        _this.addPhysicsComponent();
+        _this.dampening = dampening || -0.045;
+        return _this;
+    }
+    Particle.prototype.update = function (deltaTime) {
+        // this.lineSprite.rectLength -= 0.01 * deltaTime;
+        this.lineSprite.color.a -= this.opacityDropSpeed * deltaTime;
+        // this.lineSprite.hue < 0.06 ||
+        if (this.lineSprite.rectLength < 0.25 || ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1]) + Math.abs(this.transform.vel[2])) < 0.15)) {
+            this.removeCallback();
+            this.remove();
+        }
+        this.transform.acc[0] += this.transform.vel[0] * this.dampening;
+        this.transform.acc[1] += this.transform.vel[1] * this.dampening;
+        this.transform.acc[2] += this.transform.vel[2] * this.dampening;
+    };
+    Particle.prototype.animate = function () {
+    };
+    return Particle;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
+
+var GEOParticle = /** @class */ (function (_super) {
+    __extends(GEOParticle, _super);
+    function GEOParticle(engine, pos, initialSpeed, color, wallHit) {
         var _this = _super.call(this, engine) || this;
         _this.transform.pos[0] = pos[0];
         _this.transform.pos[1] = pos[1];
@@ -10429,7 +11257,7 @@ var Particle = /** @class */ (function (_super) {
         return _this;
         // this.addCollider("General", this, this.radius)
     }
-    Particle.prototype.createMovementAngle = function (wallHit) {
+    GEOParticle.prototype.createMovementAngle = function (wallHit) {
         if (!wallHit) {
             return [(Math.random() * Math.PI * 2), Math.random() * Math.PI * 2];
         }
@@ -10449,9 +11277,9 @@ var Particle = /** @class */ (function (_super) {
             }
         }
     };
-    Particle.prototype.animate = function () {
+    GEOParticle.prototype.animate = function () {
     };
-    Particle.prototype.update = function (deltaTime) {
+    GEOParticle.prototype.update = function (deltaTime) {
         // this.lineSprite.rectLength -= 0.01 * deltaTime;
         this.lineSprite.color.a -= 0.0005 * deltaTime;
         // this.lineSprite.hue < 0.06 ||
@@ -10466,12 +11294,12 @@ var Particle = /** @class */ (function (_super) {
         this.transform.acc[1] += this.transform.vel[1] * this.dampening;
         this.transform.acc[2] += this.transform.vel[2] * this.dampening;
     };
-    Particle.prototype.checkBounds = function () {
+    GEOParticle.prototype.checkBounds = function () {
         if (_game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.isOutOfBounds(this.transform.absolutePosition(), -0.5)) {
             this.remove();
         }
     };
-    return Particle;
+    return GEOParticle;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
 
 
@@ -10630,7 +11458,7 @@ var ParticleExplosion = /** @class */ (function (_super) {
             var x = this.transform.absolutePosition()[0];
             var y = this.transform.absolutePosition()[1];
             var z = 0;
-            this.addChildGameObject(new _particle__WEBPACK_IMPORTED_MODULE_0__.Particle(this.gameEngine, [x, y, z], speed, color));
+            this.addChildGameObject(new _particle__WEBPACK_IMPORTED_MODULE_0__.GEOParticle(this.gameEngine, [x, y, z], speed, color));
         }
     };
     ParticleExplosion.prototype.update = function () {
@@ -10707,7 +11535,7 @@ var ShipExplosion = /** @class */ (function (_super) {
             var color = this.currentColor.dup();
             // color.a = Math.random() * 0.35 + 0.6
             // color.h = (color.h + colorVarience) % 360
-            this.addChildGameObject(new _particle__WEBPACK_IMPORTED_MODULE_0__.Particle(this.gameEngine, this.transform.absolutePosition(), speed, color));
+            this.addChildGameObject(new _particle__WEBPACK_IMPORTED_MODULE_0__.GEOParticle(this.gameEngine, this.transform.absolutePosition(), speed, color));
         }
     };
     ShipExplosion.prototype.update = function () {
@@ -10792,7 +11620,7 @@ var SingularityHitExplosion = /** @class */ (function (_super) {
             var color = this.currentColor.dup();
             color.a = Math.random() * 0.35 + 0.6;
             color.h = (color.h + colorVarience) % 360;
-            this.addChildGameObject(new _particle__WEBPACK_IMPORTED_MODULE_0__.Particle(this.gameEngine, this.transform.absolutePosition(), speed, color));
+            this.addChildGameObject(new _particle__WEBPACK_IMPORTED_MODULE_0__.GEOParticle(this.gameEngine, this.transform.absolutePosition(), speed, color));
         }
     };
     SingularityHitExplosion.prototype.update = function () {
@@ -11024,6 +11852,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_objects_ClockworkGames_Plate__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./game_objects/ClockworkGames/Plate */ "./src/game_objects/ClockworkGames/Plate.ts");
 /* harmony import */ var _game_objects_Tree_Tree__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./game_objects/Tree/Tree */ "./src/game_objects/Tree/Tree.ts");
 /* harmony import */ var _game_objects_ClockworkGames_Machine__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./game_objects/ClockworkGames/Machine */ "./src/game_objects/ClockworkGames/Machine.ts");
+/* harmony import */ var _game_objects_StrikeTime_Aurora_Aurora__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./game_objects/StrikeTime/Aurora/Aurora */ "./src/game_objects/StrikeTime/Aurora/Aurora.ts");
+
 
 
 
@@ -11170,16 +12000,16 @@ var GameScript = /** @class */ (function () {
         }
     };
     GameScript.prototype.updateXButtonListener = function (pressed) {
-        if (pressed) {
-            if (this.engine.paused) {
-                var modal = document.getElementById("endModal");
-                modal.style.display = "none";
-                this.engine.paused = false;
-                if (!this.engine.muted) {
-                    this.engine.gameScript.theme.play();
-                }
-            }
-        }
+        // if (pressed) {
+        //     if (this.engine.paused) {
+        //         const modal = document.getElementById("endModal");
+        //         modal.style.display = "none";
+        //         this.engine.paused = false;
+        //         if (!this.engine.muted) {
+        //             this.engine.gameScript.theme.play();
+        //         }
+        //     }
+        // }
     };
     GameScript.prototype.update = function (deltaTime) {
         if (this.deathPaused) {
@@ -11196,11 +12026,14 @@ var GameScript = /** @class */ (function () {
             this.rootScene.update(deltaTime);
         }
         else {
+            // will need to change all this for the new game.. I guess it'll be a 
+            // new game script 
             this.gameTime += deltaTime;
-            this.spawnSequence(deltaTime);
-            if (this.secondShipCreated === false && this.gameTime > 5000) {
+            // this.spawnSequence(deltaTime);
+            if (this.secondShipCreated === false && this.gameTime > 1000) {
                 this.secondShipCreated = true;
-                this.createShip();
+                this.createAurora();
+                // this.createShip();
             }
         }
         this.changeExplosionColor();
@@ -11575,6 +12408,9 @@ var GameScript = /** @class */ (function () {
     };
     GameScript.prototype.createShip = function () {
         return new _game_objects_Ship_ship__WEBPACK_IMPORTED_MODULE_1__.Ship(this.engine, this.startPosition);
+    };
+    GameScript.prototype.createAurora = function () {
+        return new _game_objects_StrikeTime_Aurora_Aurora__WEBPACK_IMPORTED_MODULE_26__.Aurora(this.engine, [500, 200]);
     };
     GameScript.prototype.createWalls = function () {
         return new _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_2__.Walls(this.engine);
@@ -12081,12 +12917,10 @@ document.addEventListener("DOMContentLoaded", function () {
     var levelDesigner = new _game_engine_Levels_levelDesigner__WEBPACK_IMPORTED_MODULE_3__.LevelDesigner(gameEngine, animationView, levelDesignerCtx);
     gameEngine.levelDesigner = levelDesigner;
     window.addEventListener('focus', function () {
-        console.log('focussed');
         gameEngine.focusUnPause();
         animationView.focusUnPause();
     });
     window.addEventListener('blur', function () {
-        console.log('blurred');
         gameEngine.focusPause();
         animationView.focusPause();
     });

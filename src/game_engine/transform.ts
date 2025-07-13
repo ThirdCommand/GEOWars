@@ -3,6 +3,7 @@ export class Transform {
     cameraTransform: Transform | null;
     parentTransform: Transform | null;
     angle: number;
+    archAngleVelocity: number | null = null;
     aVel: number;
     aAcc: number;
     pos: [number, number, number?];

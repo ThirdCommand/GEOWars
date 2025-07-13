@@ -2,7 +2,13 @@
 type ColorType =  "rgb" | "rgba" | "hsl" | "hsla"
 
 
+
 export class Color {
+
+    static GetColorRange(baseHue: number, hueRange: number): number {
+        return baseHue - hueRange / 2 + hueRange * Math.random();
+    }
+
     r: number;
     g: number;
     b: number;

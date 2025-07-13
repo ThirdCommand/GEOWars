@@ -13,9 +13,7 @@ export type DirectionKey = 'w' | 'a' | 's' | 'd'
 
 export class Ship extends GameObject {
     lineSprite: ShipSprite;
-    cameraTransform: Transform;
     radius: number;
-    camera: Camera;
     maxSpeed: number;
     mousePos: [number,number];
     fireAngle: number;
@@ -26,20 +24,17 @@ export class Ship extends GameObject {
     controlsDirection = [0,0];
     powerLevel: number;
     bulletNumber: number;
-    controlsPointing: boolean;
     speed: number;
     shipEngineAcceleration: number; // 0.125
     dontShoot: boolean;
     keysPressed: DirectionKey[];
     pauseKeyedUp: boolean;
-    zooming: boolean;
     spawning: boolean;
     spawningTime: number;
     flashingTime: number;
     flashTime: number;
     flashing: boolean;
     flashIntervalTime: number;
-    clickWhatToFocus: string;
     flashInterval: number;
     spawnTime: number;
     controllerInUse: boolean;
@@ -55,10 +50,9 @@ export class Ship extends GameObject {
         super(engine);
         this.transform.pos = pos;
         this.transform.pos[2] = 0;
-
+        // I should add this to GameObject as this.addCamera
         this.camera = new Camera(engine, new Transform(null, [pos[0], pos[1]]), "ShipCamera");
         
-        this.cameraTransform = this.camera.transform; 
         this.setAsControllableGameObject();
         // when you add it as a focus controllable game object, 
         // I think you're forced to add functions to handle the different focussed input
@@ -90,14 +84,12 @@ export class Ship extends GameObject {
         this.controlsDirection = [0,0];
         this.powerLevel = 1;
         this.bulletNumber = 0;
-        this.controlsPointing = true;
         this.speed;
         this.shipEngineAcceleration = 0.5; // 0.125
         this.dontShoot = false;
 
         this.keysPressed = [];
         this.pauseKeyedUp = true;
-        this.zooming = true;
 
         this.spawning = true;
         this.spawningTime = 0;
@@ -141,7 +133,7 @@ export class Ship extends GameObject {
         this.bulletTimeCheck += deltaTime;
 
         // game state stuff that doesn't belong in the ship #gamestate
-        if (this.bulletTimeCheck >= this.bulletInterval && !this.spawning && this.controlsPointing && !this.dontShoot) {
+        if (this.bulletTimeCheck >= this.bulletInterval && !this.spawning && !this.dontShoot) {
             this.bulletNumber += 1;
             this.bulletTimeCheck = 0;
             this.fireBullet();
@@ -288,15 +280,23 @@ export class Ship extends GameObject {
     }
 
     updateRightControlStickInput(vector: [number, number]) {
-        if (Math.abs(vector[0]) + Math.abs(vector[1]) > 0.10) {
+        // if (Math.abs(vector[0]) + Math.abs(vector[1]) > 0.10) {
+        //     this.dontShoot = false;
+        //     this.fireAngle = Math.atan2(vector[1], vector[0]);
+        // } else {
+        //     this.dontShoot = true;
+        // }
+    }
+
+    // updateLeftControlStickInput for when you're listening but not focussed... 
+    updateRightControlFocussedStickInput(direction: [number, number]) {
+        if (Math.abs(direction[0]) + Math.abs(direction[1]) > 0.10) {
             this.dontShoot = false;
-            this.fireAngle = Math.atan2(vector[1], vector[0]);
+            this.fireAngle = Math.atan2(direction[1], direction[0]);
         } else {
             this.dontShoot = true;
         }
     }
-
-    // updateLeftControlStickInput for when you're listening but not focussed... 
 
     updateLeftControlFocussedStickInput(key: DirectionKey | [number, number], down = true) {
         if(key === 'w' || key === 'a' || key === 's' || key === 'd'){

@@ -17,12 +17,12 @@ import {type  Ship } from "../../Ship/ship";
 import {type  BoxBox } from "../BoxBox/boxbox";
 import {type  Arrow } from "../Arrow/arrow";
 import {type  Weaver } from "../Weaver/weaver";
-import {type  Particle } from "../../particles/particle";
+import {type  GEOParticle } from "../../particles/particle";
 import {type  SingularityParticle } from "../../particles/Singularity_Particle/singularity_particle";
 import { GameScript } from "../../../game_script";
 import { type AnimationView } from "../../../AnimationView";
 
-type InfluencableObject = Grunt | Pinwheel | Bullet | Ship | BoxBox | Arrow | Singularity | Weaver | Particle | SingularityParticle | GridPoint | AlienShip
+type InfluencableObject = Grunt | Pinwheel | Bullet | Ship | BoxBox | Arrow | Singularity | Weaver | GEOParticle | SingularityParticle | GridPoint | AlienShip
 
 export class Singularity extends GameObject {
     gravityWellSize: number;

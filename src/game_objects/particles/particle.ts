@@ -18,7 +18,55 @@ import { GameScript } from "../../game_script";
 
 type WallHitDirection = "BOTTOM" | "RIGHT" | "TOP" | "LEFT";
 
-export class Particle extends GameObject{
+export class Particle extends GameObject {
+    color: Color;
+    radius: number;
+    dampening: number;
+    lineSprite: ParticleSprite;
+    opacityDropSpeed: number;
+    removeCallback: () => void;
+    constructor(engine: GameEngine | AnimationView, pos: [number, number, number?], initialVelocity: [number, number, number?], color: Color, removeCallback?: () => void, dampening?: number, opacityDropSpeed?: number) {
+        super(engine);
+        this.transform.pos[0] = pos[0];
+        this.transform.pos[1] = pos[1];
+        this.transform.pos[2] = pos[2] || 0;
+        this.transform.vel[0]= initialVelocity[0];
+        this.transform.vel[1]= initialVelocity[1];
+        this.transform.vel[2]= initialVelocity[2] || 0;
+        this.removeCallback = removeCallback ||= () => {}
+        this.opacityDropSpeed = opacityDropSpeed || 0.0005;
+       
+        // explosion paralax
+        if(engine instanceof GameEngine) {
+            this.transform.cameraTransform = engine.activeCamera.transform;
+        }
+        this.color = color;
+        this.radius = 3;
+        this.transform.acc = [0,0,0];
+        this.addLineSprite(new ParticleSprite(this.transform, this.color));
+        this.addPhysicsComponent();
+        this.dampening = dampening || -0.045;
+    }
+    update(deltaTime: number){
+        // this.lineSprite.rectLength -= 0.01 * deltaTime;
+        this.lineSprite.color.a -= this.opacityDropSpeed * deltaTime;
+        // this.lineSprite.hue < 0.06 ||
+        if ( this.lineSprite.rectLength < 0.25 || ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1]) + Math.abs(this.transform.vel[2])) < 0.15)) {
+            this.removeCallback();
+            this.remove();
+        }
+        this.transform.acc[0] += this.transform.vel[0] * this.dampening;
+        this.transform.acc[1] += this.transform.vel[1] * this.dampening;
+        this.transform.acc[2] += this.transform.vel[2] * this.dampening;
+    }
+
+    animate() {
+
+    }
+}
+
+
+export class GEOParticle extends GameObject{
     color: Color;
     movementAngle: [number, number];
     radius: number;
