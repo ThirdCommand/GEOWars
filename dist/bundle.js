@@ -7519,6 +7519,129 @@ var ShipSprite = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./src/game_objects/StrikeTime/Aurora/AirDecelerationParticles.ts":
+/*!************************************************************************!*\
+  !*** ./src/game_objects/StrikeTime/Aurora/AirDecelerationParticles.ts ***!
+  \************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   AirDecelerationParticle: () => (/* binding */ AirDecelerationParticle),
+/* harmony export */   AirDecelerationParticles: () => (/* binding */ AirDecelerationParticles)
+/* harmony export */ });
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/color */ "./src/game_engine/color.ts");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
+/* harmony import */ var _particles_particle__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/particle */ "./src/game_objects/particles/particle.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+
+/*
+    |           |
+   |    ^   |
+  |  /     \
+    /  |    \ |
+  |/ _    _  \
+         
+
+*/
+// random greys between 75 - 100 lightness
+var AirDecelerationParticles = /** @class */ (function (_super) {
+    __extends(AirDecelerationParticles, _super);
+    // the position of the exhaust is the middle of the exhaust
+    function AirDecelerationParticles(engine, transform, planeWidth, planeLength) {
+        var _this = _super.call(this, engine) || this;
+        _this.transform = transform;
+        _this.lightnessRange = 25;
+        _this.baseLightness = 87.5;
+        _this.baseOpacity = 0.6;
+        _this.opacityRange = 0.35;
+        _this.isDecelerating = false;
+        _this.planeWidth = planeWidth;
+        _this.planeLength = planeLength;
+        _this.currentTime = 0;
+        _this.baseSpawnRate = 50;
+        _this.randomSpawnRateFactor = 0;
+        _this.randomSpawnRateRange = 20;
+        return _this;
+    }
+    AirDecelerationParticles.prototype.animate = function () { };
+    AirDecelerationParticles.prototype.update = function (deltaTime) {
+        this.currentTime += deltaTime;
+        if (this.currentTime > this.baseSpawnRate + this.randomSpawnRateFactor) {
+            this.randomSpawnRateFactor = Math.random() * this.randomSpawnRateRange;
+            this.currentTime = 0;
+            var numberToCreate = 3;
+            if (this.isDecelerating) {
+                for (var i = 0; i < numberToCreate; i++) {
+                    this.addAirDecelerationParticles();
+                }
+            }
+        }
+    };
+    AirDecelerationParticles.prototype.addAirDecelerationParticles = function () {
+        var angle = this.transform.angle;
+        var planePosition = this.transform.pos;
+        var w = this.planeWidth;
+        var l = this.planeLength;
+        var xPosition = (0,_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.getNumberFromRange)(0, w * 2);
+        var yPosition = (0,_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.getNumberFromRange)(l * 4 / 5, l);
+        var positionOnPlane = [
+            xPosition,
+            yPosition
+        ];
+        var airParticlePositionAngle = Math.atan2(positionOnPlane[1], positionOnPlane[0]) - Math.PI / 2;
+        var airParticlePositionLength = Math.sqrt(Math.pow(positionOnPlane[0], 2) + Math.pow((positionOnPlane[1]), 2));
+        var position = [
+            planePosition[0] - airParticlePositionLength * Math.cos(angle + airParticlePositionAngle),
+            planePosition[1] - airParticlePositionLength * Math.sin(angle + airParticlePositionAngle)
+        ];
+        // I wonder if they'd look better as red
+        var opacity = (0,_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.getNumberFromRange)(this.baseOpacity, this.opacityRange);
+        var lightness = (0,_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.getNumberFromRange)(this.baseLightness, this.lightnessRange);
+        var color = new _game_engine_color__WEBPACK_IMPORTED_MODULE_0__.Color("hsla", [0, 50, lightness, opacity]);
+        new AirDecelerationParticle(this.gameEngine, position, color, angle + Math.PI / 2);
+    };
+    return AirDecelerationParticles;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
+
+var AirDecelerationParticle = /** @class */ (function (_super) {
+    __extends(AirDecelerationParticle, _super);
+    function AirDecelerationParticle(engine, position, color, angle) {
+        return _super.call(this, engine, position, null, color, null, -0.045 * 2, 0.01, angle) || this;
+    }
+    AirDecelerationParticle.prototype.update = function (deltaTime) {
+        // this.lineSprite.rectLength -= 0.01 * deltaTime;
+        this.lineSprite.color.a -= this.opacityDropSpeed * deltaTime;
+        // this.lineSprite.hue < 0.06 ||
+        if (this.lineSprite.color.a <= 0) {
+            this.remove();
+        }
+    };
+    return AirDecelerationParticle;
+}(_particles_particle__WEBPACK_IMPORTED_MODULE_3__.Particle));
+
+
+
+/***/ }),
+
 /***/ "./src/game_objects/StrikeTime/Aurora/Aurora.ts":
 /*!******************************************************!*\
   !*** ./src/game_objects/StrikeTime/Aurora/Aurora.ts ***!
@@ -7536,6 +7659,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../game_engine/game_engine */ "./src/game_engine/game_engine.ts");
 /* harmony import */ var _game_engine_camera__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../game_engine/camera */ "./src/game_engine/camera.ts");
 /* harmony import */ var _EngineExhaust__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./EngineExhaust */ "./src/game_objects/StrikeTime/Aurora/EngineExhaust.ts");
+/* harmony import */ var _AirDecelerationParticles__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./AirDecelerationParticles */ "./src/game_objects/StrikeTime/Aurora/AirDecelerationParticles.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -7557,6 +7681,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
+
 var Aurora = /** @class */ (function (_super) {
     __extends(Aurora, _super);
     function Aurora(engine, pos, angle) {
@@ -7572,6 +7697,7 @@ var Aurora = /** @class */ (function (_super) {
         _this.maxSpeed = 0.025 * 6;
         _this.controlsDirection = [0, 0];
         _this.jetAcceleration = 0.0001;
+        _this.jetDeceleration = -0.00035;
         _this.controllerInUse = false;
         _this.gameEditorHasBeenOpened = false;
         _this.isTurning = false;
@@ -7588,6 +7714,7 @@ var Aurora = /** @class */ (function (_super) {
             _this.lineSprite.length / 8,
             17 / 18 * _this.lineSprite.length
         ], 5);
+        _this.airDecelerationParticles = new _AirDecelerationParticles__WEBPACK_IMPORTED_MODULE_6__.AirDecelerationParticles(engine, _this.transform, _this.lineSprite.length / 2, _this.lineSprite.length);
         return _this;
     }
     Aurora.prototype.animate = function (delta) {
@@ -7622,13 +7749,17 @@ var Aurora = /** @class */ (function (_super) {
                 this.rightExhaust.isDecelerating = true;
                 this.leftExhaust.isAccelerating = false;
                 this.rightExhaust.isAccelerating = false;
+                this.airDecelerationParticles.isDecelerating = true;
             }
             else {
+                this.airDecelerationParticles.isDecelerating = false;
+                ;
                 this.leftExhaust.isAccelerating = true;
                 this.rightExhaust.isAccelerating = true;
             }
         }
         else {
+            this.airDecelerationParticles.isDecelerating = false;
             this.leftExhaust.isAccelerating = false;
             this.rightExhaust.isAccelerating = false;
             this.leftExhaust.isDecelerating = false;
@@ -7706,13 +7837,13 @@ var Aurora = /** @class */ (function (_super) {
                 // also have to account for the 2PI that's added when turning right and the start angle is greater than the end angle
                 !this.replayablePhysicsComponent.isAccelerating &&
                     !this.replayablePhysicsComponent.isTurning) {
-                    // I need to check that the rest speed is correct for the turn angle
-                    // then accelerate to that speed
-                    // I need to turn this into a function that can be called later with the right
+                    // I need to add the case where we are already accelerating
+                    // and the case where we are already turning. We should be able to interrupt both of these
                     //         || (endAngle > 2 * Math.PI && this.roundAngleTo16thsDegrees(endAngle - 2 * Math.PI) !== controlsAngleRounded) || 
                     //         (this.roundAngleTo16thsDegrees(endAngle) !== controlsAngleRounded))
                     // on second thought, I need to get the straight acceleration interrupt working first
                     // and likely, the callback/next operation working as well
+                    // ^ I have no idea what this is talking about :) 
                     var angleDifference = controlsAngleRounded - currentDirectionRounded;
                     var isTurningRight = !(angleDifference > 180 || (angleDifference < 0 && angleDifference > -180));
                     // turning right means that the rotation point is to the right relative to the movement direction
@@ -7729,7 +7860,7 @@ var Aurora = /** @class */ (function (_super) {
                         acceleration: this.jetAcceleration
                     };
                     if (this.replayablePhysicsComponent.restSpeed !== tangentSpeed) {
-                        var acceleration = this.replayablePhysicsComponent.restSpeed > tangentSpeed ? this.jetAcceleration * -1 : this.jetAcceleration;
+                        var acceleration = this.replayablePhysicsComponent.restSpeed > tangentSpeed ? this.jetDeceleration : this.jetAcceleration;
                         var endSpeed = tangentSpeed;
                         var followupInstruction = {
                             type: 'turn',
@@ -7770,6 +7901,7 @@ var Aurora = /** @class */ (function (_super) {
                         });
                     }
                 }
+                else if (false) {}
                 // const angleDifference = controlsAngleRounded - currentDirectionRounded;
                 // const turningRight = !(angleDifference > 180 || (angleDifference < 0 && angleDifference > -180));
                 // const tangentAngle = this.replayablePhysicsComponent.movementTangentAngle / (2 * Math.PI) * 360;
@@ -7979,7 +8111,7 @@ var EngineExhaust = /** @class */ (function (_super) {
             this.transform.pos[0] - exhaustPositionLength * Math.cos(angle + exhaustPositionAngle),
             this.transform.pos[1] - exhaustPositionLength * Math.sin(angle + exhaustPositionAngle)
         ];
-        var initialSpeed = this.isAccelerating ? Math.random() * 1 + 4 : Math.random() * 0.5 + 2;
+        var initialSpeed = this.isAccelerating ? Math.random() * 1.5 + 6 : Math.random() * 0.5 + 1;
         var initialVelocity = [initialSpeed * Math.cos(angle + Math.PI), initialSpeed * Math.sin(angle + Math.PI)];
         var hue = this.isAccelerating ? (0,_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.getNumberFromRange)(this.acceleratingHue, this.colorRange) : (0,_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.getNumberFromRange)(this.noAccelerationHue, this.colorRange);
         var opacity = (0,_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.getNumberFromRange)(this.baseOpacity, this.opacityRange);
@@ -11156,7 +11288,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   GEOParticle: () => (/* binding */ GEOParticle),
 /* harmony export */   Particle: () => (/* binding */ Particle),
-/* harmony export */   ParticleSprite: () => (/* binding */ ParticleSprite)
+/* harmony export */   ParticleSprite: () => (/* binding */ ParticleSprite),
+/* harmony export */   StationaryParticleSprite: () => (/* binding */ StationaryParticleSprite)
 /* harmony export */ });
 /* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/util */ "./src/game_engine/util.ts");
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
@@ -11194,14 +11327,22 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 var Particle = /** @class */ (function (_super) {
     __extends(Particle, _super);
-    function Particle(engine, pos, initialVelocity, color, removeCallback, dampening, opacityDropSpeed) {
+    function Particle(engine, pos, initialVelocity, color, removeCallback, dampening, opacityDropSpeed, direction) {
         var _this = _super.call(this, engine) || this;
+        if (initialVelocity === null) {
+            _this.transform.vel[0] = 0;
+            _this.transform.vel[1] = 0;
+            _this.transform.vel[2] = 0;
+            _this.transform.angle = direction;
+        }
+        else {
+            _this.transform.vel[0] = initialVelocity[0];
+            _this.transform.vel[1] = initialVelocity[1];
+            _this.transform.vel[2] = initialVelocity[2] || 0;
+        }
         _this.transform.pos[0] = pos[0];
         _this.transform.pos[1] = pos[1];
         _this.transform.pos[2] = pos[2] || 0;
-        _this.transform.vel[0] = initialVelocity[0];
-        _this.transform.vel[1] = initialVelocity[1];
-        _this.transform.vel[2] = initialVelocity[2] || 0;
         _this.removeCallback = removeCallback || (removeCallback = function () { });
         _this.opacityDropSpeed = opacityDropSpeed || 0.0005;
         // explosion paralax
@@ -11211,7 +11352,12 @@ var Particle = /** @class */ (function (_super) {
         _this.color = color;
         _this.radius = 3;
         _this.transform.acc = [0, 0, 0];
-        _this.addLineSprite(new ParticleSprite(_this.transform, _this.color));
+        if (initialVelocity === null) {
+            _this.addLineSprite(new StationaryParticleSprite(_this.transform, _this.color));
+        }
+        else {
+            _this.addLineSprite(new ParticleSprite(_this.transform, _this.color));
+        }
         _this.addPhysicsComponent();
         _this.dampening = dampening || -0.045;
         return _this;
@@ -11381,6 +11527,30 @@ var ParticleSprite = /** @class */ (function (_super) {
         ctx.restore();
     };
     return ParticleSprite;
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__.LineSprite));
+
+var StationaryParticleSprite = /** @class */ (function (_super) {
+    __extends(StationaryParticleSprite, _super);
+    function StationaryParticleSprite(transform, color) {
+        var _this = _super.call(this, transform) || this;
+        _this.rectLength = 15;
+        _this.rectWidth = 2;
+        _this.color = color;
+        return _this;
+    }
+    StationaryParticleSprite.prototype.draw = function (ctx) {
+        var pos = this.transform.absolutePosition();
+        var r = this.transform.absoluteLength(3);
+        var movementDirection = this.transform.angle;
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+        ctx.rotate(movementDirection - Math.PI);
+        ctx.strokeStyle = this.color.evaluateColor();
+        ctx.fillStyle = this.color.evaluateColor();
+        ctx.fillRect(0, 0, r, r * 3);
+        ctx.restore();
+    };
+    return StationaryParticleSprite;
 }(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__.LineSprite));
 
 

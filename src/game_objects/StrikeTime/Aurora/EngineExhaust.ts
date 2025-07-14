@@ -83,7 +83,7 @@ export class EngineExhaust extends GameObject {
             this.transform.pos[0] - exhaustPositionLength * Math.cos(angle + exhaustPositionAngle),
             this.transform.pos[1] - exhaustPositionLength * Math.sin(angle + exhaustPositionAngle)
         ]
-        const initialSpeed = this.isAccelerating ? Math.random() * 1 + 4 : Math.random() * 0.5 + 2;
+        const initialSpeed = this.isAccelerating ? Math.random() * 1.5 + 6 : Math.random() * 0.5 + 1;
         const initialVelocity: [number, number] = [initialSpeed * Math.cos(angle + Math.PI), initialSpeed * Math.sin(angle + Math.PI)]
         const hue = this.isAccelerating ? getNumberFromRange(this.acceleratingHue, this.colorRange) : getNumberFromRange(this.noAccelerationHue, this.colorRange);
         const opacity = getNumberFromRange(this.baseOpacity, this.opacityRange);

@@ -5,6 +5,7 @@ import { GameEngine } from "../../../game_engine/game_engine";
 import { Camera } from "../../../game_engine/camera";
 import {NextInstructionTurn} from "../../../game_engine/physics_component"
 import { EngineExhaust } from "./EngineExhaust";
+import { AirDecelerationParticles } from "./AirDecelerationParticles";
 
 export class Aurora extends GameObject {
     lineSprite: AuroraSprite;
@@ -14,12 +15,14 @@ export class Aurora extends GameObject {
     controlsDirection: [number, number] = [0,0];
     controlsAngle: number | null = null;
     jetAcceleration: number;
+    jetDeceleration: number;
     controllerInUse: boolean;
     gameEditorHasBeenOpened: boolean;
     isTurning: boolean;
     isAccelerating: boolean;
     leftExhaust: EngineExhaust
     rightExhaust: EngineExhaust
+    airDecelerationParticles: AirDecelerationParticles;
 
     constructor(
         engine: GameEngine,
@@ -37,15 +40,12 @@ export class Aurora extends GameObject {
         this.controlsDirection = [0,0];
 
         this.jetAcceleration =  0.0001;
+        this.jetDeceleration = -0.00035;
         this.controllerInUse = false;
         this.gameEditorHasBeenOpened = false;
 
         this.isTurning = false;
         this.isAccelerating = false;
-
-        
-
-
 
         this.camera = new Camera(engine, new Transform(null, [pos[0], pos[1]]), "Aurora Camera");
         this.setAsControllableGameObject();
@@ -61,6 +61,7 @@ export class Aurora extends GameObject {
             this.lineSprite.length/8,
             17/18* this.lineSprite.length
         ], 5);
+        this.airDecelerationParticles = new AirDecelerationParticles(engine, this.transform, this.lineSprite.length / 2, this.lineSprite.length);
     }
 
     animate(delta: number) {
@@ -102,12 +103,16 @@ export class Aurora extends GameObject {
                 this.rightExhaust.isDecelerating = true;
                 this.leftExhaust.isAccelerating = false;
                 this.rightExhaust.isAccelerating = false;
+                this.airDecelerationParticles.isDecelerating = true;
             } else {
+                this.airDecelerationParticles.isDecelerating = false;;
                 this.leftExhaust.isAccelerating = true;
                 this.rightExhaust.isAccelerating = true;
             }
             
         } else {
+            this.airDecelerationParticles.isDecelerating = false;
+
             this.leftExhaust.isAccelerating = false;
             this.rightExhaust.isAccelerating = false;
             this.leftExhaust.isDecelerating = false;
@@ -199,15 +204,17 @@ export class Aurora extends GameObject {
                     !this.replayablePhysicsComponent.isAccelerating &&
                         !this.replayablePhysicsComponent.isTurning 
                 ) {
-                    // I need to check that the rest speed is correct for the turn angle
-                    // then accelerate to that speed
 
-                    // I need to turn this into a function that can be called later with the right
+                    // I need to add the case where we are already accelerating
+                    // and the case where we are already turning. We should be able to interrupt both of these
+
 
                     //         || (endAngle > 2 * Math.PI && this.roundAngleTo16thsDegrees(endAngle - 2 * Math.PI) !== controlsAngleRounded) || 
                     //         (this.roundAngleTo16thsDegrees(endAngle) !== controlsAngleRounded))
                     // on second thought, I need to get the straight acceleration interrupt working first
                     // and likely, the callback/next operation working as well
+
+                    // ^ I have no idea what this is talking about :) 
                     
                     const angleDifference = controlsAngleRounded - currentDirectionRounded;
                     const isTurningRight = !(angleDifference > 180 || (angleDifference < 0 && angleDifference > -180));
@@ -229,7 +236,7 @@ export class Aurora extends GameObject {
                     }
 
                     if(this.replayablePhysicsComponent.restSpeed !== tangentSpeed) {
-                        const acceleration = this.replayablePhysicsComponent.restSpeed > tangentSpeed ? this.jetAcceleration * -1 : this.jetAcceleration;
+                        const acceleration = this.replayablePhysicsComponent.restSpeed > tangentSpeed ? this.jetDeceleration : this.jetAcceleration;
                         const endSpeed = tangentSpeed;
                         const followupInstruction: NextInstructionTurn  = {
                             type: 'turn',
@@ -271,6 +278,8 @@ export class Aurora extends GameObject {
                             nextInstruction
                         });
                     }
+                } else if(false) {
+                    // if it is turning, then start interrupting and change the direction
                 }
                
                 // const angleDifference = controlsAngleRounded - currentDirectionRounded;
