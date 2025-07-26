@@ -3815,6 +3815,7 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
         this.transform = transform;
         this.accelerationInformation = {};
         this.turnInformation = {};
+        this.instructionsCompleted = [];
     }
     // to reverse time, I can replay the commands in reverse. in game time is the same
     // and have them in the opposite direction
@@ -3824,6 +3825,12 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
     // then startArchRotation is called
     ReplayablePhysicsComponent.prototype.startArchRotation = function (turnParams) {
         var rotationPoint = turnParams.rotationPoint, turnRadius = turnParams.turnRadius, isTurningRight = turnParams.isTurningRight, tangentSpeed = turnParams.tangentSpeed, startAngle = turnParams.startAngle, endAngle = turnParams.endAngle, gameTimeArchStarted = turnParams.gameTimeArchStarted, pointWhereArchStarted = turnParams.pointWhereArchStarted, nextInstruction = turnParams.nextInstruction, currentGameTime = turnParams.currentGameTime;
+        if (this.isAccelerating) {
+            console.log('interrupting Acceleration to Turn');
+        }
+        if (this.isTurning) {
+            console.log('interrupting Turn to change Turn');
+        }
         if (this.isTurning) {
             return this.interruptTurn({
                 rotationPoint: rotationPoint,
@@ -3883,42 +3890,112 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
         var rotationPoint = interruptTurnParams.rotationPoint, turnRadius = interruptTurnParams.turnRadius, isTurningRight = interruptTurnParams.isTurningRight, tangentSpeed = interruptTurnParams.tangentSpeed, startAngle = interruptTurnParams.startAngle, endAngle = interruptTurnParams.endAngle, gameTimeArchStarted = interruptTurnParams.gameTimeArchStarted, pointWhereArchStarted = interruptTurnParams.pointWhereArchStarted;
     };
     ReplayablePhysicsComponent.prototype.startAcceleration = function (accelerationParams) {
-        // what if acceleration is negative
-        // I don't think I want external forces to be applied for replayable physics components
-        var acceleration = accelerationParams.acceleration, endSpeed = accelerationParams.endSpeed, gameTimeAccelerationStarted = accelerationParams.gameTimeAccelerationStarted, currentGameTime = accelerationParams.currentGameTime, direction = accelerationParams.direction, nextInstruction = accelerationParams.nextInstruction;
-        this.accelerationInformation.isDecelerating = acceleration < 0;
+        var acceleration = accelerationParams.acceleration, endSpeed = accelerationParams.endSpeed, gameTimeAccelerationStarted = accelerationParams.gameTimeAccelerationStarted, currentGameTime = accelerationParams.currentGameTime, onStartDirection = accelerationParams.onStartDirection, nextInstruction = accelerationParams.nextInstruction;
+        console.log('startAccelerationInstruction', accelerationParams);
+        if (this.isAccelerating) {
+            console.log('interrupting Acceleration to change Acceleration');
+        }
+        if (this.isTurning) {
+            console.log('interrupting Turn to Accelerate instead');
+        }
+        var isDecelerating = acceleration < 0;
         var currentSpeed = null;
         var velocityAngle = null;
-        if (direction) {
+        if (onStartDirection) { // only on start
             currentSpeed = 0;
-            velocityAngle = direction;
+            velocityAngle = onStartDirection;
         }
         else {
             currentSpeed = Math.sqrt(Math.pow(this.transform.vel[0], 2) + Math.pow(this.transform.vel[1], 2));
             velocityAngle = Math.atan2(this.transform.vel[1], this.transform.vel[0]);
         }
-        // isRotating should have been made false by the interruption of the rotation
-        this.isTurning = false;
-        this.isAccelerating = true;
-        this.accelerationInformation.nextInstruction = nextInstruction;
         var timeUntilAccelerationEnds = (endSpeed - currentSpeed) / acceleration;
-        this.accelerationInformation.gameTimeWhenAccelerationEnds = timeUntilAccelerationEnds + gameTimeAccelerationStarted;
+        var gameTimeWhenAccelerationEnds = timeUntilAccelerationEnds + gameTimeAccelerationStarted;
         var accelerationDistanceIfUninterrupted = currentSpeed * timeUntilAccelerationEnds + 0.5 * acceleration * Math.pow(timeUntilAccelerationEnds, 2);
-        this.accelerationInformation.accelerationEndPositionIfUninterrupted = [
+        var accelerationEndPositionIfUninterrupted = [
             this.transform.pos[0] + Math.cos(velocityAngle) * accelerationDistanceIfUninterrupted,
             this.transform.pos[1] + Math.sin(velocityAngle) * accelerationDistanceIfUninterrupted
         ];
-        this.accelerationInformation.endVelocityIfUninterrupted = [
+        var endVelocityIfUninterrupted = [
             Math.cos(velocityAngle) * endSpeed,
             Math.sin(velocityAngle) * endSpeed
         ];
         // I don't think I want external forces to be applied for replayable physics components
         this.transform.acc[0] = Math.cos(velocityAngle) * acceleration;
         this.transform.acc[1] = Math.sin(velocityAngle) * acceleration;
-        this.accelerationInformation.endSpeedIfUninterrupted = endSpeed;
+        var endSpeedIfUninterrupted = endSpeed;
+        // okay, I think all I have to do, is detect when an instruction will have to be updated,
+        // or ended early with another added.
+        // so all I have to do for now is allow the current instruction to be overwritten
+        // until I'm at the point where I need to keep track of all the instructions
+        // ... direction as in positive or negative.... 
+        var accelerationSameDirection = this.accelerationInformation.acceleration > 0 && acceleration > 0 || this.accelerationInformation.acceleration < 0 && acceleration < 0;
+        // if it's the opposite direction, then end early and start a next instruction
+        if (!accelerationSameDirection && onStartDirection === null) {
+            var previousInstructionToEnd = this.duplicateAccelerationInstruction();
+            // I should end the current on, then:
+            // I should probably call myself here: this.startAcceleration
+            // end instruction, the same as "usual".. once I've made what usually happens
+            // Update To Slower/Faster Speed 
+            // case 1: 
+            // accelerating to max speed after a tight turn, 
+            // accelerating still, but now to a slower speed for a less tight turn
+            // case 2:
+            // accelerating to turn speed, but now accelerating to max speed
+            // because the turn is canceled
+            // case 3:
+            // decelerating for tight turn, but now I'm decelerating 
+            // to a shallow turn with faster speed
+            // case 4:
+            // decelerating for shallow turn, but now I'm decelerating to a tighter turn 
+            // slower speed
+            // **********************
+            // Update acceleration direction
+            // case 1: turning deceleration canceled, now accelerating
+            // case 2: acceleration to max speed canceled, new decelerating
+            // case 3: accelerating to turn speed canceled, turning tighter so decelerating now
+            // I need to update the endtime for the acceleration
+            // if it was decelerating but is now accelerating, 
+            // then we also need to add a new instruction for slowing down
+        }
+        // isRotating should have been made false by the interruption of the rotation
+        this.isTurning = false;
+        this.isAccelerating = true;
+        // if interrupting in the same direction, 
+        // we're just updating the end speed
+        // the start time of the acceleration seems to be required to be handled for replay somewhere else
+        this.accelerationInformation = {
+            acceleration: acceleration,
+            nextInstruction: nextInstruction,
+            isDecelerating: isDecelerating,
+            gameTimeWhenAccelerationEnds: gameTimeWhenAccelerationEnds,
+            accelerationEndPositionIfUninterrupted: accelerationEndPositionIfUninterrupted,
+            endVelocityIfUninterrupted: endVelocityIfUninterrupted,
+            endSpeedIfUninterrupted: endSpeedIfUninterrupted
+        };
+        console.log({ accelerationInformationCollected: this.accelerationInformation, isAccelerating: this.isAccelerating, currentGameTime: currentGameTime });
         if (currentGameTime) {
             this.move(currentGameTime - gameTimeAccelerationStarted, currentGameTime);
         }
+    };
+    ReplayablePhysicsComponent.prototype.duplicateAccelerationInstruction = function () {
+        var _a, _b, _c, _d;
+        var duplicatedAccelerationInstruction = {
+            isDecelerating: this.accelerationInformation.isDecelerating,
+            accelerationEndPositionIfUninterrupted: [
+                (_a = this.accelerationInformation) === null || _a === void 0 ? void 0 : _a.accelerationEndPositionIfUninterrupted[0],
+                (_b = this.accelerationInformation) === null || _b === void 0 ? void 0 : _b.accelerationEndPositionIfUninterrupted[1],
+            ],
+            endVelocityIfUninterrupted: [
+                (_c = this.accelerationInformation) === null || _c === void 0 ? void 0 : _c.endVelocityIfUninterrupted[0],
+                (_d = this.accelerationInformation) === null || _d === void 0 ? void 0 : _d.endVelocityIfUninterrupted[1]
+            ],
+            gameTimeWhenAccelerationEnds: this.accelerationInformation.gameTimeWhenAccelerationEnds,
+            endSpeedIfUninterrupted: this.accelerationInformation.endSpeedIfUninterrupted,
+            nextInstruction: this.accelerationInformation.nextInstruction,
+            acceleration: this.accelerationInformation.acceleration
+        };
+        return duplicatedAccelerationInstruction;
     };
     ReplayablePhysicsComponent.prototype.move = function (timeDelta, gameTime) {
         // const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
@@ -3934,7 +4011,10 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
                     gameTimeWhenAccelerationEnds: this.accelerationInformation.gameTimeWhenAccelerationEnds,
                     gameTime: gameTime
                 });
+                this.instructionsCompleted.push("".concat(this.accelerationInformation.isDecelerating ? 'negative' : 'positive', " acceleration completed"));
+                console.log(this.instructionsCompleted);
                 var timeSinceAccelerationEnded = gameTime - gameTimeWhenAccelerationEnds;
+                this.restSpeed = endSpeedIfUninterrupted;
                 if (nextInstruction) {
                     // finish rotation and then:
                     this.isAccelerating = false;
@@ -3945,7 +4025,6 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
                     this.transform.acc[0] = 0;
                     this.transform.acc[1] = 0;
                     this.accelerationInformation = {};
-                    this.restSpeed = endSpeedIfUninterrupted;
                     this.applyNextInstruction(nextInstruction, gameTime, gameTimeWhenAccelerationEnds);
                 }
                 else {
@@ -3957,7 +4036,6 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
                     this.transform.acc[0] = 0;
                     this.transform.acc[1] = 0;
                     this.accelerationInformation = {};
-                    this.restSpeed = endSpeedIfUninterrupted;
                 }
             }
             else {
@@ -3986,6 +4064,8 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
                 this.transform.pos[1] = endPoint[1];
                 var timeSinceTurnEnded = gameTime - gameTimeWhenTurnEnds;
                 console.log('Turning ended');
+                this.instructionsCompleted.push("Turn Completed. Direction: ".concat(this.turnInformation.rotationDirection > 0 ? 'Right' : 'Left'));
+                console.log(this.instructionsCompleted);
                 this.movementTangentAngle = endAngleFromRotationPointIfUninterrupted;
                 var endVelocityIfUninterrupted = [
                     tangentSpeed * Math.cos(endAngleFromRotationPointIfUninterrupted),
@@ -4018,7 +4098,6 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
                 // likely the issue:
                 this.transform.pos[0] = rotationPoint[0] + this.turnInformation.rotationDirection * turnRadius * Math.cos(newArchAngle);
                 this.transform.pos[1] = rotationPoint[1] + this.turnInformation.rotationDirection * turnRadius * Math.sin(newArchAngle);
-                console.log('speed?', this.transform.archAngleVelocity);
             }
         }
         else {
@@ -7698,6 +7777,7 @@ var Aurora = /** @class */ (function (_super) {
         _this.controlsDirection = [0, 0];
         _this.jetAcceleration = 0.0001;
         _this.jetDeceleration = -0.00035;
+        _this.jetDeceleration = -0.0001;
         _this.controllerInUse = false;
         _this.gameEditorHasBeenOpened = false;
         _this.isTurning = false;
@@ -7785,6 +7865,7 @@ var Aurora = /** @class */ (function (_super) {
         // there might be a way to make it feel a little better if 
         // I allow changing the direction constantly
         // of if I don't immediately accelerate to max speed
+        var _a, _b, _c, _d, _e, _f, _g;
         // to allow constant direction change, I'll need an "interupt" state where
         // the plane is still turning until it's facing one of the 16 directions. 
         // so it would be an interrupt instruction
@@ -7795,134 +7876,214 @@ var Aurora = /** @class */ (function (_super) {
         // visuals like, a path showing you result of the current instruction
         // and the arrow of the direction you're pointing maybe
         // worth checking out.... but only after I get time reversal going and other stuff
-        // if(!this.controllerInUse){
-        //     return;
-        // }
-        if (this.replayablePhysicsComponent.isAccelerating) {
+        if (!(this.gameEngine instanceof _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine))
+            return;
+        // eventually we can go past this 
+        // once we're able to interrupt turns
+        if (this.replayablePhysicsComponent.isTurning)
+            return;
+        if (this.controlsAngle === null)
+            return;
+        var gameTime = this.gameEngine.gameScript.gameTime;
+        if (this.transform.vel[0] === 0 && this.transform.vel[1] === 0) {
+            console.log('Only the first acceleration');
+            var controlsAngleRoundedRadians = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 2 * Math.PI;
+            this.replayablePhysicsComponent.startAcceleration({ acceleration: this.jetAcceleration, endSpeed: this.maxSpeed, gameTimeAccelerationStarted: gameTime, onStartDirection: controlsAngleRoundedRadians });
             return;
         }
-        if (this.controlsAngle === null) {
+        // get the controls angle and compare it to the current direction
+        // get the absolute velocity and compare it to the max
+        // that could be memoized
+        // when it's not rotating, we can use transform.vel. Thankfully we always have to speed up or slow down before adjusting the turn angle
+        // so this should be valid, but it might not work for other units
+        var currentDirection = (Math.atan2(this.transform.vel[1], this.transform.vel[0]) + Math.PI * 2) % (Math.PI * 2);
+        var currentDirectionRounded = this.roundAngleTo16thsDegrees(currentDirection);
+        var controlsAngleRounded = this.roundAngleTo16thsDegrees(this.controlsAngle);
+        // might be needed later
+        // const endAngle = this.replayablePhysicsComponent.turnInformation.endAngleFromRotationPointIfUninterrupted;
+        // this determines if we are inputting an acceleration
+        // I don't think it will ever happen though since every turn will result in a straight acceleration automatically
+        // oh! it could be slowing down, and we could be interrupting it!
+        // on second thought, 
+        if (currentDirectionRounded === controlsAngleRounded) {
+            // check that we didn't already speed up to this speed
+            // check that we are slowing down (before a turn) and want to interrupt it by going straight
+            // to test: lower acceleration to make it easier to see, Have plane at max speed, tell it to turn tightly, 
+            // then tell it to continue straight instead while it's slowing down
+            // I need to update restSpeed more often... it's not going great at the moment
+            if (this.maxSpeed !== this.replayablePhysicsComponent.restSpeed && this.replayablePhysicsComponent.accelerationInformation.isDecelerating) {
+                console.log('helloo');
+                this.replayablePhysicsComponent.startAcceleration({ acceleration: this.jetAcceleration, endSpeed: this.maxSpeed, gameTimeAccelerationStarted: gameTime });
+            }
             return;
         }
-        // we have a direction to move in
-        if (this.gameEngine instanceof _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine) {
-            var gameTime = this.gameEngine.gameScript.gameTime;
-            if (this.transform.vel[0] === 0 && this.transform.vel[1] === 0) {
-                console.log('Only the first acceleration');
-                var controlsAngleRoundedRadians = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 2 * Math.PI;
-                this.replayablePhysicsComponent.startAcceleration({ acceleration: this.jetAcceleration, endSpeed: this.maxSpeed, gameTimeAccelerationStarted: gameTime, direction: controlsAngleRoundedRadians });
-            }
-            else {
-                // get the controls angle and compare it to the current direction
-                // get the absolute velocity and compare it to the max
-                // that could be memoized
-                // when it's not rotating, we can use transform.vel. Thankfully we always have to speed up or slow down before adjusting the turn angle
-                // so this should be valid, but it might not work for other units
-                var currentDirection = (Math.atan2(this.transform.vel[1], this.transform.vel[0]) + Math.PI * 2) % (Math.PI * 2);
-                var currentDirectionRounded = this.roundAngleTo16thsDegrees(currentDirection);
-                var controlsAngleRounded = this.roundAngleTo16thsDegrees(this.controlsAngle);
-                // might be needed later
-                var endAngle = this.replayablePhysicsComponent.turnInformation.endAngleFromRotationPointIfUninterrupted;
-                // this determines if we are inputting an acceleration
-                // I don't think it will ever happen though since every turn will result in a straight acceleration automatically
-                // oh! it could be slowing down, and we could be interrupting it!
-                if (currentDirectionRounded === controlsAngleRounded) {
-                    // check that we didn't already speed up to this speed
-                    if (this.maxSpeed !== this.replayablePhysicsComponent.restSpeed) {
-                        this.replayablePhysicsComponent.startAcceleration({ acceleration: this.jetAcceleration, endSpeed: this.maxSpeed, gameTimeAccelerationStarted: gameTime });
-                    }
-                }
-                else if (
-                // if it's turning already, make sure the controls direction is different from the end turn direction before interrupting the turn
-                // also have to account for the 2PI that's added when turning right and the start angle is greater than the end angle
-                !this.replayablePhysicsComponent.isAccelerating &&
-                    !this.replayablePhysicsComponent.isTurning) {
-                    // I need to add the case where we are already accelerating
-                    // and the case where we are already turning. We should be able to interrupt both of these
-                    //         || (endAngle > 2 * Math.PI && this.roundAngleTo16thsDegrees(endAngle - 2 * Math.PI) !== controlsAngleRounded) || 
-                    //         (this.roundAngleTo16thsDegrees(endAngle) !== controlsAngleRounded))
-                    // on second thought, I need to get the straight acceleration interrupt working first
-                    // and likely, the callback/next operation working as well
-                    // ^ I have no idea what this is talking about :) 
-                    var angleDifference = controlsAngleRounded - currentDirectionRounded;
-                    var isTurningRight = !(angleDifference > 180 || (angleDifference < 0 && angleDifference > -180));
-                    // turning right means that the rotation point is to the right relative to the movement direction
-                    // always at a 90 degree angle
-                    var tangentAngle = this.replayablePhysicsComponent.movementTangentAngle;
-                    // const tangentSpeed = 4/5 * this.maxSpeed;
-                    var _a = this.getTurnRadiusAndSpeed(Math.abs(angleDifference)), turnRadius = _a.turnRadius, tangentSpeed = _a.tangentSpeed;
-                    // check tangent speed with current speed,
-                    // then decelerate/accelerate
-                    var endAngle_1 = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 2 * Math.PI;
-                    var nextInstruction = {
-                        type: 'accelerate',
-                        endSpeed: this.maxSpeed,
-                        acceleration: this.jetAcceleration
-                    };
-                    if (this.replayablePhysicsComponent.restSpeed !== tangentSpeed) {
-                        var acceleration = this.replayablePhysicsComponent.restSpeed > tangentSpeed ? this.jetDeceleration : this.jetAcceleration;
-                        var endSpeed = tangentSpeed;
-                        var followupInstruction = {
-                            type: 'turn',
-                            tangentSpeed: tangentSpeed,
-                            turnRadius: turnRadius,
-                            isTurningRight: isTurningRight,
-                            endAngle: endAngle_1,
-                            startAngle: tangentAngle,
-                            nextInstruction: nextInstruction
-                        };
-                        this.replayablePhysicsComponent.startAcceleration({
-                            acceleration: acceleration,
-                            endSpeed: endSpeed,
-                            gameTimeAccelerationStarted: gameTime,
-                            nextInstruction: followupInstruction
-                        });
-                    }
-                    else {
-                        // needed for playback 
-                        var pointWhereArchStarted = [this.transform.pos[0], this.transform.pos[1]];
-                        var normalAngle = isTurningRight ? tangentAngle + Math.PI / 2 : tangentAngle - Math.PI / 2;
-                        var rotationPoint = [
-                            pointWhereArchStarted[0] + turnRadius * Math.cos(normalAngle),
-                            pointWhereArchStarted[1] + turnRadius * Math.sin(normalAngle)
-                        ];
-                        // console.log("Angle Difference", {startAngle: tangentAngle * 360 / (2 * Math.PI), endAngle: endAngle * 360 / (2 * Math.PI), Difference: endAngle* 360 / (2 * Math.PI) - tangentAngle * 360 / (2 * Math.PI)})
-                        // I need this to be able to be called later with a nextInstruction
-                        this.replayablePhysicsComponent.startArchRotation({
-                            turnRadius: turnRadius,
-                            isTurningRight: isTurningRight,
-                            tangentSpeed: tangentSpeed,
-                            startAngle: tangentAngle,
-                            endAngle: endAngle_1,
-                            pointWhereArchStarted: pointWhereArchStarted, // try to create this later
-                            rotationPoint: rotationPoint, // try to create this later
-                            gameTimeArchStarted: gameTime, // try to create this later
-                            nextInstruction: nextInstruction
-                        });
-                    }
-                }
-                else if (false) {}
-                // const angleDifference = controlsAngleRounded - currentDirectionRounded;
-                // const turningRight = !(angleDifference > 180 || (angleDifference < 0 && angleDifference > -180));
-                // const tangentAngle = this.replayablePhysicsComponent.movementTangentAngle / (2 * Math.PI) * 360;
-                // const endAngleFromRotationPointIfUninterrupted = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 360;
-                // const normalAngle = turningRight ? tangentAngle/360 * Math.PI * 2 + Math.PI / 2 : tangentAngle/ 360 * Math.PI * 2 - Math.PI / 2 
-                // const pointWhereArchStarted = [this.transform.pos[0], this.transform.pos[1]];
-                // const turnRadius = 300;
-                // const rotationPoint: [number, number] = [
-                //     pointWhereArchStarted[0] + turnRadius * Math.cos(normalAngle),
-                //     pointWhereArchStarted[1] + turnRadius * Math.sin(normalAngle) 
-                // ]
-                // console.log("Angles", {
-                //     startX: pointWhereArchStarted[0],
-                //     startY: pointWhereArchStarted[1],
-                //     turnRadius,
-                //     rotX: rotationPoint[0],
-                //     rotY: rotationPoint[1]
-                // });
-                // if the rounded difference
-            }
+        // plane is still jumping when the turn angle changes while changing the deceleration to end at a different speed for a different turn
+        //         || (endAngle > 2 * Math.PI && this.roundAngleTo16thsDegrees(endAngle - 2 * Math.PI) !== controlsAngleRounded) || 
+        //         (this.roundAngleTo16thsDegrees(endAngle) !== controlsAngleRounded))
+        // on second thought, I need to get the straight acceleration interrupt working first
+        var angleDifference = controlsAngleRounded - currentDirectionRounded;
+        var isTurningRight = !(angleDifference > 180 || (angleDifference < 0 && angleDifference > -180));
+        // turning right means that the rotation point is to the right relative to the movement direction
+        // always at a 90 degree angle
+        var tangentAngle = this.replayablePhysicsComponent.movementTangentAngle;
+        // const tangentSpeed = 4/5 * this.maxSpeed;
+        var _h = this.getTurnRadiusAndSpeed(Math.abs(angleDifference)), turnRadius = _h.turnRadius, tangentSpeed = _h.tangentSpeed;
+        // check tangent speed with current speed,
+        // then decelerate/accelerate
+        var endAngle = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 2 * Math.PI;
+        var nextInstruction = {
+            type: 'accelerate',
+            endSpeed: this.maxSpeed,
+            acceleration: this.jetAcceleration
+        };
+        // this was restSpeed before.. rest speed needs to die, I'm not sure what it's for exactly
+        // I think it's to verify that the speed has been changed to a specific thing at some point in the past
+        // 
+        // if(this.replayablePhysicsComponent.restSpeed !== tangentSpeed) {
+        // if we're already decelerating for a shallow turn, and the new angle is sharper requiring a slower speed,
+        // then update the end speed of the deceleration, and the turn angle of the next instruction
+        // if we're already accelerating for a less sharp turn, and the turn angle changes requiring a different speed, then update
+        // the acceleration and the turn angle of the next instruction
+        if (((_a = this.replayablePhysicsComponent.accelerationInformation) === null || _a === void 0 ? void 0 : _a.endSpeedIfUninterrupted) !== tangentSpeed) {
+            console.log('speed change needed', { previousEndSpeed: (_b = this.replayablePhysicsComponent.accelerationInformation) === null || _b === void 0 ? void 0 : _b.endSpeedIfUninterrupted, newEndSpeed: tangentSpeed });
+            var acceleration = this.replayablePhysicsComponent.restSpeed > tangentSpeed ? this.jetDeceleration : this.jetAcceleration;
+            var endSpeed = tangentSpeed;
+            var followupInstruction = {
+                type: 'turn',
+                tangentSpeed: tangentSpeed,
+                turnRadius: turnRadius,
+                isTurningRight: isTurningRight,
+                endAngle: endAngle,
+                startAngle: tangentAngle,
+                nextInstruction: nextInstruction
+            };
+            // still need to apply what happens when interrupting
+            this.replayablePhysicsComponent.startAcceleration({
+                acceleration: acceleration,
+                endSpeed: endSpeed,
+                gameTimeAccelerationStarted: gameTime,
+                nextInstruction: followupInstruction
+            });
         }
+        if (this.replayablePhysicsComponent.isAccelerating)
+            return;
+        if (!this.replayablePhysicsComponent.isTurning) {
+            // the tangent speed is the same so we should be waiting for the acceleration to finish
+            // TODO: this presents a problem when a turn is possible at max speed because we could be accelerating to the max speed and we'd want 
+            // to update the acceleration to include the next turn instruction if that's the case
+            // needed for playback 
+            var pointWhereArchStarted = [this.transform.pos[0], this.transform.pos[1]];
+            var normalAngle = isTurningRight ? tangentAngle + Math.PI / 2 : tangentAngle - Math.PI / 2;
+            var rotationPoint = [
+                pointWhereArchStarted[0] + turnRadius * Math.cos(normalAngle),
+                pointWhereArchStarted[1] + turnRadius * Math.sin(normalAngle)
+            ];
+            this.replayablePhysicsComponent.startArchRotation({
+                turnRadius: turnRadius,
+                isTurningRight: isTurningRight,
+                tangentSpeed: tangentSpeed,
+                startAngle: tangentAngle,
+                endAngle: endAngle,
+                pointWhereArchStarted: pointWhereArchStarted, // try to create this later
+                rotationPoint: rotationPoint, // try to create this later
+                gameTimeArchStarted: gameTime, // try to create this later
+                nextInstruction: nextInstruction
+            });
+            return;
+        }
+        if (isTurningRight === (((_c = this.replayablePhysicsComponent.turnInformation) === null || _c === void 0 ? void 0 : _c.rotationDirection) > 1) &&
+            ((_d = this.replayablePhysicsComponent.turnInformation) === null || _d === void 0 ? void 0 : _d.endAngleFromRotationPointIfUninterrupted) &&
+            controlsAngleRounded !== this.replayablePhysicsComponent.turnInformation.endAngleFromRotationPointIfUninterrupted) {
+            // if it is turning, then start interrupting and change the end direction
+            // if the controls direction is different from the end direction of the current turn
+            // interrupt by altering the current turn to end at a different direction
+            // let's try to ignore the fact that we want larger angled turns to be 
+            // done at a slower speed
+            // this should result in a shallow turn's angle being interrupted to what would normally 
+            // call for a slowdown and then a tighter slower turn
+            // but instead, the plane will continue at the shallow angle turn rate and complete it all the 
+            // way to the new angle....
+            // let's just see how that feels first before getting more complicated... though I think I'll have to
+            // get more complicated and figure out how big of an angle discrepancy warrants slowing down to the tighter
+            // turn speed
+            // maybe it's just a matter of applying the same logic of turn direction. But the complicated bit will still be
+            // ending the current turn at a new direction that is the next 1/16th of 2PI
+            // Then accelerating to the right speed, and then finally, turning to the location
+            // to change the end angle, I also need to change the end game time, and the end location of the turn.. which kinda sucks
+            this.replayablePhysicsComponent.startArchRotation({
+                turnRadius: this.replayablePhysicsComponent.turnInformation.turnRadius,
+                isTurningRight: isTurningRight,
+                tangentSpeed: this.replayablePhysicsComponent.turnInformation.tangentSpeed,
+                startAngle: this.replayablePhysicsComponent.turnInformation.startAngle,
+                endAngle: endAngle,
+                pointWhereArchStarted: this.replayablePhysicsComponent.turnInformation.startingPoint,
+                rotationPoint: this.replayablePhysicsComponent.turnInformation.rotationPoint,
+                gameTimeArchStarted: this.replayablePhysicsComponent.turnInformation.gameTimeWhenTurnStarted,
+                nextInstruction: this.replayablePhysicsComponent.turnInformation.nextInstruction
+            });
+        }
+        else if (isTurningRight !== (((_e = this.replayablePhysicsComponent.turnInformation) === null || _e === void 0 ? void 0 : _e.rotationDirection) > 1) &&
+            ((_f = this.replayablePhysicsComponent.turnInformation) === null || _f === void 0 ? void 0 : _f.endAngleFromRotationPointIfUninterrupted) &&
+            controlsAngleRounded !== ((_g = this.replayablePhysicsComponent.turnInformation) === null || _g === void 0 ? void 0 : _g.endAngleFromRotationPointIfUninterrupted)) {
+            // we want to update the final angle, the final location, and the next instruction
+            // OH it's the same as before! except I need to determine the final angle
+            // based on the next closest 16th of 2PI, and then I'm adding a new next instruction
+            // not sure what happens with edge cases here. I might need a mod 16 too 
+            console.log(' WE SHOULD BE ENDING THE TURN SOON NOW FOR ANOTHER TURN');
+            var currentDirectionRoundedToNext16th = ((Math.floor(currentDirection / (Math.PI * 2) * 16) % 16) / 16) * (Math.PI * 2);
+            var accelerateToMaxSpeed = {
+                type: 'accelerate',
+                endSpeed: this.maxSpeed,
+                acceleration: this.jetAcceleration
+            };
+            var followupInstruction = {
+                type: 'turn',
+                tangentSpeed: tangentSpeed,
+                turnRadius: turnRadius,
+                isTurningRight: isTurningRight,
+                endAngle: endAngle,
+                startAngle: tangentAngle,
+                nextInstruction: accelerateToMaxSpeed
+            };
+            // this is where I would have the plane animation happen over time where it banks from one side to the other
+            // instead this should execute instantly without changing anything 
+            var nextInstruction_1 = {
+                type: 'accelerate',
+                endSpeed: tangentSpeed,
+                acceleration: this.jetAcceleration,
+                nextInstruction: followupInstruction
+            };
+            this.replayablePhysicsComponent.startArchRotation({
+                turnRadius: this.replayablePhysicsComponent.turnInformation.turnRadius,
+                isTurningRight: isTurningRight,
+                tangentSpeed: this.replayablePhysicsComponent.turnInformation.tangentSpeed,
+                startAngle: this.replayablePhysicsComponent.turnInformation.startAngle,
+                endAngle: currentDirectionRoundedToNext16th,
+                pointWhereArchStarted: this.replayablePhysicsComponent.turnInformation.startingPoint,
+                rotationPoint: this.replayablePhysicsComponent.turnInformation.rotationPoint,
+                gameTimeArchStarted: this.replayablePhysicsComponent.turnInformation.gameTimeWhenTurnStarted,
+                nextInstruction: nextInstruction_1
+            });
+        }
+        // const angleDifference = controlsAngleRounded - currentDirectionRounded;
+        // const turningRight = !(angleDifference > 180 || (angleDifference < 0 && angleDifference > -180));
+        // const tangentAngle = this.replayablePhysicsComponent.movementTangentAngle / (2 * Math.PI) * 360;
+        // const endAngleFromRotationPointIfUninterrupted = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 360;
+        // const normalAngle = turningRight ? tangentAngle/360 * Math.PI * 2 + Math.PI / 2 : tangentAngle/ 360 * Math.PI * 2 - Math.PI / 2 
+        // const pointWhereArchStarted = [this.transform.pos[0], this.transform.pos[1]];
+        // const turnRadius = 300;
+        // const rotationPoint: [number, number] = [
+        //     pointWhereArchStarted[0] + turnRadius * Math.cos(normalAngle),
+        //     pointWhereArchStarted[1] + turnRadius * Math.sin(normalAngle) 
+        // ]
+        // console.log("Angles", {
+        //     startX: pointWhereArchStarted[0],
+        //     startY: pointWhereArchStarted[1],
+        //     turnRadius,
+        //     rotX: rotationPoint[0],
+        //     rotY: rotationPoint[1]
+        // });
+        // if the rounded difference
     };
     Aurora.prototype.getTurnRadiusAndSpeed = function (angleChangeDegrees) {
         var tightestRadius = 100;

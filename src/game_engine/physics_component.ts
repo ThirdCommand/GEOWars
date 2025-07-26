@@ -33,6 +33,7 @@ export class PhysicsComponent {
 export class ReplayablePhysicsComponent {
     transform: Transform;
     gameTime: number;
+    instructionsCompleted: string[];
     turnInformation: {
         rotationPoint?: [number, number] 
         startingPoint?: [number, number]
@@ -53,6 +54,7 @@ export class ReplayablePhysicsComponent {
         gameTimeWhenAccelerationEnds?: number,
         endSpeedIfUninterrupted?: number,
         nextInstruction?: NextInstructionTurn;
+        acceleration?: number;
     }
     
     isAccelerating: boolean = false;
@@ -68,6 +70,7 @@ export class ReplayablePhysicsComponent {
         this.transform = transform;
         this.accelerationInformation = {};
         this.turnInformation = {};
+        this.instructionsCompleted = [];
 
     }
 
@@ -104,6 +107,14 @@ export class ReplayablePhysicsComponent {
             nextInstruction,
             currentGameTime
         } = turnParams;
+
+        if (this.isAccelerating) {
+            console.log('interrupting Acceleration to Turn');
+        }
+
+        if(this.isTurning) {
+            console.log('interrupting Turn to change Turn')
+        }
 
         if(this.isTurning) {
             return this.interruptTurn({
@@ -194,57 +205,140 @@ export class ReplayablePhysicsComponent {
         endSpeed: number, 
         gameTimeAccelerationStarted: number, 
         currentGameTime?: number | null, 
-        direction?: number | null,
+        onStartDirection?: number | null,
         nextInstruction?: NextInstructionTurn
     }) {
-       
-        // what if acceleration is negative
-        // I don't think I want external forces to be applied for replayable physics components
         const {
             acceleration, 
             endSpeed, 
             gameTimeAccelerationStarted, 
             currentGameTime,
-            direction,
-            nextInstruction
+            onStartDirection,
+            nextInstruction,
         } = accelerationParams;
+        console.log('startAccelerationInstruction', accelerationParams)
 
-        this.accelerationInformation.isDecelerating = acceleration < 0;
+        if (this.isAccelerating) {
+            console.log('interrupting Acceleration to change Acceleration');
+        }
+
+        if(this.isTurning) {
+            console.log('interrupting Turn to Accelerate instead')
+        }
+
+        const isDecelerating = acceleration < 0;
         
         let currentSpeed = null;
         let velocityAngle = null;
-        if(direction) {
+
+        if(onStartDirection) { // only on start
             currentSpeed = 0;
-            velocityAngle = direction;
+            velocityAngle = onStartDirection;
         } else {
             currentSpeed = Math.sqrt(this.transform.vel[0]**2 + this.transform.vel[1]**2);
             velocityAngle = Math.atan2(this.transform.vel[1], this.transform.vel[0]);
         }
-
-        // isRotating should have been made false by the interruption of the rotation
-        this.isTurning = false;
-        this.isAccelerating = true;
-
-        this.accelerationInformation.nextInstruction = nextInstruction;
         
         const timeUntilAccelerationEnds = (endSpeed - currentSpeed) / acceleration;
-        this.accelerationInformation.gameTimeWhenAccelerationEnds = timeUntilAccelerationEnds + gameTimeAccelerationStarted;
+        const gameTimeWhenAccelerationEnds = timeUntilAccelerationEnds + gameTimeAccelerationStarted;
         const accelerationDistanceIfUninterrupted = currentSpeed * timeUntilAccelerationEnds + 0.5 * acceleration * timeUntilAccelerationEnds ** 2;
-        this.accelerationInformation.accelerationEndPositionIfUninterrupted = [
+        const accelerationEndPositionIfUninterrupted: [number, number] = [
             this.transform.pos[0] + Math.cos(velocityAngle) * accelerationDistanceIfUninterrupted,
             this.transform.pos[1] + Math.sin(velocityAngle) * accelerationDistanceIfUninterrupted
         ]
-        this.accelerationInformation.endVelocityIfUninterrupted = [
+        const endVelocityIfUninterrupted: [number, number] = [
             Math.cos(velocityAngle) * endSpeed,
             Math.sin(velocityAngle) * endSpeed
         ]
         // I don't think I want external forces to be applied for replayable physics components
         this.transform.acc[0] = Math.cos(velocityAngle) * acceleration;
         this.transform.acc[1] = Math.sin(velocityAngle) * acceleration;
-        this.accelerationInformation.endSpeedIfUninterrupted = endSpeed;
+        const endSpeedIfUninterrupted = endSpeed;
+
+        // okay, I think all I have to do, is detect when an instruction will have to be updated,
+        // or ended early with another added.
+        // so all I have to do for now is allow the current instruction to be overwritten
+        // until I'm at the point where I need to keep track of all the instructions
+
+        // ... direction as in positive or negative.... 
+        const accelerationSameDirection = this.accelerationInformation.acceleration > 0 && acceleration > 0 || this.accelerationInformation.acceleration < 0 && acceleration < 0;
+
+        // if it's the opposite direction, then end early and start a next instruction
+        if(!accelerationSameDirection && onStartDirection === null) {
+            const previousInstructionToEnd = this.duplicateAccelerationInstruction();
+            // I should end the current on, then:
+            // I should probably call myself here: this.startAcceleration
+            // end instruction, the same as "usual".. once I've made what usually happens
+
+
+        // Update To Slower/Faster Speed 
+        // case 1: 
+        // accelerating to max speed after a tight turn, 
+        // accelerating still, but now to a slower speed for a less tight turn
+
+        // case 2:
+        // accelerating to turn speed, but now accelerating to max speed
+        // because the turn is canceled
+
+        // case 3:
+        // decelerating for tight turn, but now I'm decelerating 
+        // to a shallow turn with faster speed
+
+        // case 4:
+        // decelerating for shallow turn, but now I'm decelerating to a tighter turn 
+        // slower speed
+        // **********************
+
+
+        // Update acceleration direction
+        // case 1: turning deceleration canceled, now accelerating
+        // case 2: acceleration to max speed canceled, new decelerating
+        // case 3: accelerating to turn speed canceled, turning tighter so decelerating now
+
+        // I need to update the endtime for the acceleration
+        // if it was decelerating but is now accelerating, 
+        // then we also need to add a new instruction for slowing down
+        }
+
+        // isRotating should have been made false by the interruption of the rotation
+        this.isTurning = false;
+        this.isAccelerating = true;
+
+        // if interrupting in the same direction, 
+        // we're just updating the end speed
+        // the start time of the acceleration seems to be required to be handled for replay somewhere else
+        this.accelerationInformation = {
+            acceleration,
+            nextInstruction,
+            isDecelerating,
+            gameTimeWhenAccelerationEnds,
+            accelerationEndPositionIfUninterrupted,
+            endVelocityIfUninterrupted,
+            endSpeedIfUninterrupted
+        }
+        console.log({accelerationInformationCollected: this.accelerationInformation, isAccelerating: this.isAccelerating, currentGameTime})
         if(currentGameTime) {
             this.move(currentGameTime - gameTimeAccelerationStarted, currentGameTime);
         }
+    }
+
+    duplicateAccelerationInstruction(): typeof this.accelerationInformation {
+       const  duplicatedAccelerationInstruction: typeof this.accelerationInformation = {
+            isDecelerating: this.accelerationInformation.isDecelerating,
+            accelerationEndPositionIfUninterrupted: [
+                this.accelerationInformation?.accelerationEndPositionIfUninterrupted[0],
+                this.accelerationInformation?.accelerationEndPositionIfUninterrupted[1],
+            ],
+            endVelocityIfUninterrupted: [
+                this.accelerationInformation?.endVelocityIfUninterrupted[0],
+                this.accelerationInformation?.endVelocityIfUninterrupted[1]
+            ],
+            gameTimeWhenAccelerationEnds: this.accelerationInformation.gameTimeWhenAccelerationEnds,
+            endSpeedIfUninterrupted: this.accelerationInformation.endSpeedIfUninterrupted,
+            nextInstruction: this.accelerationInformation.nextInstruction,
+            acceleration: this.accelerationInformation.acceleration
+        };
+        return duplicatedAccelerationInstruction
     }
 
     move(timeDelta: number, gameTime: number): void {
@@ -252,7 +346,13 @@ export class ReplayablePhysicsComponent {
         const originalPosition = [this.transform.pos[0], this.transform.pos[1]];
 
         if(this.isAccelerating) {
-            const {endVelocityIfUninterrupted, gameTimeWhenAccelerationEnds, accelerationEndPositionIfUninterrupted, endSpeedIfUninterrupted, nextInstruction} = this.accelerationInformation;
+            const {
+                endVelocityIfUninterrupted, 
+                gameTimeWhenAccelerationEnds, 
+                accelerationEndPositionIfUninterrupted, 
+                endSpeedIfUninterrupted,
+                nextInstruction
+            } = this.accelerationInformation;
             // if the game time is after the acceleration should have finished
             if (gameTime >= gameTimeWhenAccelerationEnds) {
                 // if the game time is after the acceleration should have finished
@@ -262,7 +362,10 @@ export class ReplayablePhysicsComponent {
                     gameTimeWhenAccelerationEnds: this.accelerationInformation.gameTimeWhenAccelerationEnds, 
                     gameTime: gameTime}
                 );
+                this.instructionsCompleted.push(`${this.accelerationInformation.isDecelerating ? 'negative' : 'positive'} acceleration completed`)
+                console.log(this.instructionsCompleted);
                 const timeSinceAccelerationEnded = gameTime - gameTimeWhenAccelerationEnds;
+                this.restSpeed = endSpeedIfUninterrupted;
                 if(nextInstruction) {
                     // finish rotation and then:
                     this.isAccelerating = false;
@@ -273,10 +376,8 @@ export class ReplayablePhysicsComponent {
                     this.transform.acc[0] = 0;
                     this.transform.acc[1] = 0;
                     this.accelerationInformation = {};
-                    this.restSpeed = endSpeedIfUninterrupted;
                     this.applyNextInstruction(nextInstruction, gameTime, gameTimeWhenAccelerationEnds);
                 } else {
-                   
                     this.isAccelerating = false;
                     this.transform.vel[0] = endVelocityIfUninterrupted[0];
                     this.transform.vel[1] = endVelocityIfUninterrupted[1];
@@ -285,7 +386,6 @@ export class ReplayablePhysicsComponent {
                     this.transform.acc[0] = 0;
                     this.transform.acc[1] = 0;
                     this.accelerationInformation = {};
-                    this.restSpeed = endSpeedIfUninterrupted;
                 }
                 
             } else {
@@ -315,6 +415,9 @@ export class ReplayablePhysicsComponent {
                 this.transform.pos[1] = endPoint[1];
                 const timeSinceTurnEnded = gameTime - gameTimeWhenTurnEnds;
                 console.log('Turning ended');
+
+                this.instructionsCompleted.push(`Turn Completed. Direction: ${this.turnInformation.rotationDirection > 0 ? 'Right' : 'Left'}`);
+                console.log(this.instructionsCompleted);
 
                 this.movementTangentAngle = endAngleFromRotationPointIfUninterrupted;
                     
@@ -354,7 +457,6 @@ export class ReplayablePhysicsComponent {
                 // likely the issue:
                 this.transform.pos[0] = rotationPoint[0] + this.turnInformation.rotationDirection * turnRadius * Math.cos(newArchAngle);
                 this.transform.pos[1] = rotationPoint[1] + this.turnInformation.rotationDirection * turnRadius * Math.sin(newArchAngle);
-                console.log('speed?',this.transform.archAngleVelocity);
             }
             
         } else {
@@ -369,6 +471,8 @@ export class ReplayablePhysicsComponent {
             this.transform.pos[1] - originalPosition[1],
             this.transform.pos[0] - originalPosition[0]
         ) + Math.PI * 2) % (Math.PI * 2);
+
+        
         
     }
     applyNextInstruction(nextInstruction: NextInstructionAccelerate | NextInstructionTurn, currentGameTime: number, gameTimeItStarts: number) {
@@ -388,7 +492,7 @@ export class ReplayablePhysicsComponent {
             const rotationPoint: [number, number] = [
                 pointWhereArchStarted[0] + turnRadius * Math.cos(normalAngle),
                 pointWhereArchStarted[1] + turnRadius * Math.sin(normalAngle) 
-            ]
+            ];
             this.startArchRotation({
                 turnRadius, 
                 isTurningRight, 
