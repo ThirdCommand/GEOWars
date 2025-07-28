@@ -3117,7 +3117,7 @@ var GameEngine = /** @class */ (function () {
             return;
         }
         if (this.gameEditorOpened) {
-            // this.checkCollisions();
+            this.checkCollisions();
             this.updateGameObjects(delta);
             this.renderLineSprites(this.ctx);
             this.addClickListenersAfterTick();
@@ -7795,6 +7795,7 @@ var Aurora = /** @class */ (function (_super) {
             17 / 18 * _this.lineSprite.length
         ], 5);
         _this.airDecelerationParticles = new _AirDecelerationParticles__WEBPACK_IMPORTED_MODULE_6__.AirDecelerationParticles(engine, _this.transform, _this.lineSprite.length / 2, _this.lineSprite.length);
+        _this.addCollider("General", _this, _this.radius);
         return _this;
     }
     Aurora.prototype.animate = function (delta) {
@@ -7823,6 +7824,7 @@ var Aurora = /** @class */ (function (_super) {
         var shipYPos = this.transform.pos[1];
         this.camera.transform.pos[0] = shipXPos;
         this.camera.transform.pos[1] = shipYPos;
+        // visuals (animation)
         if (this.replayablePhysicsComponent.isAccelerating) {
             if (this.replayablePhysicsComponent.accelerationInformation.isDecelerating) {
                 this.leftExhaust.isDecelerating = true;
@@ -7865,7 +7867,7 @@ var Aurora = /** @class */ (function (_super) {
         // there might be a way to make it feel a little better if 
         // I allow changing the direction constantly
         // of if I don't immediately accelerate to max speed
-        var _a, _b, _c, _d, _e, _f, _g;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         // to allow constant direction change, I'll need an "interupt" state where
         // the plane is still turning until it's facing one of the 16 directions. 
         // so it would be an interrupt instruction
@@ -7927,7 +7929,7 @@ var Aurora = /** @class */ (function (_super) {
         // always at a 90 degree angle
         var tangentAngle = this.replayablePhysicsComponent.movementTangentAngle;
         // const tangentSpeed = 4/5 * this.maxSpeed;
-        var _h = this.getTurnRadiusAndSpeed(Math.abs(angleDifference)), turnRadius = _h.turnRadius, tangentSpeed = _h.tangentSpeed;
+        var _k = this.getTurnRadiusAndSpeed(Math.abs(angleDifference)), turnRadius = _k.turnRadius, tangentSpeed = _k.tangentSpeed;
         // check tangent speed with current speed,
         // then decelerate/accelerate
         var endAngle = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 2 * Math.PI;
@@ -7944,7 +7946,8 @@ var Aurora = /** @class */ (function (_super) {
         // then update the end speed of the deceleration, and the turn angle of the next instruction
         // if we're already accelerating for a less sharp turn, and the turn angle changes requiring a different speed, then update
         // the acceleration and the turn angle of the next instruction
-        if (((_a = this.replayablePhysicsComponent.accelerationInformation) === null || _a === void 0 ? void 0 : _a.endSpeedIfUninterrupted) !== tangentSpeed) {
+        if (((_a = this.replayablePhysicsComponent.accelerationInformation) === null || _a === void 0 ? void 0 : _a.endSpeedIfUninterrupted) &&
+            this.replayablePhysicsComponent.accelerationInformation.endSpeedIfUninterrupted !== tangentSpeed) {
             console.log('speed change needed', { previousEndSpeed: (_b = this.replayablePhysicsComponent.accelerationInformation) === null || _b === void 0 ? void 0 : _b.endSpeedIfUninterrupted, newEndSpeed: tangentSpeed });
             var acceleration = this.replayablePhysicsComponent.restSpeed > tangentSpeed ? this.jetDeceleration : this.jetAcceleration;
             var endSpeed = tangentSpeed;
@@ -7991,8 +7994,10 @@ var Aurora = /** @class */ (function (_super) {
             });
             return;
         }
-        if (isTurningRight === (((_c = this.replayablePhysicsComponent.turnInformation) === null || _c === void 0 ? void 0 : _c.rotationDirection) > 1) &&
-            ((_d = this.replayablePhysicsComponent.turnInformation) === null || _d === void 0 ? void 0 : _d.endAngleFromRotationPointIfUninterrupted) &&
+        if (((_c = this.replayablePhysicsComponent.turnInformation) === null || _c === void 0 ? void 0 : _c.rotationDirection) !== undefined &&
+            ((_d = this.replayablePhysicsComponent.turnInformation) === null || _d === void 0 ? void 0 : _d.rotationDirection) !== null &&
+            isTurningRight === (((_e = this.replayablePhysicsComponent.turnInformation) === null || _e === void 0 ? void 0 : _e.rotationDirection) > 1) &&
+            ((_f = this.replayablePhysicsComponent.turnInformation) === null || _f === void 0 ? void 0 : _f.endAngleFromRotationPointIfUninterrupted) &&
             controlsAngleRounded !== this.replayablePhysicsComponent.turnInformation.endAngleFromRotationPointIfUninterrupted) {
             // if it is turning, then start interrupting and change the end direction
             // if the controls direction is different from the end direction of the current turn
@@ -8022,9 +8027,9 @@ var Aurora = /** @class */ (function (_super) {
                 nextInstruction: this.replayablePhysicsComponent.turnInformation.nextInstruction
             });
         }
-        else if (isTurningRight !== (((_e = this.replayablePhysicsComponent.turnInformation) === null || _e === void 0 ? void 0 : _e.rotationDirection) > 1) &&
-            ((_f = this.replayablePhysicsComponent.turnInformation) === null || _f === void 0 ? void 0 : _f.endAngleFromRotationPointIfUninterrupted) &&
-            controlsAngleRounded !== ((_g = this.replayablePhysicsComponent.turnInformation) === null || _g === void 0 ? void 0 : _g.endAngleFromRotationPointIfUninterrupted)) {
+        else if (isTurningRight !== (((_g = this.replayablePhysicsComponent.turnInformation) === null || _g === void 0 ? void 0 : _g.rotationDirection) > 1) &&
+            ((_h = this.replayablePhysicsComponent.turnInformation) === null || _h === void 0 ? void 0 : _h.endAngleFromRotationPointIfUninterrupted) &&
+            controlsAngleRounded !== ((_j = this.replayablePhysicsComponent.turnInformation) === null || _j === void 0 ? void 0 : _j.endAngleFromRotationPointIfUninterrupted)) {
             // we want to update the final angle, the final location, and the next instruction
             // OH it's the same as before! except I need to determine the final angle
             // based on the next closest 16th of 2PI, and then I'm adding a new next instruction
@@ -8281,6 +8286,167 @@ var EngineExhaust = /** @class */ (function (_super) {
     };
     return EngineExhaust;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
+
+
+
+/***/ }),
+
+/***/ "./src/game_objects/StrikeTime/Enemies/PatriotMissileSite.ts":
+/*!*******************************************************************!*\
+  !*** ./src/game_objects/StrikeTime/Enemies/PatriotMissileSite.ts ***!
+  \*******************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   PatriotMissileSite: () => (/* binding */ PatriotMissileSite),
+/* harmony export */   PatriotMissileSiteSprite: () => (/* binding */ PatriotMissileSiteSprite)
+/* harmony export */ });
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+var PatriotMissileSite = /** @class */ (function (_super) {
+    __extends(PatriotMissileSite, _super);
+    function PatriotMissileSite(engine, pos) {
+        var _this = _super.call(this, engine) || this;
+        _this.transform.pos = pos;
+        _this.launchRange = 150; // I could have it detect earlier and turn to face before within actual range. but this is a prototype so not now
+        _this.radius = 15;
+        _this.lives = 1;
+        _this.exist();
+        _this.addLineSprite(new PatriotMissileSiteSprite(_this.transform));
+        return _this;
+    }
+    PatriotMissileSite.prototype.exist = function () {
+        this.addCollider("General", this, this.radius);
+        this.addCollider("LaunchRange", this, this.launchRange, ["Aurora"], ["General"]);
+        // this doesn't actually move... so I don't think I need a physics component...
+        // I can just animate it instead... but I'll have to have the animations be reversible
+    };
+    PatriotMissileSite.prototype.onCollision = function (collider, type) {
+        console.log('patriot missile collider hit', collider);
+        if (type === "LaunchRange") {
+            this.startLaunchSequence();
+        }
+    };
+    PatriotMissileSite.prototype.startLaunchSequence = function () {
+        console.log('launch missile sequencing');
+        // create missiles at the fire rate while still in range
+        // will have to be done reversibly
+    };
+    PatriotMissileSite.prototype.hit = function () {
+        this.lives -= 1;
+        var pos = this.transform.absolutePosition();
+        if (this.lives <= 0) {
+            new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, pos);
+            this.remove();
+        }
+        // if not dead, I can have a different type of explosion
+    };
+    PatriotMissileSite.prototype.update = function (deltaTime) {
+        this.animate(deltaTime);
+    };
+    PatriotMissileSite.prototype.animate = function (timeDelta) {
+        // I should stick to no animation for now
+        // for my own sanity
+    };
+    return PatriotMissileSite;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
+
+var NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+var PatriotMissileSiteSprite = /** @class */ (function (_super) {
+    __extends(PatriotMissileSiteSprite, _super);
+    function PatriotMissileSiteSprite(transform) {
+        return _super.call(this, transform) || this;
+    }
+    PatriotMissileSiteSprite.prototype.draw = function (ctx) {
+        ctx.save();
+        this.drawPatriotMissileSite(ctx);
+        ctx.restore();
+    };
+    PatriotMissileSiteSprite.prototype.drawPatriotMissileSite = function (ctx) {
+        ctx.strokeStyle = "#339966";
+        ctx.lineWidth = 1.5;
+        var w = 5;
+        var pos = this.transform.absolutePosition();
+        ctx.translate(pos[0], pos[1]);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-1 / 2 * w, 4 * w); // 7
+        ctx.lineTo(1 / 5 * w, 8 * w); // 6
+        ctx.lineTo(3.5 * w, 7 * w); // 5
+        ctx.rotate(-Math.atan(1 / 4));
+        ctx.lineTo(4 * w, 4 * w); // 3
+        ctx.lineTo(0, 4 * w); // 4
+        ctx.stroke();
+        ctx.rotate(Math.atan(1 / 4));
+        ctx.lineTo(1 / 5 * w, 8 * w); // 6
+        ctx.stroke();
+        ctx.rotate(-Math.atan(1 / 4));
+        ctx.beginPath();
+        ctx.moveTo(0, 0); // 1
+        ctx.lineTo(4 * w, 0); // 2
+        ctx.lineTo(4 * w, 4 * w); // 3
+        ctx.lineTo(0, 4 * w); // 4
+        ctx.lineTo(0, 0); // 1
+        ctx.stroke();
+        ctx.beginPath(); // cross
+        ctx.moveTo(2 * w, 0);
+        ctx.lineTo(2 * w, 4 * w);
+        ctx.stroke();
+        ctx.beginPath(); // cross 
+        ctx.moveTo(4 * w, 2 * w);
+        ctx.lineTo(0, 2 * w);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0.5 * w, 0.5 * w);
+        ctx.lineTo(1.5 * w, 0.5 * w);
+        ctx.lineTo(1.5 * w, 1.5 * w);
+        ctx.lineTo(0.5 * w, 1.5 * w);
+        ctx.lineTo(0.5 * w, 0.5 * w);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(2.5 * w, 0.5 * w);
+        ctx.lineTo(3.5 * w, 0.5 * w);
+        ctx.lineTo(3.5 * w, 1.5 * w);
+        ctx.lineTo(2.5 * w, 1.5 * w);
+        ctx.lineTo(2.5 * w, 0.5 * w);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(2.5 * w, 2.5 * w);
+        ctx.lineTo(3.5 * w, 2.5 * w);
+        ctx.lineTo(3.5 * w, 3.5 * w);
+        ctx.lineTo(2.5 * w, 3.5 * w);
+        ctx.lineTo(2.5 * w, 2.5 * w);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0.5 * w, 2.5 * w); // 24
+        ctx.lineTo(1.5 * w, 2.5 * w); // 25
+        ctx.lineTo(1.5 * w, 3.5 * w); // 26
+        ctx.lineTo(0.5 * w, 3.5 * w); // 27
+        ctx.lineTo(0.5 * w, 2.5 * w); // 24
+        ctx.stroke();
+    };
+    return PatriotMissileSiteSprite;
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__.LineSprite));
 
 
 
@@ -12184,6 +12350,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_objects_Tree_Tree__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./game_objects/Tree/Tree */ "./src/game_objects/Tree/Tree.ts");
 /* harmony import */ var _game_objects_ClockworkGames_Machine__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./game_objects/ClockworkGames/Machine */ "./src/game_objects/ClockworkGames/Machine.ts");
 /* harmony import */ var _game_objects_StrikeTime_Aurora_Aurora__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./game_objects/StrikeTime/Aurora/Aurora */ "./src/game_objects/StrikeTime/Aurora/Aurora.ts");
+/* harmony import */ var _game_objects_StrikeTime_Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./game_objects/StrikeTime/Enemies/PatriotMissileSite */ "./src/game_objects/StrikeTime/Enemies/PatriotMissileSite.ts");
+
 
 
 
@@ -12364,6 +12532,7 @@ var GameScript = /** @class */ (function () {
             if (this.secondShipCreated === false && this.gameTime > 1000) {
                 this.secondShipCreated = true;
                 this.createAurora();
+                this.createPatriotMissileSite();
                 // this.createShip();
             }
         }
@@ -12742,6 +12911,9 @@ var GameScript = /** @class */ (function () {
     };
     GameScript.prototype.createAurora = function () {
         return new _game_objects_StrikeTime_Aurora_Aurora__WEBPACK_IMPORTED_MODULE_26__.Aurora(this.engine, [500, 200]);
+    };
+    GameScript.prototype.createPatriotMissileSite = function () {
+        return new _game_objects_StrikeTime_Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_27__.PatriotMissileSite(this.engine, [500, 200]);
     };
     GameScript.prototype.createWalls = function () {
         return new _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_2__.Walls(this.engine);

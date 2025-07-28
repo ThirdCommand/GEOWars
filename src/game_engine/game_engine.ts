@@ -237,7 +237,7 @@ export class GameEngine {
         }
 
         if(this.gameEditorOpened) {
-            // this.checkCollisions();
+            this.checkCollisions();
             this.updateGameObjects(delta);
             this.renderLineSprites(this.ctx);
 

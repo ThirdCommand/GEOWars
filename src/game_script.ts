@@ -30,6 +30,7 @@ import { type GameObject } from "./game_engine/game_object";
 import { Transform } from "./game_engine/transform";
 import { Machinery } from "./game_objects/ClockworkGames/Machine";
 import { Aurora } from "./game_objects/StrikeTime/Aurora/Aurora";
+import { PatriotMissileSite } from "./game_objects/StrikeTime/Enemies/PatriotMissileSite";
 
 type EnemyCreator = (pos: [number, number, number] | [number, number], angle?: number) => GameObject;
 
@@ -251,6 +252,7 @@ export class GameScript {
             if(this.secondShipCreated === false && this.gameTime > 1000) {
                 this.secondShipCreated = true;
                 this.createAurora();
+                this.createPatriotMissileSite();
                 // this.createShip();
             }
         }
@@ -666,6 +668,9 @@ export class GameScript {
 
     createAurora() {
         return new Aurora(this.engine, [500, 200]);
+    }
+    createPatriotMissileSite() {
+        return new PatriotMissileSite(this.engine, [500, 200]);
     }
 
     createWalls() {

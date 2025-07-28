@@ -63,6 +63,7 @@ export class Aurora extends GameObject {
             17/18* this.lineSprite.length
         ], 5);
         this.airDecelerationParticles = new AirDecelerationParticles(engine, this.transform, this.lineSprite.length / 2, this.lineSprite.length);
+        this.addCollider("General", this, this.radius);
     }
 
     animate(delta: number) {
@@ -98,6 +99,7 @@ export class Aurora extends GameObject {
         this.camera.transform.pos[0] = shipXPos;
         this.camera.transform.pos[1] = shipYPos;
 
+        // visuals (animation)
         if(this.replayablePhysicsComponent.isAccelerating) {
             if(this.replayablePhysicsComponent.accelerationInformation.isDecelerating) {
                 this.leftExhaust.isDecelerating = true;
@@ -240,7 +242,8 @@ export class Aurora extends GameObject {
         // if we're already accelerating for a less sharp turn, and the turn angle changes requiring a different speed, then update
         // the acceleration and the turn angle of the next instruction
         if(
-            this.replayablePhysicsComponent.accelerationInformation?.endSpeedIfUninterrupted !== tangentSpeed
+            this.replayablePhysicsComponent.accelerationInformation?.endSpeedIfUninterrupted && 
+            this.replayablePhysicsComponent.accelerationInformation.endSpeedIfUninterrupted !== tangentSpeed
         ) {
             console.log('speed change needed', {previousEndSpeed: this.replayablePhysicsComponent.accelerationInformation?.endSpeedIfUninterrupted, newEndSpeed: tangentSpeed})
             const acceleration = this.replayablePhysicsComponent.restSpeed > tangentSpeed ? this.jetDeceleration : this.jetAcceleration;
@@ -259,7 +262,7 @@ export class Aurora extends GameObject {
             this.replayablePhysicsComponent.startAcceleration({
                 acceleration,
                 endSpeed,
-                gameTimeAccelerationStarted: gameTime,
+                gameTimeAccelerationStarted: gameTime, 
                 nextInstruction: followupInstruction
             });
         } 
@@ -293,7 +296,8 @@ export class Aurora extends GameObject {
             return;
         } 
         
-        if(
+        if(this.replayablePhysicsComponent.turnInformation?.rotationDirection !== undefined && 
+            this.replayablePhysicsComponent.turnInformation?.rotationDirection !== null &&
             isTurningRight === (this.replayablePhysicsComponent.turnInformation?.rotationDirection > 1) && 
             this.replayablePhysicsComponent.turnInformation?.endAngleFromRotationPointIfUninterrupted && 
             controlsAngleRounded !== this.replayablePhysicsComponent.turnInformation.endAngleFromRotationPointIfUninterrupted
