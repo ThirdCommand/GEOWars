@@ -8328,7 +8328,7 @@ var PatriotMissileSite = /** @class */ (function (_super) {
     function PatriotMissileSite(engine, pos) {
         var _this = _super.call(this, engine) || this;
         _this.transform.pos = pos;
-        _this.launchRange = 150; // I could have it detect earlier and turn to face before within actual range. but this is a prototype so not now
+        _this.launchRange = 75; // I could have it detect earlier and turn to face before within actual range. but this is a prototype so not now
         _this.radius = 15;
         _this.lives = 1;
         _this.exist();
@@ -8342,7 +8342,6 @@ var PatriotMissileSite = /** @class */ (function (_super) {
         // I can just animate it instead... but I'll have to have the animations be reversible
     };
     PatriotMissileSite.prototype.onCollision = function (collider, type) {
-        console.log('patriot missile collider hit', collider);
         if (type === "LaunchRange") {
             this.startLaunchSequence();
         }

@@ -20,7 +20,7 @@ export class PatriotMissileSite extends GameObject {
     constructor(engine: GameEngine | AnimationView, pos: [number, number]) {
         super(engine);
         this.transform.pos = pos;
-        this.launchRange = 150; // I could have it detect earlier and turn to face before within actual range. but this is a prototype so not now
+        this.launchRange = 75; // I could have it detect earlier and turn to face before within actual range. but this is a prototype so not now
         this.radius = 15;
         this.lives = 1;
         this.exist();
@@ -36,7 +36,6 @@ export class PatriotMissileSite extends GameObject {
     }
 
     onCollision(collider: Collider, type: string){
-        console.log('patriot missile collider hit', collider)
         if (type === "LaunchRange"){
             this.startLaunchSequence();
         } 
