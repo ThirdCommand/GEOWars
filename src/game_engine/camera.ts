@@ -55,20 +55,20 @@ export class Camera {
         ctx.clearRect(
             -this.cameraHeight,
             -this.cameraWidth,
-            this.cameraHeight * this.zoomScale * 4,
-            this.cameraWidth * this.zoomScale * 4
+            this.cameraHeight * this.zoomScale * 40,
+            this.cameraWidth * this.zoomScale * 40
         );
         ctx.fillStyle = GameScript.BG_COLOR;
         ctx.fillRect(
             -this.cameraHeight,
             -this.cameraWidth,
-            this.cameraHeight * this.zoomScale * 4,
-            this.cameraWidth * this.zoomScale * 4
+            this.cameraHeight * this.zoomScale * 40,
+            this.cameraWidth * this.zoomScale * 40
         );
     }
 
     setZoomScale(ctx: CanvasRenderingContext2D) {
-        ctx.scale(this.zoomScale, this.zoomScale);
+        this.gameEngine.ctx.scale(this.zoomScale, this.zoomScale);
     }
 
 

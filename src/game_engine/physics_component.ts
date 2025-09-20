@@ -226,6 +226,10 @@ export class ReplayablePhysicsComponent {
             console.log('interrupting Turn to Accelerate instead')
         }
 
+        // isRotating should have been made false by the interruption of the rotation
+        this.isTurning = false;
+        this.isAccelerating = true;
+
         const isDecelerating = acceleration < 0;
         
         let currentSpeed = null;
@@ -300,9 +304,7 @@ export class ReplayablePhysicsComponent {
         // then we also need to add a new instruction for slowing down
         }
 
-        // isRotating should have been made false by the interruption of the rotation
-        this.isTurning = false;
-        this.isAccelerating = true;
+        
 
         // if interrupting in the same direction, 
         // we're just updating the end speed

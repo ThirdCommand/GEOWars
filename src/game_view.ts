@@ -13,6 +13,7 @@ export class GameView { engine: GameEngine;
     gameEditorOpened: boolean;
     initialUnmute: boolean;
     gameStarted: boolean;
+    spriteCreatorOpened: boolean;
     modelClosed: boolean;
     levelDesignLoaded: boolean;
     canvasEl: HTMLCanvasElement;
@@ -214,6 +215,7 @@ export class GameView { engine: GameEngine;
         const startButtonModal = document.getElementById("startGameModal");
         // open the level editor
         const levelEditorButton = document.getElementById("LevelEditorModal");
+        const createSprite = document.getElementById("SpriteEditor");
         
         // load a level either for level editor or for starting the game
         const loadGameDesignButtonModal = document.getElementById("loadGameDesignModal");
@@ -241,6 +243,17 @@ export class GameView { engine: GameEngine;
             setTimeout(() => {
                 this.levelDesigner.gameEditorOpened = true;
                 this.engine.gameEditorOpened = true;
+            },50);
+        };
+        createSprite.onclick = (e) => {
+            e.stopPropagation();
+            this.spriteCreatorOpened = true;
+            this.bindKeyboardKeys();
+            requestAnimationFrame(this.animate);
+            modal.style.display = "none";
+            this.modelClosed = true;
+            setTimeout(() => {
+                this.engine.spriteCreatorOpened = true;
             },50);
         };
 

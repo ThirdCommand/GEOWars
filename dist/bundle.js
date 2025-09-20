@@ -27,6 +27,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_engine_transform__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./game_engine/transform */ "./src/game_engine/transform.ts");
 /* harmony import */ var _game_objects_ClockworkGames_Machine__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./game_objects/ClockworkGames/Machine */ "./src/game_objects/ClockworkGames/Machine.ts");
 /* harmony import */ var _game_objects_ClockworkGames_SawMachine_TreeGrip__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./game_objects/ClockworkGames/SawMachine/TreeGrip */ "./src/game_objects/ClockworkGames/SawMachine/TreeGrip.ts");
+/* harmony import */ var _game_objects_StrikeTime_Enemies_Missile__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./game_objects/StrikeTime/Enemies/Missile */ "./src/game_objects/StrikeTime/Enemies/Missile.ts");
 var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from, pack) {
     if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
         if (ar || !(i in from)) {
@@ -48,6 +49,7 @@ var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from
 
 
 // import {LeftSandwich, RightSandwich} from "./game_objects/ClockworkGames/Sandwich";
+
 
 
 
@@ -89,7 +91,7 @@ var AnimationView = /** @class */ (function () {
             StartingAngle: 0,
         };
         this.overlayTextCleared = true;
-        this.addEnemy("Grabber");
+        this.addEnemy("Grunt");
     }
     AnimationView.prototype.enemyPlacerSelected = function (enemyPlacer) {
         this.clear();
@@ -245,7 +247,8 @@ var AnimationView = /** @class */ (function () {
             },
             Plate: function (pos) { return new _game_objects_ClockworkGames_Plate__WEBPACK_IMPORTED_MODULE_11__.Plate(_this, pos); },
             Machine: function (pos) { return new _game_objects_ClockworkGames_Machine__WEBPACK_IMPORTED_MODULE_13__.Machinery(_this, pos); },
-            Grabber: function (pos) { return new _game_objects_ClockworkGames_SawMachine_TreeGrip__WEBPACK_IMPORTED_MODULE_14__.TreeGrip(_this, pos); }
+            Grabber: function (pos) { return new _game_objects_ClockworkGames_SawMachine_TreeGrip__WEBPACK_IMPORTED_MODULE_14__.TreeGrip(_this, pos); },
+            Missile: function (pos) { return new _game_objects_StrikeTime_Enemies_Missile__WEBPACK_IMPORTED_MODULE_15__.Missile(_this, pos, [0, 0], new _game_engine_transform__WEBPACK_IMPORTED_MODULE_12__.Transform()); },
         };
         enemyMap[type]([100 / this.zoomScale, 100 / this.zoomScale]);
     };
@@ -2829,12 +2832,12 @@ var Camera = /** @class */ (function () {
         ctx.translate(-xPos * zoomScale + width / 2, -yPos * zoomScale + height / 2);
     };
     Camera.prototype.clearView = function (ctx) {
-        ctx.clearRect(-this.cameraHeight, -this.cameraWidth, this.cameraHeight * this.zoomScale * 4, this.cameraWidth * this.zoomScale * 4);
+        ctx.clearRect(-this.cameraHeight, -this.cameraWidth, this.cameraHeight * this.zoomScale * 40, this.cameraWidth * this.zoomScale * 40);
         ctx.fillStyle = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.BG_COLOR;
-        ctx.fillRect(-this.cameraHeight, -this.cameraWidth, this.cameraHeight * this.zoomScale * 4, this.cameraWidth * this.zoomScale * 4);
+        ctx.fillRect(-this.cameraHeight, -this.cameraWidth, this.cameraHeight * this.zoomScale * 40, this.cameraWidth * this.zoomScale * 40);
     };
     Camera.prototype.setZoomScale = function (ctx) {
-        ctx.scale(this.zoomScale, this.zoomScale);
+        this.gameEngine.ctx.scale(this.zoomScale, this.zoomScale);
     };
     return Camera;
 }());
@@ -3016,6 +3019,7 @@ var GameEngine = /** @class */ (function () {
         this.buttonState = {
             aButtonPressed: false,
             xButtonPressed: false,
+            bButtonPressed: false,
             startButtonPressed: false,
         };
         this.defaultZoomScale = 1.3;
@@ -3044,6 +3048,7 @@ var GameEngine = /** @class */ (function () {
         this.leftControlStickListeners = [];
         this.rightControlStickListeners = [];
         this.xButtonListeners = [];
+        this.bButtonListeners = [];
         this.aButtonListeners = [];
         this.startButtonListeners = [];
         this.gameScript = new _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript(this);
@@ -3056,6 +3061,7 @@ var GameEngine = /** @class */ (function () {
         this.gameEditorOpened = false;
         this.frameCountForPerformance = 0;
         this.levelDesigner = null;
+        this.spriteCreatorOpened = false;
     }
     GameEngine.prototype.addControllableGameObject = function (gameObject) {
         this.controllableGameObjects.push(gameObject);
@@ -3117,6 +3123,16 @@ var GameEngine = /** @class */ (function () {
             return;
         }
         if (this.gameEditorOpened) {
+            this.checkCollisions();
+            this.updateGameObjects(delta);
+            this.renderLineSprites(this.ctx);
+            this.addClickListenersAfterTick();
+            this.addDoubleClickListenersAfterTick();
+            this.removeClickListenersAfterTick();
+            this.removeDoubleClickListenerAfterTick();
+            return;
+        }
+        if (this.spriteCreatorOpened) {
             this.checkCollisions();
             this.updateGameObjects(delta);
             this.renderLineSprites(this.ctx);
@@ -3199,6 +3215,9 @@ var GameEngine = /** @class */ (function () {
     };
     GameEngine.prototype.addXButtonListener = function (object) {
         this.xButtonListeners.push(object);
+    };
+    GameEngine.prototype.addBButtonListener = function (object) {
+        this.bButtonListeners.push(object);
     };
     GameEngine.prototype.addStartButtonListener = function (object) {
         this.startButtonListeners.push(object);
@@ -3351,6 +3370,12 @@ var GameEngine = /** @class */ (function () {
             listener.updateXButtonListener(xButton);
         });
     };
+    GameEngine.prototype.updateBButtonListeners = function (bButton) {
+        console.log('B button pressed');
+        this.bButtonListeners.forEach(function (listener) {
+            listener.updateBButtonListener(bButton);
+        });
+    };
     GameEngine.prototype.updateAButtonListeners = function (aButton) {
         this.aButtonListeners.forEach(function (listener) {
             listener.updateAButtonListener(aButton);
@@ -3391,10 +3416,16 @@ var GameEngine = /** @class */ (function () {
             var leftAxis = [this.controller.axes[0], this.controller.axes[1]];
             var rightAxis = [this.controller.axes[2], this.controller.axes[3]];
             var aButton = this.controller.buttons[0].pressed;
+            var bButton = this.controller.buttons[3].pressed;
+            console.log(this.controller.buttons);
             // const xButton: boolean = this.controller.buttons[0].pressed;
             if (this.buttonState.aButtonPressed !== aButton) {
                 this.buttonState.aButtonPressed = aButton;
                 this.updateAButtonListeners(aButton);
+            }
+            if (this.buttonState.bButtonPressed !== bButton) {
+                this.buttonState.bButtonPressed = bButton;
+                this.updateBButtonListeners(bButton);
             }
             var startButton = this.controller.buttons[9].pressed;
             // this.updateStartButtonListeners(aButton);
@@ -3673,10 +3704,15 @@ var GameObject = /** @class */ (function () {
         if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
             this.gameEngine.addXButtonListener(this);
     };
+    GameObject.prototype.addBButtonListener = function () {
+        if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
+            this.gameEngine.addBButtonListener(this);
+    };
     GameObject.prototype.addStartButtonListener = function () {
         if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
             this.gameEngine.addStartButtonListener(this);
     };
+    GameObject.prototype.updateBButtonListener = function (pressed) { console.log('overwrite updateBButtonListener for functionality'); };
     GameObject.prototype.updateRightControlFocussedStickInput = function (direction) { console.log(direction, 'overwrite updateRightControlFocussedStickInput'); }; // TODO include object name
     GameObject.prototype.updateLeftControlFocussedStickInput = function (direction, pressed) { console.log(direction, pressed, 'overwrite updateLeftControlFocussedStickInput'); }; // TODO include object name;
     GameObject.prototype.updateRightControlStickInput = function (direction) { return console.log(direction, 'overwright updateRightControlStickInput'); }; // TODO include object name
@@ -3898,6 +3934,9 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
         if (this.isTurning) {
             console.log('interrupting Turn to Accelerate instead');
         }
+        // isRotating should have been made false by the interruption of the rotation
+        this.isTurning = false;
+        this.isAccelerating = true;
         var isDecelerating = acceleration < 0;
         var currentSpeed = null;
         var velocityAngle = null;
@@ -3958,9 +3997,6 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
             // if it was decelerating but is now accelerating, 
             // then we also need to add a new instruction for slowing down
         }
-        // isRotating should have been made false by the interruption of the rotation
-        this.isTurning = false;
-        this.isAccelerating = true;
         // if interrupting in the same direction, 
         // we're just updating the end speed
         // the start time of the acceleration seems to be required to be handled for replay somewhere else
@@ -4383,6 +4419,8 @@ function norm(vec) {
 function randomVec(length) {
     var deg = 2 * Math.PI * Math.random();
     return scale([Math.sin(deg), Math.cos(deg)], length);
+}
+function angleBetweenVectors2(vector1, vector2) {
 }
 function scale(vec, m) {
     if (vec.length === 3) {
@@ -7266,7 +7304,7 @@ var Ship = /** @class */ (function (_super) {
                 var _xPosition = this.transform.pos[0];
                 console.log({ _width: _width, _height: _height, _zoomScale: _zoomScale, _xPosition: _xPosition, _yPosition: _yPosition });
                 this.gameEngine.ctx.translate(((_xPosition * _zoomScale - _width / (2))), ((_yPosition * _zoomScale - _height / (2))));
-                this.gameEngine.zoomScale = 1;
+                this.gameEngine.activeCamera.zoomScale = 1;
             }
             this.gameEditorHasBeenOpened = true;
             return;
@@ -7739,6 +7777,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_engine_camera__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../game_engine/camera */ "./src/game_engine/camera.ts");
 /* harmony import */ var _EngineExhaust__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./EngineExhaust */ "./src/game_objects/StrikeTime/Aurora/EngineExhaust.ts");
 /* harmony import */ var _AirDecelerationParticles__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./AirDecelerationParticles */ "./src/game_objects/StrikeTime/Aurora/AirDecelerationParticles.ts");
+/* harmony import */ var _Bombs_BombBasic__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../Bombs/BombBasic */ "./src/game_objects/StrikeTime/Bombs/BombBasic.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -7761,6 +7800,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
+
 var Aurora = /** @class */ (function (_super) {
     __extends(Aurora, _super);
     function Aurora(engine, pos, angle) {
@@ -7771,10 +7811,11 @@ var Aurora = /** @class */ (function (_super) {
         _this.transform.pos = pos;
         _this.transform.angle = angle;
         _this.transform.vel = [0, 0];
-        _this.radius = 40;
+        _this.radius = 30;
         _this.minSpeed = 1;
         _this.maxSpeed = 0.025 * 6;
         _this.controlsDirection = [0, 0];
+        _this.bombRefreshTime = 0;
         _this.jetAcceleration = 0.0001;
         _this.jetDeceleration = -0.00035;
         _this.jetDeceleration = -0.0001;
@@ -7784,6 +7825,7 @@ var Aurora = /** @class */ (function (_super) {
         _this.isAccelerating = false;
         _this.camera = new _game_engine_camera__WEBPACK_IMPORTED_MODULE_4__.Camera(engine, new _game_engine_transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, [pos[0], pos[1]]), "Aurora Camera");
         _this.setAsControllableGameObject();
+        _this.addBButtonListener();
         _this.addReplayablePhysicsComponent();
         _this.addLineSprite(new AuroraSprite(_this.transform));
         _this.leftExhaust = new _EngineExhaust__WEBPACK_IMPORTED_MODULE_5__.EngineExhaust(engine, _this.transform, [
@@ -7798,6 +7840,12 @@ var Aurora = /** @class */ (function (_super) {
         _this.addCollider("General", _this, _this.radius);
         return _this;
     }
+    Aurora.prototype.updateBButtonListener = function (bButton) {
+        if (bButton && this.bombRefreshTime > 2000) {
+            new _Bombs_BombBasic__WEBPACK_IMPORTED_MODULE_7__.BombBasic(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], [0, 0.05]);
+            this.bombRefreshTime = 0;
+        }
+    };
     Aurora.prototype.animate = function (delta) {
         var movementDirection = 0;
         if (this.transform.vel[0] === 0 && this.transform.vel[1] === 0) {
@@ -7809,6 +7857,7 @@ var Aurora = /** @class */ (function (_super) {
         this.transform.angle = movementDirection;
     };
     Aurora.prototype.update = function (delta) {
+        this.bombRefreshTime += delta;
         if (this.controlsAngle !== null) {
             // compare angle with controls angle
             // if angle is greater than 
@@ -8291,16 +8340,16 @@ var EngineExhaust = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./src/game_objects/StrikeTime/Enemies/PatriotMissileSite.ts":
-/*!*******************************************************************!*\
-  !*** ./src/game_objects/StrikeTime/Enemies/PatriotMissileSite.ts ***!
-  \*******************************************************************/
+/***/ "./src/game_objects/StrikeTime/Bombs/BombBasic.ts":
+/*!********************************************************!*\
+  !*** ./src/game_objects/StrikeTime/Bombs/BombBasic.ts ***!
+  \********************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   PatriotMissileSite: () => (/* binding */ PatriotMissileSite),
-/* harmony export */   PatriotMissileSiteSprite: () => (/* binding */ PatriotMissileSiteSprite)
+/* harmony export */   BombBasic: () => (/* binding */ BombBasic),
+/* harmony export */   BombSprite: () => (/* binding */ BombSprite)
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
 /* harmony import */ var _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.ts");
@@ -8323,14 +8372,394 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
+var BombBasic = /** @class */ (function (_super) {
+    __extends(BombBasic, _super);
+    function BombBasic(engine, pos, vel) {
+        var _this = _super.call(this, engine) || this;
+        _this.transform.pos = pos;
+        _this.transform.vel = vel;
+        _this.exist();
+        _this.speed = 0.2;
+        _this.bombTime = 0;
+        _this.bombFuseTime = 3000;
+        _this.spinSpeed = 0.05;
+        _this.addReplayablePhysicsComponent();
+        _this.addLineSprite(new BombSprite(_this.transform));
+        return _this;
+    }
+    BombBasic.prototype.exist = function () {
+        this.addCollider("General", this, this.radius);
+    };
+    BombBasic.prototype.explode = function () {
+        console.log('Aurora Killed/Hit');
+        new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]]);
+        this.remove();
+    };
+    BombBasic.prototype.update = function (deltaTime) {
+        this.animate(deltaTime);
+        this.bombTime += deltaTime;
+        if (this.bombTime >= this.bombFuseTime) {
+            this.explode();
+        }
+    };
+    BombBasic.prototype.animate = function (timeDelta) {
+        var rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
+        this.transform.angle = (this.transform.angle + this.spinSpeed * rotationSpeedScale) % (Math.PI * 2);
+    };
+    return BombBasic;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
+
+var NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+var BombSprite = /** @class */ (function (_super) {
+    __extends(BombSprite, _super);
+    function BombSprite(transform) {
+        var _this = _super.call(this, transform) || this;
+        _this.w = 3;
+        return _this;
+    }
+    BombSprite.prototype.draw = function (ctx) {
+        ctx.save();
+        this.drawBombBasic(ctx);
+        ctx.restore();
+    };
+    BombSprite.prototype.drawBombBasic = function (ctx) {
+        ctx.strokeStyle = "#32a8a8";
+        ctx.lineWidth = 1;
+        var w = this.w;
+        var pos = this.transform.absolutePosition();
+        ctx.translate(pos[0], pos[1]);
+        ctx.rotate(this.transform.angle);
+        ctx.fillStyle = "#FFFFFF";
+        ctx.beginPath();
+        ctx.moveTo(0, 3 * w); // 10
+        ctx.lineTo(3 * w, 0); // 13
+        ctx.lineTo(0, -3 * w); // 16
+        ctx.lineTo(-3 * w, 0); // 19
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-3.5 * w, -2.5 * w); // 5
+        ctx.lineTo(2.5 * w, 3.5 * w); // 6
+        ctx.lineTo(3.5 * w, 2.5 * w); // 7
+        ctx.lineTo(-2.5 * w, -3.5 * w); // 8
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(-3.5 * w, 2.5 * w); // 1
+        ctx.lineTo(-2.5 * w, 3.5 * w); // 2
+        ctx.lineTo(3.5 * w, -2.5 * w); // 3
+        ctx.lineTo(2.5 * w, -3.5 * w); // 4
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+    };
+    return BombSprite;
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__.LineSprite));
+
+
+
+/***/ }),
+
+/***/ "./src/game_objects/StrikeTime/Enemies/Missile.ts":
+/*!********************************************************!*\
+  !*** ./src/game_objects/StrikeTime/Enemies/Missile.ts ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Missile: () => (/* binding */ Missile),
+/* harmony export */   MissileSprite: () => (/* binding */ MissileSprite)
+/* harmony export */ });
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+/* harmony import */ var _MissileExhaust__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./MissileExhaust */ "./src/game_objects/StrikeTime/Enemies/MissileExhaust.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+
+var Missile = /** @class */ (function (_super) {
+    __extends(Missile, _super);
+    function Missile(engine, pos, vel, planeLockedOn) {
+        var _this = _super.call(this, engine) || this;
+        _this.transform.pos = pos;
+        _this.transform.vel = vel;
+        _this.explodeRange = 3; // I could have it detect earlier and turn to face before within actual range. but this is a prototype so not now
+        _this.radius = 5; // visual range, where it would be acceptable for something to be considering hitting it
+        _this.exist();
+        _this.lives = 1;
+        _this.speed = 0.1;
+        _this.planeLockedOnTransform = planeLockedOn;
+        _this.addReplayablePhysicsComponent();
+        _this.addLineSprite(new MissileSprite(_this.transform));
+        _this.exhaust = new _MissileExhaust__WEBPACK_IMPORTED_MODULE_3__.MissileExhaust(engine, _this.transform, [
+            -_this.lineSprite.w / 2,
+            1.1 * _this.lineSprite.l
+        ], _this.lineSprite.w);
+        return _this;
+    }
+    Missile.prototype.exist = function () {
+        this.addCollider("General", this, this.radius);
+        this.addCollider("ExplodeRange", this, this.explodeRange, ["Aurora"], ["General"]);
+        // this doesn't actually move... so I don't think I need a physics component...
+        // I can just animate it instead... but I'll have to have the animations be reversible
+    };
+    Missile.prototype.chase = function (timeDelta) {
+        var speed = this.speed;
+        var planePosition = this.planeLockedOnTransform.pos;
+        var pos = this.transform.pos;
+        var dy = planePosition[1] - pos[1];
+        var dx = planePosition[0] - pos[0];
+        var velocityScale = timeDelta * 0.8;
+        var direction = Math.atan2(dy, dx);
+        this.transform.pos[0] += speed * Math.cos(direction) * velocityScale;
+        this.transform.pos[1] += speed * Math.sin(direction) * velocityScale;
+    };
+    Missile.prototype.onCollision = function (collider, type) {
+        if (type === "ExplodeRange") {
+            this.explode(collider);
+        }
+    };
+    Missile.prototype.explode = function (collider) {
+        console.log('Aurora Killed/Hit');
+        new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]]);
+        this.exhaust.remove();
+        this.remove();
+        // create missiles at the fire rate while still in range
+        // will have to be done reversibly
+    };
+    Missile.prototype.hit = function () {
+        this.lives -= 1;
+        var pos = this.transform.absolutePosition();
+        if (this.lives <= 0) {
+            new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, pos);
+            this.remove();
+        }
+        // if not dead, I can have a different type of explosion
+    };
+    Missile.prototype.update = function (deltaTime) {
+        this.animate(deltaTime);
+        this.chase(deltaTime);
+        var movementDirection = 0;
+        if (this.transform.vel[0] === 0 && this.transform.vel[1] === 0) {
+            movementDirection = this.transform.angle;
+        }
+        else {
+            movementDirection = Math.atan2(this.transform.vel[0], -this.transform.vel[1]);
+        }
+        this.transform.angle = movementDirection - Math.PI / 2;
+        // missile tracking will have to be reversible
+        // honestly seems pretty shitty tough
+    };
+    Missile.prototype.animate = function (timeDelta) {
+        // I should stick to no animation for now
+        // for my own sanity
+    };
+    return Missile;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
+
+var NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+var MissileSprite = /** @class */ (function (_super) {
+    __extends(MissileSprite, _super);
+    function MissileSprite(transform) {
+        var _this = _super.call(this, transform) || this;
+        _this.l = 10;
+        _this.w = 2;
+        return _this;
+    }
+    MissileSprite.prototype.draw = function (ctx) {
+        ctx.save();
+        this.drawMissile(ctx);
+        ctx.restore();
+    };
+    MissileSprite.prototype.drawMissile = function (ctx) {
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.lineWidth = 1;
+        var l = this.l;
+        var w = this.w;
+        var n = w;
+        var pos = this.transform.absolutePosition();
+        ctx.translate(pos[0], pos[1]);
+        ctx.rotate(this.transform.angle);
+        ctx.beginPath();
+        ctx.moveTo(-l, -w / 2); // 4
+        ctx.lineTo(0, -w / 2); // 5
+        ctx.lineTo(n, 0); // 1
+        ctx.lineTo(0, w / 2); // 2
+        ctx.lineTo(-l, w / 2); // 3
+        ctx.stroke();
+    };
+    return MissileSprite;
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__.LineSprite));
+
+
+
+/***/ }),
+
+/***/ "./src/game_objects/StrikeTime/Enemies/MissileExhaust.ts":
+/*!***************************************************************!*\
+  !*** ./src/game_objects/StrikeTime/Enemies/MissileExhaust.ts ***!
+  \***************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   MissileExhaust: () => (/* binding */ MissileExhaust)
+/* harmony export */ });
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/color */ "./src/game_engine/color.ts");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
+/* harmony import */ var _particles_particle__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/particle */ "./src/game_objects/particles/particle.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+
+/*
+    ^
+   | |
+   | |
+    
+   |||
+*/
+var MissileExhaust = /** @class */ (function (_super) {
+    __extends(MissileExhaust, _super);
+    // the position of the exhaust is the middle of the exhaust
+    function MissileExhaust(engine, transform, position, width) {
+        var _this = _super.call(this, engine) || this;
+        _this.transform = transform;
+        _this.noAccelerationHue = 50;
+        _this.isAccelerating = false;
+        _this.acceleratingHue = 300;
+        _this.colorRange = 40;
+        _this.baseOpacity = 0.6;
+        _this.opacityRange = 0.35;
+        _this.maxParticleCount = 20;
+        _this.currentParticleCount = 0;
+        _this.positionOnMissile = position;
+        _this.width = width;
+        _this.currentTime = 0;
+        _this.exhaustRate = 100;
+        _this.isDecelerating = false;
+        return _this;
+    }
+    // every so often, make more particles
+    MissileExhaust.prototype.animate = function (deltaTime) {
+    };
+    MissileExhaust.prototype.update = function (deltaTime) {
+        this.currentTime += deltaTime;
+        if (this.currentTime > this.exhaustRate) {
+            this.currentTime = 0;
+            var numberToCreate = 10;
+            if (!this.isDecelerating) {
+                for (var i = 0; i < numberToCreate; i++) {
+                    this.addMissileExhaustParticle();
+                }
+            }
+        }
+    };
+    MissileExhaust.prototype.addMissileExhaustParticle = function () {
+        var linePosition = Math.random() * this.width - this.width / 2;
+        var angle = this.transform.angle;
+        // const position: [number, number] = [
+        //     this.transform.pos[0] + (this.positionOnMissile[0] + linePosition) * Math.cos(angle - Math.PI),
+        //     this.transform.pos[1] + -(this.positionOnMissile[1]) * Math.sin(angle)
+        // ]
+        var exhaustPositionAngle = Math.atan2(this.positionOnMissile[1], this.positionOnMissile[0] + linePosition) - Math.PI / 2;
+        var exhaustPositionLength = Math.sqrt(Math.pow(this.positionOnMissile[0], 2) + Math.pow((this.positionOnMissile[1] + linePosition), 2));
+        var position = [
+            this.transform.pos[0] - exhaustPositionLength * Math.cos(angle + exhaustPositionAngle),
+            this.transform.pos[1] - exhaustPositionLength * Math.sin(angle + exhaustPositionAngle)
+        ];
+        var initialSpeed = this.isAccelerating ? Math.random() * 1.5 + 6 : Math.random() * 0.5 + 1;
+        var initialVelocity = [initialSpeed * Math.cos(angle + Math.PI), initialSpeed * Math.sin(angle + Math.PI)];
+        var hue = this.isAccelerating ? (0,_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.getNumberFromRange)(this.acceleratingHue, this.colorRange) : (0,_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.getNumberFromRange)(this.noAccelerationHue, this.colorRange);
+        var opacity = (0,_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.getNumberFromRange)(this.baseOpacity, this.opacityRange);
+        var color = new _game_engine_color__WEBPACK_IMPORTED_MODULE_0__.Color("hsla", [hue, 100, 50, opacity]);
+        new _particles_particle__WEBPACK_IMPORTED_MODULE_3__.Particle(this.gameEngine, position, initialVelocity, color, null, -0.045 * 2, 0.005);
+    };
+    return MissileExhaust;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
+
+
+
+/***/ }),
+
+/***/ "./src/game_objects/StrikeTime/Enemies/PatriotMissileSite.ts":
+/*!*******************************************************************!*\
+  !*** ./src/game_objects/StrikeTime/Enemies/PatriotMissileSite.ts ***!
+  \*******************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   PatriotMissileSite: () => (/* binding */ PatriotMissileSite),
+/* harmony export */   PatriotMissileSiteSprite: () => (/* binding */ PatriotMissileSiteSprite)
+/* harmony export */ });
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+/* harmony import */ var _Missile__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Missile */ "./src/game_objects/StrikeTime/Enemies/Missile.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+
 var PatriotMissileSite = /** @class */ (function (_super) {
     __extends(PatriotMissileSite, _super);
     function PatriotMissileSite(engine, pos) {
         var _this = _super.call(this, engine) || this;
         _this.transform.pos = pos;
-        _this.launchRange = 75; // I could have it detect earlier and turn to face before within actual range. but this is a prototype so not now
+        _this.launchRange = 100; // I could have it detect earlier and turn to face before within actual range. but this is a prototype so not now
         _this.radius = 15;
         _this.lives = 1;
+        _this.launched = false;
         _this.exist();
         _this.addLineSprite(new PatriotMissileSiteSprite(_this.transform));
         return _this;
@@ -8343,10 +8772,25 @@ var PatriotMissileSite = /** @class */ (function (_super) {
     };
     PatriotMissileSite.prototype.onCollision = function (collider, type) {
         if (type === "LaunchRange") {
-            this.startLaunchSequence();
+            this.startLaunchSequence(collider);
         }
     };
-    PatriotMissileSite.prototype.startLaunchSequence = function () {
+    PatriotMissileSite.prototype.startLaunchSequence = function (airplaneDetected) {
+        if (!this.launched) {
+            console.log('launching');
+            this.launched = true;
+            var airplanePosition = airplaneDetected.gameObject.transform.pos;
+            var ourPosition = this.transform.pos;
+            var dy = airplanePosition[1] - ourPosition[1];
+            var dx = airplanePosition[0] - ourPosition[0];
+            var direction = Math.atan2(dy, dx);
+            var missileSpeed = 0.1;
+            var vel = [
+                missileSpeed * Math.cos(direction),
+                missileSpeed * Math.sin(direction)
+            ];
+            var launchedMissile = new _Missile__WEBPACK_IMPORTED_MODULE_3__.Missile(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], vel, airplaneDetected.gameObject.transform);
+        }
         console.log('launch missile sequencing');
         // create missiles at the fire rate while still in range
         // will have to be done reversibly
@@ -12399,6 +12843,7 @@ var GameScript = /** @class */ (function () {
         this.overlay = this.createOverlay();
         this.enemyCreatorMap = this.createEnemyCreators();
         this.engine.addXButtonListener(this);
+        this.engine.addBButtonListener(this);
         this.sequenceTypes = this.addSequenceTypes();
         this.deathPausedTime = 0;
         this.deathPaused = true;
@@ -12498,6 +12943,18 @@ var GameScript = /** @class */ (function () {
         }
     };
     GameScript.prototype.updateXButtonListener = function (pressed) {
+        // if (pressed) {
+        //     if (this.engine.paused) {
+        //         const modal = document.getElementById("endModal");
+        //         modal.style.display = "none";
+        //         this.engine.paused = false;
+        //         if (!this.engine.muted) {
+        //             this.engine.gameScript.theme.play();
+        //         }
+        //     }
+        // }
+    };
+    GameScript.prototype.updateBButtonListener = function (pressed) {
         // if (pressed) {
         //     if (this.engine.paused) {
         //         const modal = document.getElementById("endModal");
@@ -12912,7 +13369,7 @@ var GameScript = /** @class */ (function () {
         return new _game_objects_StrikeTime_Aurora_Aurora__WEBPACK_IMPORTED_MODULE_26__.Aurora(this.engine, [500, 200]);
     };
     GameScript.prototype.createPatriotMissileSite = function () {
-        return new _game_objects_StrikeTime_Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_27__.PatriotMissileSite(this.engine, [500, 200]);
+        return new _game_objects_StrikeTime_Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_27__.PatriotMissileSite(this.engine, [150, 150]);
     };
     GameScript.prototype.createWalls = function () {
         return new _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_2__.Walls(this.engine);
@@ -13210,6 +13667,7 @@ var GameView = /** @class */ (function () {
         var startButtonModal = document.getElementById("startGameModal");
         // open the level editor
         var levelEditorButton = document.getElementById("LevelEditorModal");
+        var createSprite = document.getElementById("SpriteEditor");
         // load a level either for level editor or for starting the game
         var loadGameDesignButtonModal = document.getElementById("loadGameDesignModal");
         // get the text from element: loadGameDesignInputModal
@@ -13234,6 +13692,17 @@ var GameView = /** @class */ (function () {
             setTimeout(function () {
                 _this.levelDesigner.gameEditorOpened = true;
                 _this.engine.gameEditorOpened = true;
+            }, 50);
+        };
+        createSprite.onclick = function (e) {
+            e.stopPropagation();
+            _this.spriteCreatorOpened = true;
+            _this.bindKeyboardKeys();
+            requestAnimationFrame(_this.animate);
+            modal.style.display = "none";
+            _this.modelClosed = true;
+            setTimeout(function () {
+                _this.engine.spriteCreatorOpened = true;
             }, 50);
         };
         loadGameDesignButtonModal.onclick = function (e) {

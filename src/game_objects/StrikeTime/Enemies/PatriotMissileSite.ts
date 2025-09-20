@@ -7,6 +7,8 @@ import { type Aurora } from "../Aurora/Aurora";
 import { LineSprite, Spawnable } from "../../../game_engine/line_sprite";
 import { type Transform } from "../../../game_engine/transform";
 import { type AnimationView } from "../../../AnimationView";
+import { MissileExhaust } from "./MissileExhaust";
+import { Missile } from "./Missile";
 
 type TargetableObject = Aurora;
 
@@ -16,13 +18,15 @@ export class PatriotMissileSite extends GameObject {
     increasing: boolean;
     lineSprite: PatriotMissileSiteSprite;
     lives: number;
+    launched: boolean;
 
     constructor(engine: GameEngine | AnimationView, pos: [number, number]) {
         super(engine);
         this.transform.pos = pos;
-        this.launchRange = 75; // I could have it detect earlier and turn to face before within actual range. but this is a prototype so not now
+        this.launchRange = 100; // I could have it detect earlier and turn to face before within actual range. but this is a prototype so not now
         this.radius = 15;
         this.lives = 1;
+        this.launched = false;
         this.exist();
 
         this.addLineSprite(new PatriotMissileSiteSprite(this.transform));
@@ -37,11 +41,29 @@ export class PatriotMissileSite extends GameObject {
 
     onCollision(collider: Collider, type: string){
         if (type === "LaunchRange"){
-            this.startLaunchSequence();
+            this.startLaunchSequence(collider);
         } 
     }
 
-    startLaunchSequence() {
+    startLaunchSequence(airplaneDetected: Collider) {
+
+        if(!this.launched) {
+            console.log('launching');
+            this.launched = true;
+            const airplanePosition = airplaneDetected.gameObject.transform.pos;
+            const ourPosition = this.transform.pos;
+            const dy = airplanePosition[1] - ourPosition[1];
+            const dx = airplanePosition[0] - ourPosition[0];
+            const direction = Math.atan2(dy, dx);
+
+            const missileSpeed = 0.1;
+
+            const vel: [number, number] = [
+                missileSpeed * Math.cos(direction),
+                missileSpeed * Math.sin(direction)
+            ]
+            const launchedMissile = new Missile(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], vel, airplaneDetected.gameObject.transform)
+        }
         console.log('launch missile sequencing')
         // create missiles at the fire rate while still in range
         // will have to be done reversibly

@@ -6,6 +6,7 @@ import { Camera } from "../../../game_engine/camera";
 import {NextInstructionAccelerate, NextInstructionTurn} from "../../../game_engine/physics_component"
 import { EngineExhaust } from "./EngineExhaust";
 import { AirDecelerationParticles } from "./AirDecelerationParticles";
+import { BombBasic } from "../Bombs/BombBasic";
 
 export class Aurora extends GameObject {
     lineSprite: AuroraSprite;
@@ -23,6 +24,7 @@ export class Aurora extends GameObject {
     leftExhaust: EngineExhaust
     rightExhaust: EngineExhaust
     airDecelerationParticles: AirDecelerationParticles;
+    bombRefreshTime: number;
 
     constructor(
         engine: GameEngine,
@@ -34,10 +36,12 @@ export class Aurora extends GameObject {
         this.transform.angle = angle;
         this.transform.vel = [0, 0];
 
-        this.radius = 40;
+        this.radius = 30;
         this.minSpeed = 1;
         this.maxSpeed = 0.025 * 6;
         this.controlsDirection = [0,0];
+
+        this.bombRefreshTime = 0;
 
         this.jetAcceleration =  0.0001;
         this.jetDeceleration = -0.00035;
@@ -50,6 +54,7 @@ export class Aurora extends GameObject {
 
         this.camera = new Camera(engine, new Transform(null, [pos[0], pos[1]]), "Aurora Camera");
         this.setAsControllableGameObject();
+        this.addBButtonListener();
         this.addReplayablePhysicsComponent();
         this.addLineSprite(new AuroraSprite(this.transform));
 
@@ -66,6 +71,13 @@ export class Aurora extends GameObject {
         this.addCollider("General", this, this.radius);
     }
 
+    updateBButtonListener(bButton: boolean) {
+        if(bButton && this.bombRefreshTime > 2000) {
+            new BombBasic(this.gameEngine,[this.transform.pos[0], this.transform.pos[1]], [0,0.05])
+            this.bombRefreshTime = 0;
+        }
+    }
+
     animate(delta: number) {
         let movementDirection = 0;
         if(this.transform.vel[0] === 0 && this.transform.vel[1] === 0) {
@@ -79,7 +91,7 @@ export class Aurora extends GameObject {
         this.transform.angle = movementDirection;
     }
     update(delta: number) {
-
+        this.bombRefreshTime += delta;
         if(this.controlsAngle !== null) {
             // compare angle with controls angle
             // if angle is greater than 

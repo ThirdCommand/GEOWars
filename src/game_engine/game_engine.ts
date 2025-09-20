@@ -43,6 +43,9 @@ interface RightControlStickListenable {
 interface XButtonListenable {
     updateXButtonListener(pressed: boolean): void
 }
+interface BButtonListenable {
+    updateBButtonListener(pressed: boolean): void
+}
 interface AButtonListenable {
     updateAButtonListener(pressed: boolean): void
 }
@@ -59,6 +62,7 @@ export class GameEngine {
         aButtonPressed: boolean;
         xButtonPressed: boolean;
         startButtonPressed: boolean;
+        bButtonPressed: boolean;
     }
     isControllerConnected: boolean = false;
     cameras: Camera[];
@@ -95,8 +99,11 @@ export class GameEngine {
     leftControlStickFocussedListeners: LeftControlStickListenable[]; 
     rightControlStickListeners: RightControlStickListenable[]; 
     xButtonListeners: XButtonListenable[]; 
+    bButtonListeners: BButtonListenable[]; 
     aButtonListeners: AButtonListenable[]; 
     startButtonListeners: StartButtonListenable[]; 
+
+    spriteCreatorOpened: boolean;
 
     gameScript: GameScript;
     paused: boolean;
@@ -125,6 +132,7 @@ export class GameEngine {
         this.buttonState = {
             aButtonPressed: false,
             xButtonPressed: false,
+            bButtonPressed: false,
             startButtonPressed: false,
         };
         this.defaultZoomScale = 1.3;
@@ -157,6 +165,7 @@ export class GameEngine {
         this.leftControlStickListeners = [];
         this.rightControlStickListeners = [];
         this.xButtonListeners = [];
+        this.bButtonListeners = [];
         this.aButtonListeners = [];
         this.startButtonListeners = [];
         this.gameScript = new GameScript(this);
@@ -170,6 +179,7 @@ export class GameEngine {
         this.gameEditorOpened = false;
         this.frameCountForPerformance = 0;
         this.levelDesigner = null;
+        this.spriteCreatorOpened = false;
     }
 
     addControllableGameObject(gameObject: GameObject) {
@@ -237,6 +247,18 @@ export class GameEngine {
         }
 
         if(this.gameEditorOpened) {
+            this.checkCollisions();
+            this.updateGameObjects(delta);
+            this.renderLineSprites(this.ctx);
+
+            this.addClickListenersAfterTick();
+            this.addDoubleClickListenersAfterTick();
+            this.removeClickListenersAfterTick();
+            this.removeDoubleClickListenerAfterTick();
+            return;
+        }
+
+        if(this.spriteCreatorOpened) {
             this.checkCollisions();
             this.updateGameObjects(delta);
             this.renderLineSprites(this.ctx);
@@ -349,6 +371,10 @@ export class GameEngine {
 
     addXButtonListener(object: XButtonListenable) {
         this.xButtonListeners.push(object);
+    }
+
+    addBButtonListener(object: BButtonListenable) {
+        this.bButtonListeners.push(object);
     }
 
     addStartButtonListener(object: StartButtonListenable) {
@@ -514,6 +540,13 @@ export class GameEngine {
         });
     }
 
+    updateBButtonListeners(bButton: boolean) {
+        console.log('B button pressed');
+        this.bButtonListeners.forEach((listener) => {
+            listener.updateBButtonListener(bButton);
+        });
+    }
+
     updateAButtonListeners(aButton: boolean) { 
         this.aButtonListeners.forEach((listener) => {
             listener.updateAButtonListener(aButton);
@@ -560,10 +593,17 @@ export class GameEngine {
             const leftAxis: [number, number] = [this.controller.axes[0], this.controller.axes[1]];
             const rightAxis: [number, number] = [this.controller.axes[2], this.controller.axes[3]];
             const aButton: boolean = this.controller.buttons[0].pressed;
+            const bButton: boolean = this.controller.buttons[3].pressed;
+            console.log(this.controller.buttons);
             // const xButton: boolean = this.controller.buttons[0].pressed;
             if(this.buttonState.aButtonPressed !== aButton) {
                 this.buttonState.aButtonPressed = aButton;
                 this.updateAButtonListeners(aButton);
+            }
+            
+            if(this.buttonState.bButtonPressed !== bButton) {
+                this.buttonState.bButtonPressed = bButton;
+                this.updateBButtonListeners(bButton);
             }
             
             const startButton: boolean = this.controller.buttons[9].pressed;

@@ -106,11 +106,19 @@ export abstract class GameObject implements controllable{
             this.gameEngine.addXButtonListener(this);
     }
 
+    addBButtonListener() {
+        if(this.gameEngine instanceof GameEngine)
+            this.gameEngine.addBButtonListener(this);
+    }
+
+
 
     addStartButtonListener() {
         if(this.gameEngine instanceof GameEngine)
             this.gameEngine.addStartButtonListener(this);
     }
+
+    updateBButtonListener(pressed: boolean) { console.log('overwrite updateBButtonListener for functionality'); }
 
     updateRightControlFocussedStickInput(direction: [number, number]) {console.log(direction, 'overwrite updateRightControlFocussedStickInput');} // TODO include object name
 

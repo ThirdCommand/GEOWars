@@ -109,6 +109,7 @@ export class GameScript {
         this.overlay = this.createOverlay();
         this.enemyCreatorMap = this.createEnemyCreators();
         this.engine.addXButtonListener(this);
+        this.engine.addBButtonListener(this);
         this.sequenceTypes = this.addSequenceTypes();
         this.deathPausedTime = 0;
         this.deathPaused = true;
@@ -218,6 +219,20 @@ export class GameScript {
     }
 
     updateXButtonListener(pressed: boolean) {
+        // if (pressed) {
+        //     if (this.engine.paused) {
+        //         const modal = document.getElementById("endModal");
+
+        //         modal.style.display = "none";
+        //         this.engine.paused = false;
+        //         if (!this.engine.muted) {
+        //             this.engine.gameScript.theme.play();
+        //         }
+        //     }
+        // }
+    }
+
+    updateBButtonListener(pressed: boolean) {
         // if (pressed) {
         //     if (this.engine.paused) {
         //         const modal = document.getElementById("endModal");
@@ -670,7 +685,7 @@ export class GameScript {
         return new Aurora(this.engine, [500, 200]);
     }
     createPatriotMissileSite() {
-        return new PatriotMissileSite(this.engine, [500, 200]);
+        return new PatriotMissileSite(this.engine, [150, 150]);
     }
 
     createWalls() {

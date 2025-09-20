@@ -123,7 +123,7 @@ export class Ship extends GameObject {
                     ((_xPosition*_zoomScale - _width/(2))) ,
                     ((_yPosition*_zoomScale - _height/(2)))
                 );
-                this.gameEngine.zoomScale = 1;
+                this.gameEngine.activeCamera.zoomScale = 1 
             }
             this.gameEditorHasBeenOpened = true;
             return;

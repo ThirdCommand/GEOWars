@@ -56,6 +56,10 @@ function randomVec(length: number): [number, number] {
     return scale([Math.sin(deg), Math.cos(deg)], length);
 }
 
+function angleBetweenVectors2(vector1: [number, number], vector2: [number, number]) {
+    
+}
+
 // Scale the length of a vector by the given amount.
 function scale(vec: [number, number, number], m: number): [number,number,number]
 function scale(vec: [number, number], m: number): [number,number]

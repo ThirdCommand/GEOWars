@@ -19,6 +19,7 @@ import { Transform } from "./game_engine/transform";
 import { Machinery } from "./game_objects/ClockworkGames/Machine";
 import { TreeGrip } from "./game_objects/ClockworkGames/SawMachine/TreeGrip";
 import { Camera } from "./game_engine/camera";
+import { Missile } from "./game_objects/StrikeTime/Enemies/Missile";
 
 
 export class AnimationView {
@@ -100,7 +101,7 @@ export class AnimationView {
             StartingAngle: 0,
         };
         this.overlayTextCleared = true;
-        this.addEnemy("Grabber");
+        this.addEnemy("Grunt");
     }
 
     enemyPlacerSelected(enemyPlacer: EnemyPlacer) {
@@ -303,7 +304,8 @@ export class AnimationView {
             },
             Plate: (pos: [number, number]) => new Plate(this, pos),
             Machine: (pos: [number, number]) => new Machinery(this, pos),
-            Grabber: (pos: [number, number]) => new TreeGrip(this, pos)
+            Grabber: (pos: [number, number]) => new TreeGrip(this, pos),
+            Missile: (pos: [number, number]) => new Missile(this, pos, [0,0], new Transform()),
         };
         enemyMap[type]([100 / this.zoomScale, 100 / this.zoomScale]);
     }
@@ -323,6 +325,7 @@ export type Types =
 "LeftSandwich" | 
 "Plate" | 
 "Machine" |
-"Grabber"
+"Grabber" | 
+"Missile"
 
 
