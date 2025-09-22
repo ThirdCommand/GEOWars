@@ -91,7 +91,7 @@ var AnimationView = /** @class */ (function () {
             StartingAngle: 0,
         };
         this.overlayTextCleared = true;
-        this.addEnemy("Grunt");
+        // this.addEnemy("Grunt");
     }
     AnimationView.prototype.enemyPlacerSelected = function (enemyPlacer) {
         this.clear();
@@ -2678,6 +2678,396 @@ var LevelDesigner = /** @class */ (function () {
 
 /***/ }),
 
+/***/ "./src/game_engine/SpriteEditor/DrawingGridSprite.ts":
+/*!***********************************************************!*\
+  !*** ./src/game_engine/SpriteEditor/DrawingGridSprite.ts ***!
+  \***********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   DrawingGridSprite: () => (/* binding */ DrawingGridSprite)
+/* harmony export */ });
+/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../line_sprite */ "./src/game_engine/line_sprite.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+var DrawingGridSprite = /** @class */ (function (_super) {
+    __extends(DrawingGridSprite, _super);
+    function DrawingGridSprite(transform) {
+        return _super.call(this, transform) || this;
+    }
+    DrawingGridSprite.prototype.draw = function (ctx) {
+        var pos = this.transform.absolutePosition();
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+        var blurFactor = 0.5;
+        this.drawXLines(ctx);
+        this.drawYLines(ctx);
+        ctx.restore();
+    };
+    DrawingGridSprite.prototype.drawXLines = function (ctx) {
+        _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X;
+        _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y;
+        var xLineCount = 36;
+        var xLineIncrement = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / xLineCount;
+        for (var i = 0; i < xLineCount; i++) {
+            ctx.beginPath();
+            if (i % 3 === 0) {
+                ctx.strokeStyle = "#606060";
+                if (i === 18) {
+                    ctx.strokeStyle = "#808080";
+                }
+                ctx.setLineDash([]);
+            }
+            else {
+                ctx.strokeStyle = "#808080";
+                ctx.setLineDash([1, (_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X - 121) / 120]);
+            }
+            ctx.moveTo(0, 0 + i * xLineIncrement);
+            ctx.lineTo(_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X, 0 + i * xLineIncrement);
+            ctx.stroke();
+        }
+    };
+    DrawingGridSprite.prototype.drawYLines = function (ctx) {
+        _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X;
+        _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y;
+        var yLineCount = 20;
+        var yLineIncrement = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X / yLineCount;
+        for (var i = 0; i < yLineCount; i++) {
+            if (i === 10) {
+                ctx.strokeStyle = "#FFFFFF";
+                ctx.beginPath();
+                ctx.setLineDash([1, (_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y - 73) / 72]);
+                ctx.moveTo(0 + i * yLineIncrement, 0);
+                ctx.lineTo(0 + i * yLineIncrement, _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X);
+                ctx.stroke();
+            }
+            else {
+                ctx.strokeStyle = "#808080";
+                ctx.beginPath();
+                ctx.setLineDash([1, (_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y - 73) / 72]);
+                ctx.moveTo(0 + i * yLineIncrement, 0);
+                ctx.lineTo(0 + i * yLineIncrement, _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X);
+                ctx.stroke();
+            }
+        }
+    };
+    return DrawingGridSprite;
+}(_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
+
+
+
+/***/ }),
+
+/***/ "./src/game_engine/SpriteEditor/Point.ts":
+/*!***********************************************!*\
+  !*** ./src/game_engine/SpriteEditor/Point.ts ***!
+  \***********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   PlacingPoint: () => (/* binding */ PlacingPoint),
+/* harmony export */   Point: () => (/* binding */ Point)
+/* harmony export */ });
+/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../line_sprite */ "./src/game_engine/line_sprite.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+var PlacingPoint = /** @class */ (function (_super) {
+    __extends(PlacingPoint, _super);
+    function PlacingPoint(engine, previousPoint) {
+        var _this = _super.call(this, engine) || this;
+        _this.previousPoint = previousPoint;
+        _this.addLineSprite(new PlacingPointSprite(_this.transform));
+        _this.addClickListener();
+        _this.addMousePosListener();
+        return _this;
+    }
+    PlacingPoint.prototype.updateMousePos = function (mousePos) {
+        this.transform.pos[0] = mousePos[0];
+        this.transform.pos[1] = mousePos[1];
+    };
+    PlacingPoint.prototype.mouseDoubleClicked = function () {
+    };
+    PlacingPoint.prototype.update = function (timeDelta) {
+    };
+    PlacingPoint.prototype.animate = function () {
+    };
+    return PlacingPoint;
+}(_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
+
+var PlacingPointSprite = /** @class */ (function (_super) {
+    __extends(PlacingPointSprite, _super);
+    function PlacingPointSprite(transform) {
+        return _super.call(this, transform) || this;
+    }
+    PlacingPointSprite.prototype.draw = function (ctx) {
+        var pos = this.transform.absolutePosition();
+        ctx.save();
+        this.drawPlacingPoint(ctx, [pos[0], pos[1]]);
+        ctx.restore();
+    };
+    PlacingPointSprite.prototype.drawPlacingPoint = function (ctx, pos) {
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "#702963";
+        ctx.beginPath();
+        var distancePerIncrement = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / 72;
+        var xPosIncremented = Math.round(pos[0] / distancePerIncrement) * distancePerIncrement;
+        var yPosIncremented = Math.round(pos[1] / distancePerIncrement) * distancePerIncrement;
+        ctx.arc(xPosIncremented, yPosIncremented, 3, 0, 2 * Math.PI);
+        ctx.stroke();
+    };
+    return PlacingPointSprite;
+}(_line_sprite__WEBPACK_IMPORTED_MODULE_2__.LineSprite));
+var Point = /** @class */ (function () {
+    function Point(pos) {
+        this.pos = [pos[0], pos[1]];
+    }
+    return Point;
+}());
+
+
+
+/***/ }),
+
+/***/ "./src/game_engine/SpriteEditor/SpriteEditor.ts":
+/*!******************************************************!*\
+  !*** ./src/game_engine/SpriteEditor/SpriteEditor.ts ***!
+  \******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   SpriteEditor: () => (/* binding */ SpriteEditor)
+/* harmony export */ });
+/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../line_sprite */ "./src/game_engine/line_sprite.ts");
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.ts");
+/* harmony import */ var _Point__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Point */ "./src/game_engine/SpriteEditor/Point.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+
+
+// place points until loop completed or escape selected
+// then complete the line 
+// this should keep track of what's on the screen I guess?
+var SpriteEditor = /** @class */ (function (_super) {
+    __extends(SpriteEditor, _super);
+    function SpriteEditor(engine) {
+        var _this = _super.call(this, engine) || this;
+        _this.points = [];
+        _this.currentMousePos = [0, 0];
+        _this.pointGroupsForLines = [];
+        _this.addLineSprite(new SpriteEditorSprite(new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(), _this.pointGroupsForLines, _this.currentMousePos));
+        _this.addLKeyListener();
+        _this.addKKeyListener();
+        _this.addJKeyListener();
+        _this.addSKeyListener();
+        _this.addClickListener();
+        return _this;
+    }
+    // L to start placing new line, will end current line and start new one
+    // K to remove last added point. If last point in line, the line is removed and point placing is ended
+    // J to end point placing
+    SpriteEditor.prototype.updateLKeyListener = function (pressed) {
+        if (pressed) {
+            if (this.isPlacingPoint) {
+                // in case there is any more cleanup work needed
+                // in the future I guess
+                this.endPointPlacement();
+            }
+            this.isPlacingPoint = true;
+            this.placingPoint = new _Point__WEBPACK_IMPORTED_MODULE_4__.PlacingPoint(this.gameEngine);
+            this.currentLineGroup = [];
+            this.pointGroupsForLines.push(this.currentLineGroup);
+        }
+    };
+    SpriteEditor.prototype.updateKKeyListener = function (pressed) {
+        if (pressed) {
+            this.isPlacingPoint = true;
+            var lastPlacedPoint = this.currentLineGroup.pop();
+            if (this.currentLineGroup.length === 0) {
+                this.endPointPlacement();
+            }
+        }
+    };
+    SpriteEditor.prototype.updateJKeyListener = function (pressed) {
+        if (pressed) {
+            this.endPointPlacement();
+        }
+    };
+    // left and right arrow to move between the line groups
+    // backspace to delete them
+    SpriteEditor.prototype.updateSKeyListener = function (pressed) {
+        var largestX = 0;
+        var smallestX = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X;
+        var largestY = 0;
+        var smallestY = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y;
+        this.pointGroupsForLines.forEach(function (pointGroup) { return pointGroup.forEach(function (point) {
+            var currentX = point.pos[0];
+            var currentY = point.pos[1];
+            if (largestX < currentX)
+                largestX = currentX;
+            if (smallestX > currentX)
+                smallestX = currentX;
+            if (largestY < currentY)
+                largestY = currentY;
+            if (smallestY > currentY)
+                smallestY = currentY;
+        }); });
+        var width = largestX - smallestX;
+        var height = largestY - smallestY;
+        // maybe I don't need to parameterize by width and height
+        // like... what exactly has that done for me so far
+        // if it was just to make it easier to enter... this will be easier anyway
+        var mappedPoints = this.pointGroupsForLines.map(function (pointGroup) { return pointGroup.map(function (point) {
+            return [
+                Math.round((point.pos[0] - _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X / 2) / (_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X / 120)),
+                Math.round((point.pos[1] - _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / 2) / (_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / 72)) * -1
+            ];
+        }); });
+        if (pressed && this.pointGroupsForLines.length > 0) {
+            // put save logic here
+            var stringToSave_1 = '';
+            // find biggest X value
+            // find smallest X value
+            // find difference to get width
+            // same with height for Y
+            mappedPoints.forEach(function (pointGroup) {
+                var firstPoint = pointGroup[0];
+                var stringStart = "\nctx.beginPath();\nctx.moveTo(".concat(firstPoint[0], ",").concat(firstPoint[1], ");\n");
+                var restOfPoints = pointGroup.slice(1);
+                var lines = restOfPoints.reduce(function (acc, point) {
+                    var newLine = "ctx.lineTo(".concat(point[0], ",").concat(point[1], ");\n");
+                    return acc.concat(newLine);
+                }, '');
+                var stringEnd = "ctx.closePath();\nctx.stroke();\n";
+                stringToSave_1 += stringStart + lines + stringEnd;
+            });
+            console.log(stringToSave_1);
+            // will have to transform all the points to the correct coordinates
+            // add all the instructions
+        }
+    };
+    SpriteEditor.prototype.mouseClicked = function (mousePos) {
+        if (this.isPlacingPoint) {
+            var distancePerIncrement = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / 72;
+            var xPosIncremented = Math.round(mousePos[0] / distancePerIncrement) * distancePerIncrement;
+            var yPosIncremented = Math.round(mousePos[1] / distancePerIncrement) * distancePerIncrement;
+            this.placePoint([xPosIncremented, yPosIncremented]);
+        }
+    };
+    SpriteEditor.prototype.endPointPlacement = function () {
+        this.placingPoint.remove();
+        this.placingPoint = null;
+        this.isPlacingPoint = false;
+    };
+    SpriteEditor.prototype.placePoint = function (pointPosition, previousPoint) {
+        if (this.currentLineGroup.find(function (point) { return point.pos[0] === pointPosition[0] && point.pos[1] === pointPosition[1]; })) {
+            this.currentLineGroup.push(new _Point__WEBPACK_IMPORTED_MODULE_4__.Point(pointPosition));
+            this.endPointPlacement();
+        }
+        else {
+            this.currentLineGroup.push(new _Point__WEBPACK_IMPORTED_MODULE_4__.Point(pointPosition));
+        }
+    };
+    SpriteEditor.prototype.updateMousePos = function (mousePos) {
+        this.currentMousePos[0] = mousePos[0];
+        this.currentMousePos[1] = mousePos[1];
+    };
+    SpriteEditor.prototype.update = function () {
+    };
+    SpriteEditor.prototype.animate = function () {
+    };
+    return SpriteEditor;
+}(_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
+
+var SpriteEditorSprite = /** @class */ (function (_super) {
+    __extends(SpriteEditorSprite, _super);
+    function SpriteEditorSprite(transform, pointGroupsForLines, currentMousePos) {
+        var _this = _super.call(this, transform) || this;
+        _this.pointGroupsForLines = pointGroupsForLines;
+        _this.mousePosition = currentMousePos;
+        return _this;
+    }
+    SpriteEditorSprite.prototype.draw = function (ctx) {
+        ctx.save();
+        this.drawLines(ctx);
+        ctx.restore();
+    };
+    SpriteEditorSprite.prototype.drawLines = function (ctx) {
+        this.pointGroupsForLines.forEach(function (points) {
+            if (points.length <= 1) {
+            }
+            else {
+                ctx.strokeStyle = '#00FFFF';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(points[0].pos[0], points[0].pos[1]);
+                points.forEach(function (point) {
+                    ctx.lineTo(point.pos[0], point.pos[1]);
+                });
+                ctx.stroke();
+            }
+        });
+    };
+    return SpriteEditorSprite;
+}(_line_sprite__WEBPACK_IMPORTED_MODULE_2__.LineSprite));
+
+
+/***/ }),
+
 /***/ "./src/game_engine/UI_Element.ts":
 /*!***************************************!*\
   !*** ./src/game_engine/UI_Element.ts ***!
@@ -3007,6 +3397,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../game_script */ "./src/game_script.ts");
 /* harmony import */ var _camera__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./camera */ "./src/game_engine/camera.ts");
 /* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./transform */ "./src/game_engine/transform.ts");
+/* harmony import */ var _SpriteEditor_DrawingGridSprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./SpriteEditor/DrawingGridSprite */ "./src/game_engine/SpriteEditor/DrawingGridSprite.ts");
+
 
 
 
@@ -3047,6 +3439,12 @@ var GameEngine = /** @class */ (function () {
         this.levelDesignerDoubleClickListeners = [];
         this.leftControlStickListeners = [];
         this.rightControlStickListeners = [];
+        this.lKeyListeners = [];
+        this.kKeyListeners = [];
+        this.jKeyListeners = [];
+        this.oKeyListeners = [];
+        this.cKeyListeners = [];
+        this.sKeyListeners = [];
         this.xButtonListeners = [];
         this.bButtonListeners = [];
         this.aButtonListeners = [];
@@ -3063,6 +3461,16 @@ var GameEngine = /** @class */ (function () {
         this.levelDesigner = null;
         this.spriteCreatorOpened = false;
     }
+    GameEngine.prototype.startSpriteCreator = function () {
+        this.spriteCreatorOpened = true;
+        this.gameObjects = [];
+        this.lineSprites = [];
+        this.activeCamera.zoomScale = 1;
+        this.addSpriteEditorOverlay();
+    };
+    GameEngine.prototype.addSpriteEditorOverlay = function () {
+        this.addLineSprite(new _SpriteEditor_DrawingGridSprite__WEBPACK_IMPORTED_MODULE_3__.DrawingGridSprite(new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform()));
+    };
     GameEngine.prototype.addControllableGameObject = function (gameObject) {
         this.controllableGameObjects.push(gameObject);
     };
@@ -3209,6 +3617,24 @@ var GameEngine = /** @class */ (function () {
     };
     GameEngine.prototype.addLeftControlStickFocussedListener = function (object) {
         this.leftControlStickFocussedListeners.push(object);
+    };
+    GameEngine.prototype.addLKeyListener = function (object) {
+        this.lKeyListeners.push(object);
+    };
+    GameEngine.prototype.addKKeyListener = function (object) {
+        this.kKeyListeners.push(object);
+    };
+    GameEngine.prototype.addOKeyListener = function (object) {
+        this.oKeyListeners.push(object);
+    };
+    GameEngine.prototype.addCKeyListener = function (object) {
+        this.cKeyListeners.push(object);
+    };
+    GameEngine.prototype.addJKeyListener = function (object) {
+        this.jKeyListeners.push(object);
+    };
+    GameEngine.prototype.addSKeyListener = function (object) {
+        this.sKeyListeners.push(object);
     };
     GameEngine.prototype.addRightControlStickListener = function (object) {
         this.rightControlStickListeners.push(object);
@@ -3358,6 +3784,36 @@ var GameEngine = /** @class */ (function () {
             listener.updateLeftControlStickInput(unitVector, down);
         });
         this.controlledGameObject.updateLeftControlFocussedStickInput(unitVector, down);
+    };
+    GameEngine.prototype.updateLKeyListeners = function (down) {
+        this.lKeyListeners.forEach(function (listener) {
+            listener.updateLKeyListener(down);
+        });
+    };
+    GameEngine.prototype.updateKKeyListeners = function (down) {
+        this.kKeyListeners.forEach(function (listener) {
+            listener.updateKKeyListener(down);
+        });
+    };
+    GameEngine.prototype.updateSKeyListeners = function (down) {
+        this.sKeyListeners.forEach(function (listener) {
+            listener.updateSKeyListener(down);
+        });
+    };
+    GameEngine.prototype.updateJKeyListeners = function (down) {
+        this.jKeyListeners.forEach(function (listener) {
+            listener.updateJKeyListener(down);
+        });
+    };
+    GameEngine.prototype.updateOKeyListeners = function (down) {
+        this.oKeyListeners.forEach(function (listener) {
+            listener.updateOKeyListener(down);
+        });
+    };
+    GameEngine.prototype.updateCKeyListeners = function (down) {
+        this.cKeyListeners.forEach(function (listener) {
+            listener.updateCKeyListener(down);
+        });
     };
     GameEngine.prototype.updateRightControlStickListeners = function (unitVector) {
         this.rightControlStickListeners.forEach(function (listener) {
@@ -3708,10 +4164,40 @@ var GameObject = /** @class */ (function () {
         if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
             this.gameEngine.addBButtonListener(this);
     };
+    GameObject.prototype.addLKeyListener = function () {
+        if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
+            this.gameEngine.addLKeyListener(this);
+    };
+    GameObject.prototype.addKKeyListener = function () {
+        if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
+            this.gameEngine.addKKeyListener(this);
+    };
+    GameObject.prototype.addCKeyListener = function () {
+        if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
+            this.gameEngine.addCKeyListener(this);
+    };
+    GameObject.prototype.addOKeyListener = function () {
+        if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
+            this.gameEngine.addOKeyListener(this);
+    };
+    GameObject.prototype.addJKeyListener = function () {
+        if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
+            this.gameEngine.addJKeyListener(this);
+    };
+    GameObject.prototype.addSKeyListener = function () {
+        if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
+            this.gameEngine.addSKeyListener(this);
+    };
     GameObject.prototype.addStartButtonListener = function () {
         if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
             this.gameEngine.addStartButtonListener(this);
     };
+    GameObject.prototype.updateKKeyListener = function (pressed) { console.log('overwrite updateKKeyListener'); };
+    GameObject.prototype.updateCKeyListener = function (pressed) { console.log('overwrite updateCKeyListener'); };
+    GameObject.prototype.updateOKeyListener = function (pressed) { console.log('overwrite updateOKeyListener'); };
+    GameObject.prototype.updateJKeyListener = function (pressed) { console.log('overwrite updateJKeyListener'); };
+    GameObject.prototype.updateSKeyListener = function (pressed) { console.log('overwrite updateSKeyListener'); };
+    GameObject.prototype.updateLKeyListener = function (pressed) { console.log('overwrite updateLKeyListener'); };
     GameObject.prototype.updateBButtonListener = function (pressed) { console.log('overwrite updateBButtonListener for functionality'); };
     GameObject.prototype.updateRightControlFocussedStickInput = function (direction) { console.log(direction, 'overwrite updateRightControlFocussedStickInput'); }; // TODO include object name
     GameObject.prototype.updateLeftControlFocussedStickInput = function (direction, pressed) { console.log(direction, pressed, 'overwrite updateLeftControlFocussedStickInput'); }; // TODO include object name;
@@ -13505,6 +13991,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   GameView: () => (/* binding */ GameView)
 /* harmony export */ });
+/* harmony import */ var _game_engine_SpriteEditor_SpriteEditor__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_engine/SpriteEditor/SpriteEditor */ "./src/game_engine/SpriteEditor/SpriteEditor.ts");
+
 var GameView = /** @class */ (function () {
     function GameView(engine, ctx, canvasEl, levelDesigner, animationView) {
         this.ctx = ctx;
@@ -13568,6 +14056,24 @@ var GameView = /** @class */ (function () {
             }
             if (e.key === 'f') {
                 _this.engine.updateFKeyListener(down);
+            }
+            if (e.key === 'l') {
+                _this.engine.updateLKeyListeners(down);
+            }
+            if (e.key === 'k') {
+                _this.engine.updateKKeyListeners(down);
+            }
+            if (e.key === 'j') {
+                _this.engine.updateJKeyListeners(down);
+            }
+            if (e.key === 's') {
+                _this.engine.updateSKeyListeners(down);
+            }
+            if (e.key === 'c') {
+                _this.engine.updateCKeyListeners(down);
+            }
+            if (e.key === 'o') {
+                _this.engine.updateOKeyListeners(down);
             }
             if (e.key === "p") {
                 _this.engine.updateStartButtonListeners(down);
@@ -13702,7 +14208,8 @@ var GameView = /** @class */ (function () {
             modal.style.display = "none";
             _this.modelClosed = true;
             setTimeout(function () {
-                _this.engine.spriteCreatorOpened = true;
+                _this.engine.startSpriteCreator();
+                new _game_engine_SpriteEditor_SpriteEditor__WEBPACK_IMPORTED_MODULE_0__.SpriteEditor(_this.engine);
             }, 50);
         };
         loadGameDesignButtonModal.onclick = function (e) {

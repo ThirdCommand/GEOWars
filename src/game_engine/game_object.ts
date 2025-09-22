@@ -111,12 +111,43 @@ export abstract class GameObject implements controllable{
             this.gameEngine.addBButtonListener(this);
     }
 
+    addLKeyListener() {
+        if(this.gameEngine instanceof GameEngine)
+            this.gameEngine.addLKeyListener(this)
+    }
+    addKKeyListener() {
+        if(this.gameEngine instanceof GameEngine)
+            this.gameEngine.addKKeyListener(this)
+    }
+    addCKeyListener() {
+          if(this.gameEngine instanceof GameEngine)
+            this.gameEngine.addCKeyListener(this)
+    }
+    addOKeyListener() {
+          if(this.gameEngine instanceof GameEngine)
+            this.gameEngine.addOKeyListener(this)
+    }
+    addJKeyListener() {
+        if(this.gameEngine instanceof GameEngine)
+            this.gameEngine.addJKeyListener(this)
+    }
+    addSKeyListener() {
+        if(this.gameEngine instanceof GameEngine)
+            this.gameEngine.addSKeyListener(this)
+    }
+
 
 
     addStartButtonListener() {
         if(this.gameEngine instanceof GameEngine)
             this.gameEngine.addStartButtonListener(this);
     }
+    updateKKeyListener(pressed: boolean) { console.log('overwrite updateKKeyListener');}
+    updateCKeyListener(pressed: boolean) { console.log('overwrite updateCKeyListener');}
+    updateOKeyListener(pressed: boolean) { console.log('overwrite updateOKeyListener');}
+    updateJKeyListener(pressed: boolean) { console.log('overwrite updateJKeyListener');}
+    updateSKeyListener(pressed: boolean) { console.log('overwrite updateSKeyListener');}
+    updateLKeyListener(pressed: boolean) { console.log('overwrite updateLKeyListener');}
 
     updateBButtonListener(pressed: boolean) { console.log('overwrite updateBButtonListener for functionality'); }
 

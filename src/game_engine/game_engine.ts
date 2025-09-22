@@ -7,6 +7,8 @@ import { type Sound } from "./sound";
 import { type LevelDesigner } from "./Levels/levelDesigner";
 import { Camera } from "./camera";
 import { Transform } from "./transform";
+import { DrawingGridSprite } from "./SpriteEditor/DrawingGridSprite";
+import { PlacingPoint } from "./SpriteEditor/Point";
 
 declare global {
     interface Window {
@@ -43,6 +45,24 @@ interface RightControlStickListenable {
 interface XButtonListenable {
     updateXButtonListener(pressed: boolean): void
 }
+interface LKeyListenable {
+    updateLKeyListener(pressed: boolean): void
+}
+interface KKeyListenable {
+    updateKKeyListener(pressed: boolean): void
+}
+interface JKeyListenable {
+    updateJKeyListener(pressed: boolean): void
+}
+interface OKeyListenable {
+    updateOKeyListener(pressed: boolean): void
+}
+interface CKeyListenable {
+    updateCKeyListener(pressed: boolean): void
+}
+interface SKeyListenable {
+    updateSKeyListener(pressed: boolean): void
+}
 interface BButtonListenable {
     updateBButtonListener(pressed: boolean): void
 }
@@ -57,6 +77,7 @@ interface StartButtonListenable {
 
 
 export class GameEngine {
+    placingPoint: PlacingPoint;
     ctx: CanvasRenderingContext2D;
     buttonState: {
         aButtonPressed: boolean;
@@ -98,6 +119,12 @@ export class GameEngine {
     leftControlStickListeners: LeftControlStickListenable[]; 
     leftControlStickFocussedListeners: LeftControlStickListenable[]; 
     rightControlStickListeners: RightControlStickListenable[]; 
+    lKeyListeners: LKeyListenable[];
+    kKeyListeners: KKeyListenable[];
+    jKeyListeners: JKeyListenable[];
+    oKeyListeners: OKeyListenable[];
+    cKeyListeners: CKeyListenable[];
+    sKeyListeners: SKeyListenable[];
     xButtonListeners: XButtonListenable[]; 
     bButtonListeners: BButtonListenable[]; 
     aButtonListeners: AButtonListenable[]; 
@@ -164,6 +191,12 @@ export class GameEngine {
 
         this.leftControlStickListeners = [];
         this.rightControlStickListeners = [];
+        this.lKeyListeners = [];
+        this.kKeyListeners = [];
+        this.jKeyListeners = [];
+        this.oKeyListeners = [];
+        this.cKeyListeners = [];
+        this.sKeyListeners = [];
         this.xButtonListeners = [];
         this.bButtonListeners = [];
         this.aButtonListeners = [];
@@ -180,6 +213,18 @@ export class GameEngine {
         this.frameCountForPerformance = 0;
         this.levelDesigner = null;
         this.spriteCreatorOpened = false;
+    }
+
+    startSpriteCreator() {
+        this.spriteCreatorOpened = true;
+        this.gameObjects = [];
+        this.lineSprites = [];
+        this.activeCamera.zoomScale = 1;
+        this.addSpriteEditorOverlay();
+    }
+
+    addSpriteEditorOverlay() {
+        this.addLineSprite(new DrawingGridSprite(new Transform()));
     }
 
     addControllableGameObject(gameObject: GameObject) {
@@ -262,7 +307,6 @@ export class GameEngine {
             this.checkCollisions();
             this.updateGameObjects(delta);
             this.renderLineSprites(this.ctx);
-
             this.addClickListenersAfterTick();
             this.addDoubleClickListenersAfterTick();
             this.removeClickListenersAfterTick();
@@ -362,6 +406,27 @@ export class GameEngine {
 
     addLeftControlStickFocussedListener(object: LeftControlStickListenable) {
         this.leftControlStickFocussedListeners.push(object);
+    }
+
+    addLKeyListener(object: LKeyListenable) {
+        this.lKeyListeners.push(object);
+    }
+
+    addKKeyListener(object: KKeyListenable) {
+        this.kKeyListeners.push(object)
+    }
+    addOKeyListener(object: OKeyListenable) {
+        this.oKeyListeners.push(object)
+    }
+    addCKeyListener(object: CKeyListenable) {
+        this.cKeyListeners.push(object)
+    }
+
+    addJKeyListener(object: JKeyListenable) {
+        this.jKeyListeners.push(object)
+    }
+    addSKeyListener(object: SKeyListenable) {
+        this.sKeyListeners.push(object)
     }
 
     addRightControlStickListener(object: RightControlStickListenable) {
@@ -525,6 +590,39 @@ export class GameEngine {
             listener.updateLeftControlStickInput(unitVector, down);
         });
         this.controlledGameObject.updateLeftControlFocussedStickInput(unitVector, down);
+    }
+
+    updateLKeyListeners(down: boolean) {
+        this.lKeyListeners.forEach((listener) => {
+            listener.updateLKeyListener(down);
+        })
+    }
+
+    updateKKeyListeners(down: boolean) {
+        this.kKeyListeners.forEach((listener) => {
+            listener.updateKKeyListener(down);
+        })
+    }
+
+    updateSKeyListeners(down: boolean) {
+        this.sKeyListeners.forEach((listener) => {
+            listener.updateSKeyListener(down);
+        })
+    }
+    updateJKeyListeners(down: boolean) {
+        this.jKeyListeners.forEach((listener) => {
+            listener.updateJKeyListener(down);
+        })
+    }
+    updateOKeyListeners(down: boolean) {
+        this.oKeyListeners.forEach((listener) => {
+            listener.updateOKeyListener(down);
+        })
+    }
+    updateCKeyListeners(down: boolean) {
+        this.cKeyListeners.forEach((listener) => {
+            listener.updateCKeyListener(down);
+        })
     }
 
     updateRightControlStickListeners(unitVector: [number, number]) {

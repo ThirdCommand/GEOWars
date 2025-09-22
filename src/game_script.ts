@@ -672,9 +672,9 @@ export class GameScript {
             this.hugeSequenceTime += 1;
         }
 
-    // if (this.gameTime % 2000 === 0){
-    //   this.spawned = false
-    // }
+        // if (this.gameTime % 2000 === 0){
+        //   this.spawned = false
+        // }
     }
 
     createShip() {

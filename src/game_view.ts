@@ -1,5 +1,6 @@
 import { type AnimationView } from "./AnimationView";
 import { type LevelDesigner } from "./game_engine/Levels/levelDesigner";
+import { SpriteEditor } from "./game_engine/SpriteEditor/SpriteEditor";
 import { type GameEngine } from "./game_engine/game_engine";
 import {type DirectionKey} from "./game_objects/Ship/ship";
 
@@ -100,6 +101,24 @@ export class GameView { engine: GameEngine;
 
             if(e.key === 'f') {
                 this.engine.updateFKeyListener(down);
+            }
+            if(e.key === 'l') {
+                this.engine.updateLKeyListeners(down);
+            }
+            if(e.key === 'k') {
+                this.engine.updateKKeyListeners(down);
+            }
+            if(e.key === 'j') {
+                this.engine.updateJKeyListeners(down);
+            }
+            if(e.key === 's') {
+                this.engine.updateSKeyListeners(down);
+            }
+            if(e.key === 'c') {
+                this.engine.updateCKeyListeners(down);
+            }
+            if(e.key === 'o') {
+                this.engine.updateOKeyListeners(down);
             }
             
             if (e.key === "p") {
@@ -245,6 +264,7 @@ export class GameView { engine: GameEngine;
                 this.engine.gameEditorOpened = true;
             },50);
         };
+
         createSprite.onclick = (e) => {
             e.stopPropagation();
             this.spriteCreatorOpened = true;
@@ -253,8 +273,9 @@ export class GameView { engine: GameEngine;
             modal.style.display = "none";
             this.modelClosed = true;
             setTimeout(() => {
-                this.engine.spriteCreatorOpened = true;
-            },50);
+                this.engine.startSpriteCreator();
+                new SpriteEditor(this.engine);
+            }, 50);
         };
 
         loadGameDesignButtonModal.onclick = (e) => {

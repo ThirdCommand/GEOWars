@@ -101,7 +101,7 @@ export class AnimationView {
             StartingAngle: 0,
         };
         this.overlayTextCleared = true;
-        this.addEnemy("Grunt");
+        // this.addEnemy("Grunt");
     }
 
     enemyPlacerSelected(enemyPlacer: EnemyPlacer) {
