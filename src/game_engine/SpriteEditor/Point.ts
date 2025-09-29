@@ -62,6 +62,7 @@ export class BezierCurve {
     endPos?: [number,number];
     controlPoint1?: [number, number];
     controlPoint2?: [number, number];
+    mirroredValue?: [number, number];
     isBeingPlaced: boolean;
     placingWhichPoint: 'start' | 'end' | 'controlPoint1' | 'controlPoint2';
     constructor(pos?: [number, number]) {

@@ -2945,6 +2945,7 @@ var SpriteEditor = /** @class */ (function (_super) {
         _this.addJKeyListener();
         _this.addSKeyListener();
         _this.addBKeyListener();
+        _this.addMKeyListener();
         _this.addClickListener();
         return _this;
     }
@@ -2977,6 +2978,12 @@ var SpriteEditor = /** @class */ (function (_super) {
             }
         }
     };
+    SpriteEditor.prototype.updateMKeyListener = function (pressed) {
+        if (pressed && this.isPlacingBezierCurve && this.bezierCurveBeingPlaced.placingWhichPoint === 'controlPoint2' && this.bezierCurveBeingPlaced.mirroredValue) {
+            this.bezierCurveBeingPlaced.controlPoint2 = [this.bezierCurveBeingPlaced.mirroredValue[0], this.bezierCurveBeingPlaced.mirroredValue[1]];
+            this.updateBKeyListener(pressed);
+        }
+    };
     SpriteEditor.prototype.updateBKeyListener = function (pressed) {
         var _this = this;
         if (pressed && !this.isPlacingPoint) {
@@ -3003,7 +3010,7 @@ var SpriteEditor = /** @class */ (function (_super) {
         else if (pressed && this.isPlacingBezierCurve) {
             this.isPlacingBezierCurve = false;
             this.bezierCurveBeingPlaced.isBeingPlaced = false;
-            if (this.currentLineGroup.find(function (point) { return ((point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point &&
+            if (this.currentLineGroup.slice(0, this.currentLineGroup.length - 1).find(function (point) { return ((point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point &&
                 point.pos[0] === _this.bezierCurveBeingPlaced.endPos[0] &&
                 point.pos[1] === _this.bezierCurveBeingPlaced.endPos[1]) || point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve && ((point.startPos[0] === _this.bezierCurveBeingPlaced.endPos[0] &&
                 point.startPos[1] === _this.bezierCurveBeingPlaced.endPos[1]) || (
@@ -3306,6 +3313,7 @@ var SpriteEditorSprite = /** @class */ (function (_super) {
                         ctx.bezierCurveTo(x_p, y_p, x_mir, y_mir, x_end, y_end);
                         ctx.stroke();
                         ctx.setLineDash([]);
+                        this.spriteEditor.bezierCurveBeingPlaced.mirroredValue = [x_mir, y_mir];
                     }
                 }
                 else if (lastPlacedPointPosition.placingWhichPoint === 'controlPoint2') {
@@ -14323,16 +14331,20 @@ var GameView = /** @class */ (function () {
             //   this.engine.togglePause()
             // }
             if (e.key === "m" && _this.initialUnmute) {
-                _this.initialUnmute = false;
-                _this.engine.gameScript.theme.play();
+                if (!_this.engine.spriteCreatorOpened) {
+                    _this.initialUnmute = false;
+                    _this.engine.gameScript.theme.play();
+                }
             }
             if (e.key === "m" && down) {
-                _this.engine.toggleMute();
-                if (_this.engine.muted) {
-                    _this.engine.gameScript.theme.mute();
-                }
-                else {
-                    _this.engine.gameScript.theme.unmute();
+                if (!_this.engine.spriteCreatorOpened) {
+                    _this.engine.toggleMute();
+                    if (_this.engine.muted) {
+                        _this.engine.gameScript.theme.mute();
+                    }
+                    else {
+                        _this.engine.gameScript.theme.unmute();
+                    }
                 }
             }
             if (e.key === 'a' || e.key === 's' || e.key === 'w' || e.key === 'd') {

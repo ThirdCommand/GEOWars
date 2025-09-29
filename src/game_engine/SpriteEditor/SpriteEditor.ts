@@ -31,6 +31,7 @@ export class SpriteEditor extends GameObject{
         this.addJKeyListener();
         this.addSKeyListener();
         this.addBKeyListener();
+        this.addMKeyListener();
         this.addClickListener();
     }
 
@@ -65,6 +66,13 @@ export class SpriteEditor extends GameObject{
             }
         }
     }
+    
+    updateMKeyListener(pressed: boolean): void {
+        if(pressed && this.isPlacingBezierCurve && this.bezierCurveBeingPlaced.placingWhichPoint === 'controlPoint2' && this.bezierCurveBeingPlaced.mirroredValue)  {
+            this.bezierCurveBeingPlaced.controlPoint2 = [this.bezierCurveBeingPlaced.mirroredValue[0], this.bezierCurveBeingPlaced.mirroredValue[1]]
+            this.updateBKeyListener(pressed);
+        }
+    }
 
     updateBKeyListener(pressed: boolean): void {
         if(pressed && !this.isPlacingPoint) {
@@ -92,7 +100,7 @@ export class SpriteEditor extends GameObject{
             this.isPlacingBezierCurve = false;
             this.bezierCurveBeingPlaced.isBeingPlaced = false;
             if(
-                this.currentLineGroup.find((point) => (
+                this.currentLineGroup.slice(0,this.currentLineGroup.length - 1).find((point) => (
                     (
                         point instanceof Point && 
                         point.pos[0] === this.bezierCurveBeingPlaced.endPos[0] && 
@@ -471,6 +479,7 @@ class SpriteEditorSprite extends LineSprite {
                         )
                         ctx.stroke();
                         ctx.setLineDash([]);
+                        this.spriteEditor.bezierCurveBeingPlaced.mirroredValue = [x_mir, y_mir];
                     }
                     
                 } else if (lastPlacedPointPosition.placingWhichPoint === 'controlPoint2') {

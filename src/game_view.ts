@@ -80,17 +80,23 @@ export class GameView { engine: GameEngine;
             //   this.engine.togglePause()
             // }
             if (e.key === "m" && this.initialUnmute) {
-                this.initialUnmute = false;
-                this.engine.gameScript.theme.play();
+                if(!this.engine.spriteCreatorOpened) {
+                    this.initialUnmute = false;
+                    this.engine.gameScript.theme.play();
+                }
             }
 
             if (e.key === "m" && down) {
-                this.engine.toggleMute();
-                if (this.engine.muted) {
-                    this.engine.gameScript.theme.mute();
-                } else {
-                    this.engine.gameScript.theme.unmute();
+                
+                if(!this.engine.spriteCreatorOpened) {
+                    this.engine.toggleMute();
+                    if (this.engine.muted) {
+                        this.engine.gameScript.theme.mute();
+                    } else {
+                        this.engine.gameScript.theme.unmute();
+                    }
                 }
+                
             }
             if(e.key === 'a' || e.key === 's' || e.key === 'w' || e.key === 'd') {
                 const unitVector = GameView.MOVES[e.key];
