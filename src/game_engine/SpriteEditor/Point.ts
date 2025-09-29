@@ -1,4 +1,3 @@
-import { AnimationView } from "../../AnimationView";
 import { GameScript } from "../../game_script";
 import { GameEngine } from "../game_engine";
 import { GameObject } from "../game_object";
@@ -6,18 +5,20 @@ import { LineSprite } from "../line_sprite";
 import { Transform } from "../transform";
 
 export class PlacingPoint extends GameObject {
-    previousPoint: Point;
-    constructor(engine: GameEngine, previousPoint?: Point) {
+    constructor(engine: GameEngine) {
         super(engine);
-        this.previousPoint = previousPoint
         this.addLineSprite(new PlacingPointSprite(this.transform))
         this.addClickListener();
         this.addMousePosListener();
     }
 
     updateMousePos(mousePos: [number, number]) {
-        this.transform.pos[0] = mousePos[0];
-        this.transform.pos[1] = mousePos[1];
+        const distancePerIncrement = GameScript.DIM_Y / 72
+
+        const xPosIncremented = Math.round(mousePos[0]/distancePerIncrement) * distancePerIncrement;
+        const yPosIncremented = Math.round(mousePos[1] / distancePerIncrement) * distancePerIncrement;
+        this.transform.pos[0] = xPosIncremented;
+        this.transform.pos[1] = yPosIncremented;
     }
 
     mouseDoubleClicked() {
@@ -44,11 +45,7 @@ class PlacingPointSprite extends LineSprite {
         ctx.lineWidth = 4;
         ctx.strokeStyle = "#702963"
         ctx.beginPath();
-        const distancePerIncrement = GameScript.DIM_Y / 72
-
-        const xPosIncremented = Math.round(pos[0]/distancePerIncrement) * distancePerIncrement;
-        const yPosIncremented = Math.round(pos[1] / distancePerIncrement) * distancePerIncrement;
-        ctx.arc(xPosIncremented, yPosIncremented, 3, 0, 2 * Math.PI);
+        ctx.arc(pos[0], pos[1], 3, 0, 2 * Math.PI);
         ctx.stroke();
     }
 
@@ -58,6 +55,41 @@ export class Point {
     pos: [number, number];
     constructor(pos: [number, number]) {
         this.pos = [pos[0], pos[1]];
+    }
+}
+export class BezierCurve {
+    startPos: [number, number];
+    endPos?: [number,number];
+    controlPoint1?: [number, number];
+    controlPoint2?: [number, number];
+    isBeingPlaced: boolean;
+    placingWhichPoint: 'start' | 'end' | 'controlPoint1' | 'controlPoint2';
+    constructor(pos?: [number, number]) {
+        this.isBeingPlaced = true;
+        this.startPos = pos ? [pos[0], pos[1]] : null;
+        this.placingWhichPoint = pos ? 'end' : 'start';
+    }
+    placePoint(pos: [number, number]) {
+        switch(this.placingWhichPoint) {
+            case "start":
+                this.startPos = [pos[0], pos[1]];
+                this.placingWhichPoint = 'end';
+                break;
+            case "end": // start is entered on creation, so end is next
+                this.endPos = [pos[0], pos[1]];
+                this.placingWhichPoint = 'controlPoint1';
+                break;
+            case "controlPoint1":
+                // I should also place the mirrored point
+                this.controlPoint1 = [pos[0], pos[1]];
+                this.placingWhichPoint = 'controlPoint2';
+                break;
+            case "controlPoint2":
+                this.controlPoint2 = [pos[0], pos[1]];
+                this.placingWhichPoint = 'controlPoint1';
+                break;
+
+        }
     }
 }
 

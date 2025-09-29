@@ -127,6 +127,14 @@ export abstract class GameObject implements controllable{
           if(this.gameEngine instanceof GameEngine)
             this.gameEngine.addOKeyListener(this)
     }
+    addBKeyListener() {
+          if(this.gameEngine instanceof GameEngine)
+            this.gameEngine.addBKeyListener(this)
+    }
+    addMKeyListener() {
+          if(this.gameEngine instanceof GameEngine)
+            this.gameEngine.addMKeyListener(this)
+    }
     addJKeyListener() {
         if(this.gameEngine instanceof GameEngine)
             this.gameEngine.addJKeyListener(this)
@@ -148,7 +156,9 @@ export abstract class GameObject implements controllable{
     updateJKeyListener(pressed: boolean) { console.log('overwrite updateJKeyListener');}
     updateSKeyListener(pressed: boolean) { console.log('overwrite updateSKeyListener');}
     updateLKeyListener(pressed: boolean) { console.log('overwrite updateLKeyListener');}
-
+    updateBKeyListener(pressed: boolean) { console.log('overwrite updateBKeyListener');}
+    updateMKeyListener(pressed: boolean) { console.log('overwrite updateMKeyListener');}
+    
     updateBButtonListener(pressed: boolean) { console.log('overwrite updateBButtonListener for functionality'); }
 
     updateRightControlFocussedStickInput(direction: [number, number]) {console.log(direction, 'overwrite updateRightControlFocussedStickInput');} // TODO include object name

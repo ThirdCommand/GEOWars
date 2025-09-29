@@ -120,6 +120,12 @@ export class GameView { engine: GameEngine;
             if(e.key === 'o') {
                 this.engine.updateOKeyListeners(down);
             }
+            if(e.key === 'b') {
+                this.engine.updateBKeyListeners(down);
+            }
+            if(e.key === 'm') {
+                this.engine.updateMKeyListeners(down);
+            }
             
             if (e.key === "p") {
                 this.engine.updateStartButtonListeners(down);

@@ -2783,6 +2783,7 @@ var DrawingGridSprite = /** @class */ (function (_super) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   BezierCurve: () => (/* binding */ BezierCurve),
 /* harmony export */   PlacingPoint: () => (/* binding */ PlacingPoint),
 /* harmony export */   Point: () => (/* binding */ Point)
 /* harmony export */ });
@@ -2809,17 +2810,19 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 var PlacingPoint = /** @class */ (function (_super) {
     __extends(PlacingPoint, _super);
-    function PlacingPoint(engine, previousPoint) {
+    function PlacingPoint(engine) {
         var _this = _super.call(this, engine) || this;
-        _this.previousPoint = previousPoint;
         _this.addLineSprite(new PlacingPointSprite(_this.transform));
         _this.addClickListener();
         _this.addMousePosListener();
         return _this;
     }
     PlacingPoint.prototype.updateMousePos = function (mousePos) {
-        this.transform.pos[0] = mousePos[0];
-        this.transform.pos[1] = mousePos[1];
+        var distancePerIncrement = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / 72;
+        var xPosIncremented = Math.round(mousePos[0] / distancePerIncrement) * distancePerIncrement;
+        var yPosIncremented = Math.round(mousePos[1] / distancePerIncrement) * distancePerIncrement;
+        this.transform.pos[0] = xPosIncremented;
+        this.transform.pos[1] = yPosIncremented;
     };
     PlacingPoint.prototype.mouseDoubleClicked = function () {
     };
@@ -2845,10 +2848,7 @@ var PlacingPointSprite = /** @class */ (function (_super) {
         ctx.lineWidth = 4;
         ctx.strokeStyle = "#702963";
         ctx.beginPath();
-        var distancePerIncrement = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / 72;
-        var xPosIncremented = Math.round(pos[0] / distancePerIncrement) * distancePerIncrement;
-        var yPosIncremented = Math.round(pos[1] / distancePerIncrement) * distancePerIncrement;
-        ctx.arc(xPosIncremented, yPosIncremented, 3, 0, 2 * Math.PI);
+        ctx.arc(pos[0], pos[1], 3, 0, 2 * Math.PI);
         ctx.stroke();
     };
     return PlacingPointSprite;
@@ -2858,6 +2858,36 @@ var Point = /** @class */ (function () {
         this.pos = [pos[0], pos[1]];
     }
     return Point;
+}());
+
+var BezierCurve = /** @class */ (function () {
+    function BezierCurve(pos) {
+        this.isBeingPlaced = true;
+        this.startPos = pos ? [pos[0], pos[1]] : null;
+        this.placingWhichPoint = pos ? 'end' : 'start';
+    }
+    BezierCurve.prototype.placePoint = function (pos) {
+        switch (this.placingWhichPoint) {
+            case "start":
+                this.startPos = [pos[0], pos[1]];
+                this.placingWhichPoint = 'end';
+                break;
+            case "end": // start is entered on creation, so end is next
+                this.endPos = [pos[0], pos[1]];
+                this.placingWhichPoint = 'controlPoint1';
+                break;
+            case "controlPoint1":
+                // I should also place the mirrored point
+                this.controlPoint1 = [pos[0], pos[1]];
+                this.placingWhichPoint = 'controlPoint2';
+                break;
+            case "controlPoint2":
+                this.controlPoint2 = [pos[0], pos[1]];
+                this.placingWhichPoint = 'controlPoint1';
+                break;
+        }
+    };
+    return BezierCurve;
 }());
 
 
@@ -2909,11 +2939,12 @@ var SpriteEditor = /** @class */ (function (_super) {
         _this.points = [];
         _this.currentMousePos = [0, 0];
         _this.pointGroupsForLines = [];
-        _this.addLineSprite(new SpriteEditorSprite(new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(), _this.pointGroupsForLines, _this.currentMousePos));
+        _this.addLineSprite(new SpriteEditorSprite(new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform(), _this.pointGroupsForLines, _this.currentMousePos, _this));
         _this.addLKeyListener();
         _this.addKKeyListener();
         _this.addJKeyListener();
         _this.addSKeyListener();
+        _this.addBKeyListener();
         _this.addClickListener();
         return _this;
     }
@@ -2937,9 +2968,51 @@ var SpriteEditor = /** @class */ (function (_super) {
         if (pressed) {
             this.isPlacingPoint = true;
             var lastPlacedPoint = this.currentLineGroup.pop();
+            if (lastPlacedPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve) {
+                this.isPlacingBezierCurve = false;
+                this.bezierCurveBeingPlaced = null;
+            }
             if (this.currentLineGroup.length === 0) {
                 this.endPointPlacement();
             }
+        }
+    };
+    SpriteEditor.prototype.updateBKeyListener = function (pressed) {
+        var _this = this;
+        if (pressed && !this.isPlacingPoint) {
+        }
+        else if (pressed && !this.isPlacingBezierCurve) {
+            if (!this.isPlacingPoint) {
+                this.placingPoint = new _Point__WEBPACK_IMPORTED_MODULE_4__.PlacingPoint(this.gameEngine);
+                this.currentLineGroup = [];
+                this.pointGroupsForLines.push(this.currentLineGroup);
+            }
+            this.isPlacingPoint = true;
+            this.isPlacingBezierCurve = true;
+            var lastEnteredPoint = this.currentLineGroup[this.currentLineGroup.length - 1];
+            var startPosition = void 0;
+            if (lastEnteredPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point) {
+                startPosition = [lastEnteredPoint.pos[0], lastEnteredPoint.pos[1]];
+            }
+            else if (lastEnteredPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve) {
+                startPosition = [lastEnteredPoint.endPos[0], lastEnteredPoint.endPos[1]];
+            }
+            this.bezierCurveBeingPlaced = new _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve(startPosition);
+            this.currentLineGroup.push(this.bezierCurveBeingPlaced);
+        }
+        else if (pressed && this.isPlacingBezierCurve) {
+            this.isPlacingBezierCurve = false;
+            this.bezierCurveBeingPlaced.isBeingPlaced = false;
+            if (this.currentLineGroup.find(function (point) { return ((point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point &&
+                point.pos[0] === _this.bezierCurveBeingPlaced.endPos[0] &&
+                point.pos[1] === _this.bezierCurveBeingPlaced.endPos[1]) || point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve && ((point.startPos[0] === _this.bezierCurveBeingPlaced.endPos[0] &&
+                point.startPos[1] === _this.bezierCurveBeingPlaced.endPos[1]) || (
+            // on second thought, it should never be the end position.. but maybe that's fine
+            point.endPos[0] === _this.bezierCurveBeingPlaced.endPos[0] &&
+                point.endPos[1] === _this.bezierCurveBeingPlaced.endPos[1]))); })) {
+                this.endPointPlacement();
+            }
+            this.bezierCurveBeingPlaced = null;
         }
     };
     SpriteEditor.prototype.updateJKeyListener = function (pressed) {
@@ -2949,57 +3022,59 @@ var SpriteEditor = /** @class */ (function (_super) {
     };
     // left and right arrow to move between the line groups
     // backspace to delete them
-    SpriteEditor.prototype.updateSKeyListener = function (pressed) {
-        var largestX = 0;
-        var smallestX = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X;
-        var largestY = 0;
-        var smallestY = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y;
-        this.pointGroupsForLines.forEach(function (pointGroup) { return pointGroup.forEach(function (point) {
-            var currentX = point.pos[0];
-            var currentY = point.pos[1];
-            if (largestX < currentX)
-                largestX = currentX;
-            if (smallestX > currentX)
-                smallestX = currentX;
-            if (largestY < currentY)
-                largestY = currentY;
-            if (smallestY > currentY)
-                smallestY = currentY;
-        }); });
-        var width = largestX - smallestX;
-        var height = largestY - smallestY;
-        // maybe I don't need to parameterize by width and height
-        // like... what exactly has that done for me so far
-        // if it was just to make it easier to enter... this will be easier anyway
-        var mappedPoints = this.pointGroupsForLines.map(function (pointGroup) { return pointGroup.map(function (point) {
-            return [
-                Math.round((point.pos[0] - _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X / 2) / (_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X / 120)),
-                Math.round((point.pos[1] - _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / 2) / (_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / 72)) * -1
-            ];
-        }); });
-        if (pressed && this.pointGroupsForLines.length > 0) {
-            // put save logic here
-            var stringToSave_1 = '';
-            // find biggest X value
-            // find smallest X value
-            // find difference to get width
-            // same with height for Y
-            mappedPoints.forEach(function (pointGroup) {
-                var firstPoint = pointGroup[0];
-                var stringStart = "\nctx.beginPath();\nctx.moveTo(".concat(firstPoint[0], ",").concat(firstPoint[1], ");\n");
-                var restOfPoints = pointGroup.slice(1);
-                var lines = restOfPoints.reduce(function (acc, point) {
-                    var newLine = "ctx.lineTo(".concat(point[0], ",").concat(point[1], ");\n");
-                    return acc.concat(newLine);
-                }, '');
-                var stringEnd = "ctx.closePath();\nctx.stroke();\n";
-                stringToSave_1 += stringStart + lines + stringEnd;
-            });
-            console.log(stringToSave_1);
-            // will have to transform all the points to the correct coordinates
-            // add all the instructions
-        }
-    };
+    // updateSKeyListener(pressed: boolean): void {
+    //     let largestX = 0;
+    //     let smallestX = GameScript.DIM_X;
+    //     let largestY = 0;
+    //     let smallestY = GameScript.DIM_Y;
+    //     this.pointGroupsForLines.forEach(
+    //         (pointGroup) => pointGroup.forEach(
+    //             (point) => {
+    //                 const currentX = point.pos[0];
+    //                 const currentY = point.pos[1];
+    //                 if (largestX < currentX) largestX = currentX
+    //                 if (smallestX > currentX) smallestX = currentX
+    //                 if (largestY < currentY) largestY = currentY
+    //                 if (smallestY > currentY) smallestY = currentY
+    //             }
+    //         ))
+    //     const width = largestX - smallestX;
+    //     const height = largestY - smallestY;
+    //     // maybe I don't need to parameterize by width and height
+    //     // like... what exactly has that done for me so far
+    //     // if it was just to make it easier to enter... this will be easier anyway
+    //     const mappedPoints: [number, number][][] = this.pointGroupsForLines.map((pointGroup) => pointGroup.map((point) => {
+    //         return [
+    //             Math.round((point.pos[0] - GameScript.DIM_X/2) / (GameScript.DIM_X / 120)),
+    //             Math.round((point.pos[1] - GameScript.DIM_Y/2) / (GameScript.DIM_Y / 72)) *-1
+    //         ]
+    //     }))
+    //     if(pressed && this.pointGroupsForLines.length > 0){
+    //         // put save logic here
+    //         let stringToSave = '';
+    //         // find biggest X value
+    //         // find smallest X value
+    //         // find difference to get width
+    //         // same with height for Y
+    //         mappedPoints.forEach((pointGroup) => {
+    //             const firstPoint = pointGroup[0];
+    //             const stringStart = 
+    //             `\nctx.beginPath();\nctx.moveTo(${firstPoint[0]},${firstPoint[1]});\n`;
+    //             const restOfPoints = pointGroup.slice(1);
+    //             const lines = restOfPoints.reduce<string>((acc, point) => {
+    //                 const newLine = 
+    //                 `ctx.lineTo(${point[0]},${point[1]});\n`
+    //                 return acc.concat(newLine)
+    //             },'')
+    //             const stringEnd = 
+    //                 `ctx.closePath();\nctx.stroke();\n`
+    //             stringToSave += stringStart + lines + stringEnd;
+    //         })
+    //         console.log(stringToSave);
+    //         // will have to transform all the points to the correct coordinates
+    //         // add all the instructions
+    //     }
+    // }
     SpriteEditor.prototype.mouseClicked = function (mousePos) {
         if (this.isPlacingPoint) {
             var distancePerIncrement = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / 72;
@@ -3010,12 +3085,23 @@ var SpriteEditor = /** @class */ (function (_super) {
     };
     SpriteEditor.prototype.endPointPlacement = function () {
         this.placingPoint.remove();
+        this.bezierCurveBeingPlaced = null;
         this.placingPoint = null;
         this.isPlacingPoint = false;
+        this.isPlacingBezierCurve = false;
+        this.currentLineGroup = [];
     };
-    SpriteEditor.prototype.placePoint = function (pointPosition, previousPoint) {
-        if (this.currentLineGroup.find(function (point) { return point.pos[0] === pointPosition[0] && point.pos[1] === pointPosition[1]; })) {
-            this.currentLineGroup.push(new _Point__WEBPACK_IMPORTED_MODULE_4__.Point(pointPosition));
+    SpriteEditor.prototype.placePoint = function (pointPosition) {
+        if (this.isPlacingBezierCurve) {
+            this.bezierCurveBeingPlaced.placePoint(pointPosition);
+        }
+        else if (this.currentLineGroup.find(function (point) { return ((point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point &&
+            point.pos[0] === pointPosition[0] &&
+            point.pos[1] === pointPosition[1]) || point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve && ((point.startPos[0] === pointPosition[0] &&
+            point.startPos[1] === pointPosition[1]) || (
+        // on second thought, it should never be the end position.. but maybe that's fine
+        point.endPos[0] === pointPosition[0] &&
+            point.endPos[1] === pointPosition[1]))); })) {
             this.endPointPlacement();
         }
         else {
@@ -3035,10 +3121,11 @@ var SpriteEditor = /** @class */ (function (_super) {
 
 var SpriteEditorSprite = /** @class */ (function (_super) {
     __extends(SpriteEditorSprite, _super);
-    function SpriteEditorSprite(transform, pointGroupsForLines, currentMousePos) {
+    function SpriteEditorSprite(transform, pointGroupsForLines, currentMousePos, spriteEditor) {
         var _this = _super.call(this, transform) || this;
         _this.pointGroupsForLines = pointGroupsForLines;
         _this.mousePosition = currentMousePos;
+        _this.spriteEditor = spriteEditor;
         return _this;
     }
     SpriteEditorSprite.prototype.draw = function (ctx) {
@@ -3047,6 +3134,7 @@ var SpriteEditorSprite = /** @class */ (function (_super) {
         ctx.restore();
     };
     SpriteEditorSprite.prototype.drawLines = function (ctx) {
+        var currentLineGroup = this.spriteEditor.currentLineGroup;
         this.pointGroupsForLines.forEach(function (points) {
             if (points.length <= 1) {
             }
@@ -3054,13 +3142,184 @@ var SpriteEditorSprite = /** @class */ (function (_super) {
                 ctx.strokeStyle = '#00FFFF';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.moveTo(points[0].pos[0], points[0].pos[1]);
-                points.forEach(function (point) {
-                    ctx.lineTo(point.pos[0], point.pos[1]);
+                if (points[0] instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point) {
+                    ctx.moveTo(points[0].pos[0], points[0].pos[1]);
+                }
+                if (points[0] instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve) {
+                    if (!points[0].isBeingPlaced) {
+                        ctx.moveTo(points[0].startPos[0], points[0].startPos[1]);
+                        ctx.bezierCurveTo(points[0].controlPoint1[0], points[0].controlPoint1[1], points[0].controlPoint2[0], points[0].controlPoint2[1], points[0].endPos[0], points[0].endPos[1]);
+                    }
+                }
+                points.slice(1).forEach(function (point) {
+                    if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point) {
+                        ctx.lineTo(point.pos[0], point.pos[1]);
+                    }
+                    if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve) {
+                        if (!point.isBeingPlaced) {
+                            ctx.moveTo(point.startPos[0], point.startPos[1]);
+                            ctx.bezierCurveTo(point.controlPoint1[0], point.controlPoint1[1], point.controlPoint2[0], point.controlPoint2[1], point.endPos[0], point.endPos[1]);
+                        }
+                    }
                 });
                 ctx.stroke();
             }
         });
+        if (this.spriteEditor.isPlacingPoint &&
+            !this.spriteEditor.isPlacingBezierCurve &&
+            this.pointGroupsForLines.length >= 1 &&
+            this.pointGroupsForLines[this.pointGroupsForLines.length - 1].length > 0) {
+            var lastPlacedPointPosition = this.pointGroupsForLines[this.pointGroupsForLines.length - 1][this.pointGroupsForLines[this.pointGroupsForLines.length - 1].length - 1];
+            var phantomPointPosition = this.spriteEditor.placingPoint.transform.pos;
+            ctx.strokeStyle = '#a4fcfcff';
+            ctx.setLineDash([3, 8]);
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            if (lastPlacedPointPosition instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point) {
+                ctx.moveTo(lastPlacedPointPosition.pos[0], lastPlacedPointPosition.pos[1]);
+            }
+            else if (lastPlacedPointPosition instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve) {
+                ctx.moveTo(lastPlacedPointPosition.endPos[0], lastPlacedPointPosition.endPos[1]);
+            }
+            ctx.lineTo(phantomPointPosition[0], phantomPointPosition[1]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        if (this.spriteEditor.isPlacingBezierCurve &&
+            this.pointGroupsForLines.length >= 1 &&
+            currentLineGroup.length > 0) {
+            // there's a state where the curve is displayed and user
+            // can move the control points around
+            // solidifying it requires another B click
+            // should be BezierCurve because isPlacingBezierCurve is true (as long as I'm managing that right)
+            var lastPlacedPointPosition = currentLineGroup[currentLineGroup.length - 1];
+            var phantomPointPosition = this.spriteEditor.placingPoint.transform.pos;
+            ctx.strokeStyle = '#a4fcfcff';
+            ctx.setLineDash([3, 8]);
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            // this should never be true:
+            if (lastPlacedPointPosition instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point) {
+                ctx.moveTo(lastPlacedPointPosition.pos[0], lastPlacedPointPosition.pos[1]);
+                ctx.lineTo(phantomPointPosition[0], phantomPointPosition[1]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            else if (lastPlacedPointPosition instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve && lastPlacedPointPosition.isBeingPlaced) {
+                if (lastPlacedPointPosition.placingWhichPoint === 'start') {
+                    // I think we don't draw anything since this must be the first point being added
+                }
+                else if (lastPlacedPointPosition.placingWhichPoint === 'end') {
+                    if (lastPlacedPointPosition.controlPoint1 && lastPlacedPointPosition.controlPoint2) {
+                        // everything is placed but we're adjusting the end point
+                        var cp1 = lastPlacedPointPosition.controlPoint1, cp2 = lastPlacedPointPosition.controlPoint2;
+                        ctx.moveTo(lastPlacedPointPosition.startPos[0], lastPlacedPointPosition.startPos[1]);
+                        ctx.bezierCurveTo(cp1[0], cp1[1], cp2[0], cp2[1], phantomPointPosition[0], phantomPointPosition[1]);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
+                    else {
+                        // control points aren't chosen yet and placing end point so make a line from start to phantom
+                        ctx.moveTo(lastPlacedPointPosition.startPos[0], lastPlacedPointPosition.startPos[1]);
+                        ctx.lineTo(phantomPointPosition[0], phantomPointPosition[1]);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
+                }
+                else if (lastPlacedPointPosition.placingWhichPoint === 'controlPoint1') {
+                    // end point must exist
+                    // if controlPoint2 exists that means we're adjusting controlPoint1 again
+                    if (lastPlacedPointPosition.controlPoint2) {
+                        var cp2 = lastPlacedPointPosition.controlPoint2, endPos = lastPlacedPointPosition.endPos;
+                        ctx.moveTo(lastPlacedPointPosition.startPos[0], lastPlacedPointPosition.startPos[1]);
+                        ctx.bezierCurveTo(phantomPointPosition[0], phantomPointPosition[1], cp2[0], cp2[1], endPos[0], endPos[1]);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
+                    else {
+                        // mirror controlPoint2 over it over
+                        // get negative inverse slope of the start and end points
+                        var _a = lastPlacedPointPosition.startPos, x_start = _a[0], y_start = _a[1];
+                        var _b = lastPlacedPointPosition.endPos, x_end = _b[0], y_end = _b[1];
+                        // I need to account for the case where slope is infinite
+                        var m = (x_end - x_start) * -1 / (y_end - y_start);
+                        var x_mid = (x_start + x_end) / 2;
+                        var y_mid = (y_start + y_end) / 2;
+                        var x_p = phantomPointPosition[0], y_p = phantomPointPosition[1];
+                        var b = -1;
+                        var a = m;
+                        var c = (y_mid - x_mid) * m;
+                        var q = x_mid * m + y_mid;
+                        var theta = Math.atan2(-1 * (x_end - x_start), (y_end - y_start)) - Math.PI / 2;
+                        var p_x_prime = (x_p - x_mid) * Math.cos(theta) + (y_p - y_mid) * Math.sin(theta);
+                        var p_y_prime = (-1 * (x_p - x_mid) * Math.sin(theta) + (y_p - y_mid) * Math.cos(theta));
+                        var p_x_prime_mirrored = -p_x_prime;
+                        var x_mir = p_x_prime_mirrored * Math.cos(theta) - p_y_prime * Math.sin(theta) + x_mid;
+                        var y_mir = p_x_prime_mirrored * Math.sin(theta) + p_y_prime * Math.cos(theta) + y_mid;
+                        // oh! I should draw the mirrored point after this is picked so it can be chosen.
+                        // then I can hit "m" to mirror it and boom I'm done
+                        ctx.setLineDash([]);
+                        ctx.beginPath();
+                        ctx.moveTo(x_mir, y_mir);
+                        ctx.arc(x_mir, y_mir, 4, 0, 2 * Math.PI);
+                        ctx.stroke();
+                        ctx.setLineDash([3, 8]);
+                        ctx.moveTo(x_start, y_start);
+                        ctx.lineTo(x_end, y_end);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                        ctx.beginPath();
+                        ctx.moveTo(x_mid, y_mid);
+                        ctx.arc(x_mid, y_mid, 4, 0, 2 * Math.PI);
+                        ctx.stroke();
+                        ctx.setLineDash([3, 8]);
+                        ctx.strokeStyle = '#12cf5aff';
+                        ctx.beginPath();
+                        ctx.moveTo(0, m * (0 - x_mid) + y_mid);
+                        ctx.lineTo(1400, m * (1400 - x_mid) + y_mid);
+                        ctx.stroke();
+                        ctx.strokeStyle = '#a4fcfcff';
+                        ctx.beginPath();
+                        // const y_mirrored = y_p + (x_mid * m + y_mid) * -2 * (m * x_p + x_mid * m + y_mid + -1) / (m ** 2 + (x_mid * m + y_mid)**2)
+                        // const x_mirrored = x_p + m * -2 * (m * x_p + x_mid * m + y_mid + -1) / (m ** 2 + (x_mid * m + y_mid)**2)
+                        // numbers arent right here
+                        // const y_mir = (y_p * (m ** 2 - 1) + 2 * m * (x_p + y_mid - x_mid)) / (m ** 2 + 1)
+                        // const x_mir = (x_p * (1 - m ** 2) - 2 * m * (-1 * y_p + m * (y_mid - x_mid))) / (1 + m **2)
+                        // const y_mir = y_p + ((b**2 - a**2) - 2 * a * (b * x_p + c)) / (a **2 + b ** 2);
+                        // const x_mir = x_p + ((a**2 - b**2) - 2 * b * (a * y_p + c)) / (a **2 + b ** 2);
+                        // const y_mir = -2 * b * (a * x_p + b * y_p + c) / (a **2 + b ** 2) + y_p
+                        // const x_mir = -2 * a * (a * x_p + b * y_p + c) / (a **2 + b ** 2) + x_p
+                        // const y_mir = (2*m*x_p - (1 - m**2)*y_p + 2*q) / (1 + m**2);
+                        // const x_mir = ((1 - m**2) * x_p + 2 * m * y_p - 2 * m * q) / (1 + m**2);
+                        // const A = m;
+                        // const B = 1;
+                        // const C = m * (y_mid - x_mid);
+                        // const M = Math.sqrt(A * A + B * B);
+                        // const A_prime = A / M;
+                        // const B_prime = B / M;
+                        // const C_prime = C / M;
+                        // const D = A_prime * x_p + B_prime * y_p + C_prime;
+                        // const x_mir = x_p - 2 * A_prime * D;
+                        // const y_mir = y_p - 2 * B_prime * D;
+                        ctx.strokeStyle = '#a4fcfcff';
+                        ctx.moveTo(x_start, y_start);
+                        ctx.bezierCurveTo(x_p, y_p, x_mir, y_mir, x_end, y_end);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
+                }
+                else if (lastPlacedPointPosition.placingWhichPoint === 'controlPoint2') {
+                    var cp1 = lastPlacedPointPosition.controlPoint1, endPos = lastPlacedPointPosition.endPos;
+                    ctx.moveTo(lastPlacedPointPosition.startPos[0], lastPlacedPointPosition.startPos[1]);
+                    ctx.bezierCurveTo(cp1[0], cp1[1], phantomPointPosition[0], phantomPointPosition[1], endPos[0], endPos[1]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            }
+            else {
+                // if last placed point is completed and a bezier curve, then it should already have been drawn
+            }
+        }
     };
     return SpriteEditorSprite;
 }(_line_sprite__WEBPACK_IMPORTED_MODULE_2__.LineSprite));
@@ -3441,6 +3700,8 @@ var GameEngine = /** @class */ (function () {
         this.rightControlStickListeners = [];
         this.lKeyListeners = [];
         this.kKeyListeners = [];
+        this.bKeyListeners = [];
+        this.mKeyListeners = [];
         this.jKeyListeners = [];
         this.oKeyListeners = [];
         this.cKeyListeners = [];
@@ -3633,6 +3894,12 @@ var GameEngine = /** @class */ (function () {
     GameEngine.prototype.addJKeyListener = function (object) {
         this.jKeyListeners.push(object);
     };
+    GameEngine.prototype.addBKeyListener = function (object) {
+        this.bKeyListeners.push(object);
+    };
+    GameEngine.prototype.addMKeyListener = function (object) {
+        this.mKeyListeners.push(object);
+    };
     GameEngine.prototype.addSKeyListener = function (object) {
         this.sKeyListeners.push(object);
     };
@@ -3793,6 +4060,16 @@ var GameEngine = /** @class */ (function () {
     GameEngine.prototype.updateKKeyListeners = function (down) {
         this.kKeyListeners.forEach(function (listener) {
             listener.updateKKeyListener(down);
+        });
+    };
+    GameEngine.prototype.updateBKeyListeners = function (down) {
+        this.bKeyListeners.forEach(function (listener) {
+            listener.updateBKeyListener(down);
+        });
+    };
+    GameEngine.prototype.updateMKeyListeners = function (down) {
+        this.mKeyListeners.forEach(function (listener) {
+            listener.updateMKeyListener(down);
         });
     };
     GameEngine.prototype.updateSKeyListeners = function (down) {
@@ -4180,6 +4457,14 @@ var GameObject = /** @class */ (function () {
         if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
             this.gameEngine.addOKeyListener(this);
     };
+    GameObject.prototype.addBKeyListener = function () {
+        if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
+            this.gameEngine.addBKeyListener(this);
+    };
+    GameObject.prototype.addMKeyListener = function () {
+        if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
+            this.gameEngine.addMKeyListener(this);
+    };
     GameObject.prototype.addJKeyListener = function () {
         if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
             this.gameEngine.addJKeyListener(this);
@@ -4198,6 +4483,8 @@ var GameObject = /** @class */ (function () {
     GameObject.prototype.updateJKeyListener = function (pressed) { console.log('overwrite updateJKeyListener'); };
     GameObject.prototype.updateSKeyListener = function (pressed) { console.log('overwrite updateSKeyListener'); };
     GameObject.prototype.updateLKeyListener = function (pressed) { console.log('overwrite updateLKeyListener'); };
+    GameObject.prototype.updateBKeyListener = function (pressed) { console.log('overwrite updateBKeyListener'); };
+    GameObject.prototype.updateMKeyListener = function (pressed) { console.log('overwrite updateMKeyListener'); };
     GameObject.prototype.updateBButtonListener = function (pressed) { console.log('overwrite updateBButtonListener for functionality'); };
     GameObject.prototype.updateRightControlFocussedStickInput = function (direction) { console.log(direction, 'overwrite updateRightControlFocussedStickInput'); }; // TODO include object name
     GameObject.prototype.updateLeftControlFocussedStickInput = function (direction, pressed) { console.log(direction, pressed, 'overwrite updateLeftControlFocussedStickInput'); }; // TODO include object name;
@@ -14074,6 +14361,12 @@ var GameView = /** @class */ (function () {
             }
             if (e.key === 'o') {
                 _this.engine.updateOKeyListeners(down);
+            }
+            if (e.key === 'b') {
+                _this.engine.updateBKeyListeners(down);
+            }
+            if (e.key === 'm') {
+                _this.engine.updateMKeyListeners(down);
             }
             if (e.key === "p") {
                 _this.engine.updateStartButtonListeners(down);
