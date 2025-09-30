@@ -2784,8 +2784,12 @@ var DrawingGridSprite = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   BezierCurve: () => (/* binding */ BezierCurve),
+/* harmony export */   BezierCurveData: () => (/* binding */ BezierCurveData),
+/* harmony export */   Circle: () => (/* binding */ Circle),
+/* harmony export */   CircleData: () => (/* binding */ CircleData),
 /* harmony export */   PlacingPoint: () => (/* binding */ PlacingPoint),
-/* harmony export */   Point: () => (/* binding */ Point)
+/* harmony export */   Point: () => (/* binding */ Point),
+/* harmony export */   PointData: () => (/* binding */ PointData)
 /* harmony export */ });
 /* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.ts");
 /* harmony import */ var _game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../game_object */ "./src/game_engine/game_object.ts");
@@ -2866,6 +2870,9 @@ var BezierCurve = /** @class */ (function () {
         this.startPos = pos ? [pos[0], pos[1]] : null;
         this.placingWhichPoint = pos ? 'end' : 'start';
     }
+    BezierCurve.prototype.isDrawable = function () {
+        return Boolean(this.startPos && this.endPos && this.controlPoint1 && this.controlPoint2);
+    };
     BezierCurve.prototype.placePoint = function (pos) {
         switch (this.placingWhichPoint) {
             case "start":
@@ -2888,6 +2895,63 @@ var BezierCurve = /** @class */ (function () {
         }
     };
     return BezierCurve;
+}());
+
+var Circle = /** @class */ (function () {
+    function Circle(centerPoint, radius) {
+        this.isBeingPlaced = true;
+        this.pointBeingPlaced = 'center';
+        if (centerPoint && radius) {
+            this.centerPoint = [centerPoint[0], centerPoint[1]];
+            this.radius = radius;
+        }
+    }
+    Circle.prototype.getRadius = function (pos) {
+        if (!this.centerPoint)
+            throw Error('should have center already');
+        var _a = this.centerPoint, c_x = _a[0], c_y = _a[1];
+        var p_x = pos[0], p_y = pos[1];
+        return Math.sqrt(Math.pow((c_x - p_x), 2) + Math.pow((c_y - p_y), 2));
+    };
+    Circle.prototype.placingPoint = function (pos) {
+        switch (this.pointBeingPlaced) {
+            case "center":
+                this.centerPoint = [pos[0], pos[1]];
+                this.pointBeingPlaced = 'radius';
+                break;
+            case "radius":
+                this.radius = this.getRadius(pos);
+                this.pointBeingPlaced = 'done';
+                this.isBeingPlaced = false;
+                break;
+        }
+    };
+    return Circle;
+}());
+
+var CircleData = /** @class */ (function () {
+    function CircleData(centerPoint, radius) {
+        this.centerPoint = [centerPoint[0], centerPoint[1]];
+        this.radius = radius;
+    }
+    return CircleData;
+}());
+
+var BezierCurveData = /** @class */ (function () {
+    function BezierCurveData(startPos, endPos, controlPoint1, controlPoint2) {
+        this.startPos = [startPos[0], startPos[1]];
+        this.endPos = [endPos[0], endPos[1]];
+        this.controlPoint1 = [controlPoint1[0], controlPoint1[1]];
+        this.controlPoint2 = [controlPoint2[0], controlPoint2[1]];
+    }
+    return BezierCurveData;
+}());
+
+var PointData = /** @class */ (function () {
+    function PointData(point) {
+        this.point = [point[0], point[1]];
+    }
+    return PointData;
 }());
 
 
@@ -2946,12 +3010,15 @@ var SpriteEditor = /** @class */ (function (_super) {
         _this.addSKeyListener();
         _this.addBKeyListener();
         _this.addMKeyListener();
+        _this.addOKeyListener();
         _this.addClickListener();
         return _this;
     }
     // L to start placing new line, will end current line and start new one
     // K to remove last added point. If last point in line, the line is removed and point placing is ended
     // J to end point placing
+    // M to choose the mirrored version of control point1 for control point2
+    // O to start adding a circle. Ends the line currently being entered
     SpriteEditor.prototype.updateLKeyListener = function (pressed) {
         if (pressed) {
             if (this.isPlacingPoint) {
@@ -2963,6 +3030,19 @@ var SpriteEditor = /** @class */ (function (_super) {
             this.placingPoint = new _Point__WEBPACK_IMPORTED_MODULE_4__.PlacingPoint(this.gameEngine);
             this.currentLineGroup = [];
             this.pointGroupsForLines.push(this.currentLineGroup);
+        }
+    };
+    SpriteEditor.prototype.updateOKeyListener = function (pressed) {
+        if (pressed) {
+            if (this.isPlacingPoint)
+                this.endPointPlacement();
+            this.isPlacingPoint = true;
+            this.isPlacingCircle = true;
+            this.placingPoint = new _Point__WEBPACK_IMPORTED_MODULE_4__.PlacingPoint(this.gameEngine);
+            this.currentLineGroup = [];
+            this.pointGroupsForLines.push(this.currentLineGroup);
+            this.circleBeingPlaced = new _Point__WEBPACK_IMPORTED_MODULE_4__.Circle();
+            this.currentLineGroup.push(this.circleBeingPlaced);
         }
     };
     SpriteEditor.prototype.updateKKeyListener = function (pressed) {
@@ -3007,7 +3087,7 @@ var SpriteEditor = /** @class */ (function (_super) {
             this.bezierCurveBeingPlaced = new _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve(startPosition);
             this.currentLineGroup.push(this.bezierCurveBeingPlaced);
         }
-        else if (pressed && this.isPlacingBezierCurve) {
+        else if (pressed && this.isPlacingBezierCurve && this.bezierCurveBeingPlaced.isDrawable()) {
             this.isPlacingBezierCurve = false;
             this.bezierCurveBeingPlaced.isBeingPlaced = false;
             if (this.currentLineGroup.slice(0, this.currentLineGroup.length - 1).find(function (point) { return ((point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point &&
@@ -3027,61 +3107,88 @@ var SpriteEditor = /** @class */ (function (_super) {
             this.endPointPlacement();
         }
     };
+    SpriteEditor.prototype.pointTransformation = function (pos) {
+        return [
+            Math.round((pos[0] - _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X / 2) / (_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X / 120)),
+            Math.round((pos[1] - _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / 2) / (_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / 72)) * -1
+        ];
+    };
     // left and right arrow to move between the line groups
     // backspace to delete them
-    // updateSKeyListener(pressed: boolean): void {
-    //     let largestX = 0;
-    //     let smallestX = GameScript.DIM_X;
-    //     let largestY = 0;
-    //     let smallestY = GameScript.DIM_Y;
-    //     this.pointGroupsForLines.forEach(
-    //         (pointGroup) => pointGroup.forEach(
-    //             (point) => {
-    //                 const currentX = point.pos[0];
-    //                 const currentY = point.pos[1];
-    //                 if (largestX < currentX) largestX = currentX
-    //                 if (smallestX > currentX) smallestX = currentX
-    //                 if (largestY < currentY) largestY = currentY
-    //                 if (smallestY > currentY) smallestY = currentY
-    //             }
-    //         ))
-    //     const width = largestX - smallestX;
-    //     const height = largestY - smallestY;
-    //     // maybe I don't need to parameterize by width and height
-    //     // like... what exactly has that done for me so far
-    //     // if it was just to make it easier to enter... this will be easier anyway
-    //     const mappedPoints: [number, number][][] = this.pointGroupsForLines.map((pointGroup) => pointGroup.map((point) => {
-    //         return [
-    //             Math.round((point.pos[0] - GameScript.DIM_X/2) / (GameScript.DIM_X / 120)),
-    //             Math.round((point.pos[1] - GameScript.DIM_Y/2) / (GameScript.DIM_Y / 72)) *-1
-    //         ]
-    //     }))
-    //     if(pressed && this.pointGroupsForLines.length > 0){
-    //         // put save logic here
-    //         let stringToSave = '';
-    //         // find biggest X value
-    //         // find smallest X value
-    //         // find difference to get width
-    //         // same with height for Y
-    //         mappedPoints.forEach((pointGroup) => {
-    //             const firstPoint = pointGroup[0];
-    //             const stringStart = 
-    //             `\nctx.beginPath();\nctx.moveTo(${firstPoint[0]},${firstPoint[1]});\n`;
-    //             const restOfPoints = pointGroup.slice(1);
-    //             const lines = restOfPoints.reduce<string>((acc, point) => {
-    //                 const newLine = 
-    //                 `ctx.lineTo(${point[0]},${point[1]});\n`
-    //                 return acc.concat(newLine)
-    //             },'')
-    //             const stringEnd = 
-    //                 `ctx.closePath();\nctx.stroke();\n`
-    //             stringToSave += stringStart + lines + stringEnd;
-    //         })
-    //         console.log(stringToSave);
-    //         // will have to transform all the points to the correct coordinates
-    //         // add all the instructions
-    //     }
-    // }
+    // when saved, each line group gets a placeholder for a name
+    SpriteEditor.prototype.updateSKeyListener = function (pressed) {
+        var _this = this;
+        // maybe I don't need to parameterize by width and height
+        // like... what exactly has that done for me so far
+        // if it was just to make it easier to enter... this will be easier anyway
+        // okay on third thought, I think I do need a scaling parameter, 
+        // but only one for the entire thing to make it easier to size later
+        var mappedPoints = this.pointGroupsForLines.map(function (pointGroup) { return pointGroup.map(function (point) {
+            if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point) {
+                return new _Point__WEBPACK_IMPORTED_MODULE_4__.PointData(_this.pointTransformation(point.pos));
+            }
+            else if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve) {
+                var dataToPutIn = {
+                    startPos: _this.pointTransformation(point.startPos),
+                    endPos: _this.pointTransformation(point.endPos),
+                    controlPoint1: _this.pointTransformation(point.controlPoint1),
+                    controlPoint2: _this.pointTransformation(point.controlPoint2),
+                };
+                return new _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurveData(dataToPutIn.startPos, dataToPutIn.endPos, dataToPutIn.controlPoint1, dataToPutIn.controlPoint2);
+            }
+            else if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Circle) {
+                var centerPoint = _this.pointTransformation(point.centerPoint);
+                var radius = Math.round((point.radius - _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X / 2) / (_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X / 120));
+                return new _Point__WEBPACK_IMPORTED_MODULE_4__.CircleData(centerPoint, radius);
+            }
+        }); });
+        if (pressed && this.pointGroupsForLines.length > 0) {
+            // put save logic here
+            var stringToSave_1 = '';
+            // find biggest X value
+            // find smallest X value
+            // find difference to get width
+            // same with height for Y
+            mappedPoints.forEach(function (pointGroup, idx) {
+                var firstPoint = pointGroup[0];
+                var stringStart = "const s = 1;\n\n";
+                if (firstPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.PointData) {
+                    stringStart =
+                        "Piece ".concat(idx + 1, ": \nctx.moveTo(").concat(firstPoint.point[0], " * s, ").concat(firstPoint.point[1], " * s);\nctx.beginPath();\n");
+                }
+                else if (firstPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.CircleData) {
+                    stringStart =
+                        "Piece ".concat(idx + 1, ": \nctx.beginPath();\nctx.arc(").concat(firstPoint.centerPoint[0], " * s, ").concat(firstPoint.centerPoint[1], " * s, ").concat(firstPoint.radius, " * s, 0,2*Math.PI);\n");
+                }
+                else if (firstPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurveData) {
+                    stringStart =
+                        "Piece ".concat(idx + 1, ": \nctx.beginPath();\nctx.moveTo(").concat(firstPoint.startPos[0], " * s, ").concat(firstPoint.startPos[1], " * s);\nctx.bezierCurveto(\n\t").concat(firstPoint.controlPoint1[0], " * s, ").concat(firstPoint.controlPoint1[1], " * s,\n\t").concat(firstPoint.controlPoint2[0], " * s, ").concat(firstPoint.controlPoint2[1], " * s,\n\t").concat(firstPoint.endPos[0], " * s, ").concat(firstPoint.endPos[1], " * s\n);\n");
+                }
+                var restOfPoints = pointGroup.slice(1);
+                var lines = restOfPoints.reduce(function (acc, point) {
+                    var newLine = '';
+                    if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.PointData) {
+                        newLine =
+                            "ctx.lineTo(".concat(point.point[0], " * s, ").concat(point.point[1], " * s);\n");
+                    }
+                    else if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.CircleData) {
+                        console.error('there shouldnt be a circle here, since circles are their own part');
+                    }
+                    else if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurveData) {
+                        // start of the curve should be the last point
+                        newLine =
+                            "ctx.bezierCurveto(\n\t".concat(point.controlPoint1[0], " * s, ").concat(point.controlPoint1[1], " * s,\n\t").concat(point.controlPoint2[0], " * s, ").concat(point.controlPoint2[1], " * s,\n\t").concat(point.endPos[0], " * s, ").concat(point.endPos[1], " * s\n);\n");
+                    }
+                    return acc.concat(newLine);
+                }, '');
+                var stringEnd = "ctx.stroke();\n\n";
+                stringToSave_1 += stringStart + lines + stringEnd;
+            });
+            console.log(stringToSave_1);
+            // will have to transform all the points to the correct coordinates
+            // add all the instructions
+        }
+    };
     SpriteEditor.prototype.mouseClicked = function (mousePos) {
         if (this.isPlacingPoint) {
             var distancePerIncrement = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / 72;
@@ -3092,14 +3199,27 @@ var SpriteEditor = /** @class */ (function (_super) {
     };
     SpriteEditor.prototype.endPointPlacement = function () {
         this.placingPoint.remove();
+        if (this.isPlacingBezierCurve)
+            this.currentLineGroup.pop();
+        if (this.isPlacingCircle)
+            this.currentLineGroup.pop();
         this.bezierCurveBeingPlaced = null;
+        this.circleBeingPlaced = null;
         this.placingPoint = null;
         this.isPlacingPoint = false;
+        this.isPlacingCircle = false;
         this.isPlacingBezierCurve = false;
         this.currentLineGroup = [];
     };
     SpriteEditor.prototype.placePoint = function (pointPosition) {
-        if (this.isPlacingBezierCurve) {
+        if (this.isPlacingCircle) {
+            this.circleBeingPlaced.placingPoint(pointPosition);
+            if (this.circleBeingPlaced.pointBeingPlaced === 'done') {
+                this.isPlacingCircle = false;
+                this.endPointPlacement();
+            }
+        }
+        else if (this.isPlacingBezierCurve) {
             this.bezierCurveBeingPlaced.placePoint(pointPosition);
         }
         else if (this.currentLineGroup.find(function (point) { return ((point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point &&
@@ -3109,6 +3229,7 @@ var SpriteEditor = /** @class */ (function (_super) {
         // on second thought, it should never be the end position.. but maybe that's fine
         point.endPos[0] === pointPosition[0] &&
             point.endPos[1] === pointPosition[1]))); })) {
+            this.currentLineGroup.push(new _Point__WEBPACK_IMPORTED_MODULE_4__.Point(pointPosition));
             this.endPointPlacement();
         }
         else {
@@ -3141,9 +3262,11 @@ var SpriteEditorSprite = /** @class */ (function (_super) {
         ctx.restore();
     };
     SpriteEditorSprite.prototype.drawLines = function (ctx) {
+        var _a, _b, _c;
         var currentLineGroup = this.spriteEditor.currentLineGroup;
+        var phantomPointPosition = (_c = (_b = (_a = this.spriteEditor) === null || _a === void 0 ? void 0 : _a.placingPoint) === null || _b === void 0 ? void 0 : _b.transform) === null || _c === void 0 ? void 0 : _c.pos;
         this.pointGroupsForLines.forEach(function (points) {
-            if (points.length <= 1) {
+            if (points.length <= 1 && points[0] instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point) {
             }
             else {
                 ctx.strokeStyle = '#00FFFF';
@@ -3156,6 +3279,26 @@ var SpriteEditorSprite = /** @class */ (function (_super) {
                     if (!points[0].isBeingPlaced) {
                         ctx.moveTo(points[0].startPos[0], points[0].startPos[1]);
                         ctx.bezierCurveTo(points[0].controlPoint1[0], points[0].controlPoint1[1], points[0].controlPoint2[0], points[0].controlPoint2[1], points[0].endPos[0], points[0].endPos[1]);
+                    }
+                }
+                if (points[0] instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Circle) {
+                    var circle = points[0];
+                    if (circle.centerPoint) {
+                        if (!circle.isBeingPlaced) {
+                            ctx.arc(circle.centerPoint[0], circle.centerPoint[1], circle.radius, 0, 2 * Math.PI);
+                            ctx.stroke();
+                            ctx.beginPath();
+                        }
+                        else {
+                            ctx.moveTo(circle.centerPoint[0], circle.centerPoint[1]);
+                            ctx.strokeStyle = '#a4fcfcff';
+                            ctx.setLineDash([3, 8]);
+                            ctx.arc(circle.centerPoint[0], circle.centerPoint[1], circle.getRadius([phantomPointPosition[0], phantomPointPosition[1]]), 0, 2 * Math.PI);
+                            ctx.stroke();
+                            ctx.beginPath();
+                            ctx.setLineDash([]);
+                            ctx.strokeStyle = '#00FFFF';
+                        }
                     }
                 }
                 points.slice(1).forEach(function (point) {
@@ -3177,7 +3320,6 @@ var SpriteEditorSprite = /** @class */ (function (_super) {
             this.pointGroupsForLines.length >= 1 &&
             this.pointGroupsForLines[this.pointGroupsForLines.length - 1].length > 0) {
             var lastPlacedPointPosition = this.pointGroupsForLines[this.pointGroupsForLines.length - 1][this.pointGroupsForLines[this.pointGroupsForLines.length - 1].length - 1];
-            var phantomPointPosition = this.spriteEditor.placingPoint.transform.pos;
             ctx.strokeStyle = '#a4fcfcff';
             ctx.setLineDash([3, 8]);
             ctx.lineWidth = 2;
@@ -3200,7 +3342,6 @@ var SpriteEditorSprite = /** @class */ (function (_super) {
             // solidifying it requires another B click
             // should be BezierCurve because isPlacingBezierCurve is true (as long as I'm managing that right)
             var lastPlacedPointPosition = currentLineGroup[currentLineGroup.length - 1];
-            var phantomPointPosition = this.spriteEditor.placingPoint.transform.pos;
             ctx.strokeStyle = '#a4fcfcff';
             ctx.setLineDash([3, 8]);
             ctx.lineWidth = 2;
@@ -3246,8 +3387,8 @@ var SpriteEditorSprite = /** @class */ (function (_super) {
                     else {
                         // mirror controlPoint2 over it over
                         // get negative inverse slope of the start and end points
-                        var _a = lastPlacedPointPosition.startPos, x_start = _a[0], y_start = _a[1];
-                        var _b = lastPlacedPointPosition.endPos, x_end = _b[0], y_end = _b[1];
+                        var _d = lastPlacedPointPosition.startPos, x_start = _d[0], y_start = _d[1];
+                        var _e = lastPlacedPointPosition.endPos, x_end = _e[0], y_end = _e[1];
                         // I need to account for the case where slope is infinite
                         var m = (x_end - x_start) * -1 / (y_end - y_start);
                         var x_mid = (x_start + x_end) / 2;
@@ -4496,10 +4637,10 @@ var GameObject = /** @class */ (function () {
     GameObject.prototype.updateBButtonListener = function (pressed) { console.log('overwrite updateBButtonListener for functionality'); };
     GameObject.prototype.updateRightControlFocussedStickInput = function (direction) { console.log(direction, 'overwrite updateRightControlFocussedStickInput'); }; // TODO include object name
     GameObject.prototype.updateLeftControlFocussedStickInput = function (direction, pressed) { console.log(direction, pressed, 'overwrite updateLeftControlFocussedStickInput'); }; // TODO include object name;
-    GameObject.prototype.updateRightControlStickInput = function (direction) { return console.log(direction, 'overwright updateRightControlStickInput'); }; // TODO include object name
+    GameObject.prototype.updateRightControlStickInput = function (direction) { return console.log(direction, 'overwrite updateRightControlStickInput'); }; // TODO include object name
     GameObject.prototype.updateLeftControlStickInput = function (direction, pressed) { return console.log(direction, pressed, 'overwrite updateLeftControlStickInput'); }; // TODO include object name
-    GameObject.prototype.updateXButtonListener = function (pressed) { return console.log(pressed, "overwright updateXButtonListener"); }; // TODO include object name
-    GameObject.prototype.updateStartButtonListener = function (pressed) { return console.log(pressed, 'overwright updateStartButtonListener'); }; // TODO include object name
+    GameObject.prototype.updateXButtonListener = function (pressed) { return console.log(pressed, "overwrite updateXButtonListener"); }; // TODO include object name
+    GameObject.prototype.updateStartButtonListener = function (pressed) { return console.log(pressed, 'overwrite updateStartButtonListener'); }; // TODO include object name
     GameObject.prototype.updateMousePos = function (mousePos) { return console.log(mousePos, 'overwrite updateMousePos'); }; // TODO include object name
     GameObject.prototype.updateFocussedMousePos = function (mousePos) { return console.log(mousePos, 'overwrite updateFocussedMousePos'); }; // TODO include object name
     GameObject.prototype.addClickListener = function () {
@@ -4510,9 +4651,9 @@ var GameObject = /** @class */ (function () {
         if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
             this.gameEngine.removeClickListener(this);
     };
-    GameObject.prototype.mouseClicked = function (mousePos) { return console.log(mousePos, 'overwright mouseClicked'); }; // TODO include object name
-    GameObject.prototype.mouseDowned = function (mousePos) { return console.log(mousePos, 'overwright mouseDowned'); }; // TODO include object name
-    GameObject.prototype.mouseDoubleClicked = function (mousePos) { return console.log(mousePos, 'overwright mouseDoubleClicked'); }; // TODO include object name
+    GameObject.prototype.mouseClicked = function (mousePos) { return console.log(mousePos, 'overwrite mouseClicked'); }; // TODO include object name
+    GameObject.prototype.mouseDowned = function (mousePos) { return console.log(mousePos, 'overwrite mouseDowned'); }; // TODO include object name
+    GameObject.prototype.mouseDoubleClicked = function (mousePos) { return console.log(mousePos, 'overwrite mouseDoubleClicked'); }; // TODO include object name
     GameObject.prototype.addCollider = function (type, gameObject, radius, subscriptionTypes, subscriptions) {
         // game engine checks every collider with it's subscription types
         var newCollider = new _collider__WEBPACK_IMPORTED_MODULE_2__.Collider(type, gameObject, radius, subscriptionTypes, subscriptions);

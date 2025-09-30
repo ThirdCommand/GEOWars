@@ -165,13 +165,13 @@ export abstract class GameObject implements controllable{
 
     updateLeftControlFocussedStickInput(direction: [number, number] | string, pressed: boolean | null) {console.log(direction, pressed, 'overwrite updateLeftControlFocussedStickInput');} // TODO include object name;
 
-    updateRightControlStickInput(direction: [number, number]){return console.log(direction, 'overwright updateRightControlStickInput');} // TODO include object name
+    updateRightControlStickInput(direction: [number, number]){return console.log(direction, 'overwrite updateRightControlStickInput');} // TODO include object name
 
     updateLeftControlStickInput(direction: [number, number] | string, pressed: boolean | null){return console.log(direction,pressed,  'overwrite updateLeftControlStickInput');} // TODO include object name
 
-    updateXButtonListener(pressed: boolean){return console.log(pressed, `overwright updateXButtonListener`);} // TODO include object name
+    updateXButtonListener(pressed: boolean){return console.log(pressed, `overwrite updateXButtonListener`);} // TODO include object name
 
-    updateStartButtonListener(pressed: boolean) {return console.log(pressed, 'overwright updateStartButtonListener');} // TODO include object name
+    updateStartButtonListener(pressed: boolean) {return console.log(pressed, 'overwrite updateStartButtonListener');} // TODO include object name
 
     updateMousePos(mousePos: [number, number]){ return console.log(mousePos, 'overwrite updateMousePos');} // TODO include object name
 
@@ -187,9 +187,9 @@ export abstract class GameObject implements controllable{
             this.gameEngine.removeClickListener(this);
     }
 
-    mouseClicked(mousePos: [number, number]){return console.log(mousePos, 'overwright mouseClicked'); }// TODO include object name
-    mouseDowned(mousePos: [number, number]){return console.log(mousePos, 'overwright mouseDowned'); }// TODO include object name
-    mouseDoubleClicked(mousePos: [number, number]){return console.log(mousePos, 'overwright mouseDoubleClicked'); }// TODO include object name
+    mouseClicked(mousePos: [number, number]){return console.log(mousePos, 'overwrite mouseClicked'); }// TODO include object name
+    mouseDowned(mousePos: [number, number]){return console.log(mousePos, 'overwrite mouseDowned'); }// TODO include object name
+    mouseDoubleClicked(mousePos: [number, number]){return console.log(mousePos, 'overwrite mouseDoubleClicked'); }// TODO include object name
 
     addCollider(type: string, gameObject: GameObject, radius: number): void;
     addCollider(type: string, gameObject: GameObject, radius: number, subscriptionTypes: string[], subscriptions: string[]): void;

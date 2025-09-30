@@ -3,7 +3,7 @@ import { GameEngine } from "../game_engine";
 import { GameObject } from "../game_object";
 import { LineSprite } from "../line_sprite";
 import { Transform } from "../transform";
-import { BezierCurve, PlacingPoint, Point } from "./Point";
+import { BezierCurve, BezierCurveData, Circle, CircleData, PlacingPoint, Point, PointData } from "./Point";
 
 // place points until loop completed or escape selected
 // then complete the line 
@@ -11,13 +11,14 @@ import { BezierCurve, PlacingPoint, Point } from "./Point";
 // this should keep track of what's on the screen I guess?
 export class SpriteEditor extends GameObject{
     points: Point[];
-    pointGroupsForLines: (Point | BezierCurve)[][];
-    currentLineGroup: (Point | BezierCurve)[];
+    pointGroupsForLines: (Point | BezierCurve | Circle)[][];
+    currentLineGroup: (Point | BezierCurve | Circle)[];
     currentMousePos: [number, number];
     isPlacingPoint: boolean;
     isPlacingCircle: boolean;
     isPlacingBezierCurve: boolean;
     bezierCurveBeingPlaced?: BezierCurve;
+    circleBeingPlaced?: Circle;
     placingPoint: PlacingPoint;
     
     constructor(engine: GameEngine) {
@@ -32,12 +33,15 @@ export class SpriteEditor extends GameObject{
         this.addSKeyListener();
         this.addBKeyListener();
         this.addMKeyListener();
+        this.addOKeyListener();
         this.addClickListener();
     }
 
     // L to start placing new line, will end current line and start new one
     // K to remove last added point. If last point in line, the line is removed and point placing is ended
     // J to end point placing
+    // M to choose the mirrored version of control point1 for control point2
+    // O to start adding a circle. Ends the line currently being entered
 
     updateLKeyListener(pressed: boolean): void {
         if(pressed) {
@@ -50,6 +54,20 @@ export class SpriteEditor extends GameObject{
             this.placingPoint = new PlacingPoint(this.gameEngine as GameEngine)
             this.currentLineGroup = [];
             this.pointGroupsForLines.push(this.currentLineGroup);
+        }
+    }
+
+    updateOKeyListener(pressed: boolean): void {
+        if(pressed) {
+            if(this.isPlacingPoint) this.endPointPlacement();
+            this.isPlacingPoint = true;
+            this.isPlacingCircle = true;
+
+            this.placingPoint = new PlacingPoint(this.gameEngine as GameEngine)
+            this.currentLineGroup = [];
+            this.pointGroupsForLines.push(this.currentLineGroup);
+            this.circleBeingPlaced = new Circle();
+            this.currentLineGroup.push(this.circleBeingPlaced);
         }
     }
 
@@ -66,7 +84,7 @@ export class SpriteEditor extends GameObject{
             }
         }
     }
-    
+
     updateMKeyListener(pressed: boolean): void {
         if(pressed && this.isPlacingBezierCurve && this.bezierCurveBeingPlaced.placingWhichPoint === 'controlPoint2' && this.bezierCurveBeingPlaced.mirroredValue)  {
             this.bezierCurveBeingPlaced.controlPoint2 = [this.bezierCurveBeingPlaced.mirroredValue[0], this.bezierCurveBeingPlaced.mirroredValue[1]]
@@ -96,7 +114,7 @@ export class SpriteEditor extends GameObject{
             }
             this.bezierCurveBeingPlaced = new BezierCurve(startPosition)
             this.currentLineGroup.push(this.bezierCurveBeingPlaced);
-        } else if (pressed && this.isPlacingBezierCurve) {
+        } else if (pressed && this.isPlacingBezierCurve && this.bezierCurveBeingPlaced.isDrawable()) {
             this.isPlacingBezierCurve = false;
             this.bezierCurveBeingPlaced.isBeingPlaced = false;
             if(
@@ -129,66 +147,91 @@ export class SpriteEditor extends GameObject{
             this.endPointPlacement();
         }
     }
+
+    pointTransformation(pos: [number, number]): [number, number] {
+        return [
+            Math.round((pos[0] - GameScript.DIM_X/2) / (GameScript.DIM_X / 120)),
+            Math.round((pos[1] - GameScript.DIM_Y/2) / (GameScript.DIM_Y / 72)) *-1
+        ];
+    }
+
     // left and right arrow to move between the line groups
     // backspace to delete them
-
-    // updateSKeyListener(pressed: boolean): void {
-    //     let largestX = 0;
-    //     let smallestX = GameScript.DIM_X;
-    //     let largestY = 0;
-    //     let smallestY = GameScript.DIM_Y;
-
-    //     this.pointGroupsForLines.forEach(
-    //         (pointGroup) => pointGroup.forEach(
-    //             (point) => {
-    //                 const currentX = point.pos[0];
-    //                 const currentY = point.pos[1];
-    //                 if (largestX < currentX) largestX = currentX
-    //                 if (smallestX > currentX) smallestX = currentX
-    //                 if (largestY < currentY) largestY = currentY
-    //                 if (smallestY > currentY) smallestY = currentY
-    //             }
-    //         ))
-    //     const width = largestX - smallestX;
-    //     const height = largestY - smallestY;
-    //     // maybe I don't need to parameterize by width and height
-    //     // like... what exactly has that done for me so far
-    //     // if it was just to make it easier to enter... this will be easier anyway
-
-    //     const mappedPoints: [number, number][][] = this.pointGroupsForLines.map((pointGroup) => pointGroup.map((point) => {
-    //         return [
-    //             Math.round((point.pos[0] - GameScript.DIM_X/2) / (GameScript.DIM_X / 120)),
-    //             Math.round((point.pos[1] - GameScript.DIM_Y/2) / (GameScript.DIM_Y / 72)) *-1
-    //         ]
-    //     }))
+    // when saved, each line group gets a placeholder for a name
+    updateSKeyListener(pressed: boolean): void {
+        // maybe I don't need to parameterize by width and height
+        // like... what exactly has that done for me so far
+        // if it was just to make it easier to enter... this will be easier anyway
+        // okay on third thought, I think I do need a scaling parameter, 
+        // but only one for the entire thing to make it easier to size later
+        const mappedPoints: (PointData | BezierCurveData | CircleData)[][] = this.pointGroupsForLines.map((pointGroup) => pointGroup.map((point) => {
+            if(point instanceof Point) {
+                return new PointData(this.pointTransformation(point.pos));
+            } else if (point instanceof BezierCurve) {
+                const dataToPutIn = {
+                    startPos: this.pointTransformation(point.startPos),
+                    endPos: this.pointTransformation(point.endPos),
+                    controlPoint1: this.pointTransformation(point.controlPoint1),
+                    controlPoint2: this.pointTransformation(point.controlPoint2),
+                }
+                return new BezierCurveData(
+                    dataToPutIn.startPos,
+                    dataToPutIn.endPos,
+                    dataToPutIn.controlPoint1,
+                    dataToPutIn.controlPoint2
+                )
+            } else if (point instanceof Circle) {
+                const centerPoint = this.pointTransformation(point.centerPoint);
+                const radius = Math.round((point.radius - GameScript.DIM_X/2) / (GameScript.DIM_X / 120));
+                return new CircleData(centerPoint, radius);
+            }
+        }))
         
-    //     if(pressed && this.pointGroupsForLines.length > 0){
-    //         // put save logic here
-    //         let stringToSave = '';
-    //         // find biggest X value
-    //         // find smallest X value
-    //         // find difference to get width
-    //         // same with height for Y
-    //         mappedPoints.forEach((pointGroup) => {
-    //             const firstPoint = pointGroup[0];
-    //             const stringStart = 
-    //             `\nctx.beginPath();\nctx.moveTo(${firstPoint[0]},${firstPoint[1]});\n`;
-    //             const restOfPoints = pointGroup.slice(1);
-    //             const lines = restOfPoints.reduce<string>((acc, point) => {
-    //                 const newLine = 
-    //                 `ctx.lineTo(${point[0]},${point[1]});\n`
-    //                 return acc.concat(newLine)
-    //             },'')
-    //             const stringEnd = 
-    //                 `ctx.closePath();\nctx.stroke();\n`
-    //             stringToSave += stringStart + lines + stringEnd;
-    //         })
-    //         console.log(stringToSave);
+        if(pressed && this.pointGroupsForLines.length > 0){
+            // put save logic here
+            let stringToSave = '';
+            // find biggest X value
+            // find smallest X value
+            // find difference to get width
+            // same with height for Y
+            mappedPoints.forEach((pointGroup, idx) => {
+                const firstPoint = pointGroup[0];
+                let stringStart = `const s = 1;\n\n`
+                if(firstPoint instanceof PointData) {
+                    stringStart = 
+                    `Piece ${idx + 1}: \nctx.moveTo(${firstPoint.point[0]} * s, ${firstPoint.point[1]} * s);\nctx.beginPath();\n`;
+                } else if (firstPoint instanceof CircleData) {
+                    stringStart = 
+                    `Piece ${idx + 1}: \nctx.beginPath();\nctx.arc(${firstPoint.centerPoint[0]} * s, ${firstPoint.centerPoint[1]} * s, ${firstPoint.radius} * s, 0,2*Math.PI);\n`;
+                } else if (firstPoint instanceof BezierCurveData) {
+                    stringStart=
+                    `Piece ${idx + 1}: \nctx.beginPath();\nctx.moveTo(${firstPoint.startPos[0]} * s, ${firstPoint.startPos[1]} * s);\nctx.bezierCurveto(\n\t${firstPoint.controlPoint1[0]} * s, ${firstPoint.controlPoint1[1]} * s,\n\t${firstPoint.controlPoint2[0]} * s, ${firstPoint.controlPoint2[1]} * s,\n\t${firstPoint.endPos[0]} * s, ${firstPoint.endPos[1]} * s\n);\n`; 
+                }
+                const restOfPoints = pointGroup.slice(1);
+                const lines = restOfPoints.reduce<string>((acc, point) => {
+                    let newLine = '';
+                    if(point instanceof PointData) {
+                        newLine = 
+                        `ctx.lineTo(${point.point[0]} * s, ${point.point[1]} * s);\n`;
+                    } else if (point instanceof CircleData) {
+                        console.error('there shouldnt be a circle here, since circles are their own part');
+                    } else if (point instanceof BezierCurveData) {
+                        // start of the curve should be the last point
+                        newLine=
+                        `ctx.bezierCurveto(\n\t${point.controlPoint1[0]} * s, ${point.controlPoint1[1]} * s,\n\t${point.controlPoint2[0]} * s, ${point.controlPoint2[1]} * s,\n\t${point.endPos[0]} * s, ${point.endPos[1]} * s\n);\n`; 
+                    }
+                    return acc.concat(newLine)
+                },'')
+                const stringEnd = 
+                    `ctx.stroke();\n\n`
+                stringToSave += stringStart + lines + stringEnd;
+            })
+            console.log(stringToSave);
 
-    //         // will have to transform all the points to the correct coordinates
-    //         // add all the instructions
-    //     }
-    // }
+            // will have to transform all the points to the correct coordinates
+            // add all the instructions
+        }
+    }
 
     mouseClicked(mousePos: [number, number]) {
         if(this.isPlacingPoint) {
@@ -201,15 +244,28 @@ export class SpriteEditor extends GameObject{
 
     endPointPlacement() {
         this.placingPoint.remove();
+        if(this.isPlacingBezierCurve) this.currentLineGroup.pop();
+        if(this.isPlacingCircle) this.currentLineGroup.pop();
+
         this.bezierCurveBeingPlaced = null;
+        this.circleBeingPlaced = null;
         this.placingPoint = null;
+
         this.isPlacingPoint = false;
+        this.isPlacingCircle = false;
         this.isPlacingBezierCurve = false;
+        
         this.currentLineGroup = [];
     }
 
     placePoint(pointPosition: [number, number]) {
-        if(this.isPlacingBezierCurve) {
+        if(this.isPlacingCircle) {
+            this.circleBeingPlaced.placingPoint(pointPosition);
+            if(this.circleBeingPlaced.pointBeingPlaced === 'done') {
+                this.isPlacingCircle = false;
+                this.endPointPlacement();
+            }
+        } else if(this.isPlacingBezierCurve) {
             this.bezierCurveBeingPlaced.placePoint(pointPosition);
         } else if(
             this.currentLineGroup.find(
@@ -231,6 +287,9 @@ export class SpriteEditor extends GameObject{
                 )
             )
         ) {
+            this.currentLineGroup.push(new Point(
+                pointPosition, 
+            ))
             this.endPointPlacement()
         } else {
             this.currentLineGroup.push(new Point(
@@ -251,10 +310,10 @@ export class SpriteEditor extends GameObject{
     }
 }
 class SpriteEditorSprite extends LineSprite {
-    pointGroupsForLines: (Point | BezierCurve)[][];
+    pointGroupsForLines: (Point | BezierCurve | Circle)[][];
     mousePosition: [number, number];
     spriteEditor: SpriteEditor
-    constructor(transform: Transform, pointGroupsForLines: (Point | BezierCurve)[][], currentMousePos: [number, number], spriteEditor: SpriteEditor) {
+    constructor(transform: Transform, pointGroupsForLines: (Point | BezierCurve | Circle)[][], currentMousePos: [number, number], spriteEditor: SpriteEditor) {
         super(transform)
         this.pointGroupsForLines = pointGroupsForLines;
         this.mousePosition = currentMousePos;
@@ -269,8 +328,9 @@ class SpriteEditorSprite extends LineSprite {
 
     drawLines(ctx: CanvasRenderingContext2D) {
         const {currentLineGroup} = this.spriteEditor;
+         const phantomPointPosition = this.spriteEditor?.placingPoint?.transform?.pos;
         this.pointGroupsForLines.forEach((points) => {
-            if(points.length <= 1) {
+            if(points.length <= 1 && points[0] instanceof Point) {
 
             } else {
                 ctx.strokeStyle = '#00FFFF';
@@ -287,6 +347,30 @@ class SpriteEditorSprite extends LineSprite {
                             points[0].controlPoint2[0], points[0].controlPoint2[1], 
                             points[0].endPos[0], points[0].endPos[1]
                         );
+                    }
+                }
+                if(points[0] instanceof Circle) {
+                    const circle = points[0];
+                    if(circle.centerPoint) {
+                        if(!circle.isBeingPlaced) {
+                            ctx.arc(circle.centerPoint[0], circle.centerPoint[1],circle.radius,0, 2 * Math.PI)
+                            ctx.stroke();
+                            ctx.beginPath();
+                        } else {
+                            ctx.moveTo(circle.centerPoint[0], circle.centerPoint[1]);
+                            ctx.strokeStyle = '#a4fcfcff';
+                            ctx.setLineDash([3, 8]);
+                            ctx.arc(
+                                circle.centerPoint[0], circle.centerPoint[1],
+                                circle.getRadius([phantomPointPosition[0],phantomPointPosition[1]]),
+                                0, 2 * Math.PI
+                            );
+                            ctx.stroke();
+                            ctx.beginPath();
+                            ctx.setLineDash([]);
+                            ctx.strokeStyle = '#00FFFF';
+                            
+                        }
                     }
                 }
                 points.slice(1).forEach((point) => {
@@ -315,7 +399,7 @@ class SpriteEditorSprite extends LineSprite {
             this.pointGroupsForLines[this.pointGroupsForLines.length - 1].length > 0
         ) {
             const lastPlacedPointPosition =  this.pointGroupsForLines[this.pointGroupsForLines.length - 1][this.pointGroupsForLines[this.pointGroupsForLines.length - 1].length - 1];
-            const phantomPointPosition = this.spriteEditor.placingPoint.transform.pos;
+           
             ctx.strokeStyle = '#a4fcfcff';
             ctx.setLineDash([3, 8]);
             ctx.lineWidth = 2;
@@ -341,7 +425,6 @@ class SpriteEditorSprite extends LineSprite {
             
             // should be BezierCurve because isPlacingBezierCurve is true (as long as I'm managing that right)
             const lastPlacedPointPosition =  currentLineGroup[currentLineGroup.length - 1];
-            const phantomPointPosition = this.spriteEditor.placingPoint.transform.pos;
             ctx.strokeStyle = '#a4fcfcff';
             ctx.setLineDash([3, 8]);
             ctx.lineWidth = 2;

@@ -70,6 +70,9 @@ export class BezierCurve {
         this.startPos = pos ? [pos[0], pos[1]] : null;
         this.placingWhichPoint = pos ? 'end' : 'start';
     }
+    isDrawable(): boolean {
+        return Boolean(this.startPos && this.endPos && this.controlPoint1 && this.controlPoint2)
+    }
     placePoint(pos: [number, number]) {
         switch(this.placingWhichPoint) {
             case "start":
@@ -93,4 +96,74 @@ export class BezierCurve {
         }
     }
 }
+export class Circle {
+    centerPoint?: [number, number];
+    radius?: number;
+    pointBeingPlaced: 'center' | 'radius' |'done';
+    isBeingPlaced: boolean;
+    constructor(centerPoint?: [number, number], radius?: number) {
+        this.isBeingPlaced = true;
+        this.pointBeingPlaced = 'center';
+        if(centerPoint && radius) {
+            this.centerPoint = [centerPoint[0], centerPoint[1]];
+            this.radius = radius;
+        }
+    }
+    getRadius(pos: [number, number]): number {
+        if(!this.centerPoint) throw Error('should have center already')
+        const [c_x, c_y] = this.centerPoint;
+        const [p_x, p_y] = pos;
+        return Math.sqrt((c_x - p_x)**2 + (c_y - p_y)**2);
+}
+    placingPoint(pos: [number, number]) {
+        switch(this.pointBeingPlaced) {
+            case "center":
+                this.centerPoint = [pos[0], pos[1]];
+                this.pointBeingPlaced = 'radius';
+                break;
+            case "radius":
+                this.radius = this.getRadius(pos)
+                this.pointBeingPlaced = 'done';
+                this.isBeingPlaced = false;
+                break;
+
+        }
+    }
+}
+
+export class CircleData {
+    centerPoint: [number, number];
+    radius: number;
+    constructor(centerPoint: [number, number],radius: number) {
+        this.centerPoint = [centerPoint[0], centerPoint[1]];
+        this.radius = radius;
+    }
+}
+
+export class BezierCurveData {
+    startPos: [number, number];
+    endPos: [number,number];
+    controlPoint1: [number, number];
+    controlPoint2: [number, number];
+
+    constructor(
+        startPos: [number, number],
+        endPos: [number,number],
+        controlPoint1: [number, number],
+        controlPoint2: [number, number]
+    ) {
+        this.startPos = [startPos[0], startPos[1]];
+        this.endPos = [endPos[0], endPos[1]];
+        this.controlPoint1 = [controlPoint1[0], controlPoint1[1]];
+        this.controlPoint2 = [controlPoint2[0], controlPoint2[1]];
+    }
+}
+
+export class PointData {
+    point: [number, number]
+    constructor(point: [number, number]) {
+        this.point = [point[0], point[1]];
+    }
+}
+
 
