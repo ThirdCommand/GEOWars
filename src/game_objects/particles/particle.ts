@@ -14,12 +14,13 @@
 
 import {VectorMath} from "../../game_engine/util";
 import {GameObject} from "../../game_engine/game_object";
-import { GameScript } from "../../game_script";
+import { GEOWarsScript } from "../../GEOWarsScript";
 
 type WallHitDirection = "BOTTOM" | "RIGHT" | "TOP" | "LEFT";
 
-export class Particle extends GameObject {
-    color: Color;
+// will need to generalize the particle... unless I already have
+
+export class Particle extends GameObject { color: Color;
     radius: number;
     dampening: number;
     lineSprite: ParticleSprite | StationaryParticleSprite;
@@ -80,7 +81,6 @@ export class Particle extends GameObject {
 
     }
 }
-
 
 export class GEOParticle extends GameObject{
     color: Color;
@@ -151,7 +151,7 @@ export class GEOParticle extends GameObject{
     }
     
     checkBounds() {
-        if (GameScript.isOutOfBounds(this.transform.absolutePosition(), -0.5)) {
+        if (GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), -0.5)) {
             this.remove();
         }
     }

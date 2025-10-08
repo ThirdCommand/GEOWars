@@ -1,6 +1,25 @@
-import { LineSprite } from "../../game_engine/line_sprite";
-import { Color } from "../../game_engine/color";
-import { Transform } from "../../game_engine/transform";
+import { GameObject } from "../game_engine/game_object";
+import { type GameEngine } from "../game_engine/game_engine";
+import { DIM_X, DIM_Y } from "../GEOWarsScript";
+
+export class Walls extends GameObject {
+    constructor(engine: GameEngine) {
+        super(engine);
+        this.transform.pos = [0,0];
+        this.addLineSprite(new WallsSprite(this.transform, DIM_X, DIM_Y));
+    }
+
+    update() {
+        
+    }
+    animate() {}
+}
+
+
+
+import { LineSprite } from "../game_engine/line_sprite";
+import { Color } from "../game_engine/color";
+import { Transform } from "../game_engine/transform";
 export class WallsSprite extends LineSprite {
     width: number;
     height: number;

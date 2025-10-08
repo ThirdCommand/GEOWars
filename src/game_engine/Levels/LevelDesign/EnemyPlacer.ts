@@ -22,7 +22,7 @@ import { type Transform } from "../../transform";
 import { type GameEngine } from "../../game_engine";
 import { type EventObject } from "../DesignElements/Event";
 import { EnemyType, type SpawnSerialized } from "../DesignElements/Spawn";
-import { GameScript } from "../../../game_script";
+import { DIM_X, DIM_Y } from "../../../GEOWarsScript";
 import {AlienShipSprite } from "../../../game_objects/enemies/Singularity/alien_ship";
 
 // should add Alien too
@@ -117,8 +117,8 @@ export class EnemyPlacer extends GameObject {
     }
 
     setRandomCoordinates() { 
-        this.transform.pos[0] = GameScript.DIM_X * 0.85 * Math.random();
-        this.transform.pos[1] = GameScript.DIM_Y * 0.85 * Math.random();
+        this.transform.pos[0] = DIM_X * 0.85 * Math.random();
+        this.transform.pos[1] = DIM_Y * 0.85 * Math.random();
         this.transform.angle = Math.random() * Math.PI * 2;
         this.serializedSpawn.angle = this.transform.angle;
     }

@@ -4,7 +4,7 @@ import {GameObject} from "../../../game_engine/game_object";
 import {Sound} from "../../../game_engine/sound";
 import { type Transform } from "../../../game_engine/transform";
 import {VectorMath} from "../../../game_engine/util";
-import { GameScript } from "../../../game_script";
+import { GEOWarsScript } from "../../../GEOWarsScript";
 import {EnemySpawn} from "../../particles/enemy_spawn";
 import {LineSprite, Spawnable} from "../../../game_engine/line_sprite";
 import { type AnimationView } from "../../../AnimationView";
@@ -122,7 +122,7 @@ export class Grunt extends GameObject {
             } 
             this.chase(timeDelta);
       
-            if (GameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
+            if (GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
                 this.wallGraze();
             }
             this.bumpInfluencers = [];
@@ -131,7 +131,7 @@ export class Grunt extends GameObject {
     }
 
     wallGraze() {
-        GameScript.wallGraze(this.transform, this.radius);
+        GEOWarsScript.wallGraze(this.transform, this.radius);
     }
 
   

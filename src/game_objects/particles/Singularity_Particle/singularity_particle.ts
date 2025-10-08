@@ -1,7 +1,7 @@
 import { type AnimationView } from "../../../AnimationView";
 import { Color } from "../../../game_engine/color";
 import { GameEngine } from "../../../game_engine/game_engine";
-import { GameScript } from "../../../game_script";
+import { GEOWarsScript } from "../../../GEOWarsScript";
 import {GEOParticle} from "../particle";
 import { SingularityParticles } from "../singularity_particles";
 
@@ -34,7 +34,7 @@ export class SingularityParticle extends GEOParticle {
     }
 
     checkBounds() {
-        if (GameScript.isOutOfBounds(this.transform.absolutePosition(), -0.5)) {
+        if (GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), -0.5)) {
             this.remove();
         }
     }

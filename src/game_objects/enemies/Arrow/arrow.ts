@@ -3,7 +3,7 @@ import { VectorMath } from "../../../game_engine/util";
 import { Sound } from "../../../game_engine/sound";
 import { EnemySpawn } from "../../particles/enemy_spawn";
 import { ArrowSprite } from "./arrow_sprite";
-import { GameScript, Scorable } from "../../../game_script";
+import { GEOWarsScript, Scorable } from "../../../GEOWarsScript";
 import { GameEngine } from "../../../game_engine/game_engine";
 import { type AnimationView } from "../../../AnimationView";
 
@@ -65,8 +65,8 @@ export class Arrow extends GameObject implements Scorable {
         this.animate(delta);
         
         const pos = this.transform.absolutePosition();
-        if (GameScript.isOutOfBounds(pos, this.radius)) {
-            GameScript.redirect(this.transform);
+        if (GEOWarsScript.isOutOfBounds(pos, this.radius)) {
+            GEOWarsScript.redirect(this.transform);
         }
     }
 }

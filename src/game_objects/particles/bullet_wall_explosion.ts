@@ -5,7 +5,7 @@ import {GameObject} from "../../game_engine/game_object";
 import {Sound} from "../../game_engine/sound";
 import {Color} from "../../game_engine/color";
 import { GameEngine } from "../../game_engine/game_engine";
-import { GameScript } from "../../game_script";
+import {DIM_X, DIM_Y, GEOWarsScript } from "../../GEOWarsScript";
 import { type AnimationView } from "../../AnimationView";
 
 type WallHitDirection = "LEFT" | "RIGHT" | "TOP" | "BOTTOM";
@@ -17,7 +17,7 @@ export class BulletWallExplosion extends GameObject{
         super(engine);
         this.transform.pos[0] = pos[0];
         this.transform.pos[1] = pos[1];
-        const startingH = (this.gameEngine.gameScript.explosionColorWheel + 180 + Math.random() * 60) % 360;
+        const startingH = ((this.gameEngine.gameScript as GEOWarsScript).explosionColorWheel + 180 + Math.random() * 60) % 360;
         const opacity = Math.random() * 0.35 + 0.6;
         this.currentColor = new Color(
             "hsla", [startingH, 100, 50, opacity]
@@ -32,7 +32,7 @@ export class BulletWallExplosion extends GameObject{
     whichWall() {
         const pos = this.transform.pos;
 
-        const max = [GameScript.DIM_X, GameScript.DIM_Y];
+        const max = [DIM_X, DIM_Y];
         if (pos[0] <= 0) {
             return "LEFT";
         } else if (pos[0] >= max[0]) {

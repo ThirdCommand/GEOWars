@@ -5,7 +5,7 @@ import { Transform } from "../../game_engine/transform";
 
 import { LineSprite } from "../../game_engine/line_sprite";
 import { GameEngine } from "../../game_engine/game_engine";
-import { GameScript } from "../../game_script";
+import { GEOWarsScript, DIM_X, DIM_Y } from "../../GEOWarsScript";
 import { type Collider } from "../../game_engine/collider";
 import { Camera } from "../../game_engine/camera";
 
@@ -111,10 +111,12 @@ export class Ship extends GameObject {
 
   
     update(deltaTime: number){
+        // no idea where this shit will have to belong
+        // brain currently melted
         if(this.gameEngine instanceof GameEngine && this.gameEngine.gameEditorOpened) {
             if(!this.gameEditorHasBeenOpened) {
-                const _width = GameScript.DIM_X;
-                const _height = GameScript.DIM_Y;
+                const _width = DIM_X;
+                const _height = DIM_Y;
                 const _zoomScale = this.gameEngine.zoomScale;
                 const _yPosition = this.transform.pos[1];
                 const _xPosition = this.transform.pos[0];
@@ -205,9 +207,9 @@ export class Ship extends GameObject {
     findSmallestDistanceToAWall(){
         const pos = this.transform.pos;
         const leftDistance = pos[0] - 0;
-        const rightDistance = GameScript.DIM_X - pos[0];
+        const rightDistance = DIM_X - pos[0];
         const upDistance = pos[1] - 0;
-        const downDistance = GameScript.DIM_Y - pos[1];
+        const downDistance = DIM_Y - pos[1];
         const distances = [leftDistance, rightDistance, upDistance, downDistance];
         return Math.min.apply(null, distances); 
     }
@@ -266,7 +268,7 @@ export class Ship extends GameObject {
     }
 
     isOutOfBounds(){
-        return GameScript.isOutOfBounds(this.transform.pos, this.radius);
+        return GEOWarsScript.isOutOfBounds(this.transform.pos, this.radius);
     }
 
     updateMousePos(mousePos: [number, number]){
@@ -343,13 +345,13 @@ export class Ship extends GameObject {
     }
 
     wallGraze() {
-        GameScript.wallGraze(this.transform, this.radius * 2);
+        GEOWarsScript.wallGraze(this.transform, this.radius * 2);
     }
 
     onCollision(collider: Collider, type: string) {
         if (type === "ShipDeath") {
   
-            this.gameEngine.gameScript.death();
+            (this.gameEngine.gameScript as GEOWarsScript).death();
             this.deathflash();
         }
     }
@@ -369,8 +371,8 @@ export class Ship extends GameObject {
         const shipXPos = this.transform.pos[0];
         const shipYPos = this.transform.pos[1];
         const zoomScale = this.camera.zoomScale;
-        const width = GameScript.DIM_X;
-        const height = GameScript.DIM_Y;
+        const width = DIM_X;
+        const height = DIM_Y;
 
         const mouseX = mousePos[0] / zoomScale + shipXPos  - width / (2 * zoomScale);
         const mouseY = mousePos[1] / zoomScale + shipYPos  - height / (2 * zoomScale);

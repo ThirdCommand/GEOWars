@@ -2,7 +2,7 @@ import { AnimationView } from "../../../AnimationView";
 import {type GameEngine } from "../../../game_engine/game_engine";
 import {GameObject} from "../../../game_engine/game_object";
 import {Sound} from "../../../game_engine/sound";
-import { GameScript, Scorable } from "../../../game_script";
+import { GEOWarsScript, Scorable } from "../../../GEOWarsScript";
 import {EnemySpawn} from "../../particles/enemy_spawn";
 import {BoxBoxSprite} from "./boxbox_sprite";
 
@@ -686,13 +686,13 @@ export class BoxBox extends GameObject implements Scorable {
     }
  
     wallGraze(){
-        GameScript.wallGraze(this.transform, this.radius);
+        GEOWarsScript.wallGraze(this.transform, this.radius);
     }
 
 
     update(delta: number){
         this.animate(delta);
-        if (GameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius * 2)) {
+        if (GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius * 2)) {
             this.wallGraze(); 
         }
     }

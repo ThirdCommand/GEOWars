@@ -1,6 +1,6 @@
 import { GameEngine } from "../../../game_engine/game_engine";
 import { GameObject } from "../../../game_engine/game_object";
-import { GameScript } from "../../../game_script";
+import { GEOWarsScript } from "../../../GEOWarsScript";
 import { type Transform } from "../../../game_engine/transform";
 // import { Sound } from "../../../game_engine/sound";
 // import { Util } from "../../../game_engine/util";
@@ -36,13 +36,13 @@ export class AlienShip extends GameObject {
         // console.log(this.transform.pos)
         this.chase();
 
-        if (GameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
+        if (GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
             this.bounce();
         }
     }
 
     bounce() {
-        GameScript.bounce(this.transform, this.radius);
+        GEOWarsScript.bounce(this.transform, this.radius);
     }
 
     chase() {

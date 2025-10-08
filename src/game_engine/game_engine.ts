@@ -1,7 +1,6 @@
-import { GameScript } from "../game_script";
 import {type GameObject } from "./game_object";
 import { type LineSprite } from "./line_sprite";
-import { ReplayablePhysicsComponent, type PhysicsComponent } from "./physics_component";
+import { PhysicsComponent, ReplayablePhysicsComponent } from "./physics_component";
 import {type Collider} from "./collider";
 import { type Sound } from "./sound";
 import { type LevelDesigner } from "./Levels/levelDesigner";
@@ -15,6 +14,18 @@ declare global {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         controller: any;
         engine: GameEngine;
+    }
+}
+
+export interface GameScript {
+    update: (deltaTime: number) => void;
+    onPause: () => void;
+    onUnPause: () => void;
+    gameTime: number;
+    theme: {
+        play: () => void;
+        mute: () => void;
+        unmute: () => void;
     }
 }
 
@@ -91,6 +102,7 @@ export class GameEngine {
         startButtonPressed: boolean;
         bButtonPressed: boolean;
     }
+    isPerformanceCheckOn: boolean;
     isControllerConnected: boolean = false;
     cameras: Camera[];
     activeCamera: Camera;
@@ -140,7 +152,7 @@ export class GameEngine {
 
     spriteCreatorOpened: boolean;
 
-    gameScript: GameScript;
+    gameScript: GameScript | null;
     paused: boolean;
     focusPaused: boolean;
 
@@ -160,8 +172,10 @@ export class GameEngine {
     levelDesigner: LevelDesigner;
 
     controller: any | null;
+    gameScriptAdded: boolean;
 
     constructor(ctx: CanvasRenderingContext2D) {
+        this.isPerformanceCheckOn = true;
         this.ctx = ctx;
         window.engine = this;
         this.buttonState = {
@@ -170,6 +184,7 @@ export class GameEngine {
             bButtonPressed: false,
             startButtonPressed: false,
         };
+        this.gameScriptAdded = false;
         this.defaultZoomScale = 1.3;
         this.zoomScale = 1.3;
         this.lineSprites = [];
@@ -211,7 +226,6 @@ export class GameEngine {
         this.bButtonListeners = [];
         this.aButtonListeners = [];
         this.startButtonListeners = [];
-        this.gameScript = new GameScript(this);
         // this.toRemoveQueue = [];
         this.paused = false;
         // this.currentCamera = null;
@@ -225,12 +239,9 @@ export class GameEngine {
         this.spriteCreatorOpened = false;
     }
 
-    startSpriteCreator() {
-        this.spriteCreatorOpened = true;
-        this.gameObjects = [];
-        this.lineSprites = [];
-        this.activeCamera.zoomScale = 1;
-        this.addSpriteEditorOverlay();
+    addGameScript(gameScriptToAdd: GameScript) {
+        this.gameScript = gameScriptToAdd;
+        this.gameScriptAdded = true;
     }
 
     addSpriteEditorOverlay() {
@@ -273,13 +284,13 @@ export class GameEngine {
             window.controller = e.gamepad;
             window.engine.isControllerConnected = true;
             // Gamepad connected
-            // console.log("Gamepad connected", e.gamepad);
+            console.log("Gamepad connected", e.gamepad);
         });
 
         window.addEventListener("gamepaddisconnected", function (e) {
             // Gamepad disconnected
             window.engine.isControllerConnected = false;
-            // console.log("Gamepad disconnected", e.gamepad);
+            console.log("Gamepad disconnected", e.gamepad);
         });
     }
 
@@ -301,61 +312,50 @@ export class GameEngine {
             return;
         }
 
-        if(this.gameEditorOpened) {
+        if(!this.gameScriptAdded) return;
+
+        if(this.isPerformanceCheckOn) {
+            const beforeCollisionTime = performance.now();
             this.checkCollisions();
+            const beforePhysicsCalcs = performance.now();
+            const collisionTime = beforePhysicsCalcs - beforeCollisionTime;
+            this.movePhysicsComponents(delta);
+            this.moveReplayablePhysicsComponents(delta, this.gameScript.gameTime);
+            const beforeUpdate = performance.now();
+            const physicsCalcTime = beforeUpdate - beforePhysicsCalcs;
+            this.updateGameObjects(delta);
+            const beforeRender = performance.now();
+            const updateTime = beforeRender - beforeUpdate;
+            this.renderLineSprites(this.ctx);
+            const beforeScriptUpdate = performance.now();
+            const renderTime = beforeScriptUpdate - beforeRender;
+            this.updateControlListeners();
+            this.updateGameScript(delta);
+
+            const scriptTime = performance.now() - beforeScriptUpdate;
+            this.playSounds();
+
+            this.collectPerformanceData(
+                delta,
+                collisionTime,
+                physicsCalcTime,
+                updateTime,
+                renderTime,
+                scriptTime,
+            );
+        } else {
+            this.checkCollisions();
+            this.movePhysicsComponents(delta);
+            this.moveReplayablePhysicsComponents(delta, this.gameScript.gameTime);
             this.updateGameObjects(delta);
             this.renderLineSprites(this.ctx);
+            this.updateControlListeners();
 
-            this.addClickListenersAfterTick();
-            this.addDoubleClickListenersAfterTick();
-            this.removeClickListenersAfterTick();
-            this.removeDoubleClickListenerAfterTick();
-            return;
+            this.updateGameScript(delta);
+
+            this.playSounds();
+
         }
-
-        if(this.spriteCreatorOpened) {
-            this.checkCollisions();
-            this.updateGameObjects(delta);
-            this.renderLineSprites(this.ctx);
-            this.addClickListenersAfterTick();
-            this.addDoubleClickListenersAfterTick();
-            this.removeClickListenersAfterTick();
-            this.removeDoubleClickListenerAfterTick();
-            return;
-        }
-
-        // console.log(delta)
-        // if(delta > 125){
-        //   delta = 125
-        // }
-        const beforeCollisionTime = performance.now();
-        this.checkCollisions();
-        const beforePhysicsCalcs = performance.now();
-        const collisionTime = beforePhysicsCalcs - beforeCollisionTime;
-        this.movePhysicsComponents(delta);
-        this.moveReplayablePhysicsComponents(delta, this.gameScript.gameTime);
-        const beforeUpdate = performance.now();
-        const physicsCalcTime = beforeUpdate - beforePhysicsCalcs;
-        this.updateGameObjects(delta);
-        const beforeRender = performance.now();
-        const updateTime = beforeRender - beforeUpdate;
-        this.renderLineSprites(this.ctx);
-        const beforeScriptUpdate = performance.now();
-        const renderTime = beforeScriptUpdate - beforeRender;
-        this.updateControlListeners();
-        this.updateGameScript(delta);
-
-        const scriptTime = performance.now() - beforeScriptUpdate;
-        this.playSounds();
-
-        this.collectPerformanceData(
-            delta,
-            collisionTime,
-            physicsCalcTime,
-            updateTime,
-            renderTime,
-            scriptTime,
-        );
 
         this.addClickListenersAfterTick();
         this.addDoubleClickListenersAfterTick();
@@ -410,7 +410,6 @@ export class GameEngine {
     }
 
     addLeftControlStickListener(object: LeftControlStickListenable) {
-        this.leftControlStickListeners.push(object);
         this.leftControlStickListeners.push(object);
     }
 
@@ -486,8 +485,6 @@ export class GameEngine {
         this.gameDoubleClickListenersToAdd = [];
     }
 
-
-
     addLevelDesignerClickListener(object: ClickListenable) {
         this.levelDesignerClickListeners.push(object);
     }
@@ -527,6 +524,7 @@ export class GameEngine {
             }
         }
     }
+    
     // this belongs in the ship. we should call the listeners here, including the ship
     updateFKeyListener(pressed: boolean) {
         if(pressed) {
@@ -605,7 +603,7 @@ export class GameEngine {
         this.leftControlStickListeners.forEach((listener) => {
             listener.updateLeftControlStickInput(unitVector, down);
         });
-        this.controlledGameObject.updateLeftControlFocussedStickInput(unitVector, down);
+        this.controlledGameObject?.updateLeftControlFocussedStickInput(unitVector, down);
     }
 
     updateLKeyListeners(down: boolean) {
@@ -718,8 +716,7 @@ export class GameEngine {
             const leftAxis: [number, number] = [this.controller.axes[0], this.controller.axes[1]];
             const rightAxis: [number, number] = [this.controller.axes[2], this.controller.axes[3]];
             const aButton: boolean = this.controller.buttons[0].pressed;
-            const bButton: boolean = this.controller.buttons[3].pressed;
-            console.log(this.controller.buttons);
+            const bButton: boolean = this.controller.buttons[1].pressed; // this was 3 some time ago... why did it change??
             // const xButton: boolean = this.controller.buttons[0].pressed;
             if(this.buttonState.aButtonPressed !== aButton) {
                 this.buttonState.aButtonPressed = aButton;
@@ -862,7 +859,7 @@ export class GameEngine {
     }
 
     updateGameScript(delta: number) {
-        this.gameScript.update(delta);
+        if (this.gameScript) this.gameScript.update(delta);
     }
 
     addGameObject(object: GameObject) {

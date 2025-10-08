@@ -7,7 +7,7 @@ import {VectorMath} from "../../game_engine/util";
 import { type GameEngine } from "../../game_engine/game_engine";
 import { type Collider } from "../../game_engine/collider";
 import { Singularity } from "../enemies/Singularity/singularity";
-import { GameScript, Scorable } from "../../game_script";
+import { GEOWarsScript, Scorable } from "../../GEOWarsScript";
 import { type AnimationView } from "../../AnimationView";
 
 export class Bullet extends GameObject {
@@ -87,7 +87,7 @@ export class Bullet extends GameObject {
             this.bend(deltaTime);
         } 
         if (
-            GameScript.isOutOfBounds(
+            GEOWarsScript.isOutOfBounds(
                 this.transform.absolutePosition(), this.radius
             ) &&
             !this.exploded
@@ -136,7 +136,7 @@ export class Bullet extends GameObject {
                 // only scorable things are included in the subscriptions..
                 // not sure how to get typescript to agree with that yet
                 // feels like a pain and a waste of time for now
-                this.gameEngine.gameScript.tallyScore(collider.gameObject as unknown as Scorable);
+                (this.gameEngine.gameScript as GEOWarsScript).tallyScore(collider.gameObject as unknown as Scorable);
                 collider.gameObject.remove();
                 this.remove();
             }

@@ -1,5 +1,5 @@
 import { GameObject } from "../../../game_engine/game_object";
-import { ParticleExplosion } from "../../particles/particle_explosion";
+import { ParticleExplosion } from "../../particles/StrikeTimeParticleExplosion";
 import { GameEngine } from "../../../game_engine/game_engine";
 import { LineSprite, Spawnable } from "../../../game_engine/line_sprite";
 import { type Transform } from "../../../game_engine/transform";
@@ -34,7 +34,6 @@ export class BombBasic extends GameObject {
     }
 
     explode() {
-        console.log('Aurora Killed/Hit')
         new ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]])
         this.remove();
     }

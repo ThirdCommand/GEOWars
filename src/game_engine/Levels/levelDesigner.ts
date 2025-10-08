@@ -1,8 +1,8 @@
-import { Walls } from "../../game_objects/Walls/walls";
+import { Walls } from "../../game_objects/walls";
 import { Overlay } from "../../game_objects/Overlay/overlay";
 // import { Grid } from "../../game_objects/particles/Grid/grid";
 // import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
-import { GameScript } from "../../game_script";
+
 import { Transform } from "../transform";
 import {SceneObject, SerializedGameElement, GameElementObject, SceneSerialized } from "./DesignElements/Scene";
 import { EnemyType, Spawn, SpawnSerialized, isEnemyType } from "./DesignElements/Spawn";
@@ -17,6 +17,7 @@ import { type LineSprite } from "../line_sprite";
 import { type AnimationView } from "../../AnimationView";
 import { GameObject } from "../game_object";
 import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
+import { DIM_X, DIM_Y, GEOWarsScript } from "../../GEOWarsScript";
 
 // I should collect placed enemies
 
@@ -25,6 +26,7 @@ import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
 export function isEnemyTypeArray(value: string[]): value is EnemyType[] {
     return !value.some((type) => (!isEnemyType(type)));
 }
+
 
 // for a tracker I can highlight the current game element
 // just like selecting it... but maybe the same color for 
@@ -339,8 +341,9 @@ export class LevelDesigner {
 
         startGame.onclick = (e) => {
             e.stopPropagation();
+            // TODO: not sure what this was doing before
             // serialize game, send to game script
-            this.startGame();
+            // this.startGame();
         };
 
 
@@ -356,7 +359,7 @@ export class LevelDesigner {
 
     // }
 
-    startGame() {
+    startGame(GEOWarsScript: GEOWarsScript) {
         this.serializedGame = {
             type: 'Scene',
             name: "Game",
@@ -368,7 +371,7 @@ export class LevelDesigner {
         // I should unselect whatever is selected.
         // events being the main issue since they have things
         // on the game 
-        this.engine.gameScript.startGame(serializedGameString);
+        GEOWarsScript.startGame(serializedGameString);
         this.engine.gameEditorOpened = false;
     }
 
@@ -769,16 +772,12 @@ export class LevelDesigner {
         return new Walls(this.engine);
     }
 
-    // createGrid() {
-    //     return new Grid(this.engine, new Transform());
-    // }
-
     createOverlay() {
         return new Overlay(this.engine, this);
     }
 
     isOutOfBounds(pos: [number, number], radius: number) {
-        const max = [GameScript.DIM_X - radius, GameScript.DIM_Y - radius];
+        const max = [DIM_X - radius, DIM_Y - radius];
         if (radius) {
             return (
                 pos[0] <= radius ||
@@ -790,8 +789,8 @@ export class LevelDesigner {
             return (
                 pos[0] < 0 ||
         pos[1] < 0 ||
-        pos[0] > GameScript.DIM_X ||
-        pos[1] > GameScript.DIM_Y
+        pos[0] > DIM_X ||
+        pos[1] > DIM_Y
             );
         }
     }

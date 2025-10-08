@@ -3,7 +3,7 @@ import {VectorMath} from "../../../game_engine/util";
 import {GameObject} from "../../../game_engine/game_object";
 import {EnemySpawn} from "../../particles/enemy_spawn";
 import { type GameEngine } from "../../../game_engine/game_engine";
-import { GameScript } from "../../../game_script";
+import { GEOWarsScript } from "../../../GEOWarsScript";
 import { LineSprite, Spawnable } from "../../../game_engine/line_sprite";
 import { type Transform } from "../../../game_engine/transform";
 import { type AnimationView } from "../../../AnimationView";
@@ -42,8 +42,8 @@ export class Pinwheel extends GameObject {
 
     update(deltaTime: number){
         this.animate(deltaTime);
-        if (GameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
-            GameScript.bounce(this.transform, this.radius); // HARD CODED
+        if (GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
+            GEOWarsScript.bounce(this.transform, this.radius); // HARD CODED
         }
     }
 

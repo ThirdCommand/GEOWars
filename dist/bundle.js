@@ -259,6 +259,1018 @@ var AnimationView = /** @class */ (function () {
 
 /***/ }),
 
+/***/ "./src/GEOWarsScript.ts":
+/*!******************************!*\
+  !*** ./src/GEOWarsScript.ts ***!
+  \******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   DIM_X: () => (/* binding */ DIM_X),
+/* harmony export */   DIM_Y: () => (/* binding */ DIM_Y),
+/* harmony export */   GEOWarsScript: () => (/* binding */ GEOWarsScript)
+/* harmony export */ });
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_engine/sound */ "./src/game_engine/sound.ts");
+/* harmony import */ var _game_objects_Ship_ship__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_objects/Ship/ship */ "./src/game_objects/Ship/ship.ts");
+/* harmony import */ var _game_objects_walls__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game_objects/walls */ "./src/game_objects/walls.ts");
+/* harmony import */ var _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./game_objects/Overlay/overlay */ "./src/game_objects/Overlay/overlay.ts");
+/* harmony import */ var _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./game_objects/particles/Grid/grid */ "./src/game_objects/particles/Grid/grid.ts");
+/* harmony import */ var _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./game_objects/enemies/BoxBox/boxbox */ "./src/game_objects/enemies/BoxBox/boxbox.ts");
+/* harmony import */ var _game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./game_objects/enemies/Pinwheel/pinwheel */ "./src/game_objects/enemies/Pinwheel/pinwheel.ts");
+/* harmony import */ var _game_objects_enemies_Arrow_arrow__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./game_objects/enemies/Arrow/arrow */ "./src/game_objects/enemies/Arrow/arrow.ts");
+/* harmony import */ var _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./game_objects/enemies/Grunt/grunt */ "./src/game_objects/enemies/Grunt/grunt.ts");
+/* harmony import */ var _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./game_objects/enemies/Weaver/weaver */ "./src/game_objects/enemies/Weaver/weaver.ts");
+/* harmony import */ var _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/singularity */ "./src/game_objects/enemies/Singularity/singularity.ts");
+/* harmony import */ var _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/alien_ship */ "./src/game_objects/enemies/Singularity/alien_ship.ts");
+/* harmony import */ var _game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./game_objects/particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.ts");
+/* harmony import */ var _game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./game_objects/particles/ship_explosion */ "./src/game_objects/particles/ship_explosion.ts");
+/* harmony import */ var _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./game_objects/particles/star */ "./src/game_objects/particles/star.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Scene */ "./src/game_engine/Levels/DesignElements/Scene.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Operation__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Operation */ "./src/game_engine/Levels/DesignElements/Operation.ts");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// type Enemies = 'BoxBox' | 'Pinwheel' | 'Arrow' | 'Grunt' | 'Weaver' | 'Singularity' | 'AlienShip';
+var DIM_X = 1000;
+var DIM_Y = 600;
+var GEOWarsScript = /** @class */ (function () {
+    function GEOWarsScript(engine) {
+        this.serializedGame = "";
+        this.gameOverSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Game_over.wav", 1, engine.muted);
+        this.gameStartSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Game_start.wav", 1, engine.muted);
+        this.gameTime = 0;
+        this.score = 0;
+        this.engine = engine;
+        this.arrowAdded = false;
+        this.startPosition = [500, 300, 0];
+        this.initialCameraZPos = -1000;
+        this.theme = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Geometry_OST.mp3", 1, this.engine.muted);
+        this.shipDeathSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Ship_explode.wav", 1, this.engine.muted);
+        this.ship = this.createShip();
+        this.createStars();
+        this.walls = this.createWalls();
+        this.grid = this.createGrid();
+        this.overlay = this.createOverlay();
+        this.enemyCreatorMap = this.createEnemyCreators();
+        this.engine.addXButtonListener(this);
+        this.engine.addBButtonListener(this);
+        this.sequenceTypes = this.addSequenceTypes();
+        this.deathPausedTime = 0;
+        this.deathPaused = true;
+        this.deathPauseTime = 2500;
+        // this.deathSound = new Audio("sounds/Enemy_explode.wav")
+        // this.deathSound.volume = 0.5;
+        this.intervalTiming = 1;
+        this.intervalTime = 0;
+        this.hugeSequenceTime = 0;
+        this.sequenceCount = 0; // START GAME HERE
+        this.lives = 3;
+        this.scoreMultiplier = 1;
+        this.displayEndScore = 0;
+        this.spawnthing = false;
+        this.explosionColorWheel = 0;
+        this.playFromRootScene = false;
+    }
+    GEOWarsScript.prototype.nextElement = function () {
+        this.rootScene.currentElementIndex = 0;
+    };
+    GEOWarsScript.prototype.startGame = function (serializedGame) {
+        this.serializedGame = serializedGame;
+        var game = JSON.parse(serializedGame);
+        if (game.serializedGameElements.length > 0) {
+            this.rootScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_15__.Scene('root');
+            this.rootScene.gameElements = this.loadGameElements(game.serializedGameElements, this.rootScene);
+            this.playFromRootScene = true;
+        }
+        this.intervalTime = 0;
+        this.ship.transform.pos = [this.startPosition[0], this.startPosition[1], this.startPosition[2]];
+    };
+    GEOWarsScript.prototype.loadGameElements = function (serializedGameElements, parentScene) {
+        var _this = this;
+        return serializedGameElements.map(function (element) {
+            if (element.type === "Scene") {
+                var newScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_15__.Scene(element.name, parentScene);
+                newScene.gameElements = _this.loadGameElements(element.serializedGameElements, newScene) || [];
+                return newScene;
+            }
+            else if (element.type === "Event") {
+                return new _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_16__.Event(element.spawns, parentScene, element.isShipRelative, _this.engine);
+            }
+            else if (element.type === "Time") {
+                return new _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_17__.Time(parentScene, element.waitTime);
+            }
+            else if (element.type === "LoopBeginning") {
+                return new _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_18__.LoopBeginning(parentScene);
+            }
+            else if (element.type === "LoopEnd") {
+                return new _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_18__.LoopEnd({ loopIdx: element.loopIdx || 0, repeatTimes: element.repeatTimes }, parentScene);
+            }
+            else if (element.type === "Operation") {
+                return new _game_engine_Levels_DesignElements_Operation__WEBPACK_IMPORTED_MODULE_19__.Operation(element.operand, parentScene, _this.engine, _this);
+            }
+        });
+    };
+    GEOWarsScript.prototype.createStars = function () {
+        var runoffFactor = 1.5;
+        for (var i = 0; i < 900; i++) {
+            var X = (runoffFactor * Math.random() - runoffFactor / 2) * DIM_X; // based on zoom scale and eventually camera position
+            var Y = (runoffFactor * Math.random() - runoffFactor / 2) * DIM_Y;
+            // const Z = -this.initialCameraZPos * 0.25 + -this.initialCameraZPos * 2 * Math.random();
+            var Z = -this.initialCameraZPos * (0.5 + 2 * Math.random());
+            new _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_14__.Star(this.engine, [X, Y, Z]);
+        }
+    };
+    GEOWarsScript.prototype.updateXButtonListener = function (pressed) {
+        // if (pressed) {
+        //     if (this.engine.paused) {
+        //         const modal = document.getElementById("endModal");
+        //         modal.style.display = "none";
+        //         this.engine.paused = false;
+        //         if (!this.engine.muted) {
+        //             this.theme.play();
+        //         }
+        //     }
+        // }
+    };
+    GEOWarsScript.prototype.updateBButtonListener = function (pressed) {
+        // if (pressed) {
+        //     if (this.engine.paused) {
+        //         const modal = document.getElementById("endModal");
+        //         modal.style.display = "none";
+        //         this.engine.paused = false;
+        //         if (!this.engine.muted) {
+        //             this.theme.play();
+        //         }
+        //     }
+        // }
+    };
+    GEOWarsScript.prototype.update = function (deltaTime) {
+        if (this.deathPaused) {
+            this.deathPausedTime += deltaTime;
+            if (this.deathPausedTime > this.deathPauseTime) {
+                this.deathPausedTime = 0;
+                this.deathPaused = false;
+            }
+            else {
+                deltaTime = 0;
+            }
+        }
+        if (this.playFromRootScene) {
+            this.rootScene.update(deltaTime);
+        }
+        else {
+            this.gameTime += deltaTime;
+            this.spawnSequence(deltaTime);
+        }
+        this.changeExplosionColor();
+    };
+    GEOWarsScript.prototype.changeExplosionColor = function () {
+        this.explosionColorWheel += 1 / 2;
+        this.explosionColorWheel = this.explosionColorWheel % 360;
+    };
+    GEOWarsScript.prototype.tallyScore = function (gameObject) {
+        this.score += gameObject.points * this.scoreMultiplier;
+        // if (this.score) {
+        // }
+    };
+    GEOWarsScript.prototype.resetGame = function () {
+        var _this = this;
+        this.deathPaused = true;
+        this.displayEndScore = this.score;
+        this.score = 0;
+        this.lives = 3;
+        this.ship.transform.pos = this.startPosition;
+        this.sequenceCount = 0;
+        this.deathPauseTime = 2500;
+        this.ship.powerLevel = 1;
+        this.intervalTiming = 1;
+        this.intervalTime = 0;
+        this.hugeSequenceTime = 0;
+        this.lives = 3;
+        this.scoreMultiplier = 1;
+        this.spawnthing = false;
+        this.engine.paused = true;
+        var modal = document.getElementById("endModal");
+        modal.style.display = "block";
+        var scoreDisplay = document.getElementById("score");
+        scoreDisplay.innerHTML = "score: ".concat(this.displayEndScore);
+        // Get the button that opens the modal
+        // var btn = document.getElementById("myBtn");
+        // Get the <span> element that closes the modal
+        var xclose = document.getElementsByClassName("endClose")[0];
+        // When the user clicks on <span> (x), close the modal
+        xclose.onclick = function (e) {
+            e.stopPropagation();
+            modal.style.display = "none";
+            _this.engine.paused = false;
+            window.removeEventListener("click", closeModalWithClick, false);
+            if (!_this.engine.muted) {
+                _this.theme.play();
+                _this.gameStartSound.play();
+            }
+        };
+        var closeModalWithClick = function (e) {
+            if (e.target == modal) {
+                _this.engine.paused = false;
+                if (!_this.engine.muted) {
+                    _this.theme.play();
+                    _this.gameStartSound.play();
+                }
+                modal.style.display = "none";
+                window.removeEventListener("click", closeModalWithClick, false);
+            }
+        };
+        // When the user clicks anywhere outside of the modal, close it
+        window.addEventListener("click", closeModalWithClick, false);
+    };
+    GEOWarsScript.prototype.death = function () {
+        this.lives -= 1;
+        this.deathPaused = true;
+        this.explodeEverything();
+        this.deathPauseTime = 4000;
+        if (!this.engine.muted) {
+            this.shipDeathSound.play();
+        }
+        this.grid.Playerdies(this.ship.transform.pos);
+        if (this.lives === 0) {
+            try {
+                this.theme.pause();
+            }
+            catch (err) {
+                console.log('theme failed to play');
+            }
+            if (!this.engine.muted) {
+                this.gameOverSound.play();
+            }
+            // this.playSound(this.gameOverSound)
+            window.setTimeout(this.resetGame.bind(this), 2000);
+        }
+    };
+    GEOWarsScript.prototype.gameOver = function () {
+        // end the game here
+    };
+    GEOWarsScript.prototype.explodeEverything = function () {
+        var _this = this;
+        var removeList = [];
+        var typesToRemove = [
+            "Grunt",
+            "Pinwheel",
+            "BoxBox",
+            "Arrow",
+            "Singularity",
+            "Weaver",
+            "AlienShip",
+        ];
+        this.engine.gameObjects.forEach(function (object) {
+            if (object.constructor.name === "Ship") {
+                var objectTransform = object.transform;
+                var pos = objectTransform.absolutePosition();
+                new _game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_13__.ShipExplosion(_this.engine, pos);
+            }
+            else if (object.constructor.name === "Bullet") {
+                removeList.push(object);
+            }
+            else if (typesToRemove.includes(object.constructor.name)) {
+                var objectTransform = object.transform;
+                var pos = objectTransform.absolutePosition();
+                new _game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_12__.ParticleExplosion(_this.engine, pos);
+                removeList.push(object);
+            }
+        });
+        removeList.forEach(function (removeThis) {
+            removeThis.remove();
+        });
+    };
+    // levelDesigner() {
+    //     const modal = document.getElementById("levelDesignerModal");
+    // }
+    GEOWarsScript.prototype.onPause = function () {
+        try {
+            this.theme.pause();
+        }
+        catch (error) {
+            console.log('failed to pause theme music');
+        }
+        var modal = document.getElementById("pauseModal");
+        modal.style.display = "block";
+    };
+    GEOWarsScript.prototype.onUnPause = function () {
+        try {
+            this.theme.unPause();
+        }
+        catch (error) {
+            console.log('failed to unpause theme music');
+        }
+        var modal = document.getElementById("pauseModal");
+        modal.style.display = "none";
+    };
+    GEOWarsScript.prototype.randomArrowDirection = function () {
+        var angles = [0, Math.PI / 2, Math.PI, (Math.PI * 3) / 2];
+        return angles[Math.floor(Math.random() * angles.length) % angles.length];
+    };
+    GEOWarsScript.prototype.createEnemyCreators = function () {
+        var _this = this;
+        var engine = this.engine;
+        return {
+            BoxBox: function (pos) { return new _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_5__.BoxBox(engine, pos); },
+            Pinwheel: function (pos) { return new _game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_6__.Pinwheel(engine, pos); },
+            Arrow: function (pos, angle) { return new _game_objects_enemies_Arrow_arrow__WEBPACK_IMPORTED_MODULE_7__.Arrow(engine, pos, angle); },
+            Grunt: function (pos) { return new _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_8__.Grunt(engine, pos, _this.ship.transform); },
+            Weaver: function (pos) { return new _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_9__.Weaver(engine, pos, _this.ship.transform); },
+            Singularity: function (pos) { return new _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__.Singularity(engine, pos); },
+            AlienShip: function (pos) {
+                return new _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_11__.AlienShip(engine, pos, [0, 0]);
+            },
+        };
+    };
+    GEOWarsScript.prototype.randomSpawnEnemy = function () {
+        var pos = this.randomPosition();
+        var enemyCreators = Object.values(this.enemyCreatorMap);
+        enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos);
+    };
+    GEOWarsScript.prototype.addSequenceTypes = function () {
+        var _this = this;
+        return {
+            BoxBoxesEverywhere: function () {
+                var randomPositions = [];
+                for (var i = 0; i < 50; i++) {
+                    var pos = _this.randomPosition(10);
+                    randomPositions.push(pos);
+                }
+                randomPositions.forEach(function (pos) {
+                    _this.enemyCreatorMap["BoxBox"](pos);
+                });
+            },
+            Singularity: function () {
+                _this.enemyCreatorMap["Singularity"]([700, 300]);
+            },
+            EasyGroups: function () {
+                var randomPositions = [];
+                for (var i = 0; i < 5; i++) {
+                    var pos = _this.randomPosition();
+                    randomPositions.push(pos);
+                }
+                randomPositions.forEach(function (pos) {
+                    var possibleSpawns = ["BoxBox", "Pinwheel"]; //, "Singularity"]
+                    _this.enemyCreatorMap[possibleSpawns[Math.floor(Math.random() * possibleSpawns.length) %
+                        possibleSpawns.length]](pos);
+                });
+            },
+            EasyGroupsArrows: function () {
+                var randomPositions = [];
+                for (var i = 0; i < 5; i++) {
+                    var pos = _this.randomPosition();
+                    randomPositions.push(pos);
+                }
+                randomPositions.forEach(function (pos) {
+                    var possibleSpawns = ["BoxBox", "Pinwheel", "Arrow", "Singularity"];
+                    _this.enemyCreatorMap[possibleSpawns[Math.floor(Math.random() * possibleSpawns.length) %
+                        possibleSpawns.length]](pos);
+                });
+            },
+            ArrowsAttack: function () {
+                var somePositions = [
+                    [200, 300],
+                    [1000, 300],
+                    [600, 100],
+                ];
+                var pos = somePositions[Math.floor(Math.random() * somePositions.length) %
+                    somePositions.length];
+                for (var i = 0; i < 5; i++) {
+                    pos[1] += i * 80;
+                    _this.enemyCreatorMap["Arrow"](pos);
+                }
+            },
+            GruntGroups: function () {
+                var randomPos = _this.randomPosition(50);
+                for (var i = 0; i < 3; i++) {
+                    for (var j = 0; j < 3; j++) {
+                        _this.enemyCreatorMap["Grunt"]([
+                            i * 40 + randomPos[0],
+                            j * 40 + randomPos[1],
+                        ]);
+                    }
+                }
+            },
+            GreenGroups: function () {
+                var randomPos = _this.randomPosition(50);
+                for (var i = 0; i < 3; i++) {
+                    for (var j = 0; j < 3; j++) {
+                        _this.enemyCreatorMap["Weaver"]([
+                            i * 40 + randomPos[0],
+                            j * 40 + randomPos[1] - 50,
+                        ]);
+                    }
+                }
+            },
+        };
+    };
+    // createSpawnStateMachine() {
+    // let events = this.sequenceTypes
+    // let stateIndex = {i: 0}
+    // // these are the events
+    // // times will be hard coded for each state in the queue
+    // let spawnQueue = []
+    // let singularityState = new StateMachine(this.engine, {stateIndex, event: events.Singularity})
+    // let easyGroupsState = new StateMachine(this.engine, undefined)
+    // }
+    GEOWarsScript.prototype.randomPosition = function (radius) {
+        if (!radius) {
+            radius = 40;
+        }
+        return [
+            (DIM_X - radius * 4) * Math.random() + radius * 4,
+            (DIM_Y - radius * 4) * Math.random() + radius * 4,
+            // 1000,600
+        ];
+    };
+    GEOWarsScript.prototype.spawnSequence = function (delta) {
+        var _this = this;
+        this.intervalTime += delta;
+        if (this.sequenceCount === 1) {
+            this.enemyCreatorMap["Singularity"]([700, 300]);
+            this.sequenceCount += 1;
+        }
+        // wait time              //parentIndex   // repeat count
+        if (this.intervalTime > 2500 * this.intervalTiming &&
+            this.sequenceCount < 5) {
+            this.intervalTime = 0;
+            this.sequenceTypes["EasyGroups"](); // event
+            // this.randomSpawnEnemy();
+            this.sequenceCount += 1;
+        }
+        else if (this.sequenceCount === 5 && this.intervalTime > 5000) {
+            this.sequenceCount += 1;
+        }
+        else if (this.intervalTime > 2500 * this.intervalTiming &&
+            this.sequenceCount > 5 &&
+            this.sequenceCount < 10) {
+            this.sequenceCount += 1;
+            this.intervalTime = 0;
+            this.sequenceTypes["EasyGroupsArrows"]();
+        }
+        else if (this.sequenceCount === 10 && this.intervalTime > 5000) {
+            this.sequenceCount += 1;
+        }
+        else if (this.intervalTime > 1500 * this.intervalTiming &&
+            this.sequenceCount > 10 &&
+            this.sequenceCount < 15) {
+            this.sequenceCount += 1;
+            this.intervalTime = 0;
+            this.sequenceTypes["GruntGroups"]();
+        }
+        else if (this.sequenceCount === 15 && this.intervalTime > 2000) {
+            this.sequenceCount += 1;
+        }
+        else if (this.intervalTime > 2000 * this.intervalTiming &&
+            this.sequenceCount > 15 &&
+            this.sequenceCount < 20) {
+            this.sequenceCount += 1;
+            this.intervalTime = 0;
+            this.sequenceTypes["GreenGroups"]();
+        }
+        else if (this.sequenceCount === 20 && this.intervalTime > 3000) {
+            this.sequenceCount += 1;
+        }
+        // else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 1) {
+        //   this.intervalTime = 0
+        //   this.sequenceCount += 1
+        //   let enemies_to_spawn = []
+        //   let randomPos = this.randomPosition();
+        //   for (let i = 0; i < 2; i++) {
+        //     for (let j = 0; j < 2; j++) {
+        //       this.enemyCreatorMap["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
+        //     }
+        //   }
+        // } else if (this.intervalTime > (5000 * this.intervalTiming) && this.sequenceCount === 11) {
+        //   this.intervalTime = 0;
+        //   this.sequenceCount += 1;
+        //}
+        else if (this.intervalTime > 375 &&
+            this.sequenceCount > 20 &&
+            this.sequenceCount < 30 &&
+            this.hugeSequenceTime % 2 === 0) {
+            this.ship.upgradeBullets();
+            this.intervalTime = 0;
+            this.sequenceCount += 1;
+            var fourCorners = [
+                [40, 40],
+                [DIM_X - 40, 40],
+                [40, DIM_Y - 40],
+                [DIM_X - 40, DIM_Y - 40],
+            ];
+            fourCorners.forEach(function (corner) {
+                _this.enemyCreatorMap["Grunt"](corner);
+            });
+        }
+        else if (this.intervalTime > 375 &&
+            this.sequenceCount > 20 &&
+            this.sequenceCount < 30 &&
+            this.hugeSequenceTime % 2 === 1) {
+            this.intervalTime = 0;
+            this.sequenceCount += 10;
+            var arrowWallPositions = [];
+            var arrowDirection_1 = (Math.PI * 3) / 2 + Math.PI;
+            for (var i = 40; i < DIM_X; i += 40) {
+                arrowWallPositions.push([i, 50]);
+            }
+            arrowWallPositions.forEach(function (position) {
+                _this.enemyCreatorMap["Arrow"](position, arrowDirection_1);
+            });
+        }
+        // this is the spawner event.
+        // it runs through all the child states
+        // for the event to be triggered
+        else if (this.sequenceCount >= 30) {
+            this.sequenceCount = 0;
+            if (!(this.intervalTiming < 0.5)) {
+                this.intervalTiming *= 0.9;
+            }
+            this.hugeSequenceTime += 1;
+        }
+        // if (this.gameTime % 2000 === 0){
+        //   this.spawned = false
+        // }
+    };
+    GEOWarsScript.prototype.createShip = function () {
+        return new _game_objects_Ship_ship__WEBPACK_IMPORTED_MODULE_1__.Ship(this.engine, this.startPosition);
+    };
+    GEOWarsScript.prototype.createWalls = function () {
+        return new _game_objects_walls__WEBPACK_IMPORTED_MODULE_2__.Walls(this.engine);
+    };
+    GEOWarsScript.prototype.createGrid = function () {
+        return new _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_4__.Grid(this.engine);
+    };
+    GEOWarsScript.prototype.createOverlay = function () {
+        return new _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_3__.Overlay(this.engine, this);
+    };
+    GEOWarsScript.isOutOfBounds = function (pos, radius) {
+        var max = [DIM_X - radius, DIM_Y - radius];
+        if (radius) {
+            return (pos[0] <= radius ||
+                pos[0] >= max[0] ||
+                pos[1] <= radius ||
+                pos[1] >= max[1]);
+        }
+        else {
+            return (pos[0] < 0 ||
+                pos[1] < 0 ||
+                pos[0] > DIM_X ||
+                pos[1] > DIM_Y);
+        }
+    };
+    // bounce(pos){
+    //   return [
+    //     Util.bounce(pos[0], DIM_X), Util.bounce(pos[1], DIM_Y)
+    //   ];
+    // }
+    GEOWarsScript.bounce = function (transform, radius) {
+        if (radius === void 0) { radius = 0; }
+        var max = [DIM_X - radius, DIM_Y - radius];
+        var pos = transform.absolutePosition();
+        if (pos[0] <= radius || pos[0] >= max[0]) {
+            transform.vel[0] = -transform.vel[0];
+        }
+        if (pos[1] <= radius || pos[1] >= max[1]) {
+            transform.vel[1] = -transform.vel[1];
+        }
+    };
+    GEOWarsScript.wallGraze = function (transform, radius) {
+        if (radius === void 0) { radius = 0; }
+        var max = [DIM_X - radius, DIM_Y - radius];
+        var pos = transform.absolutePosition();
+        var vel = transform.absoluteVelocity();
+        // X bounds, left right
+        if (pos[0] <= radius && vel[0] < 0) {
+            transform.vel[0] = 0.1;
+        }
+        else if (pos[0] >= max[0] && vel[0] > 0) {
+            transform.vel[0] = -0.1;
+        }
+        // Y bounds, top bottom
+        if (pos[1] <= radius && vel[1] < 0) {
+            transform.vel[1] = 0.1;
+        }
+        else if (pos[1] >= max[1] && vel[1] > 0) {
+            transform.vel[1] = -0.1;
+        }
+    };
+    GEOWarsScript.redirect = function (transform) {
+        var max = [DIM_X, DIM_Y];
+        var pos = transform.absolutePosition();
+        if (pos[0] <= 0 || pos[0] >= max[0]) {
+            if (pos[0] <= 0) {
+                pos[0] = 1;
+            }
+            if (pos[0] >= max[0]) {
+                pos[0] = max[0] - 1;
+            }
+        }
+        if (pos[1] <= 0 || pos[1] >= max[1]) {
+            if (pos[1] <= 0) {
+                pos[1] = 1;
+            }
+            if (pos[1] >= max[1]) {
+                pos[1] = max[1] - 1;
+            }
+        }
+        transform.vel[0] = -transform.vel[0];
+        transform.vel[1] = -transform.vel[1];
+    };
+    GEOWarsScript.BG_COLOR = '#000000';
+    return GEOWarsScript;
+}());
+
+// GameScript.BG_COLOR = "#000000";
+// DIM_X = 1000;
+// DIM_Y = 600;
+// GameScript.FPS = 32;
+// GameScript.NUM_BOXES = 10;
+// GameScript.NUM_PINWHEELS = 0;
+// GameScript.NUM_ARROWS = 0;
+// GameScript.NUM_GRUNTS = 0;
+// GameScript.NUM_WEAVERS = 0;
+// GameScript.NUM_SINGULARITIES = 1;
+// GameScript.Spawn1 = {
+//     BoxBox: 50,
+// };
+// GameScript.spawnListList = [GameScript.Spawn1];
+// 2D 
+// const performance2D = {
+//     collisionTime: 0.12846034227596656,
+//     frameRate: 117.86903385504282,
+//     physicsCalcTime: 0.2529761062793578,
+//     renderTime: 0.9149865687913138,
+//     scriptTime: 0.00835571889659564,
+//     updateTime: 0.1869786510739892,
+// };
+// 3D
+// const performance3D = {
+//     collisionTime: 0.0705062137856271,
+//     frameRate: 54.9810552849427,
+//     physicsCalcTime: 0.16501970291499046,
+//     renderTime: 1.1280691114636254,
+//     scriptTime: 0.008426796002401008,
+//     updateTime: 0.177841770708579,
+// };
+
+
+/***/ }),
+
+/***/ "./src/SpriteEditorScript.ts":
+/*!***********************************!*\
+  !*** ./src/SpriteEditorScript.ts ***!
+  \***********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   DIM_X: () => (/* binding */ DIM_X),
+/* harmony export */   DIM_Y: () => (/* binding */ DIM_Y),
+/* harmony export */   SpriteEditorScript: () => (/* binding */ SpriteEditorScript)
+/* harmony export */ });
+/* harmony import */ var _game_engine_transform__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_engine/transform */ "./src/game_engine/transform.ts");
+/* harmony import */ var _game_engine_SpriteEditor_DrawingGridSprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_engine/SpriteEditor/DrawingGridSprite */ "./src/game_engine/SpriteEditor/DrawingGridSprite.ts");
+
+
+var DIM_X = 1000;
+var DIM_Y = 600;
+var SpriteEditorScript = /** @class */ (function () {
+    function SpriteEditorScript(engine) {
+        this.gameTime = 0;
+        this.engine = engine;
+        this.spriteCreatorOpened = true;
+        this.theme = {
+            play: function () { return null; },
+            mute: function () { return null; },
+            unmute: function () { return null; }
+        };
+        engine.gameObjects = [];
+        engine.lineSprites = [];
+        engine.activeCamera.zoomScale = 1;
+        engine.activeCamera.transform.pos = [DIM_X / 2, DIM_Y / 2, engine.activeCamera.transform.pos[2]];
+        engine.addLineSprite(new _game_engine_SpriteEditor_DrawingGridSprite__WEBPACK_IMPORTED_MODULE_1__.DrawingGridSprite(new _game_engine_transform__WEBPACK_IMPORTED_MODULE_0__.Transform()));
+    }
+    SpriteEditorScript.prototype.update = function (deltaTime) {
+    };
+    SpriteEditorScript.prototype.onPause = function () {
+        var modal = document.getElementById("pauseModal");
+        modal.style.display = "block";
+    };
+    SpriteEditorScript.prototype.onUnPause = function () {
+        var modal = document.getElementById("pauseModal");
+        modal.style.display = "none";
+    };
+    SpriteEditorScript.BG_COLOR = '#000000';
+    return SpriteEditorScript;
+}());
+
+
+
+/***/ }),
+
+/***/ "./src/StrikeTimeScript.ts":
+/*!*********************************!*\
+  !*** ./src/StrikeTimeScript.ts ***!
+  \*********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   DIM_X: () => (/* binding */ DIM_X),
+/* harmony export */   DIM_Y: () => (/* binding */ DIM_Y),
+/* harmony export */   StrikeTimeScript: () => (/* binding */ StrikeTimeScript)
+/* harmony export */ });
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_engine/sound */ "./src/game_engine/sound.ts");
+/* harmony import */ var _game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_objects/particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.ts");
+/* harmony import */ var _game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game_objects/particles/ship_explosion */ "./src/game_objects/particles/ship_explosion.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Scene */ "./src/game_engine/Levels/DesignElements/Scene.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Operation__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Operation */ "./src/game_engine/Levels/DesignElements/Operation.ts");
+/* harmony import */ var _game_objects_StrikeTime_Aurora_Aurora__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./game_objects/StrikeTime/Aurora/Aurora */ "./src/game_objects/StrikeTime/Aurora/Aurora.ts");
+/* harmony import */ var _game_objects_StrikeTime_Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./game_objects/StrikeTime/Enemies/PatriotMissileSite */ "./src/game_objects/StrikeTime/Enemies/PatriotMissileSite.ts");
+/* harmony import */ var _game_objects_StrikeTime_Buildings_Building1__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./game_objects/StrikeTime/Buildings/Building1 */ "./src/game_objects/StrikeTime/Buildings/Building1.ts");
+
+
+
+
+
+
+
+
+
+
+
+// type Enemies = 'BoxBox' | 'Pinwheel' | 'Arrow' | 'Grunt' | 'Weaver' | 'Singularity' | 'AlienShip';
+var DIM_X = 1000;
+var DIM_Y = 600;
+var StrikeTimeScript = /** @class */ (function () {
+    function StrikeTimeScript(engine) {
+        this.serializedGame = "";
+        this.gameTime = 0;
+        this.engine = engine;
+        this.startPosition = [500, 300, 0];
+        this.initialCameraZPos = -1000;
+        this.score = 0;
+        this.theme = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Geometry_OST.mp3", 1, engine.muted);
+        this.enemyCreatorMap = this.createEnemyCreators();
+        this.explosionColorWheel = 0;
+        // not sure if this is a loaded level or a hardcoded one
+        this.playFromRootScene = false;
+    }
+    StrikeTimeScript.prototype.nextElement = function () {
+        this.rootScene.currentElementIndex = 0;
+    };
+    StrikeTimeScript.prototype.startGame = function (serializedGame) {
+        var _a;
+        this.serializedGame = serializedGame;
+        var game = JSON.parse(serializedGame);
+        if (((_a = game === null || game === void 0 ? void 0 : game.serializedGameElements) === null || _a === void 0 ? void 0 : _a.length) > 0) {
+            this.rootScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.Scene('root');
+            this.rootScene.gameElements = this.loadGameElements(game.serializedGameElements, this.rootScene);
+            this.playFromRootScene = true;
+        }
+        this.loadStrikeTimeContent();
+    };
+    StrikeTimeScript.prototype.loadStrikeTimeContent = function () {
+        new _game_objects_StrikeTime_Aurora_Aurora__WEBPACK_IMPORTED_MODULE_8__.Aurora(this.engine, [this.startPosition[0], this.startPosition[1]]);
+        new _game_objects_StrikeTime_Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_9__.PatriotMissileSite(this.engine, [150, 150]);
+        new _game_objects_StrikeTime_Buildings_Building1__WEBPACK_IMPORTED_MODULE_10__.Building1(this.engine, [550, 300]);
+    };
+    StrikeTimeScript.prototype.loadGameElements = function (serializedGameElements, parentScene) {
+        var _this = this;
+        return serializedGameElements.map(function (element) {
+            if (element.type === "Scene") {
+                var newScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.Scene(element.name, parentScene);
+                newScene.gameElements = _this.loadGameElements(element.serializedGameElements, newScene) || [];
+                return newScene;
+            }
+            else if (element.type === "Event") {
+                return new _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_4__.Event(element.spawns, parentScene, element.isShipRelative, _this.engine);
+            }
+            else if (element.type === "Time") {
+                return new _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_5__.Time(parentScene, element.waitTime);
+            }
+            else if (element.type === "LoopBeginning") {
+                return new _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_6__.LoopBeginning(parentScene);
+            }
+            else if (element.type === "LoopEnd") {
+                return new _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_6__.LoopEnd({ loopIdx: element.loopIdx || 0, repeatTimes: element.repeatTimes }, parentScene);
+            }
+            else if (element.type === "Operation") {
+                // TODO some of these are GEOWars specific but don't have to be
+                // or maybe it should since operation could do things specific to the game
+                return new _game_engine_Levels_DesignElements_Operation__WEBPACK_IMPORTED_MODULE_7__.Operation(element.operand, parentScene, _this.engine, _this);
+            }
+        });
+    };
+    // TODO: I'll need a pause screen
+    // updateXButtonListener(pressed: boolean) {
+    //     // if (pressed) {
+    //     //     if (this.engine.paused) {
+    //     //         const modal = document.getElementById("endModal");
+    //     //         modal.style.display = "none";
+    //     //         this.engine.paused = false;
+    //     //         if (!this.engine.muted) {
+    //     //             this.theme.play();
+    //     //         }
+    //     //     }
+    //     // }
+    // }
+    // updateBButtonListener(pressed: boolean) {
+    //     // if (pressed) {
+    //     //     if (this.engine.paused) {
+    //     //         const modal = document.getElementById("endModal");
+    //     //         modal.style.display = "none";
+    //     //         this.engine.paused = false;
+    //     //         if (!this.engine.muted) {
+    //     //             this.theme.play();
+    //     //         }
+    //     //     }
+    //     // }
+    // }
+    StrikeTimeScript.prototype.update = function (deltaTime) {
+        // TODO: I think this will still be useful in the future
+        // but I don't have my head wrapped around it yet
+        if (this.playFromRootScene) {
+            this.rootScene.update(deltaTime);
+        }
+        else {
+            this.gameTime += deltaTime;
+        }
+        this.changeExplosionColor();
+    };
+    StrikeTimeScript.prototype.changeExplosionColor = function () {
+        this.explosionColorWheel += 1 / 2;
+        this.explosionColorWheel = this.explosionColorWheel % 360;
+    };
+    StrikeTimeScript.prototype.tallyScore = function (gameObject) {
+        // might not be generic enough to keep here
+        this.score += gameObject.points;
+        // if (this.score) {
+        // }
+    };
+    StrikeTimeScript.prototype.resetGame = function () {
+        var _this = this;
+        this.engine.paused = true;
+        var modal = document.getElementById("endModal");
+        modal.style.display = "block";
+        // Get the button that opens the modal
+        // var btn = document.getElementById("myBtn");
+        // Get the <span> element that closes the modal
+        var xclose = document.getElementsByClassName("endClose")[0];
+        // When the user clicks on <span> (x), close the modal
+        xclose.onclick = function (e) {
+            e.stopPropagation();
+            modal.style.display = "none";
+            _this.engine.paused = false;
+            window.removeEventListener("click", closeModalWithClick, false);
+            if (!_this.engine.muted) {
+                _this.theme.play();
+            }
+        };
+        var closeModalWithClick = function (e) {
+            if (e.target == modal) {
+                _this.engine.paused = false;
+                if (!_this.engine.muted) {
+                    _this.theme.play();
+                }
+                modal.style.display = "none";
+                window.removeEventListener("click", closeModalWithClick, false);
+            }
+        };
+        // When the user clicks anywhere outside of the modal, close it
+        window.addEventListener("click", closeModalWithClick, false);
+    };
+    StrikeTimeScript.prototype.death = function () {
+    };
+    StrikeTimeScript.prototype.gameOver = function () {
+        // end the game here
+    };
+    StrikeTimeScript.prototype.explodeEverything = function () {
+        var _this = this;
+        var removeList = [];
+        var typesToRemove = [
+            "Grunt",
+            "Pinwheel",
+            "BoxBox",
+            "Arrow",
+            "Singularity",
+            "Weaver",
+            "AlienShip",
+        ];
+        this.engine.gameObjects.forEach(function (object) {
+            if (object.constructor.name === "Aurora") {
+                var auroraTransform = object.transform;
+                var pos = auroraTransform.absolutePosition();
+                new _game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_2__.ShipExplosion(_this.engine, pos);
+            }
+            else if (object.constructor.name === "Bullet") {
+                removeList.push(object);
+            }
+            else if (typesToRemove.includes(object.constructor.name)) {
+                var objectTransform = object.transform;
+                var pos = objectTransform.absolutePosition();
+                new _game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(_this.engine, pos);
+                removeList.push(object);
+            }
+        });
+        removeList.forEach(function (removeThis) {
+            removeThis.remove();
+        });
+    };
+    // levelDesigner() {
+    //     const modal = document.getElementById("levelDesignerModal");
+    // }
+    StrikeTimeScript.prototype.onPause = function () {
+        try {
+            this.theme.pause();
+        }
+        catch (error) {
+            console.log('failed to pause theme music');
+        }
+        var modal = document.getElementById("pauseModal");
+        modal.style.display = "block";
+    };
+    StrikeTimeScript.prototype.onUnPause = function () {
+        try {
+            this.theme.unPause();
+        }
+        catch (error) {
+            console.log('failed to unpause theme music');
+        }
+        var modal = document.getElementById("pauseModal");
+        modal.style.display = "none";
+    };
+    StrikeTimeScript.prototype.randomDirection = function () {
+        var angles = [0, Math.PI / 2, Math.PI, (Math.PI * 3) / 2];
+        return angles[Math.floor(Math.random() * angles.length) % angles.length];
+    };
+    // TODO: The only content in GEOWars was enemies, so the name will need to change 
+    StrikeTimeScript.prototype.createEnemyCreators = function () {
+        return {};
+    };
+    StrikeTimeScript.prototype.randomSpawnEnemy = function () {
+        var pos = this.randomPosition();
+        var enemyCreators = Object.values(this.enemyCreatorMap);
+        enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos);
+    };
+    StrikeTimeScript.prototype.randomPosition = function (radius) {
+        if (!radius) {
+            radius = 40;
+        }
+        return [
+            (DIM_X - radius * 4) * Math.random() + radius * 4,
+            (DIM_Y - radius * 4) * Math.random() + radius * 4,
+            // 1000,600
+        ];
+    };
+    StrikeTimeScript.isOutOfBounds = function (pos, radius) {
+        var max = [DIM_X - radius, DIM_Y - radius];
+        if (radius) {
+            return (pos[0] <= radius ||
+                pos[0] >= max[0] ||
+                pos[1] <= radius ||
+                pos[1] >= max[1]);
+        }
+        else {
+            return (pos[0] < 0 ||
+                pos[1] < 0 ||
+                pos[0] > DIM_X ||
+                pos[1] > DIM_Y);
+        }
+    };
+    StrikeTimeScript.BG_COLOR = '#000000';
+    return StrikeTimeScript;
+}());
+
+
+
+/***/ }),
+
 /***/ "./src/game_engine/EntityState/Activity.ts":
 /*!*************************************************!*\
   !*** ./src/game_engine/EntityState/Activity.ts ***!
@@ -1385,7 +2397,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   Spawn: () => (/* binding */ Spawn),
 /* harmony export */   isEnemyType: () => (/* binding */ isEnemyType)
 /* harmony export */ });
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 
 function isEnemyType(value) {
     return ['BoxBox', 'Arrow', 'Grunt', 'Pinwheel', 'Weaver', 'Singularity', 'RANDOM'].includes(value);
@@ -1408,8 +2420,8 @@ var Spawn = /** @class */ (function () {
     // these random functions should be in the Event class I think
     Spawn.prototype.randomPosition = function () {
         return [
-            _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X * 0.95 * Math.random(),
-            _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y * 0.90 * Math.random(),
+            _GEOWarsScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X * 0.95 * Math.random(),
+            _GEOWarsScript__WEBPACK_IMPORTED_MODULE_0__.DIM_Y * 0.90 * Math.random(),
         ];
     };
     Spawn.prototype.randomMob = function () {
@@ -1429,23 +2441,25 @@ var Spawn = /** @class */ (function () {
             else {
                 location_1 = [Number(this.location[0]), Number(this.location[1])];
                 if (isShipRelative) {
-                    location_1[0] += this.gameEngine.activeCamera.transform.pos[0] - _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X / 2;
-                    location_1[1] += this.gameEngine.activeCamera.transform.pos[1] - _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / 2;
+                    location_1[0] += this.gameEngine.activeCamera.transform.pos[0] - _GEOWarsScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X / 2;
+                    location_1[1] += this.gameEngine.activeCamera.transform.pos[1] - _GEOWarsScript__WEBPACK_IMPORTED_MODULE_0__.DIM_Y / 2;
                     // check if off edge of map
-                    if (location_1[0] > _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X - 100) {
-                        location_1[0] = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X - 100;
+                    if (location_1[0] > _GEOWarsScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X - 100) {
+                        location_1[0] = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X - 100;
                     }
                     else if (location_1[0] < 100) {
                         location_1[0] = 100;
                     }
-                    if (location_1[1] > _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y - 100) {
-                        location_1[1] = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y - 100;
+                    if (location_1[1] > _GEOWarsScript__WEBPACK_IMPORTED_MODULE_0__.DIM_Y - 100) {
+                        location_1[1] = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_0__.DIM_Y - 100;
                     }
                     else if (location_1[1] < 0 + 100) {
                         location_1[1] = 0 + 100;
                     }
                 }
             }
+            // TODO: maybe get this to work without casting
+            // but likely not worth the effort
             this.gameEngine.gameScript.enemyCreatorMap[mobToSpawn](location_1);
         }
     };
@@ -1637,7 +2651,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_objects_enemies_Singularity_singularity_sprite__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../game_objects/enemies/Singularity/singularity_sprite */ "./src/game_objects/enemies/Singularity/singularity_sprite.ts");
 /* harmony import */ var _game_objects_enemies_RandomRandom__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../game_objects/enemies/RandomRandom */ "./src/game_objects/enemies/RandomRandom.ts");
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../util */ "./src/game_engine/util.ts");
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 /* harmony import */ var _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../game_objects/enemies/Singularity/alien_ship */ "./src/game_objects/enemies/Singularity/alien_ship.ts");
 // while placing, could do spawning animation over mouse position
 // once placed, draw it at the placed location
@@ -1757,8 +2771,8 @@ var EnemyPlacer = /** @class */ (function (_super) {
         this.event.levelDesigner.updateAnimationViewAngle(radiansAngle);
     };
     EnemyPlacer.prototype.setRandomCoordinates = function () {
-        this.transform.pos[0] = _game_script__WEBPACK_IMPORTED_MODULE_10__.GameScript.DIM_X * 0.85 * Math.random();
-        this.transform.pos[1] = _game_script__WEBPACK_IMPORTED_MODULE_10__.GameScript.DIM_Y * 0.85 * Math.random();
+        this.transform.pos[0] = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_10__.DIM_X * 0.85 * Math.random();
+        this.transform.pos[1] = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_10__.DIM_Y * 0.85 * Math.random();
         this.transform.angle = Math.random() * Math.PI * 2;
         this.serializedSpawn.angle = this.transform.angle;
     };
@@ -1873,16 +2887,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   LevelDesigner: () => (/* binding */ LevelDesigner),
 /* harmony export */   isEnemyTypeArray: () => (/* binding */ isEnemyTypeArray)
 /* harmony export */ });
-/* harmony import */ var _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_objects/Walls/walls */ "./src/game_objects/Walls/walls.ts");
+/* harmony import */ var _game_objects_walls__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_objects/walls */ "./src/game_objects/walls.ts");
 /* harmony import */ var _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_objects/Overlay/overlay */ "./src/game_objects/Overlay/overlay.ts");
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.ts");
-/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.ts");
-/* harmony import */ var _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./DesignElements/Scene */ "./src/game_engine/Levels/DesignElements/Scene.ts");
-/* harmony import */ var _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./DesignElements/Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.ts");
-/* harmony import */ var _DesignElements_Event__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.ts");
-/* harmony import */ var _DesignElements_Time__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.ts");
-/* harmony import */ var _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.ts");
-/* harmony import */ var _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./DesignElements/Operation */ "./src/game_engine/Levels/DesignElements/Operation.ts");
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.ts");
+/* harmony import */ var _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./DesignElements/Scene */ "./src/game_engine/Levels/DesignElements/Scene.ts");
+/* harmony import */ var _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./DesignElements/Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.ts");
+/* harmony import */ var _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.ts");
+/* harmony import */ var _DesignElements_Time__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.ts");
+/* harmony import */ var _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.ts");
+/* harmony import */ var _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./DesignElements/Operation */ "./src/game_engine/Levels/DesignElements/Operation.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from, pack) {
     if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
         if (ar || !(i in from)) {
@@ -1907,7 +2921,7 @@ var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from
 // I should collect placed enemies
 // check if array of enemyType
 function isEnemyTypeArray(value) {
-    return !value.some(function (type) { return (!(0,_DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_5__.isEnemyType)(type)); });
+    return !value.some(function (type) { return (!(0,_DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_4__.isEnemyType)(type)); });
 }
 // for a tracker I can highlight the current game element
 // just like selecting it... but maybe the same color for 
@@ -1915,7 +2929,7 @@ function isEnemyTypeArray(value) {
 var LevelDesigner = /** @class */ (function () {
     function LevelDesigner(engine, animationView, levelDesignerCtx, serializedGame) {
         var _this = this;
-        this.transform = new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform();
+        this.transform = new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform();
         this.DIM_X = 1200;
         this.DIM_Y = 300;
         this.BG_COLOR = "#000000";
@@ -1935,8 +2949,8 @@ var LevelDesigner = /** @class */ (function () {
         // duck typing for scene
         this.expandedScenes = [];
         // this is added to expanded Scenes off the bat. Check addUIElement
-        this.baseScene = new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_4__.SceneObject(this, 'main'); // top level list of game elements
-        this.transform = new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform();
+        this.baseScene = new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.SceneObject(this, 'main'); // top level list of game elements
+        this.transform = new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform();
         this.widthHeight = [0, 0];
         this.loopBeginningObjectStackForLoading = [];
         this.animationView = animationView;
@@ -1947,7 +2961,7 @@ var LevelDesigner = /** @class */ (function () {
         this.lineSprites = [];
         this.zoomScale = 1;
         this.ship = {
-            transform: new _transform__WEBPACK_IMPORTED_MODULE_3__.Transform()
+            transform: new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform()
         };
         this.lastTime = 0;
         this.animate = this.animate.bind(this);
@@ -2137,8 +3151,9 @@ var LevelDesigner = /** @class */ (function () {
         });
         startGame.onclick = function (e) {
             e.stopPropagation();
+            // TODO: not sure what this was doing before
             // serialize game, send to game script
-            _this.startGame();
+            // this.startGame();
         };
         // this.levelDesignerCtx.addEventListener("dblclick", (e) => {
         //     e.stopPropagation();
@@ -2149,7 +3164,7 @@ var LevelDesigner = /** @class */ (function () {
     }
     // addToClipBoard(uiElement: UIElement) {
     // }
-    LevelDesigner.prototype.startGame = function () {
+    LevelDesigner.prototype.startGame = function (GEOWarsScript) {
         this.serializedGame = {
             type: 'Scene',
             name: "Game",
@@ -2160,20 +3175,20 @@ var LevelDesigner = /** @class */ (function () {
         // I should unselect whatever is selected.
         // events being the main issue since they have things
         // on the game 
-        this.engine.gameScript.startGame(serializedGameString);
+        GEOWarsScript.startGame(serializedGameString);
         this.engine.gameEditorOpened = false;
     };
     LevelDesigner.prototype.makeTime = function (time, parentScene) {
         if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
         var newElementPosition = this.getNewDrawPosition();
-        var timeObject = new _DesignElements_Time__WEBPACK_IMPORTED_MODULE_7__.TimeObject(this, time, newElementPosition, parentScene);
+        var timeObject = new _DesignElements_Time__WEBPACK_IMPORTED_MODULE_6__.TimeObject(this, time, newElementPosition, parentScene);
         this.selectedGameElement = timeObject;
         return timeObject;
     };
     LevelDesigner.prototype.makeOperation = function (operand, parentScene) {
         if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
         var newElementPosition = this.getNewDrawPosition();
-        var operationObject = new _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_9__.OperationObject(this, operand, newElementPosition, parentScene);
+        var operationObject = new _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_8__.OperationObject(this, operand, newElementPosition, parentScene);
         operationObject.onMouseClick();
         this.selectedGameElement = operationObject;
         return operationObject;
@@ -2276,18 +3291,18 @@ var LevelDesigner = /** @class */ (function () {
     };
     LevelDesigner.prototype.makeLoop = function (loop, parentScene) {
         if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
-        var beginningObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_8__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
-        var endObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_8__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
+        var beginningObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
+        var endObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
         beginningObject.endLoopObject = endObject;
         endObject.beginningLoopObject = beginningObject;
     };
     LevelDesigner.prototype.makeLoopBeginning = function (parentScene) {
-        var loopBeginning = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_8__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
+        var loopBeginning = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
         this.loopBeginningObjectStackForLoading.push(loopBeginning);
         return loopBeginning;
     };
     LevelDesigner.prototype.makeLoopEnding = function (loop, parentScene) {
-        var loopEndObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_8__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
+        var loopEndObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
         var matchingBeginning = this.loopBeginningObjectStackForLoading.pop();
         matchingBeginning.endLoopObject = loopEndObject;
         loopEndObject.beginningLoopObject = matchingBeginning;
@@ -2334,7 +3349,7 @@ var LevelDesigner = /** @class */ (function () {
     LevelDesigner.prototype.loadGameDesign = function (json) {
         var serializedGame = JSON.parse(json);
         this.serializedGame = serializedGame;
-        this.baseScene = new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_4__.SceneObject(this, 'main');
+        this.baseScene = new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.SceneObject(this, 'main');
         this.expandedScenes = [this.baseScene];
         this.baseScene.gameElementObjects = this.loadGameElements(serializedGame.serializedGameElements, this.baseScene);
     };
@@ -2371,7 +3386,7 @@ var LevelDesigner = /** @class */ (function () {
         if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
         // should provide this the current scene to know which array of elements to use
         var newElementPosition = this.getNewDrawPosition();
-        var event = new _DesignElements_Event__WEBPACK_IMPORTED_MODULE_6__.EventObject(this, eventToLoad, newElementPosition, parentScene);
+        var event = new _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject(this, eventToLoad, newElementPosition, parentScene);
         (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
         this.selectedGameElement = event;
         return event;
@@ -2403,7 +3418,7 @@ var LevelDesigner = /** @class */ (function () {
             newElementPosition = this.getNewDrawPosition();
         }
         // sprites are made and added automatically
-        return (new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_4__.SceneObject(this, name, parentScene, newElementPosition));
+        return (new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.SceneObject(this, name, parentScene, newElementPosition));
     };
     LevelDesigner.prototype.loopSelected = function (loop) {
         var _a;
@@ -2469,7 +3484,7 @@ var LevelDesigner = /** @class */ (function () {
         this.animationView.clear();
         this.animationView.addEnemy(type);
         (_a = this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.remove();
-        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_6__.EventObject) {
+        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject) {
             this.currentEnemyPlacer = this.selectedGameElement.createEnemyPlacer(type);
         }
         else {
@@ -2508,23 +3523,20 @@ var LevelDesigner = /** @class */ (function () {
     };
     LevelDesigner.prototype.addRandomRandomSpawnToEvent = function (spawnData) {
         var _a;
-        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_6__.EventObject) {
-            (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.addRandomRandom(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_5__.Spawn(spawnData, this.engine));
+        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject) {
+            (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.addRandomRandom(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_4__.Spawn(spawnData, this.engine));
         }
     };
     LevelDesigner.prototype.update = function () {
     };
     LevelDesigner.prototype.createWalls = function () {
-        return new _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_0__.Walls(this.engine);
+        return new _game_objects_walls__WEBPACK_IMPORTED_MODULE_0__.Walls(this.engine);
     };
-    // createGrid() {
-    //     return new Grid(this.engine, new Transform());
-    // }
     LevelDesigner.prototype.createOverlay = function () {
         return new _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_1__.Overlay(this.engine, this);
     };
     LevelDesigner.prototype.isOutOfBounds = function (pos, radius) {
-        var max = [_game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.DIM_X - radius, _game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.DIM_Y - radius];
+        var max = [_GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.DIM_X - radius, _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.DIM_Y - radius];
         if (radius) {
             return (pos[0] <= radius ||
                 pos[0] >= max[0] ||
@@ -2534,8 +3546,8 @@ var LevelDesigner = /** @class */ (function () {
         else {
             return (pos[0] < 0 ||
                 pos[1] < 0 ||
-                pos[0] > _game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.DIM_X ||
-                pos[1] > _game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.DIM_Y);
+                pos[0] > _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.DIM_X ||
+                pos[1] > _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.DIM_Y);
         }
     };
     LevelDesigner.prototype.runUIActions = function () {
@@ -2647,7 +3659,7 @@ var LevelDesigner = /** @class */ (function () {
     };
     LevelDesigner.prototype.addUIElement = function (UIElement) {
         var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
-        if (!bottomExpandedScene && UIElement instanceof _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_4__.SceneObject) {
+        if (!bottomExpandedScene && UIElement instanceof _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.SceneObject) {
             setTimeout(function () { return UIElement.expandScene(); });
             // this.expandedScenes.push(UIElement);
         }
@@ -2659,7 +3671,7 @@ var LevelDesigner = /** @class */ (function () {
         this.lineSprites.push(lineSprite);
     };
     LevelDesigner.prototype.makeCoordinatesShipRelative = function () {
-        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_6__.EventObject)
+        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject)
             this.selectedGameElement.makeCoordinatesShipRelative();
     };
     LevelDesigner.prototype.eventLoadShipRelative = function (isRelative) {
@@ -2668,7 +3680,7 @@ var LevelDesigner = /** @class */ (function () {
     };
     LevelDesigner.prototype.makeCoordinatesArenaRelative = function () {
         var _a;
-        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_6__.EventObject)
+        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject)
             (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.makeCoordinatesArenaRelative();
     };
     return LevelDesigner;
@@ -2688,7 +3700,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   DrawingGridSprite: () => (/* binding */ DrawingGridSprite)
 /* harmony export */ });
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../SpriteEditorScript */ "./src/SpriteEditorScript.ts");
 /* harmony import */ var _line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../line_sprite */ "./src/game_engine/line_sprite.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2722,10 +3734,10 @@ var DrawingGridSprite = /** @class */ (function (_super) {
         ctx.restore();
     };
     DrawingGridSprite.prototype.drawXLines = function (ctx) {
-        _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X;
-        _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y;
+        _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X;
+        _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_Y;
         var xLineCount = 36;
-        var xLineIncrement = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / xLineCount;
+        var xLineIncrement = _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_Y / xLineCount;
         for (var i = 0; i < xLineCount; i++) {
             ctx.beginPath();
             if (i % 3 === 0) {
@@ -2737,33 +3749,33 @@ var DrawingGridSprite = /** @class */ (function (_super) {
             }
             else {
                 ctx.strokeStyle = "#808080";
-                ctx.setLineDash([1, (_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X - 121) / 120]);
+                ctx.setLineDash([1, (_SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X - 121) / 120]);
             }
             ctx.moveTo(0, 0 + i * xLineIncrement);
-            ctx.lineTo(_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X, 0 + i * xLineIncrement);
+            ctx.lineTo(_SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X, 0 + i * xLineIncrement);
             ctx.stroke();
         }
     };
     DrawingGridSprite.prototype.drawYLines = function (ctx) {
-        _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X;
-        _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y;
+        _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X;
+        _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_Y;
         var yLineCount = 20;
-        var yLineIncrement = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X / yLineCount;
+        var yLineIncrement = _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X / yLineCount;
         for (var i = 0; i < yLineCount; i++) {
             if (i === 10) {
                 ctx.strokeStyle = "#FFFFFF";
                 ctx.beginPath();
-                ctx.setLineDash([1, (_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y - 73) / 72]);
+                ctx.setLineDash([1, (_SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_Y - 73) / 72]);
                 ctx.moveTo(0 + i * yLineIncrement, 0);
-                ctx.lineTo(0 + i * yLineIncrement, _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X);
+                ctx.lineTo(0 + i * yLineIncrement, _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X);
                 ctx.stroke();
             }
             else {
                 ctx.strokeStyle = "#808080";
                 ctx.beginPath();
-                ctx.setLineDash([1, (_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y - 73) / 72]);
+                ctx.setLineDash([1, (_SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_Y - 73) / 72]);
                 ctx.moveTo(0 + i * yLineIncrement, 0);
-                ctx.lineTo(0 + i * yLineIncrement, _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X);
+                ctx.lineTo(0 + i * yLineIncrement, _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X);
                 ctx.stroke();
             }
         }
@@ -2791,7 +3803,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   Point: () => (/* binding */ Point),
 /* harmony export */   PointData: () => (/* binding */ PointData)
 /* harmony export */ });
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../SpriteEditorScript */ "./src/SpriteEditorScript.ts");
 /* harmony import */ var _game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../game_object */ "./src/game_engine/game_object.ts");
 /* harmony import */ var _line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../line_sprite */ "./src/game_engine/line_sprite.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -2822,7 +3834,7 @@ var PlacingPoint = /** @class */ (function (_super) {
         return _this;
     }
     PlacingPoint.prototype.updateMousePos = function (mousePos) {
-        var distancePerIncrement = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / 72;
+        var distancePerIncrement = _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_Y / 72;
         var xPosIncremented = Math.round(mousePos[0] / distancePerIncrement) * distancePerIncrement;
         var yPosIncremented = Math.round(mousePos[1] / distancePerIncrement) * distancePerIncrement;
         this.transform.pos[0] = xPosIncremented;
@@ -2931,7 +3943,7 @@ var Circle = /** @class */ (function () {
 
 var CircleData = /** @class */ (function () {
     function CircleData(centerPoint, radius) {
-        this.centerPoint = [centerPoint[0], centerPoint[1]];
+        this.centerPoint = [centerPoint[0], -centerPoint[1]];
         this.radius = radius;
     }
     return CircleData;
@@ -2939,17 +3951,17 @@ var CircleData = /** @class */ (function () {
 
 var BezierCurveData = /** @class */ (function () {
     function BezierCurveData(startPos, endPos, controlPoint1, controlPoint2) {
-        this.startPos = [startPos[0], startPos[1]];
-        this.endPos = [endPos[0], endPos[1]];
-        this.controlPoint1 = [controlPoint1[0], controlPoint1[1]];
-        this.controlPoint2 = [controlPoint2[0], controlPoint2[1]];
+        this.startPos = [startPos[0], -startPos[1]];
+        this.endPos = [endPos[0], -endPos[1]];
+        this.controlPoint1 = [controlPoint1[0], -controlPoint1[1]];
+        this.controlPoint2 = [controlPoint2[0], -controlPoint2[1]];
     }
     return BezierCurveData;
 }());
 
 var PointData = /** @class */ (function () {
     function PointData(point) {
-        this.point = [point[0], point[1]];
+        this.point = [point[0], -point[1]];
     }
     return PointData;
 }());
@@ -2968,7 +3980,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   SpriteEditor: () => (/* binding */ SpriteEditor)
 /* harmony export */ });
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../SpriteEditorScript */ "./src/SpriteEditorScript.ts");
 /* harmony import */ var _game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../game_object */ "./src/game_engine/game_object.ts");
 /* harmony import */ var _line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../line_sprite */ "./src/game_engine/line_sprite.ts");
 /* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.ts");
@@ -3109,8 +4121,8 @@ var SpriteEditor = /** @class */ (function (_super) {
     };
     SpriteEditor.prototype.pointTransformation = function (pos) {
         return [
-            Math.round((pos[0] - _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X / 2) / (_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X / 120)),
-            Math.round((pos[1] - _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / 2) / (_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / 72)) * -1
+            Math.round((pos[0] - _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X / 2) / (_SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X / 120)),
+            Math.round((pos[1] - _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_Y / 2) / (_SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_Y / 72)) * -1
         ];
     };
     // left and right arrow to move between the line groups
@@ -3138,31 +4150,31 @@ var SpriteEditor = /** @class */ (function (_super) {
             }
             else if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Circle) {
                 var centerPoint = _this.pointTransformation(point.centerPoint);
-                var radius = Math.round((point.radius - _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X / 2) / (_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X / 120));
+                var radius = Math.round((point.radius - _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X / 2) / (_SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X / 120));
                 return new _Point__WEBPACK_IMPORTED_MODULE_4__.CircleData(centerPoint, radius);
             }
         }); });
         if (pressed && this.pointGroupsForLines.length > 0) {
             // put save logic here
-            var stringToSave_1 = '';
+            var stringToSave_1 = '(ctx: CanvasRenderingContext2D) { \nctx.strokeStyle = "";\nctx.lineWidth = 2;\nconst s = 1;\nconst pos = this.transform.absolutePosition();\nctx.translate(pos[0], pos[1]);\n\n';
             // find biggest X value
             // find smallest X value
             // find difference to get width
             // same with height for Y
             mappedPoints.forEach(function (pointGroup, idx) {
+                var stringStart = "";
                 var firstPoint = pointGroup[0];
-                var stringStart = "const s = 1;\n\n";
                 if (firstPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.PointData) {
                     stringStart =
-                        "Piece ".concat(idx + 1, ": \nctx.moveTo(").concat(firstPoint.point[0], " * s, ").concat(firstPoint.point[1], " * s);\nctx.beginPath();\n");
+                        "// Piece ".concat(idx + 1, ": \nctx.beginPath();\nctx.moveTo(").concat(firstPoint.point[0], " * s, ").concat(firstPoint.point[1], " * s);\n");
                 }
                 else if (firstPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.CircleData) {
                     stringStart =
-                        "Piece ".concat(idx + 1, ": \nctx.beginPath();\nctx.arc(").concat(firstPoint.centerPoint[0], " * s, ").concat(firstPoint.centerPoint[1], " * s, ").concat(firstPoint.radius, " * s, 0,2*Math.PI);\n");
+                        "// Piece ".concat(idx + 1, ": \nctx.beginPath();\nctx.arc(").concat(firstPoint.centerPoint[0], " * s, ").concat(firstPoint.centerPoint[1], " * s, ").concat(firstPoint.radius, " * s, 0,2*Math.PI);\n");
                 }
                 else if (firstPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurveData) {
                     stringStart =
-                        "Piece ".concat(idx + 1, ": \nctx.beginPath();\nctx.moveTo(").concat(firstPoint.startPos[0], " * s, ").concat(firstPoint.startPos[1], " * s);\nctx.bezierCurveto(\n\t").concat(firstPoint.controlPoint1[0], " * s, ").concat(firstPoint.controlPoint1[1], " * s,\n\t").concat(firstPoint.controlPoint2[0], " * s, ").concat(firstPoint.controlPoint2[1], " * s,\n\t").concat(firstPoint.endPos[0], " * s, ").concat(firstPoint.endPos[1], " * s\n);\n");
+                        "// Piece ".concat(idx + 1, ": \nctx.beginPath();\nctx.moveTo(").concat(firstPoint.startPos[0], " * s, ").concat(firstPoint.startPos[1], " * s);\nctx.bezierCurveto(\n\t").concat(firstPoint.controlPoint1[0], " * s, ").concat(firstPoint.controlPoint1[1], " * s,\n\t").concat(firstPoint.controlPoint2[0], " * s, ").concat(firstPoint.controlPoint2[1], " * s,\n\t").concat(firstPoint.endPos[0], " * s, ").concat(firstPoint.endPos[1], " * s\n);\n");
                 }
                 var restOfPoints = pointGroup.slice(1);
                 var lines = restOfPoints.reduce(function (acc, point) {
@@ -3191,7 +4203,7 @@ var SpriteEditor = /** @class */ (function (_super) {
     };
     SpriteEditor.prototype.mouseClicked = function (mousePos) {
         if (this.isPlacingPoint) {
-            var distancePerIncrement = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y / 72;
+            var distancePerIncrement = _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_Y / 72;
             var xPosIncremented = Math.round(mousePos[0] / distancePerIncrement) * distancePerIncrement;
             var yPosIncremented = Math.round(mousePos[1] / distancePerIncrement) * distancePerIncrement;
             this.placePoint([xPosIncremented, yPosIncremented]);
@@ -3597,8 +4609,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Camera: () => (/* binding */ Camera)
 /* harmony export */ });
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../game_script */ "./src/game_script.ts");
-
 var Camera = /** @class */ (function () {
     // it's like a game object, but it gets updated last
     function Camera(gameEngine, transform, name, gameObjectToFollow) {
@@ -3631,7 +4641,7 @@ var Camera = /** @class */ (function () {
     };
     Camera.prototype.clearView = function (ctx) {
         ctx.clearRect(-this.cameraHeight, -this.cameraWidth, this.cameraHeight * this.zoomScale * 40, this.cameraWidth * this.zoomScale * 40);
-        ctx.fillStyle = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.BG_COLOR;
+        ctx.fillStyle = '#000000';
         ctx.fillRect(-this.cameraHeight, -this.cameraWidth, this.cameraHeight * this.zoomScale * 40, this.cameraWidth * this.zoomScale * 40);
     };
     Camera.prototype.setZoomScale = function (ctx) {
@@ -3802,11 +4812,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   GameEngine: () => (/* binding */ GameEngine)
 /* harmony export */ });
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../game_script */ "./src/game_script.ts");
-/* harmony import */ var _camera__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./camera */ "./src/game_engine/camera.ts");
-/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./transform */ "./src/game_engine/transform.ts");
-/* harmony import */ var _SpriteEditor_DrawingGridSprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./SpriteEditor/DrawingGridSprite */ "./src/game_engine/SpriteEditor/DrawingGridSprite.ts");
-
+/* harmony import */ var _camera__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./camera */ "./src/game_engine/camera.ts");
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./transform */ "./src/game_engine/transform.ts");
+/* harmony import */ var _SpriteEditor_DrawingGridSprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./SpriteEditor/DrawingGridSprite */ "./src/game_engine/SpriteEditor/DrawingGridSprite.ts");
 
 
 
@@ -3814,6 +4822,7 @@ var GameEngine = /** @class */ (function () {
     function GameEngine(ctx) {
         this.isControllerConnected = false;
         this.replayablePhysicsComponents = [];
+        this.isPerformanceCheckOn = true;
         this.ctx = ctx;
         window.engine = this;
         this.buttonState = {
@@ -3822,11 +4831,12 @@ var GameEngine = /** @class */ (function () {
             bButtonPressed: false,
             startButtonPressed: false,
         };
+        this.gameScriptAdded = false;
         this.defaultZoomScale = 1.3;
         this.zoomScale = 1.3;
         this.lineSprites = [];
         this.cameras = [];
-        this.activeCamera = new _camera__WEBPACK_IMPORTED_MODULE_1__.Camera(this, new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform(), 'first camera');
+        this.activeCamera = new _camera__WEBPACK_IMPORTED_MODULE_0__.Camera(this, new _transform__WEBPACK_IMPORTED_MODULE_1__.Transform(), 'first camera');
         this.controllableGameObjects = [];
         this.controlledGameObject = null;
         this.gameObjects = [];
@@ -3859,7 +4869,6 @@ var GameEngine = /** @class */ (function () {
         this.bButtonListeners = [];
         this.aButtonListeners = [];
         this.startButtonListeners = [];
-        this.gameScript = new _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript(this);
         // this.toRemoveQueue = [];
         this.paused = false;
         // this.currentCamera = null;
@@ -3871,15 +4880,12 @@ var GameEngine = /** @class */ (function () {
         this.levelDesigner = null;
         this.spriteCreatorOpened = false;
     }
-    GameEngine.prototype.startSpriteCreator = function () {
-        this.spriteCreatorOpened = true;
-        this.gameObjects = [];
-        this.lineSprites = [];
-        this.activeCamera.zoomScale = 1;
-        this.addSpriteEditorOverlay();
+    GameEngine.prototype.addGameScript = function (gameScriptToAdd) {
+        this.gameScript = gameScriptToAdd;
+        this.gameScriptAdded = true;
     };
     GameEngine.prototype.addSpriteEditorOverlay = function () {
-        this.addLineSprite(new _SpriteEditor_DrawingGridSprite__WEBPACK_IMPORTED_MODULE_3__.DrawingGridSprite(new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform()));
+        this.addLineSprite(new _SpriteEditor_DrawingGridSprite__WEBPACK_IMPORTED_MODULE_2__.DrawingGridSprite(new _transform__WEBPACK_IMPORTED_MODULE_1__.Transform()));
     };
     GameEngine.prototype.addControllableGameObject = function (gameObject) {
         this.controllableGameObjects.push(gameObject);
@@ -3914,12 +4920,12 @@ var GameEngine = /** @class */ (function () {
             window.controller = e.gamepad;
             window.engine.isControllerConnected = true;
             // Gamepad connected
-            // console.log("Gamepad connected", e.gamepad);
+            console.log("Gamepad connected", e.gamepad);
         });
         window.addEventListener("gamepaddisconnected", function (e) {
             // Gamepad disconnected
             window.engine.isControllerConnected = false;
-            // console.log("Gamepad disconnected", e.gamepad);
+            console.log("Gamepad disconnected", e.gamepad);
         });
     };
     GameEngine.prototype.updateGraphicSetting = function (delta) {
@@ -3940,49 +4946,39 @@ var GameEngine = /** @class */ (function () {
             this.updateControlListeners();
             return;
         }
-        if (this.gameEditorOpened) {
+        if (!this.gameScriptAdded)
+            return;
+        if (this.isPerformanceCheckOn) {
+            var beforeCollisionTime = performance.now();
             this.checkCollisions();
+            var beforePhysicsCalcs = performance.now();
+            var collisionTime = beforePhysicsCalcs - beforeCollisionTime;
+            this.movePhysicsComponents(delta);
+            this.moveReplayablePhysicsComponents(delta, this.gameScript.gameTime);
+            var beforeUpdate = performance.now();
+            var physicsCalcTime = beforeUpdate - beforePhysicsCalcs;
+            this.updateGameObjects(delta);
+            var beforeRender = performance.now();
+            var updateTime = beforeRender - beforeUpdate;
+            this.renderLineSprites(this.ctx);
+            var beforeScriptUpdate = performance.now();
+            var renderTime = beforeScriptUpdate - beforeRender;
+            this.updateControlListeners();
+            this.updateGameScript(delta);
+            var scriptTime = performance.now() - beforeScriptUpdate;
+            this.playSounds();
+            this.collectPerformanceData(delta, collisionTime, physicsCalcTime, updateTime, renderTime, scriptTime);
+        }
+        else {
+            this.checkCollisions();
+            this.movePhysicsComponents(delta);
+            this.moveReplayablePhysicsComponents(delta, this.gameScript.gameTime);
             this.updateGameObjects(delta);
             this.renderLineSprites(this.ctx);
-            this.addClickListenersAfterTick();
-            this.addDoubleClickListenersAfterTick();
-            this.removeClickListenersAfterTick();
-            this.removeDoubleClickListenerAfterTick();
-            return;
+            this.updateControlListeners();
+            this.updateGameScript(delta);
+            this.playSounds();
         }
-        if (this.spriteCreatorOpened) {
-            this.checkCollisions();
-            this.updateGameObjects(delta);
-            this.renderLineSprites(this.ctx);
-            this.addClickListenersAfterTick();
-            this.addDoubleClickListenersAfterTick();
-            this.removeClickListenersAfterTick();
-            this.removeDoubleClickListenerAfterTick();
-            return;
-        }
-        // console.log(delta)
-        // if(delta > 125){
-        //   delta = 125
-        // }
-        var beforeCollisionTime = performance.now();
-        this.checkCollisions();
-        var beforePhysicsCalcs = performance.now();
-        var collisionTime = beforePhysicsCalcs - beforeCollisionTime;
-        this.movePhysicsComponents(delta);
-        this.moveReplayablePhysicsComponents(delta, this.gameScript.gameTime);
-        var beforeUpdate = performance.now();
-        var physicsCalcTime = beforeUpdate - beforePhysicsCalcs;
-        this.updateGameObjects(delta);
-        var beforeRender = performance.now();
-        var updateTime = beforeRender - beforeUpdate;
-        this.renderLineSprites(this.ctx);
-        var beforeScriptUpdate = performance.now();
-        var renderTime = beforeScriptUpdate - beforeRender;
-        this.updateControlListeners();
-        this.updateGameScript(delta);
-        var scriptTime = performance.now() - beforeScriptUpdate;
-        this.playSounds();
-        this.collectPerformanceData(delta, collisionTime, physicsCalcTime, updateTime, renderTime, scriptTime);
         this.addClickListenersAfterTick();
         this.addDoubleClickListenersAfterTick();
         this.removeClickListenersAfterTick();
@@ -4022,7 +5018,6 @@ var GameEngine = /** @class */ (function () {
         this.paused ? this.unPause() : this.pause();
     };
     GameEngine.prototype.addLeftControlStickListener = function (object) {
-        this.leftControlStickListeners.push(object);
         this.leftControlStickListeners.push(object);
     };
     GameEngine.prototype.addLeftControlStickFocussedListener = function (object) {
@@ -4196,10 +5191,11 @@ var GameEngine = /** @class */ (function () {
     };
     // ******** end of mouse stuff *******
     GameEngine.prototype.updateLeftControlStickListeners = function (unitVector, down) {
+        var _a;
         this.leftControlStickListeners.forEach(function (listener) {
             listener.updateLeftControlStickInput(unitVector, down);
         });
-        this.controlledGameObject.updateLeftControlFocussedStickInput(unitVector, down);
+        (_a = this.controlledGameObject) === null || _a === void 0 ? void 0 : _a.updateLeftControlFocussedStickInput(unitVector, down);
     };
     GameEngine.prototype.updateLKeyListeners = function (down) {
         this.lKeyListeners.forEach(function (listener) {
@@ -4298,8 +5294,7 @@ var GameEngine = /** @class */ (function () {
             var leftAxis = [this.controller.axes[0], this.controller.axes[1]];
             var rightAxis = [this.controller.axes[2], this.controller.axes[3]];
             var aButton = this.controller.buttons[0].pressed;
-            var bButton = this.controller.buttons[3].pressed;
-            console.log(this.controller.buttons);
+            var bButton = this.controller.buttons[1].pressed; // this was 3 some time ago... why did it change??
             // const xButton: boolean = this.controller.buttons[0].pressed;
             if (this.buttonState.aButtonPressed !== aButton) {
                 this.buttonState.aButtonPressed = aButton;
@@ -4423,7 +5418,8 @@ var GameEngine = /** @class */ (function () {
         this.mouseListeners.push(object);
     };
     GameEngine.prototype.updateGameScript = function (delta) {
-        this.gameScript.update(delta);
+        if (this.gameScript)
+            this.gameScript.update(delta);
     };
     GameEngine.prototype.addGameObject = function (object) {
         this.gameObjects.push(object);
@@ -5382,7 +6378,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.ts");
 /* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_engine/util */ "./src/game_engine/util.ts");
 /* harmony import */ var _enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../enemies/Singularity/singularity */ "./src/game_objects/enemies/Singularity/singularity.ts");
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -5457,7 +6453,7 @@ var Bullet = /** @class */ (function (_super) {
         if (this.bending) {
             this.bend(deltaTime);
         }
-        if (_game_script__WEBPACK_IMPORTED_MODULE_6__.GameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius) &&
+        if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__.GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius) &&
             !this.exploded) {
             this.exploded = true;
             new _particles_bullet_wall_explosion__WEBPACK_IMPORTED_MODULE_1__.BulletWallExplosion(this.gameEngine, this.transform.pos);
@@ -7586,307 +8582,6 @@ var PlateSprite = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./src/game_objects/ClockworkGames/Sandwich.ts":
-/*!*****************************************************!*\
-  !*** ./src/game_objects/ClockworkGames/Sandwich.ts ***!
-  \*****************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   LeftSandwich: () => (/* binding */ LeftSandwich),
-/* harmony export */   LeftSandwichSprite: () => (/* binding */ LeftSandwichSprite),
-/* harmony export */   RightSandwich: () => (/* binding */ RightSandwich),
-/* harmony export */   RightSandwichSprite: () => (/* binding */ RightSandwichSprite)
-/* harmony export */ });
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
-var __extends = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-
-
-var LeftSandwich = /** @class */ (function (_super) {
-    __extends(LeftSandwich, _super);
-    function LeftSandwich(engine, pos) {
-        var _this = _super.call(this, engine) || this;
-        _this.transform.pos = pos;
-        _this.width = 25;
-        _this.height = -22;
-        _this.animationStates = {
-            squishing: true,
-            waiting: false,
-            waitTime: 0,
-            timeToWait: 3000,
-        };
-        _this.spriteParameters = {
-            width: _this.width,
-            height: _this.height,
-        };
-        _this.addLineSprite(new LeftSandwichSprite(_this.transform, _this.spriteParameters));
-        return _this;
-    }
-    LeftSandwich.prototype.update = function () { };
-    LeftSandwich.prototype.animate = function (deltaTime) {
-        var time = deltaTime / NORMAL_FRAME_TIME_DELTA / 2;
-        if (this.animationStates.waiting) {
-            this.animationStates.waitTime += deltaTime;
-            if (this.animationStates.waitTime >= this.animationStates.timeToWait) {
-                this.animationStates.waiting = false;
-                this.animationStates.waitTime = 0;
-            }
-        }
-        else {
-            if (this.animationStates.squishing) {
-                this.spriteParameters.width -= time;
-                this.spriteParameters.height -= time;
-            }
-            else {
-                this.spriteParameters.width += time;
-                this.spriteParameters.height += time;
-            }
-            if (this.spriteParameters.width <= this.width * 0.8) {
-                this.animationStates.squishing = false;
-            }
-            if (this.spriteParameters.width >= this.width) {
-                this.animationStates.squishing = true;
-                this.animationStates.waiting = true;
-                this.spriteParameters.width = this.width;
-                this.spriteParameters.height = this.height;
-            }
-        }
-    };
-    LeftSandwich.prototype.exist = function () {
-        this.addCollider("General", this, 5);
-    };
-    return LeftSandwich;
-}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
-
-var LeftSandwichSprite = /** @class */ (function (_super) {
-    __extends(LeftSandwichSprite, _super);
-    function LeftSandwichSprite(transform, spriteParameters) {
-        var _this = _super.call(this, transform) || this;
-        _this.spriteParameters = spriteParameters;
-        _this.spawningScale = 1;
-        _this.transform = transform;
-        _this.bunColor = "#CD7F32";
-        _this.crimsonRed = "#DC143C";
-        _this.brightGreen = "#AAFF00";
-        _this.creamWhite = "#FFFDD0";
-        _this.fucia = "#FF00FF";
-        _this.cyan = "#00FFFF";
-        _this.indigo = "#00FFFF";
-        return _this;
-    }
-    LeftSandwichSprite.prototype.draw = function (ctx) {
-        var pos = this.transform.absolutePosition();
-        ctx.save();
-        ctx.translate(pos[0], pos[1]);
-        ctx.rotate(this.transform.absoluteAngle());
-        this.drawLeftSandwich(ctx);
-        ctx.restore();
-    };
-    LeftSandwichSprite.prototype.drawLeftSandwich = function (ctx) {
-        var _a = this.spriteParameters, width = _a.width, height = _a.height;
-        ctx.fillStyle = this.bunColor;
-        ctx.strokeStyle = this.bunColor;
-        ctx.beginPath();
-        ctx.lineWidth = 1;
-        ctx.moveTo(width / 2, height / 2 - 2 / 9 * height);
-        ctx.lineTo(width / 2, height / 2);
-        //rounded corners on the left side, square on the right
-        ctx.lineTo(-width / 2 + 2 / 9 * width, height / 2);
-        var curvePointTopLeftTop = [-width / 2 + 1 / 9 * width, height / 2];
-        var curvePointTopLeftBottom = [-width / 2, height / 2 - 1 / 9 * height];
-        ctx.bezierCurveTo(curvePointTopLeftTop[0], curvePointTopLeftTop[1], curvePointTopLeftBottom[0], curvePointTopLeftBottom[1], -width / 2, height / 2 - 2 / 9 * height);
-        ctx.moveTo(-width / 2, -height / 2 + 2 / 9 * height);
-        var curvePointBottomLeftTop = [-width / 2, -height / 2 + 1 / 9 * height];
-        var curvePointBottomLeftBottom = [-width / 2 + 1 / 9 * width, -height / 2];
-        ctx.bezierCurveTo(curvePointBottomLeftTop[0], curvePointBottomLeftTop[1], curvePointBottomLeftBottom[0], curvePointBottomLeftBottom[1], -width / 2 + 2 / 9 * width, -height / 2);
-        ctx.lineTo(width / 2, -height / 2);
-        ctx.lineTo(width / 2, -height / 2 + 2 / 9 * height);
-        ctx.stroke();
-        ctx.lineWidth = 0.75;
-        ctx.moveTo(width / 2, height / 2 - 2 / 9 * height);
-        ctx.lineTo(-width / 2, height / 2 - 2 / 9 * height);
-        ctx.stroke();
-        ctx.moveTo(width / 2, -height / 2 + 2 / 9 * height);
-        ctx.lineTo(-width / 2, -height / 2 + 2 / 9 * height);
-        ctx.stroke();
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = this.crimsonRed;
-        ctx.beginPath();
-        ctx.moveTo(width / 2, height / 2 - 3 / 9 * height);
-        ctx.lineTo(-width / 2, height / 2 - 3 / 9 * height);
-        ctx.stroke();
-        ctx.strokeStyle = this.brightGreen;
-        ctx.beginPath();
-        ctx.moveTo(width / 2, height / 2 - 4 / 9 * height);
-        ctx.lineTo(-width / 2, height / 2 - 4 / 9 * height);
-        ctx.stroke();
-        ctx.strokeStyle = this.fucia;
-        ctx.beginPath();
-        ctx.moveTo(width / 2, height / 2 - 5 / 9 * height);
-        ctx.lineTo(-width / 2, height / 2 - 5 / 9 * height);
-        ctx.stroke();
-        ctx.strokeStyle = this.cyan;
-        ctx.beginPath();
-        ctx.moveTo(width / 2, height / 2 - 6 / 9 * height);
-        ctx.lineTo(-width / 2, height / 2 - 6 / 9 * height);
-        ctx.stroke();
-    };
-    return LeftSandwichSprite;
-}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
-
-var RightSandwich = /** @class */ (function (_super) {
-    __extends(RightSandwich, _super);
-    function RightSandwich(engine, pos) {
-        var _this = _super.call(this, engine) || this;
-        _this.transform.pos = pos;
-        _this.width = 25;
-        _this.height = -22;
-        _this.animationStates = {
-            squishing: true,
-            waiting: false,
-            waitTime: 0,
-            timeToWait: 3000,
-        };
-        _this.spriteParameters = {
-            width: _this.width,
-            height: _this.height,
-        };
-        _this.addLineSprite(new RightSandwichSprite(_this.transform, _this.spriteParameters));
-        return _this;
-    }
-    RightSandwich.prototype.update = function () { };
-    RightSandwich.prototype.animate = function (deltaTime) {
-        var time = deltaTime / NORMAL_FRAME_TIME_DELTA / 2;
-        if (this.animationStates.waiting) {
-            this.animationStates.waitTime += deltaTime;
-            if (this.animationStates.waitTime >= this.animationStates.timeToWait) {
-                this.animationStates.waiting = false;
-                this.animationStates.waitTime = 0;
-            }
-        }
-        else {
-            if (this.animationStates.squishing) {
-                this.spriteParameters.width -= time;
-                this.spriteParameters.height -= time;
-            }
-            else {
-                this.spriteParameters.width += time;
-                this.spriteParameters.height += time;
-            }
-            if (this.spriteParameters.width <= this.width * 0.8) {
-                this.animationStates.squishing = false;
-            }
-            if (this.spriteParameters.width >= this.width) {
-                this.animationStates.squishing = true;
-                this.animationStates.waiting = true;
-                this.spriteParameters.width = this.width;
-                this.spriteParameters.height = this.height;
-            }
-        }
-    };
-    RightSandwich.prototype.exist = function () {
-        this.addCollider("General", this, 5);
-    };
-    return RightSandwich;
-}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
-
-var RightSandwichSprite = /** @class */ (function (_super) {
-    __extends(RightSandwichSprite, _super);
-    function RightSandwichSprite(transform, spriteParameters) {
-        var _this = _super.call(this, transform) || this;
-        _this.spriteParameters = spriteParameters;
-        _this.spawningScale = 1;
-        _this.transform = transform;
-        _this.bunColor = "#CD7F32";
-        _this.crimsonRed = "#DC143C";
-        _this.brightGreen = "#AAFF00";
-        _this.creamWhite = "#FFFDD0";
-        _this.fucia = "#FF00FF";
-        _this.cyan = "#00FFFF";
-        _this.indigo = "#00FFFF";
-        return _this;
-    }
-    RightSandwichSprite.prototype.draw = function (ctx) {
-        var pos = this.transform.absolutePosition();
-        ctx.save();
-        ctx.translate(pos[0], pos[1]);
-        ctx.rotate(this.transform.absoluteAngle());
-        this.drawRightSandwich(ctx);
-        ctx.restore();
-    };
-    RightSandwichSprite.prototype.drawRightSandwich = function (ctx) {
-        var _a = this.spriteParameters, width = _a.width, height = _a.height;
-        ctx.fillStyle = this.bunColor;
-        ctx.strokeStyle = this.bunColor;
-        ctx.beginPath();
-        ctx.lineWidth = 1;
-        ctx.moveTo(-width / 2, height / 2 - 2 / 9 * height);
-        ctx.lineTo(-width / 2, height / 2);
-        //rounded corners on the left side, square on the right
-        ctx.lineTo(width / 2 + 2 / 9 * -width, height / 2);
-        var curvePointTopLeftTop = [width / 2 + 1 / 9 * -width, height / 2];
-        var curvePointTopLeftBottom = [width / 2, height / 2 - 1 / 9 * height];
-        ctx.bezierCurveTo(curvePointTopLeftTop[0], curvePointTopLeftTop[1], curvePointTopLeftBottom[0], curvePointTopLeftBottom[1], width / 2, height / 2 - 2 / 9 * height);
-        ctx.moveTo(width / 2, -height / 2 + 2 / 9 * height);
-        var curvePointBottomLeftTop = [width / 2, -height / 2 + 1 / 9 * height];
-        var curvePointBottomLeftBottom = [width / 2 + 1 / 9 * -width, -height / 2];
-        ctx.bezierCurveTo(curvePointBottomLeftTop[0], curvePointBottomLeftTop[1], curvePointBottomLeftBottom[0], curvePointBottomLeftBottom[1], width / 2 + 2 / 9 * -width, -height / 2);
-        ctx.lineTo(-width / 2, -height / 2);
-        ctx.lineTo(-width / 2, -height / 2 + 2 / 9 * height);
-        ctx.stroke();
-        ctx.lineWidth = 0.75;
-        ctx.moveTo(-width / 2, height / 2 - 2 / 9 * height);
-        ctx.lineTo(width / 2, height / 2 - 2 / 9 * height);
-        ctx.stroke();
-        ctx.moveTo(-width / 2, -height / 2 + 2 / 9 * height);
-        ctx.lineTo(width / 2, -height / 2 + 2 / 9 * height);
-        ctx.stroke();
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = this.crimsonRed;
-        ctx.beginPath();
-        ctx.moveTo(-width / 2, height / 2 - 3 / 9 * height);
-        ctx.lineTo(width / 2, height / 2 - 3 / 9 * height);
-        ctx.stroke();
-        ctx.strokeStyle = this.brightGreen;
-        ctx.beginPath();
-        ctx.moveTo(-width / 2, height / 2 - 4 / 9 * height);
-        ctx.lineTo(width / 2, height / 2 - 4 / 9 * height);
-        ctx.stroke();
-        ctx.strokeStyle = this.fucia;
-        ctx.beginPath();
-        ctx.moveTo(-width / 2, height / 2 - 5 / 9 * height);
-        ctx.lineTo(width / 2, height / 2 - 5 / 9 * height);
-        ctx.stroke();
-        ctx.strokeStyle = this.cyan;
-        ctx.beginPath();
-        ctx.moveTo(-width / 2, height / 2 - 6 / 9 * height);
-        ctx.lineTo(width / 2, height / 2 - 6 / 9 * height);
-        ctx.stroke();
-    };
-    return RightSandwichSprite;
-}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
-
-var NORMAL_FRAME_TIME_DELTA = 1000 / 60;
-
-
-/***/ }),
-
 /***/ "./src/game_objects/ClockworkGames/SawMachine/TreeGrip.ts":
 /*!****************************************************************!*\
   !*** ./src/game_objects/ClockworkGames/SawMachine/TreeGrip.ts ***!
@@ -8021,7 +8716,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
 /* harmony import */ var _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_engine */ "./src/game_engine/game_engine.ts");
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 /* harmony import */ var _game_engine_transform__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/transform */ "./src/game_engine/transform.ts");
 /* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 /* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.ts");
@@ -8056,7 +8751,7 @@ var Overlay = /** @class */ (function (_super) {
         _this.currentFrameRateUpdateTime = 0;
         _this.currentFrameCount = 0;
         _this.frameRate = 0;
-        _this.addLineSprite(new OverlaySprite(_game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.DIM_X, _game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.DIM_Y, engine));
+        _this.addLineSprite(new OverlaySprite(_GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__.DIM_X, _GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__.DIM_Y, engine));
         return _this;
     }
     Overlay.prototype.update = function (deltaTime) {
@@ -8133,7 +8828,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_engine_transform__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/transform */ "./src/game_engine/transform.ts");
 /* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 /* harmony import */ var _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../game_engine/game_engine */ "./src/game_engine/game_engine.ts");
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 /* harmony import */ var _game_engine_camera__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../game_engine/camera */ "./src/game_engine/camera.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -8217,10 +8912,12 @@ var Ship = /** @class */ (function (_super) {
     Ship.prototype.animate = function () {
     };
     Ship.prototype.update = function (deltaTime) {
+        // no idea where this shit will have to belong
+        // brain currently melted
         if (this.gameEngine instanceof _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_5__.GameEngine && this.gameEngine.gameEditorOpened) {
             if (!this.gameEditorHasBeenOpened) {
-                var _width = _game_script__WEBPACK_IMPORTED_MODULE_6__.GameScript.DIM_X;
-                var _height = _game_script__WEBPACK_IMPORTED_MODULE_6__.GameScript.DIM_Y;
+                var _width = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__.DIM_X;
+                var _height = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__.DIM_Y;
                 var _zoomScale = this.gameEngine.zoomScale;
                 var _yPosition = this.transform.pos[1];
                 var _xPosition = this.transform.pos[0];
@@ -8299,9 +8996,9 @@ var Ship = /** @class */ (function (_super) {
     Ship.prototype.findSmallestDistanceToAWall = function () {
         var pos = this.transform.pos;
         var leftDistance = pos[0] - 0;
-        var rightDistance = _game_script__WEBPACK_IMPORTED_MODULE_6__.GameScript.DIM_X - pos[0];
+        var rightDistance = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__.DIM_X - pos[0];
         var upDistance = pos[1] - 0;
-        var downDistance = _game_script__WEBPACK_IMPORTED_MODULE_6__.GameScript.DIM_Y - pos[1];
+        var downDistance = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__.DIM_Y - pos[1];
         var distances = [leftDistance, rightDistance, upDistance, downDistance];
         return Math.min.apply(null, distances);
     };
@@ -8352,7 +9049,7 @@ var Ship = /** @class */ (function (_super) {
         this.transform.acc[1] += this.shipEngineAcceleration * Math.sin(alpha);
     };
     Ship.prototype.isOutOfBounds = function () {
-        return _game_script__WEBPACK_IMPORTED_MODULE_6__.GameScript.isOutOfBounds(this.transform.pos, this.radius);
+        return _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__.GEOWarsScript.isOutOfBounds(this.transform.pos, this.radius);
     };
     Ship.prototype.updateMousePos = function (mousePos) {
         // this is what happens when not focussed on. 
@@ -8427,7 +9124,7 @@ var Ship = /** @class */ (function (_super) {
         }
     };
     Ship.prototype.wallGraze = function () {
-        _game_script__WEBPACK_IMPORTED_MODULE_6__.GameScript.wallGraze(this.transform, this.radius * 2);
+        _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__.GEOWarsScript.wallGraze(this.transform, this.radius * 2);
     };
     Ship.prototype.onCollision = function (collider, type) {
         if (type === "ShipDeath") {
@@ -8449,8 +9146,8 @@ var Ship = /** @class */ (function (_super) {
         var shipXPos = this.transform.pos[0];
         var shipYPos = this.transform.pos[1];
         var zoomScale = this.camera.zoomScale;
-        var width = _game_script__WEBPACK_IMPORTED_MODULE_6__.GameScript.DIM_X;
-        var height = _game_script__WEBPACK_IMPORTED_MODULE_6__.GameScript.DIM_Y;
+        var width = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__.DIM_X;
+        var height = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__.DIM_Y;
         var mouseX = mousePos[0] / zoomScale + shipXPos - width / (2 * zoomScale);
         var mouseY = mousePos[1] / zoomScale + shipYPos - height / (2 * zoomScale);
         // SCALE NUMBER
@@ -8735,7 +9432,7 @@ var Aurora = /** @class */ (function (_super) {
         _this.transform.vel = [0, 0];
         _this.radius = 30;
         _this.minSpeed = 1;
-        _this.maxSpeed = 0.025 * 6;
+        _this.maxSpeed = 0.025 * 3;
         _this.controlsDirection = [0, 0];
         _this.bombRefreshTime = 0;
         _this.jetAcceleration = 0.0001;
@@ -8747,6 +9444,7 @@ var Aurora = /** @class */ (function (_super) {
         _this.isAccelerating = false;
         _this.camera = new _game_engine_camera__WEBPACK_IMPORTED_MODULE_4__.Camera(engine, new _game_engine_transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, [pos[0], pos[1]]), "Aurora Camera");
         _this.setAsControllableGameObject();
+        _this.makeFocussedGameObject();
         _this.addBButtonListener();
         _this.addReplayablePhysicsComponent();
         _this.addLineSprite(new AuroraSprite(_this.transform));
@@ -8762,8 +9460,8 @@ var Aurora = /** @class */ (function (_super) {
         _this.addCollider("General", _this, _this.radius);
         return _this;
     }
-    Aurora.prototype.updateBButtonListener = function (bButton) {
-        if (bButton && this.bombRefreshTime > 2000) {
+    Aurora.prototype.updateBButtonListener = function (pressed) {
+        if (pressed && this.bombRefreshTime > 2000) {
             new _Bombs_BombBasic__WEBPACK_IMPORTED_MODULE_7__.BombBasic(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], [0, 0.05]);
             this.bombRefreshTime = 0;
         }
@@ -8780,6 +9478,7 @@ var Aurora = /** @class */ (function (_super) {
     };
     Aurora.prototype.update = function (delta) {
         this.bombRefreshTime += delta;
+        this.bombRefreshTime = this.bombRefreshTime > 2000 ? 2001 : this.bombRefreshTime;
         if (this.controlsAngle !== null) {
             // compare angle with controls angle
             // if angle is greater than 
@@ -8835,10 +9534,19 @@ var Aurora = /** @class */ (function (_super) {
         return ((Math.round(radians / (2 * Math.PI) * 16) % 16) / 16) * 360;
     };
     Aurora.prototype.movementMechanics = function () {
+        var _a, _b, _c, _d, _e, _f, _g;
+        // It's taking too long to get this stuff right
+        // so I'm going to simplify it and expand on it later
+        // so, the new requirements for movement are:
+        // 1: no grid system yet
+        // 2. no reversible movements yet
+        // 3: one turn radius at same speed as straight
+        // 4. 1/16 * 2PI angles allowed
+        // 5. only initiate turn when relative direction passes a small threshold (1/8th PI lets say)
+        var turnThreshold = Math.PI / 8;
         // there might be a way to make it feel a little better if 
         // I allow changing the direction constantly
         // of if I don't immediately accelerate to max speed
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         // to allow constant direction change, I'll need an "interupt" state where
         // the plane is still turning until it's facing one of the 16 directions. 
         // so it would be an interrupt instruction
@@ -8884,10 +9592,10 @@ var Aurora = /** @class */ (function (_super) {
             // to test: lower acceleration to make it easier to see, Have plane at max speed, tell it to turn tightly, 
             // then tell it to continue straight instead while it's slowing down
             // I need to update restSpeed more often... it's not going great at the moment
-            if (this.maxSpeed !== this.replayablePhysicsComponent.restSpeed && this.replayablePhysicsComponent.accelerationInformation.isDecelerating) {
-                console.log('helloo');
-                this.replayablePhysicsComponent.startAcceleration({ acceleration: this.jetAcceleration, endSpeed: this.maxSpeed, gameTimeAccelerationStarted: gameTime });
-            }
+            // if(this.maxSpeed !== this.replayablePhysicsComponent.restSpeed && this.replayablePhysicsComponent.accelerationInformation.isDecelerating) {
+            //     console.log('helloo')
+            //     this.replayablePhysicsComponent.startAcceleration({acceleration: this.jetAcceleration, endSpeed: this.maxSpeed, gameTimeAccelerationStarted: gameTime})
+            // }
             return;
         }
         // plane is still jumping when the turn angle changes while changing the deceleration to end at a different speed for a different turn
@@ -8899,16 +9607,21 @@ var Aurora = /** @class */ (function (_super) {
         // turning right means that the rotation point is to the right relative to the movement direction
         // always at a 90 degree angle
         var tangentAngle = this.replayablePhysicsComponent.movementTangentAngle;
-        // const tangentSpeed = 4/5 * this.maxSpeed;
-        var _k = this.getTurnRadiusAndSpeed(Math.abs(angleDifference)), turnRadius = _k.turnRadius, tangentSpeed = _k.tangentSpeed;
+        var turnRadius = 40;
+        var tangentSpeed = this.maxSpeed;
+        // we'll want to use this later:
+        // const {turnRadius, tangentSpeed} = this.getTurnRadiusAndSpeed(Math.abs(angleDifference));
         // check tangent speed with current speed,
         // then decelerate/accelerate
         var endAngle = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 2 * Math.PI;
-        var nextInstruction = {
-            type: 'accelerate',
-            endSpeed: this.maxSpeed,
-            acceleration: this.jetAcceleration
-        };
+        // after a turn we want to accelerate to the max straight speed
+        // for now we don't want the plane to slow down for turns
+        // to keep things simple at first
+        // const nextInstruction: NextInstructionAccelerate = { 
+        //     type: 'accelerate',
+        //     endSpeed: this.maxSpeed,
+        //     acceleration: this.jetAcceleration
+        // }
         // this was restSpeed before.. rest speed needs to die, I'm not sure what it's for exactly
         // I think it's to verify that the speed has been changed to a specific thing at some point in the past
         // 
@@ -8917,30 +9630,31 @@ var Aurora = /** @class */ (function (_super) {
         // then update the end speed of the deceleration, and the turn angle of the next instruction
         // if we're already accelerating for a less sharp turn, and the turn angle changes requiring a different speed, then update
         // the acceleration and the turn angle of the next instruction
-        if (((_a = this.replayablePhysicsComponent.accelerationInformation) === null || _a === void 0 ? void 0 : _a.endSpeedIfUninterrupted) &&
-            this.replayablePhysicsComponent.accelerationInformation.endSpeedIfUninterrupted !== tangentSpeed) {
-            console.log('speed change needed', { previousEndSpeed: (_b = this.replayablePhysicsComponent.accelerationInformation) === null || _b === void 0 ? void 0 : _b.endSpeedIfUninterrupted, newEndSpeed: tangentSpeed });
-            var acceleration = this.replayablePhysicsComponent.restSpeed > tangentSpeed ? this.jetDeceleration : this.jetAcceleration;
-            var endSpeed = tangentSpeed;
-            var followupInstruction = {
-                type: 'turn',
-                tangentSpeed: tangentSpeed,
-                turnRadius: turnRadius,
-                isTurningRight: isTurningRight,
-                endAngle: endAngle,
-                startAngle: tangentAngle,
-                nextInstruction: nextInstruction
-            };
-            // still need to apply what happens when interrupting
-            this.replayablePhysicsComponent.startAcceleration({
-                acceleration: acceleration,
-                endSpeed: endSpeed,
-                gameTimeAccelerationStarted: gameTime,
-                nextInstruction: followupInstruction
-            });
-        }
-        if (this.replayablePhysicsComponent.isAccelerating)
-            return;
+        // if(
+        //     this.replayablePhysicsComponent.accelerationInformation?.endSpeedIfUninterrupted && 
+        //     this.replayablePhysicsComponent.accelerationInformation.endSpeedIfUninterrupted !== tangentSpeed
+        // ) {
+        //     console.log('speed change needed', {previousEndSpeed: this.replayablePhysicsComponent.accelerationInformation?.endSpeedIfUninterrupted, newEndSpeed: tangentSpeed})
+        //     const acceleration = this.replayablePhysicsComponent.restSpeed > tangentSpeed ? this.jetDeceleration : this.jetAcceleration;
+        //     const endSpeed = tangentSpeed;
+        //     const followupInstruction: NextInstructionTurn  = {
+        //         type: 'turn',
+        //         tangentSpeed,
+        //         turnRadius,
+        //         isTurningRight,
+        //         endAngle,
+        //         startAngle: tangentAngle,
+        //         nextInstruction
+        //     };
+        //     // still need to apply what happens when interrupting
+        //     this.replayablePhysicsComponent.startAcceleration({
+        //         acceleration,
+        //         endSpeed,
+        //         gameTimeAccelerationStarted: gameTime, 
+        //         nextInstruction: followupInstruction
+        //     });
+        // } 
+        // if(this.replayablePhysicsComponent.isAccelerating) return;
         if (!this.replayablePhysicsComponent.isTurning) {
             // the tangent speed is the same so we should be waiting for the acceleration to finish
             // TODO: this presents a problem when a turn is possible at max speed because we could be accelerating to the max speed and we'd want 
@@ -8952,23 +9666,23 @@ var Aurora = /** @class */ (function (_super) {
                 pointWhereArchStarted[0] + turnRadius * Math.cos(normalAngle),
                 pointWhereArchStarted[1] + turnRadius * Math.sin(normalAngle)
             ];
-            this.replayablePhysicsComponent.startArchRotation({
-                turnRadius: turnRadius,
-                isTurningRight: isTurningRight,
-                tangentSpeed: tangentSpeed,
-                startAngle: tangentAngle,
-                endAngle: endAngle,
-                pointWhereArchStarted: pointWhereArchStarted, // try to create this later
-                rotationPoint: rotationPoint, // try to create this later
-                gameTimeArchStarted: gameTime, // try to create this later
-                nextInstruction: nextInstruction
-            });
+            // this.replayablePhysicsComponent.startArchRotation({
+            //     turnRadius, 
+            //     isTurningRight: isTurningRight, 
+            //     tangentSpeed, 
+            //     startAngle: tangentAngle, 
+            //     endAngle, 
+            //     pointWhereArchStarted, // try to create this later
+            //     rotationPoint, // try to create this later
+            //     gameTimeArchStarted: gameTime, // try to create this later
+            //     nextInstruction
+            // });
             return;
         }
-        if (((_c = this.replayablePhysicsComponent.turnInformation) === null || _c === void 0 ? void 0 : _c.rotationDirection) !== undefined &&
-            ((_d = this.replayablePhysicsComponent.turnInformation) === null || _d === void 0 ? void 0 : _d.rotationDirection) !== null &&
-            isTurningRight === (((_e = this.replayablePhysicsComponent.turnInformation) === null || _e === void 0 ? void 0 : _e.rotationDirection) > 1) &&
-            ((_f = this.replayablePhysicsComponent.turnInformation) === null || _f === void 0 ? void 0 : _f.endAngleFromRotationPointIfUninterrupted) &&
+        if (((_a = this.replayablePhysicsComponent.turnInformation) === null || _a === void 0 ? void 0 : _a.rotationDirection) !== undefined &&
+            ((_b = this.replayablePhysicsComponent.turnInformation) === null || _b === void 0 ? void 0 : _b.rotationDirection) !== null &&
+            isTurningRight === (((_c = this.replayablePhysicsComponent.turnInformation) === null || _c === void 0 ? void 0 : _c.rotationDirection) > 1) &&
+            ((_d = this.replayablePhysicsComponent.turnInformation) === null || _d === void 0 ? void 0 : _d.endAngleFromRotationPointIfUninterrupted) &&
             controlsAngleRounded !== this.replayablePhysicsComponent.turnInformation.endAngleFromRotationPointIfUninterrupted) {
             // if it is turning, then start interrupting and change the end direction
             // if the controls direction is different from the end direction of the current turn
@@ -8998,9 +9712,9 @@ var Aurora = /** @class */ (function (_super) {
                 nextInstruction: this.replayablePhysicsComponent.turnInformation.nextInstruction
             });
         }
-        else if (isTurningRight !== (((_g = this.replayablePhysicsComponent.turnInformation) === null || _g === void 0 ? void 0 : _g.rotationDirection) > 1) &&
-            ((_h = this.replayablePhysicsComponent.turnInformation) === null || _h === void 0 ? void 0 : _h.endAngleFromRotationPointIfUninterrupted) &&
-            controlsAngleRounded !== ((_j = this.replayablePhysicsComponent.turnInformation) === null || _j === void 0 ? void 0 : _j.endAngleFromRotationPointIfUninterrupted)) {
+        else if (isTurningRight !== (((_e = this.replayablePhysicsComponent.turnInformation) === null || _e === void 0 ? void 0 : _e.rotationDirection) > 1) &&
+            ((_f = this.replayablePhysicsComponent.turnInformation) === null || _f === void 0 ? void 0 : _f.endAngleFromRotationPointIfUninterrupted) &&
+            controlsAngleRounded !== ((_g = this.replayablePhysicsComponent.turnInformation) === null || _g === void 0 ? void 0 : _g.endAngleFromRotationPointIfUninterrupted)) {
             // we want to update the final angle, the final location, and the next instruction
             // OH it's the same as before! except I need to determine the final angle
             // based on the next closest 16th of 2PI, and then I'm adding a new next instruction
@@ -9023,7 +9737,7 @@ var Aurora = /** @class */ (function (_super) {
             };
             // this is where I would have the plane animation happen over time where it banks from one side to the other
             // instead this should execute instantly without changing anything 
-            var nextInstruction_1 = {
+            var nextInstruction = {
                 type: 'accelerate',
                 endSpeed: tangentSpeed,
                 acceleration: this.jetAcceleration,
@@ -9038,7 +9752,7 @@ var Aurora = /** @class */ (function (_super) {
                 pointWhereArchStarted: this.replayablePhysicsComponent.turnInformation.startingPoint,
                 rotationPoint: this.replayablePhysicsComponent.turnInformation.rotationPoint,
                 gameTimeArchStarted: this.replayablePhysicsComponent.turnInformation.gameTimeWhenTurnStarted,
-                nextInstruction: nextInstruction_1
+                nextInstruction: nextInstruction
             });
         }
         // const angleDifference = controlsAngleRounded - currentDirectionRounded;
@@ -9274,7 +9988,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   BombSprite: () => (/* binding */ BombSprite)
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.ts");
+/* harmony import */ var _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../particles/StrikeTimeParticleExplosion */ "./src/game_objects/particles/StrikeTimeParticleExplosion.ts");
 /* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -9313,8 +10027,7 @@ var BombBasic = /** @class */ (function (_super) {
         this.addCollider("General", this, this.radius);
     };
     BombBasic.prototype.explode = function () {
-        console.log('Aurora Killed/Hit');
-        new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]]);
+        new _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]]);
         this.remove();
     };
     BombBasic.prototype.update = function (deltaTime) {
@@ -9378,6 +10091,116 @@ var BombSprite = /** @class */ (function (_super) {
         ctx.stroke();
     };
     return BombSprite;
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__.LineSprite));
+
+
+
+/***/ }),
+
+/***/ "./src/game_objects/StrikeTime/Buildings/Building1.ts":
+/*!************************************************************!*\
+  !*** ./src/game_objects/StrikeTime/Buildings/Building1.ts ***!
+  \************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Building1: () => (/* binding */ Building1),
+/* harmony export */   Building1Sprite: () => (/* binding */ Building1Sprite)
+/* harmony export */ });
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+var Building1 = /** @class */ (function (_super) {
+    __extends(Building1, _super);
+    function Building1(engine, pos) {
+        var _this = _super.call(this, engine) || this;
+        _this.transform.pos = pos;
+        _this.radius = 15;
+        _this.lives = 1;
+        _this.exist();
+        _this.addLineSprite(new Building1Sprite(_this.transform));
+        return _this;
+    }
+    Building1.prototype.exist = function () {
+        this.addCollider("General", this, this.radius);
+        // this doesn't actually move... so I don't think I need a physics component...
+        // I can just animate it instead... but I'll have to have the animations be reversible
+    };
+    Building1.prototype.hit = function () {
+        this.lives -= 1;
+        var pos = this.transform.absolutePosition();
+        if (this.lives <= 0) {
+            new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, pos);
+            this.remove();
+        }
+        // if not dead, I can have a different type of explosion
+    };
+    Building1.prototype.update = function (deltaTime) {
+        this.animate(deltaTime);
+    };
+    Building1.prototype.animate = function (timeDelta) {
+        // I should stick to no animation for now
+        // for my own sanity
+    };
+    return Building1;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
+
+var NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+var Building1Sprite = /** @class */ (function (_super) {
+    __extends(Building1Sprite, _super);
+    function Building1Sprite(transform) {
+        return _super.call(this, transform) || this;
+    }
+    Building1Sprite.prototype.draw = function (ctx) {
+        ctx.save();
+        this.drawBuilding1(ctx);
+        ctx.restore();
+    };
+    Building1Sprite.prototype.drawBuilding1 = function (ctx) {
+        ctx.strokeStyle = "#9de26fff";
+        ctx.lineWidth = 1.5;
+        var s = 1;
+        var pos = this.transform.absolutePosition();
+        ctx.translate(pos[0], pos[1]);
+        // Piece 1: 
+        ctx.beginPath();
+        ctx.moveTo(0 * s, -12 * s);
+        ctx.lineTo(-6 * s, -8 * s);
+        ctx.lineTo(-6 * s, 0 * s);
+        ctx.lineTo(6 * s, 0 * s);
+        ctx.lineTo(6 * s, -8 * s);
+        ctx.lineTo(12 * s, -11 * s);
+        ctx.lineTo(12 * s, -3 * s);
+        ctx.lineTo(6 * s, 0 * s);
+        ctx.stroke();
+        // Piece 2: 
+        ctx.beginPath();
+        ctx.moveTo(6 * s, -8 * s);
+        ctx.lineTo(0 * s, -12 * s);
+        ctx.lineTo(6 * s, -15 * s);
+        ctx.lineTo(12 * s, -11 * s);
+        ctx.stroke();
+    };
+    return Building1Sprite;
 }(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__.LineSprite));
 
 
@@ -10287,135 +11110,6 @@ var createShakeAnimation = function (tree) {
 
 /***/ }),
 
-/***/ "./src/game_objects/Walls/walls.ts":
-/*!*****************************************!*\
-  !*** ./src/game_objects/Walls/walls.ts ***!
-  \*****************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   Walls: () => (/* binding */ Walls)
-/* harmony export */ });
-/* harmony import */ var _walls_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./walls_sprite */ "./src/game_objects/Walls/walls_sprite.ts");
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.ts");
-var __extends = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-
-
-
-var Walls = /** @class */ (function (_super) {
-    __extends(Walls, _super);
-    function Walls(engine) {
-        var _this = _super.call(this, engine) || this;
-        _this.transform.pos = [0, 0];
-        _this.addLineSprite(new _walls_sprite__WEBPACK_IMPORTED_MODULE_0__.WallsSprite(_this.transform, _game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.DIM_X, _game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.DIM_Y));
-        return _this;
-    }
-    Walls.prototype.update = function () {
-    };
-    Walls.prototype.animate = function () { };
-    return Walls;
-}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
-
-
-
-/***/ }),
-
-/***/ "./src/game_objects/Walls/walls_sprite.ts":
-/*!************************************************!*\
-  !*** ./src/game_objects/Walls/walls_sprite.ts ***!
-  \************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   WallsSprite: () => (/* binding */ WallsSprite)
-/* harmony export */ });
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
-/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.ts");
-var __extends = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-
-
-var WallsSprite = /** @class */ (function (_super) {
-    __extends(WallsSprite, _super);
-    function WallsSprite(transform, DIM_X, DIM_Y) {
-        var _this = _super.call(this, transform) || this;
-        _this.width = DIM_X;
-        _this.height = DIM_Y;
-        _this.shadowColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_1__.Color("hsla", [202, 100, 70, 1]);
-        _this.color = new _game_engine_color__WEBPACK_IMPORTED_MODULE_1__.Color("hsla", [202, 100, 70, 0.2]);
-        return _this;
-    }
-    WallsSprite.prototype.draw = function (ctx) {
-        var w = this.width;
-        var h = this.height;
-        var pos = this.transform.absolutePosition();
-        ctx.save();
-        ctx.beginPath();
-        ctx.translate(pos[0], pos[1]);
-        var blurFactor = 0.5;
-        ctx.shadowColor = this.shadowColor.evaluateColor();
-        ctx.shadowBlur = 10;
-        ctx.strokeStyle = this.color.evaluateColor();
-        ctx.lineWidth = 7.5 * blurFactor * 2;
-        this.drawWalls(ctx, w, h);
-        ctx.lineWidth = 6 * 2; // * blurFactor;
-        this.drawWalls(ctx, w, h);
-        ctx.lineWidth = 4.5 * 2; // * blurFactor;
-        this.drawWalls(ctx, w, h);
-        ctx.lineWidth = 3 * 2; // * blurFactor;
-        this.drawWalls(ctx, w, h);
-        ctx.strokeStyle = 'rgb(255, 255, 255)';
-        ctx.lineWidth = 1.5 * 2; // * blurFactor;
-        this.drawWalls(ctx, w, h);
-        ctx.restore();
-    };
-    WallsSprite.prototype.drawWalls = function (ctx, w, h) {
-        var offset = 6;
-        ctx.beginPath;
-        ctx.moveTo(-offset, -offset);
-        ctx.lineTo(w + offset, -offset);
-        ctx.lineTo(w + offset, h + offset); //3
-        ctx.lineTo(0 - offset, h + offset);
-        ctx.closePath();
-        ctx.stroke();
-    };
-    return WallsSprite;
-}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_0__.LineSprite));
-
-
-
-/***/ }),
-
 /***/ "./src/game_objects/enemies/Arrow/arrow.ts":
 /*!*************************************************!*\
   !*** ./src/game_objects/enemies/Arrow/arrow.ts ***!
@@ -10431,7 +11125,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/sound */ "./src/game_engine/sound.ts");
 /* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.ts");
 /* harmony import */ var _arrow_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./arrow_sprite */ "./src/game_objects/enemies/Arrow/arrow_sprite.ts");
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -10496,8 +11190,8 @@ var Arrow = /** @class */ (function (_super) {
         // ADD TO UPDATE FOR THE OBJECTS
         this.animate(delta);
         var pos = this.transform.absolutePosition();
-        if (_game_script__WEBPACK_IMPORTED_MODULE_5__.GameScript.isOutOfBounds(pos, this.radius)) {
-            _game_script__WEBPACK_IMPORTED_MODULE_5__.GameScript.redirect(this.transform);
+        if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_5__.GEOWarsScript.isOutOfBounds(pos, this.radius)) {
+            _GEOWarsScript__WEBPACK_IMPORTED_MODULE_5__.GEOWarsScript.redirect(this.transform);
         }
     };
     return Arrow;
@@ -10679,7 +11373,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
 /* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./src/game_engine/sound.ts");
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 /* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.ts");
 /* harmony import */ var _boxbox_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./boxbox_sprite */ "./src/game_objects/enemies/BoxBox/boxbox_sprite.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -11037,11 +11731,11 @@ var BoxBox = /** @class */ (function (_super) {
         this.addPhysicsComponent();
     };
     BoxBox.prototype.wallGraze = function () {
-        _game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.wallGraze(this.transform, this.radius);
+        _GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__.GEOWarsScript.wallGraze(this.transform, this.radius);
     };
     BoxBox.prototype.update = function (delta) {
         this.animate(delta);
-        if (_game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius * 2)) {
+        if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__.GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius * 2)) {
             this.wallGraze();
         }
     };
@@ -11410,7 +12104,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
 /* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./src/game_engine/sound.ts");
 /* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 /* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.ts");
 /* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -11522,7 +12216,7 @@ var Grunt = /** @class */ (function (_super) {
                 this.transform.acc[1] += bumpAcceleration * Math.sin(direction) / 100;
             }
             this.chase(timeDelta);
-            if (_game_script__WEBPACK_IMPORTED_MODULE_3__.GameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
+            if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
                 this.wallGraze();
             }
             this.bumpInfluencers = [];
@@ -11530,7 +12224,7 @@ var Grunt = /** @class */ (function (_super) {
         }
     };
     Grunt.prototype.wallGraze = function () {
-        _game_script__WEBPACK_IMPORTED_MODULE_3__.GameScript.wallGraze(this.transform, this.radius);
+        _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.GEOWarsScript.wallGraze(this.transform, this.radius);
     };
     return Grunt;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
@@ -11608,7 +12302,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
 /* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.ts");
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 /* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -11659,8 +12353,8 @@ var Pinwheel = /** @class */ (function (_super) {
     };
     Pinwheel.prototype.update = function (deltaTime) {
         this.animate(deltaTime);
-        if (_game_script__WEBPACK_IMPORTED_MODULE_4__.GameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
-            _game_script__WEBPACK_IMPORTED_MODULE_4__.GameScript.bounce(this.transform, this.radius); // HARD CODED
+        if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__.GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
+            _GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__.GEOWarsScript.bounce(this.transform, this.radius); // HARD CODED
         }
     };
     return Pinwheel;
@@ -11829,7 +12523,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   AlienShipSprite: () => (/* binding */ AlienShipSprite)
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 /* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -11873,12 +12567,12 @@ var AlienShip = /** @class */ (function (_super) {
     AlienShip.prototype.update = function () {
         // console.log(this.transform.pos)
         this.chase();
-        if (_game_script__WEBPACK_IMPORTED_MODULE_1__.GameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
+        if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_1__.GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
             this.bounce();
         }
     };
     AlienShip.prototype.bounce = function () {
-        _game_script__WEBPACK_IMPORTED_MODULE_1__.GameScript.bounce(this.transform, this.radius);
+        _GEOWarsScript__WEBPACK_IMPORTED_MODULE_1__.GEOWarsScript.bounce(this.transform, this.radius);
     };
     AlienShip.prototype.chase = function () {
         // take current velocity
@@ -11977,7 +12671,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _particles_singularity_particles__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../particles/singularity_particles */ "./src/game_objects/particles/singularity_particles.ts");
 /* harmony import */ var _alien_ship__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./alien_ship */ "./src/game_objects/enemies/Singularity/alien_ship.ts");
 /* harmony import */ var _particles_Grid_grid_point__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../particles/Grid/grid_point */ "./src/game_objects/particles/Grid/grid_point.ts");
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -12073,10 +12767,10 @@ var Singularity = /** @class */ (function (_super) {
         }
     };
     Singularity.prototype.wallGraze = function () {
-        _game_script__WEBPACK_IMPORTED_MODULE_10__.GameScript.wallGraze(this.transform, this.radius);
+        _GEOWarsScript__WEBPACK_IMPORTED_MODULE_10__.GEOWarsScript.wallGraze(this.transform, this.radius);
     };
     Singularity.prototype.update = function (deltaTime) {
-        if (_game_script__WEBPACK_IMPORTED_MODULE_10__.GameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
+        if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_10__.GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
             this.wallGraze();
         }
         if (this.numberAbsorbed === 5) {
@@ -12272,7 +12966,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
 /* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./src/game_engine/sound.ts");
 /* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 /* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.ts");
 /* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -12392,13 +13086,13 @@ var Weaver = /** @class */ (function (_super) {
             this.bulletDirectionInfluenced = false;
             this.bumpInfluencers = [];
             this.bulletInfluencers = [];
-            if (_game_script__WEBPACK_IMPORTED_MODULE_3__.GameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
+            if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
                 this.wallGraze();
             }
         }
     };
     Weaver.prototype.wallGraze = function () {
-        _game_script__WEBPACK_IMPORTED_MODULE_3__.GameScript.wallGraze(this.transform, this.radius);
+        _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.GEOWarsScript.wallGraze(this.transform, this.radius);
     };
     Weaver.prototype.chase = function (timeDelta) {
         var speed = 2;
@@ -12497,7 +13191,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
 /* harmony import */ var _grid_point__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./grid_point */ "./src/game_objects/particles/Grid/grid_point.ts");
 /* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 /* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 /* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../game_engine/color */ "./src/game_engine/color.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -12526,7 +13220,7 @@ var Grid = /** @class */ (function (_super) {
     function Grid(engine) {
         var _this = _super.call(this, engine) || this;
         _this.transform.pos = [0, 0];
-        _this.arenaDimensions = [_game_script__WEBPACK_IMPORTED_MODULE_3__.GameScript.DIM_X, _game_script__WEBPACK_IMPORTED_MODULE_3__.GameScript.DIM_Y];
+        _this.arenaDimensions = [_GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.DIM_X, _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.DIM_Y];
         _this.elasticity = 0.1; // force provided to pull particle back into place
         _this.dampening = 0.1; // force produced from velocity (allows things to eventuall fall to rest)
         _this.gridPoints = _this.createGridPoints();
@@ -12755,7 +13449,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   SingularityParticle: () => (/* binding */ SingularityParticle)
 /* harmony export */ });
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 /* harmony import */ var _particle__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../particle */ "./src/game_objects/particles/particle.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -12799,12 +13493,105 @@ var SingularityParticle = /** @class */ (function (_super) {
         this.checkBounds();
     };
     SingularityParticle.prototype.checkBounds = function () {
-        if (_game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.isOutOfBounds(this.transform.absolutePosition(), -0.5)) {
+        if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_0__.GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), -0.5)) {
             this.remove();
         }
     };
     return SingularityParticle;
 }(_particle__WEBPACK_IMPORTED_MODULE_1__.GEOParticle));
+
+
+
+/***/ }),
+
+/***/ "./src/game_objects/particles/StrikeTimeParticleExplosion.ts":
+/*!*******************************************************************!*\
+  !*** ./src/game_objects/particles/StrikeTimeParticleExplosion.ts ***!
+  \*******************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   ParticleExplosion: () => (/* binding */ ParticleExplosion)
+/* harmony export */ });
+/* harmony import */ var _particle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./particle */ "./src/game_objects/particles/particle.ts");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/sound */ "./src/game_engine/sound.ts");
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.ts");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_engine/util */ "./src/game_engine/util.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+
+
+var ParticleExplosion = /** @class */ (function (_super) {
+    __extends(ParticleExplosion, _super);
+    function ParticleExplosion(engine, pos) {
+        var _this = _super.call(this, engine) || this;
+        _this.transform.pos[0] = pos[0];
+        _this.transform.pos[1] = pos[1];
+        var startingH = (_this.gameEngine.gameScript.explosionColorWheel + Math.random() * 60) % 360;
+        var opacity = Math.random() * 0.35 + 0.6;
+        _this.currentColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_3__.Color("hsla", [startingH, 100, 50, opacity]);
+        if (engine.graphicQuality === 1) {
+            // console.log("best")
+            _this.particleNum = 120; // was 80
+        }
+        else if (engine.graphicQuality === 2) {
+            // console.log("medium")
+            _this.particleNum = 40;
+        }
+        else {
+            // console.log("potato")
+            _this.particleNum = 20;
+        }
+        var explosionSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Enemy_explode.wav", 0.2, _this.gameEngine.muted);
+        _this.playSound(explosionSound);
+        _this.createExplosionParticles();
+        return _this;
+    }
+    ParticleExplosion.prototype.createExplosionParticles = function () {
+        for (var i = 0; i < this.particleNum; i++) {
+            var speed = Math.random() * 4 + 15;
+            var colorVarienceDelta = 40;
+            var colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2;
+            var color = this.currentColor.dup();
+            color.a = Math.random() * 0.15 + 0.80;
+            color.h = (color.h + colorVarience) % 360;
+            var x = this.transform.absolutePosition()[0];
+            var y = this.transform.absolutePosition()[1];
+            var z = 0;
+            var movementAngle = this.createMovementAngle();
+            var vel = _game_engine_util__WEBPACK_IMPORTED_MODULE_4__.VectorMath.vector3Cartesian(movementAngle, speed);
+            this.addChildGameObject(new _particle__WEBPACK_IMPORTED_MODULE_0__.Particle(this.gameEngine, [x, y, z], vel, color));
+        }
+    };
+    ParticleExplosion.prototype.update = function () {
+        if (this.childObjects.length === 0) {
+            this.remove();
+        }
+    };
+    ParticleExplosion.prototype.animate = function () { };
+    ParticleExplosion.prototype.createMovementAngle = function () {
+        return [(Math.random() * Math.PI * 2), Math.random() * Math.PI * 2];
+    };
+    return ParticleExplosion;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
 
 
 
@@ -12824,7 +13611,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
 /* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/sound */ "./src/game_engine/sound.ts");
 /* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.ts");
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -12863,7 +13650,7 @@ var BulletWallExplosion = /** @class */ (function (_super) {
     }
     BulletWallExplosion.prototype.whichWall = function () {
         var pos = this.transform.pos;
-        var max = [_game_script__WEBPACK_IMPORTED_MODULE_4__.GameScript.DIM_X, _game_script__WEBPACK_IMPORTED_MODULE_4__.GameScript.DIM_Y];
+        var max = [_GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__.DIM_X, _GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__.DIM_Y];
         if (pos[0] <= 0) {
             return "LEFT";
         }
@@ -12985,7 +13772,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/util */ "./src/game_engine/util.ts");
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_script */ "./src/game_script.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 /* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 /* harmony import */ var _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/game_engine */ "./src/game_engine/game_engine.ts");
 // direction of the particle is the direction of the velocity vector
@@ -13017,6 +13804,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
+// will need to generalize the particle... unless I already have
 var Particle = /** @class */ (function (_super) {
     __extends(Particle, _super);
     function Particle(engine, pos, initialVelocity, color, removeCallback, dampening, opacityDropSpeed, direction) {
@@ -13133,7 +13921,7 @@ var GEOParticle = /** @class */ (function (_super) {
         this.transform.acc[2] += this.transform.vel[2] * this.dampening;
     };
     GEOParticle.prototype.checkBounds = function () {
-        if (_game_script__WEBPACK_IMPORTED_MODULE_2__.GameScript.isOutOfBounds(this.transform.absolutePosition(), -0.5)) {
+        if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__.GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), -0.5)) {
             this.remove();
         }
     };
@@ -13678,741 +14466,101 @@ var StarSprite = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./src/game_script.ts":
-/*!****************************!*\
-  !*** ./src/game_script.ts ***!
-  \****************************/
+/***/ "./src/game_objects/walls.ts":
+/*!***********************************!*\
+  !*** ./src/game_objects/walls.ts ***!
+  \***********************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   GameScript: () => (/* binding */ GameScript)
+/* harmony export */   Walls: () => (/* binding */ Walls),
+/* harmony export */   WallsSprite: () => (/* binding */ WallsSprite)
 /* harmony export */ });
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_engine/sound */ "./src/game_engine/sound.ts");
-/* harmony import */ var _game_objects_Ship_ship__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_objects/Ship/ship */ "./src/game_objects/Ship/ship.ts");
-/* harmony import */ var _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game_objects/Walls/walls */ "./src/game_objects/Walls/walls.ts");
-/* harmony import */ var _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./game_objects/Overlay/overlay */ "./src/game_objects/Overlay/overlay.ts");
-/* harmony import */ var _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./game_objects/particles/Grid/grid */ "./src/game_objects/particles/Grid/grid.ts");
-/* harmony import */ var _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./game_objects/enemies/BoxBox/boxbox */ "./src/game_objects/enemies/BoxBox/boxbox.ts");
-/* harmony import */ var _game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./game_objects/enemies/Pinwheel/pinwheel */ "./src/game_objects/enemies/Pinwheel/pinwheel.ts");
-/* harmony import */ var _game_objects_enemies_Arrow_arrow__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./game_objects/enemies/Arrow/arrow */ "./src/game_objects/enemies/Arrow/arrow.ts");
-/* harmony import */ var _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./game_objects/enemies/Grunt/grunt */ "./src/game_objects/enemies/Grunt/grunt.ts");
-/* harmony import */ var _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./game_objects/enemies/Weaver/weaver */ "./src/game_objects/enemies/Weaver/weaver.ts");
-/* harmony import */ var _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/singularity */ "./src/game_objects/enemies/Singularity/singularity.ts");
-/* harmony import */ var _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/alien_ship */ "./src/game_objects/enemies/Singularity/alien_ship.ts");
-/* harmony import */ var _game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./game_objects/particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.ts");
-/* harmony import */ var _game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./game_objects/particles/ship_explosion */ "./src/game_objects/particles/ship_explosion.ts");
-/* harmony import */ var _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./game_objects/particles/star */ "./src/game_objects/particles/star.ts");
-/* harmony import */ var _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Scene */ "./src/game_engine/Levels/DesignElements/Scene.ts");
-/* harmony import */ var _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.ts");
-/* harmony import */ var _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.ts");
-/* harmony import */ var _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.ts");
-/* harmony import */ var _game_engine_Levels_DesignElements_Operation__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Operation */ "./src/game_engine/Levels/DesignElements/Operation.ts");
-/* harmony import */ var _game_objects_ClockworkGames_Entity_Entity__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./game_objects/ClockworkGames/Entity/Entity */ "./src/game_objects/ClockworkGames/Entity/Entity.ts");
-/* harmony import */ var _game_objects_ClockworkGames_Bed__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./game_objects/ClockworkGames/Bed */ "./src/game_objects/ClockworkGames/Bed.ts");
-/* harmony import */ var _game_objects_ClockworkGames_Sandwich__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./game_objects/ClockworkGames/Sandwich */ "./src/game_objects/ClockworkGames/Sandwich.ts");
-/* harmony import */ var _game_objects_ClockworkGames_Plate__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./game_objects/ClockworkGames/Plate */ "./src/game_objects/ClockworkGames/Plate.ts");
-/* harmony import */ var _game_objects_Tree_Tree__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./game_objects/Tree/Tree */ "./src/game_objects/Tree/Tree.ts");
-/* harmony import */ var _game_objects_ClockworkGames_Machine__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./game_objects/ClockworkGames/Machine */ "./src/game_objects/ClockworkGames/Machine.ts");
-/* harmony import */ var _game_objects_StrikeTime_Aurora_Aurora__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./game_objects/StrikeTime/Aurora/Aurora */ "./src/game_objects/StrikeTime/Aurora/Aurora.ts");
-/* harmony import */ var _game_objects_StrikeTime_Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./game_objects/StrikeTime/Enemies/PatriotMissileSite */ "./src/game_objects/StrikeTime/Enemies/PatriotMissileSite.ts");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../GEOWarsScript */ "./src/GEOWarsScript.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../game_engine/color */ "./src/game_engine/color.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var GameScript = /** @class */ (function () {
-    function GameScript(engine) {
-        this.secondShipCreated = false;
-        this.serializedGame = "";
-        this.theme = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Geometry_OST.mp3", 1, engine.muted);
-        this.gameOverSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Game_over.wav", 1, engine.muted);
-        this.gameStartSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Game_start.wav", 1, engine.muted);
-        this.shipDeathSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Ship_explode.wav", 1, engine.muted);
-        this.gameTime = 0;
-        this.score = 0;
-        this.engine = engine;
-        this.arrowAdded = false;
-        this.startPosition = [500, 300, 0];
-        this.initialCameraZPos = -1000;
-        this.ship = this.createShip();
-        this.createStars();
-        this.walls = this.createWalls();
-        this.grid = this.createGrid();
-        this.overlay = this.createOverlay();
-        this.enemyCreatorMap = this.createEnemyCreators();
-        this.engine.addXButtonListener(this);
-        this.engine.addBButtonListener(this);
-        this.sequenceTypes = this.addSequenceTypes();
-        this.deathPausedTime = 0;
-        this.deathPaused = true;
-        this.deathPauseTime = 2500;
-        // this.deathSound = new Audio("sounds/Enemy_explode.wav")
-        // this.deathSound.volume = 0.5;
-        this.intervalTiming = 1;
-        this.intervalTime = 0;
-        this.hugeSequenceTime = 0;
-        this.sequenceCount = 0; // START GAME HERE
-        this.lives = 3;
-        this.scoreMultiplier = 1;
-        this.displayEndScore = 0;
-        this.spawnthing = false;
-        this.explosionColorWheel = 0;
-        this.playFromRootScene = false;
+var Walls = /** @class */ (function (_super) {
+    __extends(Walls, _super);
+    function Walls(engine) {
+        var _this = _super.call(this, engine) || this;
+        _this.transform.pos = [0, 0];
+        _this.addLineSprite(new WallsSprite(_this.transform, _GEOWarsScript__WEBPACK_IMPORTED_MODULE_1__.DIM_X, _GEOWarsScript__WEBPACK_IMPORTED_MODULE_1__.DIM_Y));
+        return _this;
     }
-    GameScript.prototype.nextElement = function () {
-        this.rootScene.currentElementIndex = 0;
+    Walls.prototype.update = function () {
     };
-    GameScript.prototype.startGame = function (serializedGame) {
-        this.serializedGame = serializedGame;
-        var game = JSON.parse(serializedGame);
-        if (game.serializedGameElements.length > 0) {
-            this.rootScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_15__.Scene('root');
-            this.rootScene.gameElements = this.loadGameElements(game.serializedGameElements, this.rootScene);
-            this.playFromRootScene = true;
-        }
-        this.intervalTime = 0;
-        // clockwork content
-        // this.loadClockworkContent();
-        this.ship.transform.pos = [this.startPosition[0], this.startPosition[1], this.startPosition[2]];
-    };
-    GameScript.prototype.loadStrikeTimeContent = function () {
-    };
-    GameScript.prototype.loadClockworkContent = function () {
-        new _game_objects_ClockworkGames_Sandwich__WEBPACK_IMPORTED_MODULE_22__.LeftSandwich(this.engine, [100, 80]);
-        new _game_objects_ClockworkGames_Sandwich__WEBPACK_IMPORTED_MODULE_22__.RightSandwich(this.engine, [130, 80]);
-        new _game_objects_ClockworkGames_Sandwich__WEBPACK_IMPORTED_MODULE_22__.LeftSandwich(this.engine, [110, 107]);
-        new _game_objects_ClockworkGames_Sandwich__WEBPACK_IMPORTED_MODULE_22__.RightSandwich(this.engine, [140, 107]);
-        new _game_objects_ClockworkGames_Plate__WEBPACK_IMPORTED_MODULE_23__.Plate(this.engine, [120, 95]);
-        var yourEntity = new _game_objects_ClockworkGames_Entity_Entity__WEBPACK_IMPORTED_MODULE_20__.Entity(this.engine, [200, 390]);
-        new _game_objects_ClockworkGames_Bed__WEBPACK_IMPORTED_MODULE_21__.Bed(this.engine, [200, 400], yourEntity);
-        new _game_objects_Tree_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [600, 300], yourEntity);
-        new _game_objects_Tree_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [700, 300], yourEntity);
-        new _game_objects_Tree_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [800, 300], yourEntity);
-        new _game_objects_Tree_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [900, 300], yourEntity);
-        new _game_objects_Tree_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [1000, 300], yourEntity);
-        new _game_objects_Tree_Tree__WEBPACK_IMPORTED_MODULE_24__.Tree(this.engine, [1100, 300], yourEntity);
-        // new Machinery(this.engine, [500, 300], false);
-        // new Machinery(this.engine, [500, 200], false);
-        // new Machinery(this.engine, [500, 100], false);
-        // new Machinery(this.engine, [700, 300], true );
-        // new Machinery(this.engine, [700, 200],true);
-        // new Machinery(this.engine, [700, 100],true);
-        // new Machinery(this.engine, [200, 300],false);
-        // new Machinery(this.engine, [200, 200],false);
-        // new Machinery(this.engine, [200, 100],false);
-        // new Machinery(this.engine, [200, 400],false);
-        new _game_objects_ClockworkGames_Machine__WEBPACK_IMPORTED_MODULE_25__.Machinery(this.engine, [595, 390], false);
-        new _game_objects_ClockworkGames_Machine__WEBPACK_IMPORTED_MODULE_25__.Machinery(this.engine, [705, 390], true);
-    };
-    // will need to duck type what happens when the scene is done and the game is over
-    GameScript.prototype.loadGameElements = function (serializedGameElements, parentScene) {
-        var _this = this;
-        return serializedGameElements.map(function (element) {
-            if (element.type === "Scene") {
-                var newScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_15__.Scene(element.name, parentScene);
-                newScene.gameElements = _this.loadGameElements(element.serializedGameElements, newScene) || [];
-                return newScene;
-            }
-            else if (element.type === "Event") {
-                return new _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_16__.Event(element.spawns, parentScene, element.isShipRelative, _this.engine);
-            }
-            else if (element.type === "Time") {
-                return new _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_17__.Time(parentScene, element.waitTime);
-            }
-            else if (element.type === "LoopBeginning") {
-                return new _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_18__.LoopBeginning(parentScene);
-            }
-            else if (element.type === "LoopEnd") {
-                return new _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_18__.LoopEnd({ loopIdx: element.loopIdx || 0, repeatTimes: element.repeatTimes }, parentScene);
-            }
-            else if (element.type === "Operation") {
-                return new _game_engine_Levels_DesignElements_Operation__WEBPACK_IMPORTED_MODULE_19__.Operation(element.operand, parentScene, _this.engine, _this);
-            }
-        });
-    };
-    GameScript.prototype.createStars = function () {
-        var runoffFactor = 1.5;
-        for (var i = 0; i < 900; i++) {
-            var X = (runoffFactor * Math.random() - runoffFactor / 2) * GameScript.DIM_X; // based on zoom scale and eventually camera position
-            var Y = (runoffFactor * Math.random() - runoffFactor / 2) * GameScript.DIM_Y;
-            // const Z = -this.initialCameraZPos * 0.25 + -this.initialCameraZPos * 2 * Math.random();
-            var Z = -this.initialCameraZPos * (0.5 + 2 * Math.random());
-            new _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_14__.Star(this.engine, [X, Y, Z]);
-        }
-    };
-    GameScript.prototype.updateXButtonListener = function (pressed) {
-        // if (pressed) {
-        //     if (this.engine.paused) {
-        //         const modal = document.getElementById("endModal");
-        //         modal.style.display = "none";
-        //         this.engine.paused = false;
-        //         if (!this.engine.muted) {
-        //             this.engine.gameScript.theme.play();
-        //         }
-        //     }
-        // }
-    };
-    GameScript.prototype.updateBButtonListener = function (pressed) {
-        // if (pressed) {
-        //     if (this.engine.paused) {
-        //         const modal = document.getElementById("endModal");
-        //         modal.style.display = "none";
-        //         this.engine.paused = false;
-        //         if (!this.engine.muted) {
-        //             this.engine.gameScript.theme.play();
-        //         }
-        //     }
-        // }
-    };
-    GameScript.prototype.update = function (deltaTime) {
-        if (this.deathPaused) {
-            this.deathPausedTime += deltaTime;
-            if (this.deathPausedTime > this.deathPauseTime) {
-                this.deathPausedTime = 0;
-                this.deathPaused = false;
-            }
-            else {
-                deltaTime = 0;
-            }
-        }
-        if (this.playFromRootScene) {
-            this.rootScene.update(deltaTime);
-        }
-        else {
-            // will need to change all this for the new game.. I guess it'll be a 
-            // new game script 
-            this.gameTime += deltaTime;
-            // this.spawnSequence(deltaTime);
-            if (this.secondShipCreated === false && this.gameTime > 1000) {
-                this.secondShipCreated = true;
-                this.createAurora();
-                this.createPatriotMissileSite();
-                // this.createShip();
-            }
-        }
-        this.changeExplosionColor();
-    };
-    GameScript.prototype.changeExplosionColor = function () {
-        this.explosionColorWheel += 1 / 2;
-        this.explosionColorWheel = this.explosionColorWheel % 360;
-    };
-    GameScript.prototype.tallyScore = function (gameObject) {
-        this.score += gameObject.points * this.scoreMultiplier;
-        // if (this.score) {
-        // }
-    };
-    GameScript.prototype.resetGame = function () {
-        var _this = this;
-        this.deathPaused = true;
-        this.displayEndScore = this.score;
-        this.score = 0;
-        this.lives = 3;
-        this.ship.transform.pos = this.startPosition;
-        this.sequenceCount = 0;
-        this.deathPauseTime = 2500;
-        this.ship.powerLevel = 1;
-        this.intervalTiming = 1;
-        this.intervalTime = 0;
-        this.hugeSequenceTime = 0;
-        this.lives = 3;
-        this.scoreMultiplier = 1;
-        this.spawnthing = false;
-        this.engine.paused = true;
-        var modal = document.getElementById("endModal");
-        modal.style.display = "block";
-        var scoreDisplay = document.getElementById("score");
-        scoreDisplay.innerHTML = "score: ".concat(this.displayEndScore);
-        // Get the button that opens the modal
-        // var btn = document.getElementById("myBtn");
-        // Get the <span> element that closes the modal
-        var xclose = document.getElementsByClassName("endClose")[0];
-        // When the user clicks on <span> (x), close the modal
-        xclose.onclick = function (e) {
-            e.stopPropagation();
-            modal.style.display = "none";
-            _this.engine.paused = false;
-            window.removeEventListener("click", closeModalWithClick, false);
-            if (!_this.engine.muted) {
-                _this.engine.gameScript.theme.play();
-                _this.engine.gameScript.gameStartSound.play();
-            }
-        };
-        var closeModalWithClick = function (e) {
-            if (e.target == modal) {
-                _this.engine.paused = false;
-                if (!_this.engine.muted) {
-                    _this.engine.gameScript.theme.play();
-                    _this.engine.gameScript.gameStartSound.play();
-                }
-                modal.style.display = "none";
-                window.removeEventListener("click", closeModalWithClick, false);
-            }
-        };
-        // When the user clicks anywhere outside of the modal, close it
-        window.addEventListener("click", closeModalWithClick, false);
-    };
-    GameScript.prototype.death = function () {
-        this.lives -= 1;
-        this.deathPaused = true;
-        this.explodeEverything();
-        this.deathPauseTime = 4000;
-        if (!this.engine.muted) {
-            this.engine.gameScript.shipDeathSound.play();
-        }
-        this.grid.Playerdies(this.ship.transform.pos);
-        if (this.lives === 0) {
-            try {
-                this.theme.pause();
-            }
-            catch (err) {
-                console.log('theme failed to play');
-            }
-            if (!this.engine.muted) {
-                this.engine.gameScript.gameOverSound.play();
-            }
-            // this.playSound(this.gameOverSound)
-            window.setTimeout(this.resetGame.bind(this), 2000);
-        }
-    };
-    GameScript.prototype.gameOver = function () {
-        // end the game here
-    };
-    GameScript.prototype.explodeEverything = function () {
-        var _this = this;
-        var removeList = [];
-        var typesToRemove = [
-            "Grunt",
-            "Pinwheel",
-            "BoxBox",
-            "Arrow",
-            "Singularity",
-            "Weaver",
-            "AlienShip",
-        ];
-        this.engine.gameObjects.forEach(function (object) {
-            if (object.constructor.name === "Ship") {
-                var objectTransform = object.transform;
-                var pos = objectTransform.absolutePosition();
-                new _game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_13__.ShipExplosion(_this.engine, pos);
-            }
-            else if (object.constructor.name === "Bullet") {
-                removeList.push(object);
-            }
-            else if (typesToRemove.includes(object.constructor.name)) {
-                var objectTransform = object.transform;
-                var pos = objectTransform.absolutePosition();
-                new _game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_12__.ParticleExplosion(_this.engine, pos);
-                removeList.push(object);
-            }
-        });
-        removeList.forEach(function (removeThis) {
-            removeThis.remove();
-        });
-    };
-    // levelDesigner() {
-    //     const modal = document.getElementById("levelDesignerModal");
-    // }
-    GameScript.prototype.onPause = function () {
-        try {
-            this.theme.pause();
-        }
-        catch (error) {
-            console.log('failed to pause theme music');
-        }
-        var modal = document.getElementById("pauseModal");
-        modal.style.display = "block";
-    };
-    GameScript.prototype.onUnPause = function () {
-        try {
-            this.theme.unPause();
-        }
-        catch (error) {
-            console.log('failed to unpause theme music');
-        }
-        var modal = document.getElementById("pauseModal");
-        modal.style.display = "none";
-    };
-    GameScript.prototype.randomArrowDirection = function () {
-        var angles = [0, Math.PI / 2, Math.PI, (Math.PI * 3) / 2];
-        return angles[Math.floor(Math.random() * angles.length) % angles.length];
-    };
-    GameScript.prototype.createEnemyCreators = function () {
-        var _this = this;
-        var engine = this.engine;
-        return {
-            BoxBox: function (pos) { return new _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_5__.BoxBox(engine, pos); },
-            Pinwheel: function (pos) { return new _game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_6__.Pinwheel(engine, pos); },
-            Arrow: function (pos, angle) { return new _game_objects_enemies_Arrow_arrow__WEBPACK_IMPORTED_MODULE_7__.Arrow(engine, pos, angle); },
-            Grunt: function (pos) { return new _game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_8__.Grunt(engine, pos, _this.ship.transform); },
-            Weaver: function (pos) { return new _game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_9__.Weaver(engine, pos, _this.ship.transform); },
-            Singularity: function (pos) { return new _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__.Singularity(engine, pos); },
-            AlienShip: function (pos) {
-                return new _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_11__.AlienShip(engine, pos, [0, 0]);
-            },
-        };
-    };
-    GameScript.prototype.randomSpawnEnemy = function () {
-        var pos = this.randomPosition();
-        var enemyCreators = Object.values(this.enemyCreatorMap);
-        enemyCreators[Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length](pos);
-    };
-    GameScript.prototype.addSequenceTypes = function () {
-        var _this = this;
-        return {
-            BoxBoxesEverywhere: function () {
-                var randomPositions = [];
-                for (var i = 0; i < 50; i++) {
-                    var pos = _this.randomPosition(10);
-                    randomPositions.push(pos);
-                }
-                randomPositions.forEach(function (pos) {
-                    _this.enemyCreatorMap["BoxBox"](pos);
-                });
-            },
-            Singularity: function () {
-                _this.enemyCreatorMap["Singularity"]([700, 300]);
-            },
-            EasyGroups: function () {
-                var randomPositions = [];
-                for (var i = 0; i < 5; i++) {
-                    var pos = _this.randomPosition();
-                    randomPositions.push(pos);
-                }
-                randomPositions.forEach(function (pos) {
-                    var possibleSpawns = ["BoxBox", "Pinwheel"]; //, "Singularity"]
-                    _this.enemyCreatorMap[possibleSpawns[Math.floor(Math.random() * possibleSpawns.length) %
-                        possibleSpawns.length]](pos);
-                });
-            },
-            EasyGroupsArrows: function () {
-                var randomPositions = [];
-                for (var i = 0; i < 5; i++) {
-                    var pos = _this.randomPosition();
-                    randomPositions.push(pos);
-                }
-                randomPositions.forEach(function (pos) {
-                    var possibleSpawns = ["BoxBox", "Pinwheel", "Arrow", "Singularity"];
-                    _this.enemyCreatorMap[possibleSpawns[Math.floor(Math.random() * possibleSpawns.length) %
-                        possibleSpawns.length]](pos);
-                });
-            },
-            ArrowsAttack: function () {
-                var somePositions = [
-                    [200, 300],
-                    [1000, 300],
-                    [600, 100],
-                ];
-                var pos = somePositions[Math.floor(Math.random() * somePositions.length) %
-                    somePositions.length];
-                for (var i = 0; i < 5; i++) {
-                    pos[1] += i * 80;
-                    _this.enemyCreatorMap["Arrow"](pos);
-                }
-            },
-            GruntGroups: function () {
-                var randomPos = _this.randomPosition(50);
-                for (var i = 0; i < 3; i++) {
-                    for (var j = 0; j < 3; j++) {
-                        _this.enemyCreatorMap["Grunt"]([
-                            i * 40 + randomPos[0],
-                            j * 40 + randomPos[1],
-                        ]);
-                    }
-                }
-            },
-            GreenGroups: function () {
-                var randomPos = _this.randomPosition(50);
-                for (var i = 0; i < 3; i++) {
-                    for (var j = 0; j < 3; j++) {
-                        _this.enemyCreatorMap["Weaver"]([
-                            i * 40 + randomPos[0],
-                            j * 40 + randomPos[1] - 50,
-                        ]);
-                    }
-                }
-            },
-        };
-    };
-    // createSpawnStateMachine() {
-    // let events = this.sequenceTypes
-    // let stateIndex = {i: 0}
-    // // these are the events
-    // // times will be hard coded for each state in the queue
-    // let spawnQueue = []
-    // let singularityState = new StateMachine(this.engine, {stateIndex, event: events.Singularity})
-    // let easyGroupsState = new StateMachine(this.engine, undefined)
-    // }
-    GameScript.prototype.randomPosition = function (radius) {
-        if (!radius) {
-            radius = 40;
-        }
-        return [
-            (GameScript.DIM_X - radius * 4) * Math.random() + radius * 4,
-            (GameScript.DIM_Y - radius * 4) * Math.random() + radius * 4,
-            // 1000,600
-        ];
-    };
-    GameScript.prototype.spawnSequence = function (delta) {
-        var _this = this;
-        this.intervalTime += delta;
-        if (this.sequenceCount === 1) {
-            this.enemyCreatorMap["Singularity"]([700, 300]);
-            this.sequenceCount += 1;
-        }
-        // wait time              //parentIndex   // repeat count
-        if (this.intervalTime > 2500 * this.intervalTiming &&
-            this.sequenceCount < 5) {
-            this.intervalTime = 0;
-            this.sequenceTypes["EasyGroups"](); // event
-            // this.randomSpawnEnemy();
-            this.sequenceCount += 1;
-        }
-        else if (this.sequenceCount === 5 && this.intervalTime > 5000) {
-            this.sequenceCount += 1;
-        }
-        else if (this.intervalTime > 2500 * this.intervalTiming &&
-            this.sequenceCount > 5 &&
-            this.sequenceCount < 10) {
-            this.sequenceCount += 1;
-            this.intervalTime = 0;
-            this.sequenceTypes["EasyGroupsArrows"]();
-        }
-        else if (this.sequenceCount === 10 && this.intervalTime > 5000) {
-            this.sequenceCount += 1;
-        }
-        else if (this.intervalTime > 1500 * this.intervalTiming &&
-            this.sequenceCount > 10 &&
-            this.sequenceCount < 15) {
-            this.sequenceCount += 1;
-            this.intervalTime = 0;
-            this.sequenceTypes["GruntGroups"]();
-        }
-        else if (this.sequenceCount === 15 && this.intervalTime > 2000) {
-            this.sequenceCount += 1;
-        }
-        else if (this.intervalTime > 2000 * this.intervalTiming &&
-            this.sequenceCount > 15 &&
-            this.sequenceCount < 20) {
-            this.sequenceCount += 1;
-            this.intervalTime = 0;
-            this.sequenceTypes["GreenGroups"]();
-        }
-        else if (this.sequenceCount === 20 && this.intervalTime > 3000) {
-            this.sequenceCount += 1;
-        }
-        // else if (this.intervalTime > (2500 * this.intervalTiming) && this.sequenceCount === 10 && this.hugeSequenceTime % 2 === 1) {
-        //   this.intervalTime = 0
-        //   this.sequenceCount += 1
-        //   let enemies_to_spawn = []
-        //   let randomPos = this.randomPosition();
-        //   for (let i = 0; i < 2; i++) {
-        //     for (let j = 0; j < 2; j++) {
-        //       this.enemyCreatorMap["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
-        //     }
-        //   }
-        // } else if (this.intervalTime > (5000 * this.intervalTiming) && this.sequenceCount === 11) {
-        //   this.intervalTime = 0;
-        //   this.sequenceCount += 1;
-        //}
-        else if (this.intervalTime > 375 &&
-            this.sequenceCount > 20 &&
-            this.sequenceCount < 30 &&
-            this.hugeSequenceTime % 2 === 0) {
-            this.ship.upgradeBullets();
-            this.intervalTime = 0;
-            this.sequenceCount += 1;
-            var fourCorners = [
-                [40, 40],
-                [GameScript.DIM_X - 40, 40],
-                [40, GameScript.DIM_Y - 40],
-                [GameScript.DIM_X - 40, GameScript.DIM_Y - 40],
-            ];
-            fourCorners.forEach(function (corner) {
-                _this.enemyCreatorMap["Grunt"](corner);
-            });
-        }
-        else if (this.intervalTime > 375 &&
-            this.sequenceCount > 20 &&
-            this.sequenceCount < 30 &&
-            this.hugeSequenceTime % 2 === 1) {
-            this.intervalTime = 0;
-            this.sequenceCount += 10;
-            var arrowWallPositions = [];
-            var arrowDirection_1 = (Math.PI * 3) / 2 + Math.PI;
-            for (var i = 40; i < GameScript.DIM_X; i += 40) {
-                arrowWallPositions.push([i, 50]);
-            }
-            arrowWallPositions.forEach(function (position) {
-                _this.enemyCreatorMap["Arrow"](position, arrowDirection_1);
-            });
-        }
-        // this is the spawner event.
-        // it runs through all the child states
-        // for the event to be triggered
-        else if (this.sequenceCount >= 30) {
-            this.sequenceCount = 0;
-            if (!(this.intervalTiming < 0.5)) {
-                this.intervalTiming *= 0.9;
-            }
-            this.hugeSequenceTime += 1;
-        }
-        // if (this.gameTime % 2000 === 0){
-        //   this.spawned = false
-        // }
-    };
-    GameScript.prototype.createShip = function () {
-        return new _game_objects_Ship_ship__WEBPACK_IMPORTED_MODULE_1__.Ship(this.engine, this.startPosition);
-    };
-    GameScript.prototype.createAurora = function () {
-        return new _game_objects_StrikeTime_Aurora_Aurora__WEBPACK_IMPORTED_MODULE_26__.Aurora(this.engine, [500, 200]);
-    };
-    GameScript.prototype.createPatriotMissileSite = function () {
-        return new _game_objects_StrikeTime_Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_27__.PatriotMissileSite(this.engine, [150, 150]);
-    };
-    GameScript.prototype.createWalls = function () {
-        return new _game_objects_Walls_walls__WEBPACK_IMPORTED_MODULE_2__.Walls(this.engine);
-    };
-    GameScript.prototype.createGrid = function () {
-        return new _game_objects_particles_Grid_grid__WEBPACK_IMPORTED_MODULE_4__.Grid(this.engine);
-    };
-    GameScript.prototype.createOverlay = function () {
-        return new _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_3__.Overlay(this.engine, this);
-    };
-    GameScript.isOutOfBounds = function (pos, radius) {
-        var max = [GameScript.DIM_X - radius, GameScript.DIM_Y - radius];
-        if (radius) {
-            return (pos[0] <= radius ||
-                pos[0] >= max[0] ||
-                pos[1] <= radius ||
-                pos[1] >= max[1]);
-        }
-        else {
-            return (pos[0] < 0 ||
-                pos[1] < 0 ||
-                pos[0] > GameScript.DIM_X ||
-                pos[1] > GameScript.DIM_Y);
-        }
-    };
-    // bounce(pos){
-    //   return [
-    //     Util.bounce(pos[0], GameScript.DIM_X), Util.bounce(pos[1], GameScript.DIM_Y)
-    //   ];
-    // }
-    GameScript.bounce = function (transform, radius) {
-        if (radius === void 0) { radius = 0; }
-        var max = [GameScript.DIM_X - radius, GameScript.DIM_Y - radius];
-        var pos = transform.absolutePosition();
-        if (pos[0] <= radius || pos[0] >= max[0]) {
-            transform.vel[0] = -transform.vel[0];
-        }
-        if (pos[1] <= radius || pos[1] >= max[1]) {
-            transform.vel[1] = -transform.vel[1];
-        }
-    };
-    GameScript.wallGraze = function (transform, radius) {
-        if (radius === void 0) { radius = 0; }
-        var max = [GameScript.DIM_X - radius, GameScript.DIM_Y - radius];
-        var pos = transform.absolutePosition();
-        var vel = transform.absoluteVelocity();
-        // X bounds, left right
-        if (pos[0] <= radius && vel[0] < 0) {
-            transform.vel[0] = 0.1;
-        }
-        else if (pos[0] >= max[0] && vel[0] > 0) {
-            transform.vel[0] = -0.1;
-        }
-        // Y bounds, top bottom
-        if (pos[1] <= radius && vel[1] < 0) {
-            transform.vel[1] = 0.1;
-        }
-        else if (pos[1] >= max[1] && vel[1] > 0) {
-            transform.vel[1] = -0.1;
-        }
-    };
-    GameScript.redirect = function (transform) {
-        var max = [GameScript.DIM_X, GameScript.DIM_Y];
-        var pos = transform.absolutePosition();
-        if (pos[0] <= 0 || pos[0] >= max[0]) {
-            if (pos[0] <= 0) {
-                pos[0] = 1;
-            }
-            if (pos[0] >= max[0]) {
-                pos[0] = max[0] - 1;
-            }
-        }
-        if (pos[1] <= 0 || pos[1] >= max[1]) {
-            if (pos[1] <= 0) {
-                pos[1] = 1;
-            }
-            if (pos[1] >= max[1]) {
-                pos[1] = max[1] - 1;
-            }
-        }
-        transform.vel[0] = -transform.vel[0];
-        transform.vel[1] = -transform.vel[1];
-    };
-    GameScript.DIM_X = 1000;
-    GameScript.DIM_Y = 600;
-    GameScript.BG_COLOR = '#000000';
-    return GameScript;
-}());
+    Walls.prototype.animate = function () { };
+    return Walls;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
-// GameScript.BG_COLOR = "#000000";
-// GameScript.DIM_X = 1000;
-// GameScript.DIM_Y = 600;
-// GameScript.FPS = 32;
-// GameScript.NUM_BOXES = 10;
-// GameScript.NUM_PINWHEELS = 0;
-// GameScript.NUM_ARROWS = 0;
-// GameScript.NUM_GRUNTS = 0;
-// GameScript.NUM_WEAVERS = 0;
-// GameScript.NUM_SINGULARITIES = 1;
-// GameScript.Spawn1 = {
-//     BoxBox: 50,
-// };
-// GameScript.spawnListList = [GameScript.Spawn1];
-// 2D 
-// const performance2D = {
-//     collisionTime: 0.12846034227596656,
-//     frameRate: 117.86903385504282,
-//     physicsCalcTime: 0.2529761062793578,
-//     renderTime: 0.9149865687913138,
-//     scriptTime: 0.00835571889659564,
-//     updateTime: 0.1869786510739892,
-// };
-// 3D
-// const performance3D = {
-//     collisionTime: 0.0705062137856271,
-//     frameRate: 54.9810552849427,
-//     physicsCalcTime: 0.16501970291499046,
-//     renderTime: 1.1280691114636254,
-//     scriptTime: 0.008426796002401008,
-//     updateTime: 0.177841770708579,
-// };
+
+
+var WallsSprite = /** @class */ (function (_super) {
+    __extends(WallsSprite, _super);
+    function WallsSprite(transform, DIM_X, DIM_Y) {
+        var _this = _super.call(this, transform) || this;
+        _this.width = DIM_X;
+        _this.height = DIM_Y;
+        _this.shadowColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_3__.Color("hsla", [202, 100, 70, 1]);
+        _this.color = new _game_engine_color__WEBPACK_IMPORTED_MODULE_3__.Color("hsla", [202, 100, 70, 0.2]);
+        return _this;
+    }
+    WallsSprite.prototype.draw = function (ctx) {
+        var w = this.width;
+        var h = this.height;
+        var pos = this.transform.absolutePosition();
+        ctx.save();
+        ctx.beginPath();
+        ctx.translate(pos[0], pos[1]);
+        var blurFactor = 0.5;
+        ctx.shadowColor = this.shadowColor.evaluateColor();
+        ctx.shadowBlur = 10;
+        ctx.strokeStyle = this.color.evaluateColor();
+        ctx.lineWidth = 7.5 * blurFactor * 2;
+        this.drawWalls(ctx, w, h);
+        ctx.lineWidth = 6 * 2; // * blurFactor;
+        this.drawWalls(ctx, w, h);
+        ctx.lineWidth = 4.5 * 2; // * blurFactor;
+        this.drawWalls(ctx, w, h);
+        ctx.lineWidth = 3 * 2; // * blurFactor;
+        this.drawWalls(ctx, w, h);
+        ctx.strokeStyle = 'rgb(255, 255, 255)';
+        ctx.lineWidth = 1.5 * 2; // * blurFactor;
+        this.drawWalls(ctx, w, h);
+        ctx.restore();
+    };
+    WallsSprite.prototype.drawWalls = function (ctx, w, h) {
+        var offset = 6;
+        ctx.beginPath;
+        ctx.moveTo(-offset, -offset);
+        ctx.lineTo(w + offset, -offset);
+        ctx.lineTo(w + offset, h + offset); //3
+        ctx.lineTo(0 - offset, h + offset);
+        ctx.closePath();
+        ctx.stroke();
+    };
+    return WallsSprite;
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__.LineSprite));
+
 
 
 /***/ }),
@@ -14427,7 +14575,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   GameView: () => (/* binding */ GameView)
 /* harmony export */ });
-/* harmony import */ var _game_engine_SpriteEditor_SpriteEditor__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_engine/SpriteEditor/SpriteEditor */ "./src/game_engine/SpriteEditor/SpriteEditor.ts");
+/* harmony import */ var _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./SpriteEditorScript */ "./src/SpriteEditorScript.ts");
+/* harmony import */ var _game_engine_SpriteEditor_SpriteEditor__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_engine/SpriteEditor/SpriteEditor */ "./src/game_engine/SpriteEditor/SpriteEditor.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./GEOWarsScript */ "./src/GEOWarsScript.ts");
+/* harmony import */ var _StrikeTimeScript__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./StrikeTimeScript */ "./src/StrikeTimeScript.ts");
+
+
+
 
 var GameView = /** @class */ (function () {
     function GameView(engine, ctx, canvasEl, levelDesigner, animationView) {
@@ -14616,20 +14770,33 @@ var GameView = /** @class */ (function () {
         // have them do the same things they do now.. 
         // but without the strange order that's required 
         // for starting the game after loading one, or starting the default one
-        var startButtonModal = document.getElementById("startGameModal");
+        var startStrikeTimeModal = document.getElementById("startStrikeTime");
+        var startGEOWarsButtonModal = document.getElementById("startGEOWars");
         // open the level editor
         var levelEditorButton = document.getElementById("LevelEditorModal");
         var createSprite = document.getElementById("SpriteEditor");
         // load a level either for level editor or for starting the game
         var loadGameDesignButtonModal = document.getElementById("loadGameDesignModal");
         // get the text from element: loadGameDesignInputModal
-        startButtonModal.onclick = function (e) {
+        startGEOWarsButtonModal.onclick = function (e) {
+            e.stopPropagation();
+            _this.gameStarted = true;
+            var geoWarsScript = new _GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__.GEOWarsScript(_this.engine);
+            _this.engine.addGameScript(geoWarsScript);
+            _this.bindKeyboardKeys();
+            if (_this.levelDesignLoaded) {
+                _this.levelDesigner.startGame(geoWarsScript);
+            }
+            requestAnimationFrame(_this.animate);
+            modal.style.display = "none";
+        };
+        startStrikeTimeModal.onclick = function (e) {
             e.stopPropagation();
             _this.gameStarted = true;
             _this.bindKeyboardKeys();
-            if (_this.levelDesignLoaded) {
-                _this.levelDesigner.startGame();
-            }
+            var gameScript = new _StrikeTimeScript__WEBPACK_IMPORTED_MODULE_3__.StrikeTimeScript(_this.engine);
+            gameScript.startGame("{}");
+            _this.engine.addGameScript(gameScript);
             requestAnimationFrame(_this.animate);
             modal.style.display = "none";
         };
@@ -14653,10 +14820,9 @@ var GameView = /** @class */ (function () {
             requestAnimationFrame(_this.animate);
             modal.style.display = "none";
             _this.modelClosed = true;
-            setTimeout(function () {
-                _this.engine.startSpriteCreator();
-                new _game_engine_SpriteEditor_SpriteEditor__WEBPACK_IMPORTED_MODULE_0__.SpriteEditor(_this.engine);
-            }, 50);
+            var gameScript = new _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.SpriteEditorScript(_this.engine);
+            _this.engine.addGameScript(gameScript);
+            new _game_engine_SpriteEditor_SpriteEditor__WEBPACK_IMPORTED_MODULE_1__.SpriteEditor(_this.engine);
         };
         loadGameDesignButtonModal.onclick = function (e) {
             e.stopPropagation();
@@ -14818,27 +14984,25 @@ var __webpack_exports__ = {};
   !*** ./src/GEOWars.ts ***!
   \************************/
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _game_script__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_script */ "./src/game_script.ts");
-/* harmony import */ var _game_view__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_view */ "./src/game_view.ts");
-/* harmony import */ var _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game_engine/game_engine */ "./src/game_engine/game_engine.ts");
-/* harmony import */ var _game_engine_Levels_levelDesigner__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./game_engine/Levels/levelDesigner */ "./src/game_engine/Levels/levelDesigner.ts");
-/* harmony import */ var _AnimationView__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./AnimationView */ "./src/AnimationView.ts");
-
+/* harmony import */ var _game_view__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_view */ "./src/game_view.ts");
+/* harmony import */ var _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_engine/game_engine */ "./src/game_engine/game_engine.ts");
+/* harmony import */ var _game_engine_Levels_levelDesigner__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game_engine/Levels/levelDesigner */ "./src/game_engine/Levels/levelDesigner.ts");
+/* harmony import */ var _AnimationView__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./AnimationView */ "./src/AnimationView.ts");
 
 
 
 
 document.addEventListener("DOMContentLoaded", function () {
     var canvasEl = document.getElementsByTagName("canvas")[0];
-    canvasEl.width = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_X;
-    canvasEl.height = _game_script__WEBPACK_IMPORTED_MODULE_0__.GameScript.DIM_Y;
+    canvasEl.width = 1000; // this is the start canvas, can be changed later by a specific game
+    canvasEl.height = 600; // though I'm not sure what happens when you resize a rendered canvas
     var ctx = canvasEl.getContext("2d");
-    var gameEngine = new _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_2__.GameEngine(ctx);
+    var gameEngine = new _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_1__.GameEngine(ctx);
     var animationWindow = document.getElementsByTagName("canvas")[1].getContext("2d");
     var levelDesignerCanvas = document.getElementsByTagName("canvas")[2];
     var levelDesignerCtx = levelDesignerCanvas.getContext("2d");
-    var animationView = new _AnimationView__WEBPACK_IMPORTED_MODULE_4__.AnimationView(animationWindow);
-    var levelDesigner = new _game_engine_Levels_levelDesigner__WEBPACK_IMPORTED_MODULE_3__.LevelDesigner(gameEngine, animationView, levelDesignerCtx);
+    var animationView = new _AnimationView__WEBPACK_IMPORTED_MODULE_3__.AnimationView(animationWindow);
+    var levelDesigner = new _game_engine_Levels_levelDesigner__WEBPACK_IMPORTED_MODULE_2__.LevelDesigner(gameEngine, animationView, levelDesignerCtx);
     gameEngine.levelDesigner = levelDesigner;
     window.addEventListener('focus', function () {
         gameEngine.focusUnPause();
@@ -14848,7 +15012,7 @@ document.addEventListener("DOMContentLoaded", function () {
         gameEngine.focusPause();
         animationView.focusPause();
     });
-    new _game_view__WEBPACK_IMPORTED_MODULE_1__.GameView(gameEngine, ctx, canvasEl, levelDesigner, animationView).start();
+    new _game_view__WEBPACK_IMPORTED_MODULE_0__.GameView(gameEngine, ctx, canvasEl, levelDesigner, animationView).start();
 });
 
 })();

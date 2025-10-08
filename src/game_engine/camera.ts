@@ -1,4 +1,3 @@
-import { GameScript } from "../game_script";
 import { type GameEngine } from "./game_engine";
 import { GameObject } from "./game_object";
 import { type Transform } from "./transform";
@@ -58,7 +57,7 @@ export class Camera {
             this.cameraHeight * this.zoomScale * 40,
             this.cameraWidth * this.zoomScale * 40
         );
-        ctx.fillStyle = GameScript.BG_COLOR;
+        ctx.fillStyle = '#000000';
         ctx.fillRect(
             -this.cameraHeight,
             -this.cameraWidth,

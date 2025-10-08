@@ -1,8 +1,11 @@
 import { type AnimationView } from "./AnimationView";
+import { SpriteEditorScript } from "./SpriteEditorScript";
 import { type LevelDesigner } from "./game_engine/Levels/levelDesigner";
 import { SpriteEditor } from "./game_engine/SpriteEditor/SpriteEditor";
 import { type GameEngine } from "./game_engine/game_engine";
 import {type DirectionKey} from "./game_objects/Ship/ship";
+import { GEOWarsScript } from "./GEOWarsScript";
+import { StrikeTimeScript } from "./StrikeTimeScript";
 
 
 export class GameView { engine: GameEngine;
@@ -243,7 +246,8 @@ export class GameView { engine: GameEngine;
         // have them do the same things they do now.. 
         // but without the strange order that's required 
         // for starting the game after loading one, or starting the default one
-        const startButtonModal = document.getElementById("startGameModal");
+        const startStrikeTimeModal = document.getElementById("startStrikeTime");
+        const startGEOWarsButtonModal = document.getElementById("startGEOWars");
         // open the level editor
         const levelEditorButton = document.getElementById("LevelEditorModal");
         const createSprite = document.getElementById("SpriteEditor");
@@ -252,13 +256,26 @@ export class GameView { engine: GameEngine;
         const loadGameDesignButtonModal = document.getElementById("loadGameDesignModal");
         // get the text from element: loadGameDesignInputModal
 
-        startButtonModal.onclick = (e) => {
+        startGEOWarsButtonModal.onclick = (e) => {
+            e.stopPropagation();
+            this.gameStarted = true;
+            const geoWarsScript = new GEOWarsScript( this.engine);
+            this.engine.addGameScript(geoWarsScript);
+            this.bindKeyboardKeys();
+            if(this.levelDesignLoaded){
+                this.levelDesigner.startGame(geoWarsScript);
+            }
+            requestAnimationFrame(this.animate);
+            modal.style.display = "none";
+        }
+
+        startStrikeTimeModal.onclick = (e) => {
             e.stopPropagation();
             this.gameStarted = true;
             this.bindKeyboardKeys();
-            if(this.levelDesignLoaded){
-                this.levelDesigner.startGame();
-            }
+            const gameScript = new StrikeTimeScript(this.engine);
+            gameScript.startGame("{}");
+            this.engine.addGameScript(gameScript);
             requestAnimationFrame(this.animate);
             modal.style.display = "none";
         };
@@ -284,10 +301,9 @@ export class GameView { engine: GameEngine;
             requestAnimationFrame(this.animate);
             modal.style.display = "none";
             this.modelClosed = true;
-            setTimeout(() => {
-                this.engine.startSpriteCreator();
+                const gameScript = new SpriteEditorScript(this.engine);
+                this.engine.addGameScript(gameScript);
                 new SpriteEditor(this.engine);
-            }, 50);
         };
 
         loadGameDesignButtonModal.onclick = (e) => {

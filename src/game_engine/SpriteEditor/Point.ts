@@ -1,4 +1,4 @@
-import { GameScript } from "../../game_script";
+import { DIM_Y } from "../../SpriteEditorScript";
 import { GameEngine } from "../game_engine";
 import { GameObject } from "../game_object";
 import { LineSprite } from "../line_sprite";
@@ -13,7 +13,7 @@ export class PlacingPoint extends GameObject {
     }
 
     updateMousePos(mousePos: [number, number]) {
-        const distancePerIncrement = GameScript.DIM_Y / 72
+        const distancePerIncrement = DIM_Y / 72
 
         const xPosIncremented = Math.round(mousePos[0]/distancePerIncrement) * distancePerIncrement;
         const yPosIncremented = Math.round(mousePos[1] / distancePerIncrement) * distancePerIncrement;
@@ -135,7 +135,7 @@ export class CircleData {
     centerPoint: [number, number];
     radius: number;
     constructor(centerPoint: [number, number],radius: number) {
-        this.centerPoint = [centerPoint[0], centerPoint[1]];
+        this.centerPoint = [centerPoint[0], -centerPoint[1]];
         this.radius = radius;
     }
 }
@@ -152,17 +152,17 @@ export class BezierCurveData {
         controlPoint1: [number, number],
         controlPoint2: [number, number]
     ) {
-        this.startPos = [startPos[0], startPos[1]];
-        this.endPos = [endPos[0], endPos[1]];
-        this.controlPoint1 = [controlPoint1[0], controlPoint1[1]];
-        this.controlPoint2 = [controlPoint2[0], controlPoint2[1]];
+        this.startPos = [startPos[0], -startPos[1]];
+        this.endPos = [endPos[0], -endPos[1]];
+        this.controlPoint1 = [controlPoint1[0], -controlPoint1[1]];
+        this.controlPoint2 = [controlPoint2[0], -controlPoint2[1]];
     }
 }
 
 export class PointData {
     point: [number, number]
     constructor(point: [number, number]) {
-        this.point = [point[0], point[1]];
+        this.point = [point[0], -point[1]];
     }
 }
 

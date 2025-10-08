@@ -1,4 +1,4 @@
-import { type GameScript } from "../../../game_script";
+import { type GEOWarsScript } from "../../../GEOWarsScript";
 import { UIElement } from "../../UI_Element";
 import { type GameEngine } from "../../game_engine";
 import { Transform } from "../../transform";
@@ -8,6 +8,9 @@ import { Time } from "./Time";
 import { LoopBeginning, LoopEnd } from "./Loop";
 import { type LevelDesigner } from "../levelDesigner";
 import { LineSprite } from "../../line_sprite";
+
+// will likely need to make this work generically
+// either that or I'll need to copy it and throw away the GEOWars Specific stuff (probably the best choice)
 
 export type OperationSerialized = {
     type: "Operation";
@@ -23,8 +26,8 @@ export class Operation {
     operand: Operand;
     parentScene: Scene;
     gameEngine: GameEngine;
-    gameScript: GameScript;
-    constructor(operand: Operand, parentScene: Scene, gameEngine: GameEngine, gameScript: GameScript) {
+    gameScript: GEOWarsScript;
+    constructor(operand: Operand, parentScene: Scene, gameEngine: GameEngine, gameScript: GEOWarsScript) {
         this.operand = operand;
         this.parentScene = parentScene;
         this.gameEngine = gameEngine;

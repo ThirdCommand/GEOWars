@@ -4,6 +4,7 @@ import { Sound } from "../../game_engine/sound";
 import { Color } from "../../game_engine/color";
 import { type GameEngine } from "../../game_engine/game_engine";
 import { type AnimationView } from "../../AnimationView";
+import { type GEOWarsScript } from "../../GEOWarsScript";
 export class SingularityHitExplosion extends GameObject {
     currentColor: Color;
     particleNum: number;
@@ -11,7 +12,7 @@ export class SingularityHitExplosion extends GameObject {
         super(engine);
         this.transform.pos[0] = pos[0];
         this.transform.pos[1] = pos[1];
-        const startingH = (this.gameEngine.gameScript.explosionColorWheel + Math.random() * 60 + 180) % 360;
+        const startingH = ((this.gameEngine.gameScript as GEOWarsScript).explosionColorWheel + Math.random() * 60 + 180) % 360;
         const opacity = Math.random() * 0.35 + 0.3;
         this.currentColor = new Color(
             "hsla", [startingH, 100, 50, opacity]

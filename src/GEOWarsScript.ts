@@ -1,6 +1,6 @@
 import { Sound } from "./game_engine/sound";
 import { Ship } from "./game_objects/Ship/ship";
-import { Walls } from "./game_objects/Walls/walls";
+import { Walls } from "./game_objects/walls";
 import { Overlay } from "./game_objects/Overlay/overlay";
 import { Grid } from "./game_objects/particles/Grid/grid";
 import { BoxBox } from "./game_objects/enemies/BoxBox/boxbox";
@@ -20,21 +20,16 @@ import { Time } from "./game_engine/Levels/DesignElements/Time";
 import { LoopBeginning, LoopEnd } from "./game_engine/Levels/DesignElements/Loop";
 import {Operation} from "./game_engine/Levels/DesignElements/Operation";
 
-import { Entity } from "./game_objects/ClockworkGames/Entity/Entity";
-import {Bed} from "./game_objects/ClockworkGames/Bed";
-import {LeftSandwich, RightSandwich} from "./game_objects/ClockworkGames/Sandwich";
-import {Plate} from "./game_objects/ClockworkGames/Plate";
-import {Tree} from "./game_objects/Tree/Tree";
-import { type GameEngine } from "./game_engine/game_engine";
+import { GameScript, type GameEngine } from "./game_engine/game_engine";
 import { type GameObject } from "./game_engine/game_object";
 import { Transform } from "./game_engine/transform";
-import { Machinery } from "./game_objects/ClockworkGames/Machine";
-import { Aurora } from "./game_objects/StrikeTime/Aurora/Aurora";
-import { PatriotMissileSite } from "./game_objects/StrikeTime/Enemies/PatriotMissileSite";
 
 type EnemyCreator = (pos: [number, number, number] | [number, number], angle?: number) => GameObject;
 
 // type Enemies = 'BoxBox' | 'Pinwheel' | 'Arrow' | 'Grunt' | 'Weaver' | 'Singularity' | 'AlienShip';
+
+export const DIM_X = 1000;
+export const DIM_Y = 600;
 
 type EnemyCreatorMap = {
     [key: string]: EnemyCreator
@@ -44,15 +39,12 @@ export interface Scorable {
     points: number;
 }
 
-export class GameScript {
+export class GEOWarsScript implements GameScript{
     serializedGame: string;
     theme: Sound;
     gameOverSound: Sound;
     gameStartSound: Sound;
     shipDeathSound: Sound;
-
-    static DIM_X: number = 1000;
-    static DIM_Y: number = 600;
 
     static BG_COLOR: string = '#000000';
 
@@ -87,26 +79,28 @@ export class GameScript {
 
     playFromRootScene: boolean;
     rootScene: Scene;
-    secondShipCreated: boolean;
 
     constructor(engine: GameEngine) {
-        this.secondShipCreated = false;
         this.serializedGame = "";
-        this.theme = new Sound("sounds/Geometry_OST.mp3", 1, engine.muted);
+       
         this.gameOverSound = new Sound("sounds/Game_over.wav", 1, engine.muted);
         this.gameStartSound = new Sound("sounds/Game_start.wav", 1, engine.muted);
-        this.shipDeathSound = new Sound("sounds/Ship_explode.wav", 1, engine.muted);
+       
         this.gameTime = 0;
         this.score = 0;
         this.engine = engine;
         this.arrowAdded = false;
         this.startPosition = [500, 300, 0];
         this.initialCameraZPos = -1000;
+
+        this.theme = new Sound("sounds/Geometry_OST.mp3", 1, this.engine.muted);
+        this.shipDeathSound = new Sound("sounds/Ship_explode.wav", 1, this.engine.muted);
         this.ship = this.createShip();
         this.createStars();
         this.walls = this.createWalls();
         this.grid = this.createGrid();
         this.overlay = this.createOverlay();
+        
         this.enemyCreatorMap = this.createEnemyCreators();
         this.engine.addXButtonListener(this);
         this.engine.addBButtonListener(this);
@@ -144,47 +138,8 @@ export class GameScript {
             this.playFromRootScene = true; 
         }
         this.intervalTime = 0;
-        // clockwork content
-        // this.loadClockworkContent();
         this.ship.transform.pos = [this.startPosition[0], this.startPosition[1], this.startPosition[2]];
     }
-
-    loadStrikeTimeContent() {
-        
-    }
-
-    loadClockworkContent() {
-        new LeftSandwich(this.engine, [100,80]);
-        new RightSandwich(this.engine, [130,80]);
-        new LeftSandwich(this.engine, [110,107]);
-        new RightSandwich(this.engine, [140,107]);
-        new Plate(this.engine, [120, 95]);
-        const yourEntity = new Entity(this.engine, [200, 390]);
-        new Bed(this.engine, [200, 400], yourEntity);
-        new Tree(this.engine, [600, 300], yourEntity);
-        new Tree(this.engine, [700, 300], yourEntity);
-        new Tree(this.engine, [800, 300], yourEntity);
-        new Tree(this.engine, [900, 300], yourEntity);
-        new Tree(this.engine, [1000, 300], yourEntity);
-        new Tree(this.engine, [1100, 300], yourEntity);
-        // new Machinery(this.engine, [500, 300], false);
-        // new Machinery(this.engine, [500, 200], false);
-        // new Machinery(this.engine, [500, 100], false);
-
-        // new Machinery(this.engine, [700, 300], true );
-        // new Machinery(this.engine, [700, 200],true);
-        // new Machinery(this.engine, [700, 100],true);
-
-        // new Machinery(this.engine, [200, 300],false);
-        // new Machinery(this.engine, [200, 200],false);
-        // new Machinery(this.engine, [200, 100],false);
-        // new Machinery(this.engine, [200, 400],false);
-
-        new Machinery(this.engine, [595, 390], false);
-        new Machinery(this.engine, [705, 390],true);
-    }
-
-    // will need to duck type what happens when the scene is done and the game is over
 
     
     loadGameElements(serializedGameElements: SerializedGameElement[], parentScene: Scene) {
@@ -210,8 +165,8 @@ export class GameScript {
     createStars() {
         const runoffFactor = 1.5;
         for(let i = 0; i < 900; i++) {
-            const X = (runoffFactor * Math.random() - runoffFactor/2) * GameScript.DIM_X; // based on zoom scale and eventually camera position
-            const Y = (runoffFactor * Math.random() - runoffFactor/2) * GameScript.DIM_Y;
+            const X = (runoffFactor * Math.random() - runoffFactor/2) * DIM_X; // based on zoom scale and eventually camera position
+            const Y = (runoffFactor * Math.random() - runoffFactor/2) * DIM_Y;
             // const Z = -this.initialCameraZPos * 0.25 + -this.initialCameraZPos * 2 * Math.random();
             const Z = -this.initialCameraZPos * (0.5 + 2* Math.random());
             new Star(this.engine, [X, Y, Z]);
@@ -226,7 +181,7 @@ export class GameScript {
         //         modal.style.display = "none";
         //         this.engine.paused = false;
         //         if (!this.engine.muted) {
-        //             this.engine.gameScript.theme.play();
+        //             this.theme.play();
         //         }
         //     }
         // }
@@ -240,7 +195,7 @@ export class GameScript {
         //         modal.style.display = "none";
         //         this.engine.paused = false;
         //         if (!this.engine.muted) {
-        //             this.engine.gameScript.theme.play();
+        //             this.theme.play();
         //         }
         //     }
         // }
@@ -259,17 +214,9 @@ export class GameScript {
 
         if(this.playFromRootScene) {
             this.rootScene.update(deltaTime);
-        } else {
-            // will need to change all this for the new game.. I guess it'll be a 
-            // new game script 
+        } else { 
             this.gameTime += deltaTime;
-            // this.spawnSequence(deltaTime);
-            if(this.secondShipCreated === false && this.gameTime > 1000) {
-                this.secondShipCreated = true;
-                this.createAurora();
-                this.createPatriotMissileSite();
-                // this.createShip();
-            }
+            this.spawnSequence(deltaTime);
         }
         this.changeExplosionColor();
     }
@@ -319,8 +266,8 @@ export class GameScript {
             this.engine.paused = false;
             window.removeEventListener("click", closeModalWithClick, false);
             if (!this.engine.muted) {
-                this.engine.gameScript.theme.play();
-                this.engine.gameScript.gameStartSound.play();
+                this.theme.play();
+                this.gameStartSound.play();
             }
         };
 
@@ -328,8 +275,8 @@ export class GameScript {
             if (e.target == modal) {
                 this.engine.paused = false;
                 if (!this.engine.muted) {
-                    this.engine.gameScript.theme.play();
-                    this.engine.gameScript.gameStartSound.play();
+                    this.theme.play();
+                    this.gameStartSound.play();
                 }
                 modal.style.display = "none";
                 window.removeEventListener("click", closeModalWithClick, false);
@@ -346,7 +293,7 @@ export class GameScript {
         this.explodeEverything();
         this.deathPauseTime = 4000;
         if (!this.engine.muted) {
-            this.engine.gameScript.shipDeathSound.play();
+            this.shipDeathSound.play();
         }
         this.grid.Playerdies(this.ship.transform.pos);
         if (this.lives === 0) {
@@ -356,7 +303,7 @@ export class GameScript {
                 console.log('theme failed to play');
             }
             if (!this.engine.muted) {
-                this.engine.gameScript.gameOverSound.play();
+                this.gameOverSound.play();
             }
             // this.playSound(this.gameOverSound)
             window.setTimeout(this.resetGame.bind(this), 2000);
@@ -553,8 +500,8 @@ export class GameScript {
             radius = 40;
         }
         return [
-            (GameScript.DIM_X - radius * 4) * Math.random() + radius * 4,
-            (GameScript.DIM_Y - radius * 4) * Math.random() + radius * 4,
+            (DIM_X - radius * 4) * Math.random() + radius * 4,
+            (DIM_Y - radius * 4) * Math.random() + radius * 4,
             // 1000,600
         ];
     }
@@ -636,9 +583,9 @@ export class GameScript {
 
             const fourCorners: Array<[number, number]> = [
                 [40, 40],
-                [GameScript.DIM_X - 40, 40],
-                [40, GameScript.DIM_Y - 40],
-                [GameScript.DIM_X - 40, GameScript.DIM_Y - 40],
+                [DIM_X - 40, 40],
+                [40, DIM_Y - 40],
+                [DIM_X - 40, DIM_Y - 40],
             ];
             fourCorners.forEach((corner) => {
                 this.enemyCreatorMap["Grunt"](corner);
@@ -653,7 +600,7 @@ export class GameScript {
             this.sequenceCount += 10;
             const arrowWallPositions: Array<[number, number]> = [];
             const arrowDirection = (Math.PI * 3) / 2 + Math.PI;
-            for (let i = 40; i < GameScript.DIM_X; i += 40) {
+            for (let i = 40; i < DIM_X; i += 40) {
                 arrowWallPositions.push([i, 50]);
             }
 
@@ -681,13 +628,6 @@ export class GameScript {
         return new Ship(this.engine, this.startPosition);
     }
 
-    createAurora() {
-        return new Aurora(this.engine, [500, 200]);
-    }
-    createPatriotMissileSite() {
-        return new PatriotMissileSite(this.engine, [150, 150]);
-    }
-
     createWalls() {
         return new Walls(this.engine);
     }
@@ -701,7 +641,7 @@ export class GameScript {
     }
 
     static isOutOfBounds(pos: [number, number, number?], radius: number) {
-        const max = [GameScript.DIM_X - radius, GameScript.DIM_Y - radius];
+        const max = [DIM_X - radius, DIM_Y - radius];
         if (radius) {
             return (
                 pos[0] <= radius ||
@@ -713,20 +653,20 @@ export class GameScript {
             return (
                 pos[0] < 0 ||
         pos[1] < 0 ||
-        pos[0] > GameScript.DIM_X ||
-        pos[1] > GameScript.DIM_Y
+        pos[0] > DIM_X ||
+        pos[1] > DIM_Y
             );
         }
     }
 
     // bounce(pos){
     //   return [
-    //     Util.bounce(pos[0], GameScript.DIM_X), Util.bounce(pos[1], GameScript.DIM_Y)
+    //     Util.bounce(pos[0], DIM_X), Util.bounce(pos[1], DIM_Y)
     //   ];
     // }
 
     static bounce(transform: Transform, radius = 0) {
-        const max = [GameScript.DIM_X - radius, GameScript.DIM_Y - radius];
+        const max = [DIM_X - radius, DIM_Y - radius];
         const pos = transform.absolutePosition();
         if (pos[0] <= radius || pos[0] >= max[0]) {
             transform.vel[0] = -transform.vel[0];
@@ -737,7 +677,7 @@ export class GameScript {
     }
 
     static wallGraze(transform: Transform, radius = 0) {
-        const max = [GameScript.DIM_X - radius, GameScript.DIM_Y - radius];
+        const max = [DIM_X - radius, DIM_Y - radius];
         const pos = transform.absolutePosition();
         const vel = transform.absoluteVelocity();
 
@@ -757,7 +697,7 @@ export class GameScript {
     }
 
     static redirect(transform: Transform) {
-        const max = [GameScript.DIM_X, GameScript.DIM_Y];
+        const max = [DIM_X, DIM_Y];
         const pos = transform.absolutePosition();
 
         if (pos[0] <= 0 || pos[0] >= max[0]) {
@@ -784,8 +724,8 @@ export class GameScript {
 
 // GameScript.BG_COLOR = "#000000";
 
-// GameScript.DIM_X = 1000;
-// GameScript.DIM_Y = 600;
+// DIM_X = 1000;
+// DIM_Y = 600;
 // GameScript.FPS = 32;
 // GameScript.NUM_BOXES = 10;
 // GameScript.NUM_PINWHEELS = 0;

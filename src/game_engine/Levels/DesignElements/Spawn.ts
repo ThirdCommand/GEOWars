@@ -1,6 +1,6 @@
 // a single enemy, and location
 import { type GameEngine } from "../../game_engine";
-import { GameScript } from "../../../game_script";
+import { DIM_X, DIM_Y, GEOWarsScript } from "../../../GEOWarsScript";
 
 export type EnemyType = 'BoxBox' | 'Arrow' | 'Grunt' | 'Pinwheel' | 'Weaver' | 'Singularity' | 'AlienShip' | 'RANDOM';
 
@@ -43,8 +43,8 @@ export class Spawn {
 
     randomPosition(): [number, number] {
         return [
-            GameScript.DIM_X * 0.95 * Math.random(),
-            GameScript.DIM_Y * 0.90 * Math.random(),
+            DIM_X * 0.95 * Math.random(),
+            DIM_Y * 0.90 * Math.random(),
         ];
     }
 
@@ -66,24 +66,26 @@ export class Spawn {
             } else {
                 location = [Number(this.location[0]), Number(this.location[1])];
                 if(isShipRelative) {
-                    location[0] += this.gameEngine.activeCamera.transform.pos[0] - GameScript.DIM_X / 2;
-                    location[1] += this.gameEngine.activeCamera.transform.pos[1] - GameScript.DIM_Y / 2;
+                    location[0] += this.gameEngine.activeCamera.transform.pos[0] - DIM_X / 2;
+                    location[1] += this.gameEngine.activeCamera.transform.pos[1] - DIM_Y / 2;
 
                     // check if off edge of map
-                    if(location[0] > GameScript.DIM_X  - 100) {
-                        location[0] = GameScript.DIM_X - 100;
+                    if(location[0] > DIM_X  - 100) {
+                        location[0] = DIM_X - 100;
                     } else if(location[0] < 100) {
                         location[0] = 100;
                     }
                     
-                    if( location[1] > GameScript.DIM_Y - 100)  {
-                        location[1] = GameScript.DIM_Y - 100;
+                    if( location[1] > DIM_Y - 100)  {
+                        location[1] = DIM_Y - 100;
                     } else if(location[1] < 0 + 100) {
                         location[1] = 0 + 100;
                     }
                 }
             }
-            this.gameEngine.gameScript.enemyCreatorMap[mobToSpawn](location);
+            // TODO: maybe get this to work without casting
+            // but likely not worth the effort
+            (this.gameEngine.gameScript as GEOWarsScript).enemyCreatorMap[mobToSpawn](location);
         }
     }
 

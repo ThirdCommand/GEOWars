@@ -1,5 +1,5 @@
-import { GameScript } from "../../game_script";
 import { GameEngine } from "../game_engine";
+import { DIM_X, DIM_Y } from "../../SpriteEditorScript";
 import { GameObject } from "../game_object";
 import { LineSprite } from "../line_sprite";
 import { Transform } from "../transform";
@@ -150,8 +150,8 @@ export class SpriteEditor extends GameObject{
 
     pointTransformation(pos: [number, number]): [number, number] {
         return [
-            Math.round((pos[0] - GameScript.DIM_X/2) / (GameScript.DIM_X / 120)),
-            Math.round((pos[1] - GameScript.DIM_Y/2) / (GameScript.DIM_Y / 72)) *-1
+            Math.round((pos[0] - DIM_X/2) / (DIM_X / 120)),
+            Math.round((pos[1] - DIM_Y/2) / (DIM_Y / 72)) *-1
         ];
     }
 
@@ -182,30 +182,31 @@ export class SpriteEditor extends GameObject{
                 )
             } else if (point instanceof Circle) {
                 const centerPoint = this.pointTransformation(point.centerPoint);
-                const radius = Math.round((point.radius - GameScript.DIM_X/2) / (GameScript.DIM_X / 120));
+                const radius = Math.round((point.radius - DIM_X/2) / (DIM_X / 120));
                 return new CircleData(centerPoint, radius);
             }
         }))
         
         if(pressed && this.pointGroupsForLines.length > 0){
             // put save logic here
-            let stringToSave = '';
+            let stringToSave = '(ctx: CanvasRenderingContext2D) { \nctx.strokeStyle = "";\nctx.lineWidth = 2;\nconst s = 1;\nconst pos = this.transform.absolutePosition();\nctx.translate(pos[0], pos[1]);\n\n';
             // find biggest X value
             // find smallest X value
             // find difference to get width
             // same with height for Y
+           
             mappedPoints.forEach((pointGroup, idx) => {
+                 let stringStart = ``
                 const firstPoint = pointGroup[0];
-                let stringStart = `const s = 1;\n\n`
                 if(firstPoint instanceof PointData) {
                     stringStart = 
-                    `Piece ${idx + 1}: \nctx.moveTo(${firstPoint.point[0]} * s, ${firstPoint.point[1]} * s);\nctx.beginPath();\n`;
+                    `// Piece ${idx + 1}: \nctx.beginPath();\nctx.moveTo(${firstPoint.point[0]} * s, ${firstPoint.point[1]} * s);\n`;
                 } else if (firstPoint instanceof CircleData) {
                     stringStart = 
-                    `Piece ${idx + 1}: \nctx.beginPath();\nctx.arc(${firstPoint.centerPoint[0]} * s, ${firstPoint.centerPoint[1]} * s, ${firstPoint.radius} * s, 0,2*Math.PI);\n`;
+                    `// Piece ${idx + 1}: \nctx.beginPath();\nctx.arc(${firstPoint.centerPoint[0]} * s, ${firstPoint.centerPoint[1]} * s, ${firstPoint.radius} * s, 0,2*Math.PI);\n`;
                 } else if (firstPoint instanceof BezierCurveData) {
                     stringStart=
-                    `Piece ${idx + 1}: \nctx.beginPath();\nctx.moveTo(${firstPoint.startPos[0]} * s, ${firstPoint.startPos[1]} * s);\nctx.bezierCurveto(\n\t${firstPoint.controlPoint1[0]} * s, ${firstPoint.controlPoint1[1]} * s,\n\t${firstPoint.controlPoint2[0]} * s, ${firstPoint.controlPoint2[1]} * s,\n\t${firstPoint.endPos[0]} * s, ${firstPoint.endPos[1]} * s\n);\n`; 
+                    `// Piece ${idx + 1}: \nctx.beginPath();\nctx.moveTo(${firstPoint.startPos[0]} * s, ${firstPoint.startPos[1]} * s);\nctx.bezierCurveto(\n\t${firstPoint.controlPoint1[0]} * s, ${firstPoint.controlPoint1[1]} * s,\n\t${firstPoint.controlPoint2[0]} * s, ${firstPoint.controlPoint2[1]} * s,\n\t${firstPoint.endPos[0]} * s, ${firstPoint.endPos[1]} * s\n);\n`; 
                 }
                 const restOfPoints = pointGroup.slice(1);
                 const lines = restOfPoints.reduce<string>((acc, point) => {
@@ -235,7 +236,7 @@ export class SpriteEditor extends GameObject{
 
     mouseClicked(mousePos: [number, number]) {
         if(this.isPlacingPoint) {
-            const distancePerIncrement = GameScript.DIM_Y / 72
+            const distancePerIncrement = DIM_Y / 72
             const xPosIncremented = Math.round(mousePos[0]/distancePerIncrement) * distancePerIncrement;
             const yPosIncremented = Math.round(mousePos[1] / distancePerIncrement) * distancePerIncrement;
             this.placePoint([xPosIncremented, yPosIncremented]);

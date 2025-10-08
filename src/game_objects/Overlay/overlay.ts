@@ -1,6 +1,6 @@
 import { GameObject } from "../../game_engine/game_object";
 import { GameEngine } from "../../game_engine/game_engine";
-import { GameScript } from "../../game_script";
+import { DIM_X, DIM_Y } from "../../GEOWarsScript";
 import { Transform } from "../../game_engine/transform";
 
 import { LineSprite } from "../../game_engine/line_sprite";
@@ -28,7 +28,7 @@ export class Overlay extends GameObject {
         this.currentFrameRateUpdateTime = 0; 
         this.currentFrameCount = 0;
         this.frameRate = 0;
-        this.addLineSprite(new OverlaySprite(GameScript.DIM_X, GameScript.DIM_Y, engine));
+        this.addLineSprite(new OverlaySprite(DIM_X, DIM_Y, engine));
     }
 
     update(deltaTime: number) {

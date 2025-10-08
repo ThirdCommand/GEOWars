@@ -4,12 +4,12 @@ import { Transform } from "../../../game_engine/transform";
 import { GameEngine } from "../../../game_engine/game_engine";
 import { Camera } from "../../../game_engine/camera";
 import {NextInstructionAccelerate, NextInstructionTurn} from "../../../game_engine/physics_component"
-import { EngineExhaust } from "./EngineExhaust";
-import { AirDecelerationParticles } from "./AirDecelerationParticles";
+import { EngineExhaust } from "../Aurora/EngineExhaust";
+import { AirDecelerationParticles } from "../Aurora/AirDecelerationParticles";
 import { BombBasic } from "../Bombs/BombBasic";
 
-export class Aurora extends GameObject {
-    lineSprite: AuroraSprite;
+export class B2Bomber extends GameObject {
+    lineSprite: B2BomberSprite;
     radius: number;
     minSpeed: number;
     maxSpeed: number;
@@ -38,7 +38,7 @@ export class Aurora extends GameObject {
 
         this.radius = 30;
         this.minSpeed = 1;
-        this.maxSpeed = 0.025 * 3;
+        this.maxSpeed = 0.025 * 6;
         this.controlsDirection = [0,0];
 
         this.bombRefreshTime = 0;
@@ -54,10 +54,9 @@ export class Aurora extends GameObject {
 
         this.camera = new Camera(engine, new Transform(null, [pos[0], pos[1]]), "Aurora Camera");
         this.setAsControllableGameObject();
-        this.makeFocussedGameObject();
         this.addBButtonListener();
         this.addReplayablePhysicsComponent();
-        this.addLineSprite(new AuroraSprite(this.transform));
+        this.addLineSprite(new B2BomberSprite(this.transform));
 
         this.leftExhaust = new EngineExhaust(engine, this.transform, [
             -this.lineSprite.length/8,
@@ -72,8 +71,8 @@ export class Aurora extends GameObject {
         this.addCollider("General", this, this.radius);
     }
 
-    updateBButtonListener(pressed: boolean) {
-        if(pressed && this.bombRefreshTime > 2000) {
+    updateBButtonListener(bButton: boolean) {
+        if(bButton && this.bombRefreshTime > 2000) {
             new BombBasic(this.gameEngine,[this.transform.pos[0], this.transform.pos[1]], [0,0.05])
             this.bombRefreshTime = 0;
         }
@@ -93,7 +92,6 @@ export class Aurora extends GameObject {
     }
     update(delta: number) {
         this.bombRefreshTime += delta;
-        this.bombRefreshTime = this.bombRefreshTime > 2000 ? 2001: this.bombRefreshTime
         if(this.controlsAngle !== null) {
             // compare angle with controls angle
             // if angle is greater than 
@@ -157,19 +155,6 @@ export class Aurora extends GameObject {
     }
 
     movementMechanics() {
-        // It's taking too long to get this stuff right
-        // so I'm going to simplify it and expand on it later
-        // so, the new requirements for movement are:
-        // 1: no grid system yet
-        // 2. no reversible movements yet
-        // 3: one turn radius at same speed as straight
-        // 4. 1/16 * 2PI angles allowed
-        // 5. only initiate turn when relative direction passes a small threshold (1/8th PI lets say)
-        const turnThreshold = Math.PI / 8;
-
-
-
-
         // there might be a way to make it feel a little better if 
         // I allow changing the direction constantly
         // of if I don't immediately accelerate to max speed
@@ -227,10 +212,10 @@ export class Aurora extends GameObject {
             // then tell it to continue straight instead while it's slowing down
 
             // I need to update restSpeed more often... it's not going great at the moment
-            // if(this.maxSpeed !== this.replayablePhysicsComponent.restSpeed && this.replayablePhysicsComponent.accelerationInformation.isDecelerating) {
-            //     console.log('helloo')
-            //     this.replayablePhysicsComponent.startAcceleration({acceleration: this.jetAcceleration, endSpeed: this.maxSpeed, gameTimeAccelerationStarted: gameTime})
-            // }
+            if(this.maxSpeed !== this.replayablePhysicsComponent.restSpeed && this.replayablePhysicsComponent.accelerationInformation.isDecelerating) {
+                console.log('helloo')
+                this.replayablePhysicsComponent.startAcceleration({acceleration: this.jetAcceleration, endSpeed: this.maxSpeed, gameTimeAccelerationStarted: gameTime})
+            }
             return;
         } 
 
@@ -246,29 +231,18 @@ export class Aurora extends GameObject {
         // always at a 90 degree angle
         const tangentAngle = this.replayablePhysicsComponent.movementTangentAngle;
 
-        const turnRadius = 40;
-
-        const tangentSpeed = this.maxSpeed;
-
-        // we'll want to use this later:
-        // const {turnRadius, tangentSpeed} = this.getTurnRadiusAndSpeed(Math.abs(angleDifference));
+        // const tangentSpeed = 4/5 * this.maxSpeed;
+        const {turnRadius, tangentSpeed} = this.getTurnRadiusAndSpeed(Math.abs(angleDifference));
 
         // check tangent speed with current speed,
         // then decelerate/accelerate
 
         const endAngle = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 2 * Math.PI;
-
-
-
-        // after a turn we want to accelerate to the max straight speed
-        // for now we don't want the plane to slow down for turns
-        // to keep things simple at first
-
-        // const nextInstruction: NextInstructionAccelerate = { 
-        //     type: 'accelerate',
-        //     endSpeed: this.maxSpeed,
-        //     acceleration: this.jetAcceleration
-        // }
+        const nextInstruction: NextInstructionAccelerate = { 
+            type: 'accelerate',
+            endSpeed: this.maxSpeed,
+            acceleration: this.jetAcceleration
+        }
 
         // this was restSpeed before.. rest speed needs to die, I'm not sure what it's for exactly
         // I think it's to verify that the speed has been changed to a specific thing at some point in the past
@@ -279,33 +253,33 @@ export class Aurora extends GameObject {
         // then update the end speed of the deceleration, and the turn angle of the next instruction
         // if we're already accelerating for a less sharp turn, and the turn angle changes requiring a different speed, then update
         // the acceleration and the turn angle of the next instruction
-        // if(
-        //     this.replayablePhysicsComponent.accelerationInformation?.endSpeedIfUninterrupted && 
-        //     this.replayablePhysicsComponent.accelerationInformation.endSpeedIfUninterrupted !== tangentSpeed
-        // ) {
-        //     console.log('speed change needed', {previousEndSpeed: this.replayablePhysicsComponent.accelerationInformation?.endSpeedIfUninterrupted, newEndSpeed: tangentSpeed})
-        //     const acceleration = this.replayablePhysicsComponent.restSpeed > tangentSpeed ? this.jetDeceleration : this.jetAcceleration;
-        //     const endSpeed = tangentSpeed;
-        //     const followupInstruction: NextInstructionTurn  = {
-        //         type: 'turn',
-        //         tangentSpeed,
-        //         turnRadius,
-        //         isTurningRight,
-        //         endAngle,
-        //         startAngle: tangentAngle,
-        //         nextInstruction
-        //     };
+        if(
+            this.replayablePhysicsComponent.accelerationInformation?.endSpeedIfUninterrupted && 
+            this.replayablePhysicsComponent.accelerationInformation.endSpeedIfUninterrupted !== tangentSpeed
+        ) {
+            console.log('speed change needed', {previousEndSpeed: this.replayablePhysicsComponent.accelerationInformation?.endSpeedIfUninterrupted, newEndSpeed: tangentSpeed})
+            const acceleration = this.replayablePhysicsComponent.restSpeed > tangentSpeed ? this.jetDeceleration : this.jetAcceleration;
+            const endSpeed = tangentSpeed;
+            const followupInstruction: NextInstructionTurn  = {
+                type: 'turn',
+                tangentSpeed,
+                turnRadius,
+                isTurningRight,
+                endAngle,
+                startAngle: tangentAngle,
+                nextInstruction
+            };
 
-        //     // still need to apply what happens when interrupting
-        //     this.replayablePhysicsComponent.startAcceleration({
-        //         acceleration,
-        //         endSpeed,
-        //         gameTimeAccelerationStarted: gameTime, 
-        //         nextInstruction: followupInstruction
-        //     });
-        // } 
+            // still need to apply what happens when interrupting
+            this.replayablePhysicsComponent.startAcceleration({
+                acceleration,
+                endSpeed,
+                gameTimeAccelerationStarted: gameTime, 
+                nextInstruction: followupInstruction
+            });
+        } 
 
-        // if(this.replayablePhysicsComponent.isAccelerating) return;
+        if(this.replayablePhysicsComponent.isAccelerating) return;
         
         if(!this.replayablePhysicsComponent.isTurning) { 
             // the tangent speed is the same so we should be waiting for the acceleration to finish
@@ -320,17 +294,17 @@ export class Aurora extends GameObject {
                 pointWhereArchStarted[1] + turnRadius * Math.sin(normalAngle) 
             ];
 
-            // this.replayablePhysicsComponent.startArchRotation({
-            //     turnRadius, 
-            //     isTurningRight: isTurningRight, 
-            //     tangentSpeed, 
-            //     startAngle: tangentAngle, 
-            //     endAngle, 
-            //     pointWhereArchStarted, // try to create this later
-            //     rotationPoint, // try to create this later
-            //     gameTimeArchStarted: gameTime, // try to create this later
-            //     nextInstruction
-            // });
+            this.replayablePhysicsComponent.startArchRotation({
+                turnRadius, 
+                isTurningRight: isTurningRight, 
+                tangentSpeed, 
+                startAngle: tangentAngle, 
+                endAngle, 
+                pointWhereArchStarted, // try to create this later
+                rotationPoint, // try to create this later
+                gameTimeArchStarted: gameTime, // try to create this later
+                nextInstruction
+            });
             return;
         } 
         
@@ -499,7 +473,7 @@ export class Aurora extends GameObject {
     // }
 }
 
-export class AuroraSprite extends LineSprite {
+export class B2BomberSprite extends LineSprite {
     color: string;
     length: number;
     acceleration: number;
@@ -522,40 +496,44 @@ export class AuroraSprite extends LineSprite {
         ctx.save();
         ctx.translate(pos[0], pos[1]);
         ctx.rotate(this.transform.angle);
-        this.drawAurora(ctx);
+        this.drawB2Bomber(ctx);
         ctx.restore();
     }
 
-    drawAurora(ctx: CanvasRenderingContext2D) {
+    drawB2Bomber(ctx: CanvasRenderingContext2D) {
         ctx.beginPath();
         ctx.moveTo(0,0);
         
         ctx.strokeStyle = this.color;
         ctx.lineWidth = 2;
-        const l = this.length;
-        const w = this.length/2
+        const s = 1;
 
-        ctx.lineTo(-l, w/2);
-        ctx.lineTo(-l, -w/2);
-        ctx.lineTo(0, 0);
+        ctx.moveTo(0 * s, 18 * s);
+        ctx.beginPath();
+        ctx.lineTo(51 * s, -12 * s);
+        ctx.lineTo(36 * s, -12 * s);
+        ctx.lineTo(27 * s, -6 * s);
+        ctx.lineTo(21 * s, -12 * s);
+        ctx.lineTo(-21 * s, -12 * s);
+        ctx.lineTo(-27 * s, -6 * s);
+        ctx.lineTo(-36 * s, -12 * s);
+        ctx.lineTo(-51 * s, -12 * s);
+        ctx.lineTo(0 * s, 18 * s);
         ctx.stroke();
 
+        //Piece 2: 
         ctx.beginPath();
-        ctx.arc(-13/18 * l, 0, 2/9 * w/2, -Math.PI/2, Math.PI/2);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(-13/18 * l, 2/9 * w/2);
-        ctx.lineTo(-13/18 * l -2/9 * w/2 * 0.5, 2/9 * w/2);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(-13/18 * l, -2/9 * w/2);
-        ctx.lineTo(-13/18 * l -2/9 * w/2 * 0.5, -2/9 * w/2);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(-13/18 * l -2/9 * w/2 * 0.5, 0, 2/9 * w/2, Math.PI/2, 3*Math.PI/2);
+        ctx.moveTo(-3 * s, 6 * s);
+        ctx.bezierCurveTo(
+            -2 * s, 9 * s,
+            2 * s, 9 * s,
+            3 * s, 6 * s
+        );
+        ctx.bezierCurveTo(
+            4 * s, -2 * s,
+            -4 * s, -2 * s,
+            -3 * s, 6 * s
+        );
         ctx.stroke();
 
     }

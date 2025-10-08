@@ -1,10 +1,11 @@
-import {GEOParticle} from "./particle";
+import {Particle} from "./particle";
 import {GameObject} from "../../game_engine/game_object";
 import {Sound} from "../../game_engine/sound";
 import {Color} from "../../game_engine/color";
 import { type GameEngine } from "../../game_engine/game_engine";
 import { type AnimationView } from "../../AnimationView";
-import { type GEOWarsScript } from "../../GEOWarsScript";
+import { VectorMath } from "../../game_engine/util";
+import { type StrikeTimeScript } from "../../StrikeTimeScript";
 
 export class ParticleExplosion extends GameObject{
     currentColor: Color;
@@ -13,7 +14,7 @@ export class ParticleExplosion extends GameObject{
         super(engine);
         this.transform.pos[0] = pos[0];
         this.transform.pos[1] = pos[1];
-        const startingH = ((this.gameEngine.gameScript as GEOWarsScript).explosionColorWheel + Math.random() * 60)% 360;
+        const startingH = ((this.gameEngine.gameScript as StrikeTimeScript).explosionColorWheel + Math.random() * 60)% 360;
         const opacity = Math.random() * 0.35 + 0.6;
         this.currentColor = new Color(
             "hsla", [startingH, 100, 50, opacity]
@@ -32,7 +33,6 @@ export class ParticleExplosion extends GameObject{
         const explosionSound = new Sound("sounds/Enemy_explode.wav", 0.2, this.gameEngine.muted);
         this.playSound(explosionSound);
         this.createExplosionParticles();
-        (engine.gameScript as GEOWarsScript).grid.Explosion(pos);
     }
 
     createExplosionParticles(){
@@ -48,9 +48,12 @@ export class ParticleExplosion extends GameObject{
             const x = this.transform.absolutePosition()[0];
             const y = this.transform.absolutePosition()[1];
             const z = 0;
-            this.addChildGameObject(new GEOParticle(this.gameEngine, [x,y,z], speed, color));
+            const movementAngle: [number, number] = this.createMovementAngle(); 
+            const vel = VectorMath.vector3Cartesian(movementAngle, speed);
+            this.addChildGameObject(new Particle(this.gameEngine, [x,y,z], vel, color));
         }
     }
+
 
     update(){
         if (this.childObjects.length === 0){
@@ -58,4 +61,8 @@ export class ParticleExplosion extends GameObject{
         }
     }
     animate() {}
+
+    createMovementAngle(): [number, number] {
+        return [(Math.random() * Math.PI * 2), Math.random() * Math.PI * 2];
+    }
 }

@@ -19,7 +19,7 @@ import {type  Arrow } from "../Arrow/arrow";
 import {type  Weaver } from "../Weaver/weaver";
 import {type  GEOParticle } from "../../particles/particle";
 import {type  SingularityParticle } from "../../particles/Singularity_Particle/singularity_particle";
-import { GameScript } from "../../../game_script";
+import { GEOWarsScript } from "../../../GEOWarsScript";
 import { type AnimationView } from "../../../AnimationView";
 
 type InfluencableObject = Grunt | Pinwheel | Bullet | Ship | BoxBox | Arrow | Singularity | Weaver | GEOParticle | SingularityParticle | GridPoint | AlienShip
@@ -100,7 +100,7 @@ export class Singularity extends GameObject {
         const pos = this.transform.absolutePosition();
         if (this.lives <= 0) {
             new ParticleExplosion(this.gameEngine, pos);
-            this.gameEngine.gameScript.tallyScore(this);
+            (this.gameEngine.gameScript as GEOWarsScript).tallyScore(this);
             this.playSound(this.deathSound);
             this.remove();
         } else {
@@ -112,13 +112,13 @@ export class Singularity extends GameObject {
     }
 
     wallGraze() {
-        GameScript.wallGraze(this.transform, this.radius);
+        GEOWarsScript.wallGraze(this.transform, this.radius);
     }
   
 
     update(deltaTime: number) {
 
-        if (GameScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
+        if (GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
             this.wallGraze();
         }
         if (this.numberAbsorbed === 5) {

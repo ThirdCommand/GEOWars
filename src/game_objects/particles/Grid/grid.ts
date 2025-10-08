@@ -3,7 +3,7 @@ import { GameObject } from "../../../game_engine/game_object";
 import { GridPoint } from "./grid_point";
 import { VectorMath } from "../../../game_engine/util";
 import { GameEngine } from "../../../game_engine/game_engine";
-import { GameScript } from "../../../game_script";
+import { DIM_X, DIM_Y } from "../../../GEOWarsScript";
 import { Transform } from "../../../game_engine/transform";
 import { LineSprite } from "../../../game_engine/line_sprite";
 import { Color } from "../../../game_engine/color";
@@ -18,7 +18,7 @@ export class Grid extends GameObject {
 
         this.transform.pos = [0,0];
 
-        this.arenaDimensions = [GameScript.DIM_X, GameScript.DIM_Y];
+        this.arenaDimensions = [DIM_X, DIM_Y];
         this.elasticity = 0.1; // force provided to pull particle back into place
         this.dampening = 0.1; // force produced from velocity (allows things to eventuall fall to rest)
 
