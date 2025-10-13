@@ -74,6 +74,12 @@ export class ReplayablePhysicsComponent {
 
     }
 
+    startSimpleArchRotation(turnParams: {
+
+    }) {
+
+    }
+
     // to reverse time, I can replay the commands in reverse. in game time is the same
     // and have them in the opposite direction
 
@@ -173,6 +179,9 @@ export class ReplayablePhysicsComponent {
         ]
 
         if(currentGameTime) {
+            // is this necessary? does it mean we're moving twice in the same frame?
+            // or is this just for replaying commands?
+            // or would that even matter if it was just for replaying commands? 
             this.move(currentGameTime - gameTimeArchStarted, currentGameTime);
         }
         console.log('colected turn information',this.turnInformation);

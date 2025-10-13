@@ -52,15 +52,15 @@ export class Camera {
 
     clearView(ctx: CanvasRenderingContext2D) {
         ctx.clearRect(
-            -this.cameraHeight,
-            -this.cameraWidth,
+            -this.cameraHeight * this.zoomScale / 2,
+            -this.cameraWidth * this.zoomScale / 2,
             this.cameraHeight * this.zoomScale * 40,
             this.cameraWidth * this.zoomScale * 40
         );
         ctx.fillStyle = '#000000';
         ctx.fillRect(
-            -this.cameraHeight,
-            -this.cameraWidth,
+            -this.cameraHeight * this.zoomScale / 2,
+            -this.cameraWidth * this.zoomScale / 2,
             this.cameraHeight * this.zoomScale * 40,
             this.cameraWidth * this.zoomScale * 40
         );

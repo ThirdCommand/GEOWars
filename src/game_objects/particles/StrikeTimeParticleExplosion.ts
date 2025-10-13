@@ -10,7 +10,7 @@ import { type StrikeTimeScript } from "../../StrikeTimeScript";
 export class ParticleExplosion extends GameObject{
     currentColor: Color;
     particleNum: number;
-    constructor(engine: GameEngine | AnimationView, pos: [number, number, number?]){
+    constructor(engine: GameEngine | AnimationView, pos: [number, number, number?], size?: number){
         super(engine);
         this.transform.pos[0] = pos[0];
         this.transform.pos[1] = pos[1];
@@ -32,12 +32,12 @@ export class ParticleExplosion extends GameObject{
 
         const explosionSound = new Sound("sounds/Enemy_explode.wav", 0.2, this.gameEngine.muted);
         this.playSound(explosionSound);
-        this.createExplosionParticles();
+        this.createExplosionParticles(size);
     }
 
-    createExplosionParticles(){
+    createExplosionParticles(size = 1){
         for (let i = 0; i < this.particleNum; i++) {
-            const speed = Math.random() * 4 + 15;
+            const speed = (Math.random() * 4 + 15) * size;
       
             const colorVarienceDelta = 40;
             const colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2;
@@ -50,7 +50,7 @@ export class ParticleExplosion extends GameObject{
             const z = 0;
             const movementAngle: [number, number] = this.createMovementAngle(); 
             const vel = VectorMath.vector3Cartesian(movementAngle, speed);
-            this.addChildGameObject(new Particle(this.gameEngine, [x,y,z], vel, color));
+            this.addChildGameObject(new Particle(this.gameEngine, [x,y,z], vel, color, null, size));
         }
     }
 

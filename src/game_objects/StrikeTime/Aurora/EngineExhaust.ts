@@ -77,6 +77,7 @@ export class EngineExhaust extends GameObject {
         //     this.transform.pos[0] + (this.positionOnPlane[0] + linePosition) * Math.cos(angle - Math.PI),
         //     this.transform.pos[1] + -(this.positionOnPlane[1]) * Math.sin(angle)
         // ]
+        // TODO: why am I doing this calculation each time
         const exhaustPositionAngle = Math.atan2(this.positionOnPlane[1], this.positionOnPlane[0] + linePosition) - Math.PI / 2;
         const exhaustPositionLength = Math.sqrt(this.positionOnPlane[0]**2 +  (this.positionOnPlane[1] + linePosition)**2);
         const position: [number, number] = [
@@ -90,7 +91,7 @@ export class EngineExhaust extends GameObject {
         const color = new Color(
             "hsla", [hue, 100, 50, opacity]
         );
-        new Particle(this.gameEngine, position, initialVelocity, color, null, -0.045 * 2, 0.005);
+        new Particle(this.gameEngine, position, initialVelocity, color, null, 2, 0.005);
 
     }
 }

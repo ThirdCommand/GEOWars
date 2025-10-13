@@ -87,7 +87,12 @@ export class StrikeTimeScript {
     loadStrikeTimeContent() {
         new Aurora(this.engine, [this.startPosition[0], this.startPosition[1]]);
         new PatriotMissileSite(this.engine, [150, 150]);
-        new Building1(this.engine, [550, 300]);
+        // buildings
+        for (let yPosition = 0; yPosition < 5; yPosition++) {
+            for(let xPosition = 0; xPosition < 5; xPosition ++) {
+                new Building1(this.engine, [550 + xPosition * 24, 300 + yPosition * 20]);
+            }  
+        }
     }
 
     loadGameElements(serializedGameElements: SerializedGameElement[], parentScene: Scene) {

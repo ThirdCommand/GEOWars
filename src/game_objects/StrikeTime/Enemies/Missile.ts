@@ -1,6 +1,5 @@
 import { GameObject } from "../../../game_engine/game_object";
 import { VectorMath } from "../../../game_engine/util";
-import { ParticleExplosion } from "../../particles/particle_explosion";
 import { GameEngine } from "../../../game_engine/game_engine";
 import { type Collider } from "../../../game_engine/collider";
 import { type Aurora } from "../Aurora/Aurora";
@@ -8,6 +7,7 @@ import { LineSprite, Spawnable } from "../../../game_engine/line_sprite";
 import { type Transform } from "../../../game_engine/transform";
 import { type AnimationView } from "../../../AnimationView";
 import { MissileExhaust } from "./MissileExhaust";
+import { ParticleExplosion } from "../../particles/StrikeTimeParticleExplosion";
 
 type TargetableObject = Aurora;
 
@@ -15,6 +15,11 @@ export class Missile extends GameObject {
     explodeRange: number;
     radius: number;
     increasing: boolean;
+    lifespan: number;
+    fuelTime: number;
+    timeAlive: number;
+    outOfFuel: boolean;
+
     lineSprite: MissileSprite;
     lives: number;
     speed: number;
@@ -24,6 +29,10 @@ export class Missile extends GameObject {
 
     constructor(engine: GameEngine | AnimationView, pos: [number, number], vel: [number, number], planeLockedOn: Transform) {
         super(engine);
+        this.lifespan = 8000;
+        this.timeAlive = 0;
+        this.fuelTime = 2500;
+        this.outOfFuel = false;
         this.transform.pos = pos;
         this.transform.vel = vel;
 
@@ -31,7 +40,7 @@ export class Missile extends GameObject {
         this.radius = 5; // visual range, where it would be acceptable for something to be considering hitting it
         this.exist();
         this.lives = 1;
-        this.speed = 0.1;
+        this.speed = 0.05;
 
         this.planeLockedOnTransform = planeLockedOn;
 
@@ -64,6 +73,10 @@ export class Missile extends GameObject {
 
         this.transform.pos[0] += speed * Math.cos(direction) * velocityScale;
         this.transform.pos[1] += speed * Math.sin(direction) * velocityScale;
+        this.transform.acc[0] = 0.00005 * Math.cos(direction) * velocityScale;
+        this.transform.acc[2] = 0.00005 * Math.sin(direction) * velocityScale;
+        this.transform.vel[0] += this.transform.acc[0] * timeDelta
+        this.transform.vel[1] += this.transform.acc[1] * timeDelta
     }
 
     onCollision(collider: Collider, type: string){
@@ -92,17 +105,41 @@ export class Missile extends GameObject {
     }
 
     update(deltaTime: number) {
+        this.timeAlive += deltaTime;
+        if(this.timeAlive > this.lifespan) {
+            this.remove();
+        }
+        if(this.timeAlive > this.fuelTime) {
+            this.outOfFuel = true;
+            this.exhaust.remove();
+        }
         this.animate(deltaTime);
-        this.chase(deltaTime);
+        const originalPositionBeforeChase = [this.transform.pos[0], this.transform.pos[1]];
+        if(!this.outOfFuel) {
+             this.chase(deltaTime);
+        }
+       
 
         let movementDirection = 0;
         if(this.transform.vel[0] === 0 && this.transform.vel[1] === 0) {
             movementDirection = this.transform.angle;
         } else {
-            movementDirection = Math.atan2(
-                this.transform.vel[0],
-                -this.transform.vel[1]
-            );
+            if(!this.outOfFuel) {
+                const positionDelta = [
+                    this.transform.pos[0] - originalPositionBeforeChase[0],
+                    this.transform.pos[1] - originalPositionBeforeChase[1]
+                ]
+
+                movementDirection = Math.atan2(
+                    positionDelta[0],
+                    -positionDelta[1]
+                );
+            } else {
+                movementDirection =  Math.atan2(
+                    this.transform.vel[0],
+                    this.transform.vel[1]
+                ) + Math.PI/2
+            }
         }
         this.transform.angle = movementDirection - Math.PI / 2;
 

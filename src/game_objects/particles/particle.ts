@@ -62,7 +62,7 @@ export class Particle extends GameObject { color: Color;
         }
         
         this.addPhysicsComponent();
-        this.dampening = dampening || -0.045;
+        this.dampening = dampening * -0.045 || -0.045;
     }
     update(deltaTime: number){
         // this.lineSprite.rectLength -= 0.01 * deltaTime;

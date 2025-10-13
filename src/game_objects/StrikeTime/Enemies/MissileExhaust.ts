@@ -88,7 +88,7 @@ export class MissileExhaust extends GameObject {
         const color = new Color(
             "hsla", [hue, 100, 50, opacity]
         );
-        new Particle(this.gameEngine, position, initialVelocity, color, null, -0.045 * 2, 0.005);
+        new Particle(this.gameEngine, position, initialVelocity, color, null, 2, 0.005);
 
     }
 }

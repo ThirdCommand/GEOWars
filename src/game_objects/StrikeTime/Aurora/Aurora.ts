@@ -7,10 +7,13 @@ import {NextInstructionAccelerate, NextInstructionTurn} from "../../../game_engi
 import { EngineExhaust } from "./EngineExhaust";
 import { AirDecelerationParticles } from "./AirDecelerationParticles";
 import { BombBasic } from "../Bombs/BombBasic";
+import { VectorMath } from "../../../game_engine/util";
+import { BombReticle } from "./BombReticle";
 
 export class Aurora extends GameObject {
     lineSprite: AuroraSprite;
     radius: number;
+    turnRadius: number;
     minSpeed: number;
     maxSpeed: number;
     controlsDirection: [number, number] = [0,0];
@@ -24,7 +27,12 @@ export class Aurora extends GameObject {
     leftExhaust: EngineExhaust
     rightExhaust: EngineExhaust
     airDecelerationParticles: AirDecelerationParticles;
-    bombRefreshTime: number;
+    bombReticle: BombReticle;
+    bombTiming: {
+        refreshTime: number;
+        reloadTime: number;
+    }
+   
 
     constructor(
         engine: GameEngine,
@@ -37,11 +45,15 @@ export class Aurora extends GameObject {
         this.transform.vel = [0, 0];
 
         this.radius = 30;
+        this.turnRadius = 60;
         this.minSpeed = 1;
-        this.maxSpeed = 0.025 * 3;
+        this.maxSpeed = 0.025 * 6;
         this.controlsDirection = [0,0];
 
-        this.bombRefreshTime = 0;
+        this.bombTiming = {
+            refreshTime: 0,
+            reloadTime: 2000
+        }
 
         this.jetAcceleration =  0.0001;
         this.jetDeceleration = -0.00035;
@@ -55,6 +67,7 @@ export class Aurora extends GameObject {
         this.camera = new Camera(engine, new Transform(null, [pos[0], pos[1]]), "Aurora Camera");
         this.setAsControllableGameObject();
         this.makeFocussedGameObject();
+        this.addBKeyListener();
         this.addBButtonListener();
         this.addReplayablePhysicsComponent();
         this.addLineSprite(new AuroraSprite(this.transform));
@@ -69,13 +82,32 @@ export class Aurora extends GameObject {
             17/18* this.lineSprite.length
         ], 5);
         this.airDecelerationParticles = new AirDecelerationParticles(engine, this.transform, this.lineSprite.length / 2, this.lineSprite.length);
+        this.bombReticle = new BombReticle(engine, this.transform, [0, 0], 90);
         this.addCollider("General", this, this.radius);
     }
 
     updateBButtonListener(pressed: boolean) {
-        if(pressed && this.bombRefreshTime > 2000) {
-            new BombBasic(this.gameEngine,[this.transform.pos[0], this.transform.pos[1]], [0,0.05])
-            this.bombRefreshTime = 0;
+        if(pressed && this.bombTiming.refreshTime > this.bombTiming.reloadTime) {
+            // get the direction that we're going now
+            // apply this speed in that direction
+            const currentDirection = this.transform.angle;
+            const bombSpeed = 0.05;
+
+            const bombVelocity = VectorMath.vectorCartesian(currentDirection, bombSpeed)
+            new BombBasic(this.gameEngine,[this.transform.pos[0], this.transform.pos[1]], bombVelocity)
+            this.bombTiming.refreshTime = 0;
+        }
+    }
+    updateBKeyListener(pressed: boolean) {
+        if(pressed && this.bombTiming.refreshTime > this.bombTiming.reloadTime) {
+            // get the direction that we're going now
+            // apply this speed in that direction
+            const currentDirection = this.transform.angle;
+            const bombSpeed = 0.05;
+
+            const bombVelocity = VectorMath.vectorCartesian(currentDirection, bombSpeed)
+            new BombBasic(this.gameEngine,[this.transform.pos[0], this.transform.pos[1]], bombVelocity)
+            this.bombTiming.refreshTime = 0;
         }
     }
 
@@ -92,8 +124,9 @@ export class Aurora extends GameObject {
         this.transform.angle = movementDirection;
     }
     update(delta: number) {
-        this.bombRefreshTime += delta;
-        this.bombRefreshTime = this.bombRefreshTime > 2000 ? 2001: this.bombRefreshTime
+        this.bombTiming.refreshTime += delta;
+        this.bombTiming.refreshTime = this.bombTiming.refreshTime  > this.bombTiming.reloadTime ? this.bombTiming.reloadTime + 1 : this.bombTiming.refreshTime;
+        (this.bombTiming.refreshTime > this.bombTiming.reloadTime) ? this.bombReticle.setVisibility(true) : this.bombReticle.setVisibility(false);
         if(this.controlsAngle !== null) {
             // compare angle with controls angle
             // if angle is greater than 
@@ -246,7 +279,7 @@ export class Aurora extends GameObject {
         // always at a 90 degree angle
         const tangentAngle = this.replayablePhysicsComponent.movementTangentAngle;
 
-        const turnRadius = 40;
+        const turnRadius = this.turnRadius;
 
         const tangentSpeed = this.maxSpeed;
 
@@ -256,7 +289,9 @@ export class Aurora extends GameObject {
         // check tangent speed with current speed,
         // then decelerate/accelerate
 
-        const endAngle = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 2 * Math.PI;
+        // TODO can use controlsAngleRounded and convert to radians later... I think
+        // const endAngle = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 2 * Math.PI;
+        const endAngle = controlsAngleRounded/360 * 2 * Math.PI;
 
 
 
@@ -291,7 +326,7 @@ export class Aurora extends GameObject {
         //         tangentSpeed,
         //         turnRadius,
         //         isTurningRight,
-        //         endAngle,
+        //         endAngle: endAngle,
         //         startAngle: tangentAngle,
         //         nextInstruction
         //     };
@@ -320,17 +355,17 @@ export class Aurora extends GameObject {
                 pointWhereArchStarted[1] + turnRadius * Math.sin(normalAngle) 
             ];
 
-            // this.replayablePhysicsComponent.startArchRotation({
-            //     turnRadius, 
-            //     isTurningRight: isTurningRight, 
-            //     tangentSpeed, 
-            //     startAngle: tangentAngle, 
-            //     endAngle, 
-            //     pointWhereArchStarted, // try to create this later
-            //     rotationPoint, // try to create this later
-            //     gameTimeArchStarted: gameTime, // try to create this later
-            //     nextInstruction
-            // });
+            this.replayablePhysicsComponent.startArchRotation({
+                turnRadius, 
+                isTurningRight: isTurningRight, 
+                tangentSpeed, 
+                startAngle: tangentAngle, 
+                endAngle: endAngle, 
+                pointWhereArchStarted, // try to create this later
+                rotationPoint, // try to create this later
+                gameTimeArchStarted: gameTime, // try to create this later
+                // nextInstruction
+            });
             return;
         } 
         
@@ -366,7 +401,7 @@ export class Aurora extends GameObject {
                 isTurningRight: isTurningRight, 
                 tangentSpeed:  this.replayablePhysicsComponent.turnInformation.tangentSpeed, 
                 startAngle: this.replayablePhysicsComponent.turnInformation.startAngle, 
-                endAngle, 
+                endAngle: endAngle, 
                 pointWhereArchStarted: this.replayablePhysicsComponent.turnInformation.startingPoint,
                 rotationPoint: this.replayablePhysicsComponent.turnInformation.rotationPoint,
                 gameTimeArchStarted: this.replayablePhysicsComponent.turnInformation.gameTimeWhenTurnStarted, 
@@ -382,7 +417,7 @@ export class Aurora extends GameObject {
             // based on the next closest 16th of 2PI, and then I'm adding a new next instruction
 
             // not sure what happens with edge cases here. I might need a mod 16 too 
-            console.log(' WE SHOULD BE ENDING THE TURN SOON NOW FOR ANOTHER TURN')
+            console.log('WE SHOULD BE ENDING THE TURN SOON NOW FOR ANOTHER TURN')
             const currentDirectionRoundedToNext16th = ((Math.floor(currentDirection / (Math.PI * 2) * 16) % 16) / 16) * (Math.PI * 2);
 
             const accelerateToMaxSpeed: NextInstructionAccelerate = { 

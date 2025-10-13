@@ -1058,7 +1058,12 @@ var StrikeTimeScript = /** @class */ (function () {
     StrikeTimeScript.prototype.loadStrikeTimeContent = function () {
         new _game_objects_StrikeTime_Aurora_Aurora__WEBPACK_IMPORTED_MODULE_8__.Aurora(this.engine, [this.startPosition[0], this.startPosition[1]]);
         new _game_objects_StrikeTime_Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_9__.PatriotMissileSite(this.engine, [150, 150]);
-        new _game_objects_StrikeTime_Buildings_Building1__WEBPACK_IMPORTED_MODULE_10__.Building1(this.engine, [550, 300]);
+        // buildings
+        for (var yPosition = 0; yPosition < 5; yPosition++) {
+            for (var xPosition = 0; xPosition < 5; xPosition++) {
+                new _game_objects_StrikeTime_Buildings_Building1__WEBPACK_IMPORTED_MODULE_10__.Building1(this.engine, [550 + xPosition * 24, 300 + yPosition * 20]);
+            }
+        }
     };
     StrikeTimeScript.prototype.loadGameElements = function (serializedGameElements, parentScene) {
         var _this = this;
@@ -4640,9 +4645,9 @@ var Camera = /** @class */ (function () {
         ctx.translate(-xPos * zoomScale + width / 2, -yPos * zoomScale + height / 2);
     };
     Camera.prototype.clearView = function (ctx) {
-        ctx.clearRect(-this.cameraHeight, -this.cameraWidth, this.cameraHeight * this.zoomScale * 40, this.cameraWidth * this.zoomScale * 40);
+        ctx.clearRect(-this.cameraHeight * this.zoomScale / 2, -this.cameraWidth * this.zoomScale / 2, this.cameraHeight * this.zoomScale * 40, this.cameraWidth * this.zoomScale * 40);
         ctx.fillStyle = '#000000';
-        ctx.fillRect(-this.cameraHeight, -this.cameraWidth, this.cameraHeight * this.zoomScale * 40, this.cameraWidth * this.zoomScale * 40);
+        ctx.fillRect(-this.cameraHeight * this.zoomScale / 2, -this.cameraWidth * this.zoomScale / 2, this.cameraHeight * this.zoomScale * 40, this.cameraWidth * this.zoomScale * 40);
     };
     Camera.prototype.setZoomScale = function (ctx) {
         this.gameEngine.ctx.scale(this.zoomScale, this.zoomScale);
@@ -5771,6 +5776,8 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
         this.turnInformation = {};
         this.instructionsCompleted = [];
     }
+    ReplayablePhysicsComponent.prototype.startSimpleArchRotation = function (turnParams) {
+    };
     // to reverse time, I can replay the commands in reverse. in game time is the same
     // and have them in the opposite direction
     // game object will have to provide the rotation point.
@@ -5836,6 +5843,9 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
             rotationPoint[1] + this.turnInformation.turnRadius * Math.sin(endAngle - Math.PI / 2) * rotationDirection
         ];
         if (currentGameTime) {
+            // is this necessary? does it mean we're moving twice in the same frame?
+            // or is this just for replaying commands?
+            // or would that even matter if it was just for replaying commands? 
             this.move(currentGameTime - gameTimeArchStarted, currentGameTime);
         }
         console.log('colected turn information', this.turnInformation);
@@ -9397,6 +9407,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _EngineExhaust__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./EngineExhaust */ "./src/game_objects/StrikeTime/Aurora/EngineExhaust.ts");
 /* harmony import */ var _AirDecelerationParticles__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./AirDecelerationParticles */ "./src/game_objects/StrikeTime/Aurora/AirDecelerationParticles.ts");
 /* harmony import */ var _Bombs_BombBasic__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../Bombs/BombBasic */ "./src/game_objects/StrikeTime/Bombs/BombBasic.ts");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
+/* harmony import */ var _BombReticle__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./BombReticle */ "./src/game_objects/StrikeTime/Aurora/BombReticle.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -9420,6 +9432,8 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
+
+
 var Aurora = /** @class */ (function (_super) {
     __extends(Aurora, _super);
     function Aurora(engine, pos, angle) {
@@ -9431,10 +9445,14 @@ var Aurora = /** @class */ (function (_super) {
         _this.transform.angle = angle;
         _this.transform.vel = [0, 0];
         _this.radius = 30;
+        _this.turnRadius = 60;
         _this.minSpeed = 1;
-        _this.maxSpeed = 0.025 * 3;
+        _this.maxSpeed = 0.025 * 6;
         _this.controlsDirection = [0, 0];
-        _this.bombRefreshTime = 0;
+        _this.bombTiming = {
+            refreshTime: 0,
+            reloadTime: 2000
+        };
         _this.jetAcceleration = 0.0001;
         _this.jetDeceleration = -0.00035;
         _this.jetDeceleration = -0.0001;
@@ -9445,6 +9463,7 @@ var Aurora = /** @class */ (function (_super) {
         _this.camera = new _game_engine_camera__WEBPACK_IMPORTED_MODULE_4__.Camera(engine, new _game_engine_transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, [pos[0], pos[1]]), "Aurora Camera");
         _this.setAsControllableGameObject();
         _this.makeFocussedGameObject();
+        _this.addBKeyListener();
         _this.addBButtonListener();
         _this.addReplayablePhysicsComponent();
         _this.addLineSprite(new AuroraSprite(_this.transform));
@@ -9457,13 +9476,30 @@ var Aurora = /** @class */ (function (_super) {
             17 / 18 * _this.lineSprite.length
         ], 5);
         _this.airDecelerationParticles = new _AirDecelerationParticles__WEBPACK_IMPORTED_MODULE_6__.AirDecelerationParticles(engine, _this.transform, _this.lineSprite.length / 2, _this.lineSprite.length);
+        _this.bombReticle = new _BombReticle__WEBPACK_IMPORTED_MODULE_9__.BombReticle(engine, _this.transform, [0, 0], 90);
         _this.addCollider("General", _this, _this.radius);
         return _this;
     }
     Aurora.prototype.updateBButtonListener = function (pressed) {
-        if (pressed && this.bombRefreshTime > 2000) {
-            new _Bombs_BombBasic__WEBPACK_IMPORTED_MODULE_7__.BombBasic(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], [0, 0.05]);
-            this.bombRefreshTime = 0;
+        if (pressed && this.bombTiming.refreshTime > this.bombTiming.reloadTime) {
+            // get the direction that we're going now
+            // apply this speed in that direction
+            var currentDirection = this.transform.angle;
+            var bombSpeed = 0.05;
+            var bombVelocity = _game_engine_util__WEBPACK_IMPORTED_MODULE_8__.VectorMath.vectorCartesian(currentDirection, bombSpeed);
+            new _Bombs_BombBasic__WEBPACK_IMPORTED_MODULE_7__.BombBasic(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], bombVelocity);
+            this.bombTiming.refreshTime = 0;
+        }
+    };
+    Aurora.prototype.updateBKeyListener = function (pressed) {
+        if (pressed && this.bombTiming.refreshTime > this.bombTiming.reloadTime) {
+            // get the direction that we're going now
+            // apply this speed in that direction
+            var currentDirection = this.transform.angle;
+            var bombSpeed = 0.05;
+            var bombVelocity = _game_engine_util__WEBPACK_IMPORTED_MODULE_8__.VectorMath.vectorCartesian(currentDirection, bombSpeed);
+            new _Bombs_BombBasic__WEBPACK_IMPORTED_MODULE_7__.BombBasic(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], bombVelocity);
+            this.bombTiming.refreshTime = 0;
         }
     };
     Aurora.prototype.animate = function (delta) {
@@ -9477,8 +9513,9 @@ var Aurora = /** @class */ (function (_super) {
         this.transform.angle = movementDirection;
     };
     Aurora.prototype.update = function (delta) {
-        this.bombRefreshTime += delta;
-        this.bombRefreshTime = this.bombRefreshTime > 2000 ? 2001 : this.bombRefreshTime;
+        this.bombTiming.refreshTime += delta;
+        this.bombTiming.refreshTime = this.bombTiming.refreshTime > this.bombTiming.reloadTime ? this.bombTiming.reloadTime + 1 : this.bombTiming.refreshTime;
+        (this.bombTiming.refreshTime > this.bombTiming.reloadTime) ? this.bombReticle.setVisibility(true) : this.bombReticle.setVisibility(false);
         if (this.controlsAngle !== null) {
             // compare angle with controls angle
             // if angle is greater than 
@@ -9607,13 +9644,15 @@ var Aurora = /** @class */ (function (_super) {
         // turning right means that the rotation point is to the right relative to the movement direction
         // always at a 90 degree angle
         var tangentAngle = this.replayablePhysicsComponent.movementTangentAngle;
-        var turnRadius = 40;
+        var turnRadius = this.turnRadius;
         var tangentSpeed = this.maxSpeed;
         // we'll want to use this later:
         // const {turnRadius, tangentSpeed} = this.getTurnRadiusAndSpeed(Math.abs(angleDifference));
         // check tangent speed with current speed,
         // then decelerate/accelerate
-        var endAngle = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 2 * Math.PI;
+        // TODO can use controlsAngleRounded and convert to radians later... I think
+        // const endAngle = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 2 * Math.PI;
+        var endAngle = controlsAngleRounded / 360 * 2 * Math.PI;
         // after a turn we want to accelerate to the max straight speed
         // for now we don't want the plane to slow down for turns
         // to keep things simple at first
@@ -9642,7 +9681,7 @@ var Aurora = /** @class */ (function (_super) {
         //         tangentSpeed,
         //         turnRadius,
         //         isTurningRight,
-        //         endAngle,
+        //         endAngle: endAngle,
         //         startAngle: tangentAngle,
         //         nextInstruction
         //     };
@@ -9666,17 +9705,17 @@ var Aurora = /** @class */ (function (_super) {
                 pointWhereArchStarted[0] + turnRadius * Math.cos(normalAngle),
                 pointWhereArchStarted[1] + turnRadius * Math.sin(normalAngle)
             ];
-            // this.replayablePhysicsComponent.startArchRotation({
-            //     turnRadius, 
-            //     isTurningRight: isTurningRight, 
-            //     tangentSpeed, 
-            //     startAngle: tangentAngle, 
-            //     endAngle, 
-            //     pointWhereArchStarted, // try to create this later
-            //     rotationPoint, // try to create this later
-            //     gameTimeArchStarted: gameTime, // try to create this later
-            //     nextInstruction
-            // });
+            this.replayablePhysicsComponent.startArchRotation({
+                turnRadius: turnRadius,
+                isTurningRight: isTurningRight,
+                tangentSpeed: tangentSpeed,
+                startAngle: tangentAngle,
+                endAngle: endAngle,
+                pointWhereArchStarted: pointWhereArchStarted, // try to create this later
+                rotationPoint: rotationPoint, // try to create this later
+                gameTimeArchStarted: gameTime, // try to create this later
+                // nextInstruction
+            });
             return;
         }
         if (((_a = this.replayablePhysicsComponent.turnInformation) === null || _a === void 0 ? void 0 : _a.rotationDirection) !== undefined &&
@@ -9719,7 +9758,7 @@ var Aurora = /** @class */ (function (_super) {
             // OH it's the same as before! except I need to determine the final angle
             // based on the next closest 16th of 2PI, and then I'm adding a new next instruction
             // not sure what happens with edge cases here. I might need a mod 16 too 
-            console.log(' WE SHOULD BE ENDING THE TURN SOON NOW FOR ANOTHER TURN');
+            console.log('WE SHOULD BE ENDING THE TURN SOON NOW FOR ANOTHER TURN');
             var currentDirectionRoundedToNext16th = ((Math.floor(currentDirection / (Math.PI * 2) * 16) % 16) / 16) * (Math.PI * 2);
             var accelerateToMaxSpeed = {
                 type: 'accelerate',
@@ -9871,6 +9910,142 @@ var AuroraSprite = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./src/game_objects/StrikeTime/Aurora/BombReticle.ts":
+/*!***********************************************************!*\
+  !*** ./src/game_objects/StrikeTime/Aurora/BombReticle.ts ***!
+  \***********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   BombReticle: () => (/* binding */ BombReticle),
+/* harmony export */   BombReticleSprite: () => (/* binding */ BombReticleSprite)
+/* harmony export */ });
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+// If I had two it could be interesting to have to account for that
+// or maybe it would just be fucking annoying lol
+/*
+        X
+        |
+        |
+        |
+        ^
+     /     \
+    /       \
+   / _    _  \
+
+   X
+   |
+   |
+   |
+   |    ^
+     /     \
+    /       \
+   / _    _  \
+
+            X
+            |
+            |
+            |
+        ^   |
+     /     \
+    /       \
+   / _    _  \
+
+*/
+var BombReticle = /** @class */ (function (_super) {
+    __extends(BombReticle, _super);
+    // the position of the reticle is from the origin of the plane
+    function BombReticle(engine, transform, position, length) {
+        var _this = _super.call(this, engine) || this;
+        _this.transform = transform;
+        _this.positionLength = Math.sqrt(Math.pow((position[0]), 2) + Math.pow((position[1]), 2));
+        _this.positionAngle = (position[0] === position[1] && position[0] === 0) ? Math.PI / 2 : Math.atan2(position[1], position[0]);
+        _this.reticlePosition = _this.getReticlePosition();
+        _this.bombLandPosition = length;
+        _this.addLineSprite(new BombReticleSprite(_this.transform, _this.reticlePosition, length));
+        _this.length = length;
+        return _this;
+    }
+    BombReticle.prototype.setVisibility = function (isVisible) {
+        if (isVisible === void 0) { isVisible = true; }
+        this.lineSprite.isVisible = isVisible;
+    };
+    BombReticle.prototype.getReticlePosition = function () {
+        var angle = this.transform.angle;
+        return [
+            this.transform.pos[0] - this.positionLength * Math.cos(angle + this.positionAngle),
+            this.transform.pos[1] - this.positionLength * Math.sin(angle + this.positionAngle)
+        ];
+    };
+    BombReticle.prototype.animate = function () { };
+    BombReticle.prototype.update = function (deltaTime) {
+        var reticleLocation = this.getReticlePosition();
+        this.reticlePosition[0] = reticleLocation[0];
+        this.reticlePosition[1] = reticleLocation[1];
+    };
+    return BombReticle;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
+
+var BombReticleSprite = /** @class */ (function (_super) {
+    __extends(BombReticleSprite, _super);
+    // origin is where the reticle starts
+    function BombReticleSprite(transform, reticlePosition, length) {
+        var _this = _super.call(this, transform) || this;
+        _this.length = length;
+        _this.reticlePosition = reticlePosition;
+        _this.isVisible = false;
+        return _this;
+    }
+    BombReticleSprite.prototype.draw = function (ctx) {
+        if (!this.isVisible)
+            return;
+        var pos = this.reticlePosition;
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+        ctx.rotate(this.transform.angle + -Math.PI / 2);
+        this.drawReticle(ctx);
+        ctx.restore();
+        // draw dotted line from front of plane
+    };
+    BombReticleSprite.prototype.drawReticle = function (ctx) {
+        ctx.beginPath();
+        ctx.setLineDash([4, 10]);
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, this.length);
+        ctx.stroke();
+        ctx.translate(0, this.length);
+        ctx.setLineDash([6, 2]);
+        ctx.beginPath();
+        ctx.arc(0, 0, 10, 0, Math.PI * 2);
+        ctx.stroke();
+    };
+    return BombReticleSprite;
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
+
+
+
+/***/ }),
+
 /***/ "./src/game_objects/StrikeTime/Aurora/EngineExhaust.ts":
 /*!*************************************************************!*\
   !*** ./src/game_objects/StrikeTime/Aurora/EngineExhaust.ts ***!
@@ -9956,6 +10131,7 @@ var EngineExhaust = /** @class */ (function (_super) {
         //     this.transform.pos[0] + (this.positionOnPlane[0] + linePosition) * Math.cos(angle - Math.PI),
         //     this.transform.pos[1] + -(this.positionOnPlane[1]) * Math.sin(angle)
         // ]
+        // TODO: why am I doing this calculation each time
         var exhaustPositionAngle = Math.atan2(this.positionOnPlane[1], this.positionOnPlane[0] + linePosition) - Math.PI / 2;
         var exhaustPositionLength = Math.sqrt(Math.pow(this.positionOnPlane[0], 2) + Math.pow((this.positionOnPlane[1] + linePosition), 2));
         var position = [
@@ -9967,7 +10143,7 @@ var EngineExhaust = /** @class */ (function (_super) {
         var hue = this.isAccelerating ? (0,_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.getNumberFromRange)(this.acceleratingHue, this.colorRange) : (0,_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.getNumberFromRange)(this.noAccelerationHue, this.colorRange);
         var opacity = (0,_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.getNumberFromRange)(this.baseOpacity, this.opacityRange);
         var color = new _game_engine_color__WEBPACK_IMPORTED_MODULE_0__.Color("hsla", [hue, 100, 50, opacity]);
-        new _particles_particle__WEBPACK_IMPORTED_MODULE_3__.Particle(this.gameEngine, position, initialVelocity, color, null, -0.045 * 2, 0.005);
+        new _particles_particle__WEBPACK_IMPORTED_MODULE_3__.Particle(this.gameEngine, position, initialVelocity, color, null, 2, 0.005);
     };
     return EngineExhaust;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
@@ -10014,36 +10190,56 @@ var BombBasic = /** @class */ (function (_super) {
         var _this = _super.call(this, engine) || this;
         _this.transform.pos = pos;
         _this.transform.vel = vel;
+        _this.explosionRadius = 20;
         _this.exist();
         _this.speed = 0.2;
         _this.bombTime = 0;
-        _this.bombFuseTime = 3000;
+        _this.bombFuseTime = 2000;
         _this.spinSpeed = 0.05;
+        _this.gameElementsInExplosionRange = [];
         _this.addReplayablePhysicsComponent();
         _this.addLineSprite(new BombSprite(_this.transform));
         return _this;
     }
     BombBasic.prototype.exist = function () {
         this.addCollider("General", this, this.radius);
+        this.addCollider("BombBasicExplosion", this, this.explosionRadius, ["PatriotMissileSite", "Building1"], ["General"]);
     };
     BombBasic.prototype.explode = function () {
-        new _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]]);
+        new _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], 0.05);
         this.remove();
+    };
+    BombBasic.prototype.onCollision = function (collider, type) {
+        if (type === "BombBasicExplosion") {
+            this.gameElementsInExplosionRange.push(collider.gameObject);
+        }
     };
     BombBasic.prototype.update = function (deltaTime) {
         this.animate(deltaTime);
         this.bombTime += deltaTime;
         if (this.bombTime >= this.bombFuseTime) {
+            this.gameElementsInExplosionRange.forEach(function (gameElement) {
+                gameElement === null || gameElement === void 0 ? void 0 : gameElement.hit(); // should check for destruction animation to start
+            });
             this.explode();
+            // should I add a collider now, or keep track of collided things
+            // and tell it to explode now
         }
+        this.gameElementsInExplosionRange = [];
     };
     BombBasic.prototype.animate = function (timeDelta) {
         var rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
         this.transform.angle = (this.transform.angle + this.spinSpeed * rotationSpeedScale) % (Math.PI * 2);
+        this.lineSprite.w = 3 * easeOutQuart(this.bombTime / this.bombFuseTime + 0.01);
+        // 3 is the original width
     };
     return BombBasic;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
+// https://easings.net/#
+function easeOutQuart(x) {
+    return 0.5 * Math.pow((1 - x), 4) + 0.5;
+}
 var NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 var BombSprite = /** @class */ (function (_super) {
     __extends(BombSprite, _super);
@@ -10109,7 +10305,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   Building1Sprite: () => (/* binding */ Building1Sprite)
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.ts");
+/* harmony import */ var _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../particles/StrikeTimeParticleExplosion */ "./src/game_objects/particles/StrikeTimeParticleExplosion.ts");
 /* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -10149,7 +10345,7 @@ var Building1 = /** @class */ (function (_super) {
         this.lives -= 1;
         var pos = this.transform.absolutePosition();
         if (this.lives <= 0) {
-            new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, pos);
+            new _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, pos);
             this.remove();
         }
         // if not dead, I can have a different type of explosion
@@ -10219,9 +10415,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   MissileSprite: () => (/* binding */ MissileSprite)
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.ts");
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
-/* harmony import */ var _MissileExhaust__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./MissileExhaust */ "./src/game_objects/StrikeTime/Enemies/MissileExhaust.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+/* harmony import */ var _MissileExhaust__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./MissileExhaust */ "./src/game_objects/StrikeTime/Enemies/MissileExhaust.ts");
+/* harmony import */ var _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/StrikeTimeParticleExplosion */ "./src/game_objects/particles/StrikeTimeParticleExplosion.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -10245,17 +10441,21 @@ var Missile = /** @class */ (function (_super) {
     __extends(Missile, _super);
     function Missile(engine, pos, vel, planeLockedOn) {
         var _this = _super.call(this, engine) || this;
+        _this.lifespan = 8000;
+        _this.timeAlive = 0;
+        _this.fuelTime = 2500;
+        _this.outOfFuel = false;
         _this.transform.pos = pos;
         _this.transform.vel = vel;
         _this.explodeRange = 3; // I could have it detect earlier and turn to face before within actual range. but this is a prototype so not now
         _this.radius = 5; // visual range, where it would be acceptable for something to be considering hitting it
         _this.exist();
         _this.lives = 1;
-        _this.speed = 0.1;
+        _this.speed = 0.05;
         _this.planeLockedOnTransform = planeLockedOn;
         _this.addReplayablePhysicsComponent();
         _this.addLineSprite(new MissileSprite(_this.transform));
-        _this.exhaust = new _MissileExhaust__WEBPACK_IMPORTED_MODULE_3__.MissileExhaust(engine, _this.transform, [
+        _this.exhaust = new _MissileExhaust__WEBPACK_IMPORTED_MODULE_2__.MissileExhaust(engine, _this.transform, [
             -_this.lineSprite.w / 2,
             1.1 * _this.lineSprite.l
         ], _this.lineSprite.w);
@@ -10277,6 +10477,10 @@ var Missile = /** @class */ (function (_super) {
         var direction = Math.atan2(dy, dx);
         this.transform.pos[0] += speed * Math.cos(direction) * velocityScale;
         this.transform.pos[1] += speed * Math.sin(direction) * velocityScale;
+        this.transform.acc[0] = 0.00005 * Math.cos(direction) * velocityScale;
+        this.transform.acc[2] = 0.00005 * Math.sin(direction) * velocityScale;
+        this.transform.vel[0] += this.transform.acc[0] * timeDelta;
+        this.transform.vel[1] += this.transform.acc[1] * timeDelta;
     };
     Missile.prototype.onCollision = function (collider, type) {
         if (type === "ExplodeRange") {
@@ -10285,7 +10489,7 @@ var Missile = /** @class */ (function (_super) {
     };
     Missile.prototype.explode = function (collider) {
         console.log('Aurora Killed/Hit');
-        new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]]);
+        new _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_3__.ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]]);
         this.exhaust.remove();
         this.remove();
         // create missiles at the fire rate while still in range
@@ -10295,20 +10499,40 @@ var Missile = /** @class */ (function (_super) {
         this.lives -= 1;
         var pos = this.transform.absolutePosition();
         if (this.lives <= 0) {
-            new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, pos);
+            new _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_3__.ParticleExplosion(this.gameEngine, pos);
             this.remove();
         }
         // if not dead, I can have a different type of explosion
     };
     Missile.prototype.update = function (deltaTime) {
+        this.timeAlive += deltaTime;
+        if (this.timeAlive > this.lifespan) {
+            this.remove();
+        }
+        if (this.timeAlive > this.fuelTime) {
+            this.outOfFuel = true;
+            this.exhaust.remove();
+        }
         this.animate(deltaTime);
-        this.chase(deltaTime);
+        var originalPositionBeforeChase = [this.transform.pos[0], this.transform.pos[1]];
+        if (!this.outOfFuel) {
+            this.chase(deltaTime);
+        }
         var movementDirection = 0;
         if (this.transform.vel[0] === 0 && this.transform.vel[1] === 0) {
             movementDirection = this.transform.angle;
         }
         else {
-            movementDirection = Math.atan2(this.transform.vel[0], -this.transform.vel[1]);
+            if (!this.outOfFuel) {
+                var positionDelta = [
+                    this.transform.pos[0] - originalPositionBeforeChase[0],
+                    this.transform.pos[1] - originalPositionBeforeChase[1]
+                ];
+                movementDirection = Math.atan2(positionDelta[0], -positionDelta[1]);
+            }
+            else {
+                movementDirection = Math.atan2(this.transform.vel[0], this.transform.vel[1]) + Math.PI / 2;
+            }
         }
         this.transform.angle = movementDirection - Math.PI / 2;
         // missile tracking will have to be reversible
@@ -10353,7 +10577,7 @@ var MissileSprite = /** @class */ (function (_super) {
         ctx.stroke();
     };
     return MissileSprite;
-}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__.LineSprite));
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
 
 
 
@@ -10453,7 +10677,7 @@ var MissileExhaust = /** @class */ (function (_super) {
         var hue = this.isAccelerating ? (0,_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.getNumberFromRange)(this.acceleratingHue, this.colorRange) : (0,_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.getNumberFromRange)(this.noAccelerationHue, this.colorRange);
         var opacity = (0,_game_engine_util__WEBPACK_IMPORTED_MODULE_2__.getNumberFromRange)(this.baseOpacity, this.opacityRange);
         var color = new _game_engine_color__WEBPACK_IMPORTED_MODULE_0__.Color("hsla", [hue, 100, 50, opacity]);
-        new _particles_particle__WEBPACK_IMPORTED_MODULE_3__.Particle(this.gameEngine, position, initialVelocity, color, null, -0.045 * 2, 0.005);
+        new _particles_particle__WEBPACK_IMPORTED_MODULE_3__.Particle(this.gameEngine, position, initialVelocity, color, null, 2, 0.005);
     };
     return MissileExhaust;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
@@ -10474,7 +10698,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   PatriotMissileSiteSprite: () => (/* binding */ PatriotMissileSiteSprite)
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.ts");
+/* harmony import */ var _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../particles/StrikeTimeParticleExplosion */ "./src/game_objects/particles/StrikeTimeParticleExplosion.ts");
 /* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 /* harmony import */ var _Missile__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Missile */ "./src/game_objects/StrikeTime/Enemies/Missile.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -10505,6 +10729,8 @@ var PatriotMissileSite = /** @class */ (function (_super) {
         _this.radius = 15;
         _this.lives = 1;
         _this.launched = false;
+        _this.reloadTime = 2000;
+        _this.timeSinceLaunch = 0;
         _this.exist();
         _this.addLineSprite(new PatriotMissileSiteSprite(_this.transform));
         return _this;
@@ -10544,13 +10770,20 @@ var PatriotMissileSite = /** @class */ (function (_super) {
         this.lives -= 1;
         var pos = this.transform.absolutePosition();
         if (this.lives <= 0) {
-            new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, pos);
+            new _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, pos);
             this.remove();
         }
         // if not dead, I can have a different type of explosion
     };
     PatriotMissileSite.prototype.update = function (deltaTime) {
         this.animate(deltaTime);
+        if (this.launched) {
+            this.timeSinceLaunch += deltaTime;
+            if (this.timeSinceLaunch > this.reloadTime) {
+                this.launched = false;
+                this.timeSinceLaunch = 0;
+            }
+        }
     };
     PatriotMissileSite.prototype.animate = function (timeDelta) {
         // I should stick to no animation for now
@@ -13541,7 +13774,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 var ParticleExplosion = /** @class */ (function (_super) {
     __extends(ParticleExplosion, _super);
-    function ParticleExplosion(engine, pos) {
+    function ParticleExplosion(engine, pos, size) {
         var _this = _super.call(this, engine) || this;
         _this.transform.pos[0] = pos[0];
         _this.transform.pos[1] = pos[1];
@@ -13562,12 +13795,13 @@ var ParticleExplosion = /** @class */ (function (_super) {
         }
         var explosionSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Enemy_explode.wav", 0.2, _this.gameEngine.muted);
         _this.playSound(explosionSound);
-        _this.createExplosionParticles();
+        _this.createExplosionParticles(size);
         return _this;
     }
-    ParticleExplosion.prototype.createExplosionParticles = function () {
+    ParticleExplosion.prototype.createExplosionParticles = function (size) {
+        if (size === void 0) { size = 1; }
         for (var i = 0; i < this.particleNum; i++) {
-            var speed = Math.random() * 4 + 15;
+            var speed = (Math.random() * 4 + 15) * size;
             var colorVarienceDelta = 40;
             var colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2;
             var color = this.currentColor.dup();
@@ -13578,7 +13812,7 @@ var ParticleExplosion = /** @class */ (function (_super) {
             var z = 0;
             var movementAngle = this.createMovementAngle();
             var vel = _game_engine_util__WEBPACK_IMPORTED_MODULE_4__.VectorMath.vector3Cartesian(movementAngle, speed);
-            this.addChildGameObject(new _particle__WEBPACK_IMPORTED_MODULE_0__.Particle(this.gameEngine, [x, y, z], vel, color));
+            this.addChildGameObject(new _particle__WEBPACK_IMPORTED_MODULE_0__.Particle(this.gameEngine, [x, y, z], vel, color, null, size));
         }
     };
     ParticleExplosion.prototype.update = function () {
@@ -13839,7 +14073,7 @@ var Particle = /** @class */ (function (_super) {
             _this.addLineSprite(new ParticleSprite(_this.transform, _this.color));
         }
         _this.addPhysicsComponent();
-        _this.dampening = dampening || -0.045;
+        _this.dampening = dampening * -0.045 || -0.045;
         return _this;
     }
     Particle.prototype.update = function (deltaTime) {

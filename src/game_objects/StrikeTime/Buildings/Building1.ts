@@ -1,5 +1,5 @@
 import { GameObject } from "../../../game_engine/game_object";
-import { ParticleExplosion } from "../../particles/particle_explosion";
+import { ParticleExplosion } from "../../particles/StrikeTimeParticleExplosion";
 import { GameEngine } from "../../../game_engine/game_engine";
 import { LineSprite } from "../../../game_engine/line_sprite";
 import { type Transform } from "../../../game_engine/transform";

@@ -4,6 +4,9 @@ import { GameEngine } from "../../../game_engine/game_engine";
 import { LineSprite, Spawnable } from "../../../game_engine/line_sprite";
 import { type Transform } from "../../../game_engine/transform";
 import { type AnimationView } from "../../../AnimationView";
+import { Collider } from "../../../game_engine/collider";
+import { type PatriotMissileSite } from "../Enemies/PatriotMissileSite";
+import { type Building1 } from "../Buildings/Building1";
 
 export class BombBasic extends GameObject {
     radius: number;
@@ -12,18 +15,23 @@ export class BombBasic extends GameObject {
     bombTime: number;
     bombFuseTime: number;
     spinSpeed: number;
+    explosionRadius: number;
+    gameElementsInExplosionRange: (PatriotMissileSite | Building1)[];
 
 
     constructor(engine: GameEngine | AnimationView, pos: [number, number], vel: [number, number]) {
         super(engine);
         this.transform.pos = pos;
         this.transform.vel = vel;
+        this.explosionRadius = 20;
 
         this.exist();
         this.speed = 0.2;
         this.bombTime = 0;
-        this.bombFuseTime = 3000;
+        this.bombFuseTime = 2000;
         this.spinSpeed = 0.05;
+
+        this.gameElementsInExplosionRange = [];
 
         this.addReplayablePhysicsComponent();
         this.addLineSprite(new BombSprite(this.transform));
@@ -31,25 +39,44 @@ export class BombBasic extends GameObject {
 
     exist() {
         this.addCollider("General", this, this.radius);
+        this.addCollider("BombBasicExplosion", this, this.explosionRadius, ["PatriotMissileSite", "Building1"], ["General"]);
     }
 
     explode() {
-        new ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]])
+        new ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], 0.05)
         this.remove();
+    }
+
+    onCollision(collider: Collider, type: string): void {
+        if (type === "BombBasicExplosion") {
+            this.gameElementsInExplosionRange.push(collider.gameObject as PatriotMissileSite);
+        }
     }
 
     update(deltaTime: number) {
         this.animate(deltaTime);
         this.bombTime += deltaTime;
         if(this.bombTime >= this.bombFuseTime) {
+            this.gameElementsInExplosionRange.forEach((gameElement) => {
+                gameElement?.hit(); // should check for destruction animation to start
+            })
             this.explode();
+            // should I add a collider now, or keep track of collided things
+            // and tell it to explode now
         }
+        this.gameElementsInExplosionRange = [];
     }
 
     animate(timeDelta: number) {
         const rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
         this.transform.angle = (this.transform.angle + this.spinSpeed * rotationSpeedScale) % (Math.PI * 2);
+        this.lineSprite.w = 3 * easeOutQuart(this.bombTime / this.bombFuseTime + 0.01);
+        // 3 is the original width
     }
+}
+// https://easings.net/#
+function easeOutQuart(x: number): number {
+    return 0.5* Math.pow((1 - x), 4) + 0.5;
 }
 
 const NORMAL_FRAME_TIME_DELTA = 1000 / 60;

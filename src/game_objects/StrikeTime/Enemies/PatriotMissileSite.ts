@@ -1,6 +1,6 @@
 import { GameObject } from "../../../game_engine/game_object";
 import { VectorMath } from "../../../game_engine/util";
-import { ParticleExplosion } from "../../particles/particle_explosion";
+import { ParticleExplosion } from "../../particles/StrikeTimeParticleExplosion";
 import { GameEngine } from "../../../game_engine/game_engine";
 import { type Collider } from "../../../game_engine/collider";
 import { type Aurora } from "../Aurora/Aurora";
@@ -19,6 +19,8 @@ export class PatriotMissileSite extends GameObject {
     lineSprite: PatriotMissileSiteSprite;
     lives: number;
     launched: boolean;
+    reloadTime: number;
+    timeSinceLaunch: number;
 
     constructor(engine: GameEngine | AnimationView, pos: [number, number]) {
         super(engine);
@@ -27,6 +29,8 @@ export class PatriotMissileSite extends GameObject {
         this.radius = 15;
         this.lives = 1;
         this.launched = false;
+        this.reloadTime = 2000;
+        this.timeSinceLaunch = 0;
         this.exist();
 
         this.addLineSprite(new PatriotMissileSiteSprite(this.transform));
@@ -81,6 +85,13 @@ export class PatriotMissileSite extends GameObject {
 
     update(deltaTime: number) {
         this.animate(deltaTime);
+        if(this.launched) {
+            this.timeSinceLaunch += deltaTime
+            if(this.timeSinceLaunch > this.reloadTime) {
+                this.launched = false;
+                this.timeSinceLaunch = 0;
+            }
+        }
     }
 
     animate(timeDelta: number) {
