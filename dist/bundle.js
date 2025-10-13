@@ -4645,9 +4645,14 @@ var Camera = /** @class */ (function () {
         ctx.translate(-xPos * zoomScale + width / 2, -yPos * zoomScale + height / 2);
     };
     Camera.prototype.clearView = function (ctx) {
-        ctx.clearRect(-this.cameraHeight * this.zoomScale / 2, -this.cameraWidth * this.zoomScale / 2, this.cameraHeight * this.zoomScale * 40, this.cameraWidth * this.zoomScale * 40);
+        var xPos = this.transform.pos[0];
+        var yPos = this.transform.pos[1];
+        var zoomScale = this.zoomScale;
+        var width = this.cameraWidth;
+        var height = this.cameraHeight;
+        ctx.clearRect(xPos * zoomScale - width / 2, yPos * zoomScale - height / 2, this.cameraWidth, this.cameraHeight);
         ctx.fillStyle = '#000000';
-        ctx.fillRect(-this.cameraHeight * this.zoomScale / 2, -this.cameraWidth * this.zoomScale / 2, this.cameraHeight * this.zoomScale * 40, this.cameraWidth * this.zoomScale * 40);
+        ctx.fillRect(xPos * zoomScale - width / 2, yPos * zoomScale - height / 2, this.cameraWidth, this.cameraHeight);
     };
     Camera.prototype.setZoomScale = function (ctx) {
         this.gameEngine.ctx.scale(this.zoomScale, this.zoomScale);

@@ -51,18 +51,23 @@ export class Camera {
     }
 
     clearView(ctx: CanvasRenderingContext2D) {
+        const xPos = this.transform.pos[0];
+        const yPos = this.transform.pos[1];
+        const zoomScale = this.zoomScale;
+        const width = this.cameraWidth; 
+        const height = this.cameraHeight;
         ctx.clearRect(
-            -this.cameraHeight * this.zoomScale / 2,
-            -this.cameraWidth * this.zoomScale / 2,
-            this.cameraHeight * this.zoomScale * 40,
-            this.cameraWidth * this.zoomScale * 40
+            xPos * zoomScale - width / 2,
+            yPos * zoomScale - height / 2,
+            this.cameraWidth,
+            this.cameraHeight
         );
         ctx.fillStyle = '#000000';
         ctx.fillRect(
-            -this.cameraHeight * this.zoomScale / 2,
-            -this.cameraWidth * this.zoomScale / 2,
-            this.cameraHeight * this.zoomScale * 40,
-            this.cameraWidth * this.zoomScale * 40
+            xPos * zoomScale - width / 2,
+            yPos * zoomScale - height / 2,
+            this.cameraWidth,
+            this.cameraHeight
         );
     }
 
