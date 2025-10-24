@@ -1,5 +1,5 @@
 import { Sound } from "./game_engine/sound";
-import { ParticleExplosion } from "./game_objects/particles/particle_explosion";
+import { ParticleExplosion } from "./game_objects/particles/StrikeTimeParticleExplosion";
 import { ShipExplosion } from "./game_objects/particles/ship_explosion";
 
 import {Scene, SerializedGameElement } from "./game_engine/Levels/DesignElements/Scene";
@@ -14,6 +14,10 @@ import { Aurora } from "./game_objects/StrikeTime/Aurora/Aurora";
 import { PatriotMissileSite } from "./game_objects/StrikeTime/Enemies/PatriotMissileSite";
 import { Building1 } from "./game_objects/StrikeTime/Buildings/Building1";
 import { GEOWarsScript } from "./GEOWarsScript";
+import { Airport } from "./game_objects/StrikeTime/Airport/Airport";
+import { TargetBuilding } from "./game_objects/StrikeTime/Buildings/TargetBuilding";
+import { Level } from "./game_objects/StrikeTime/Levels/Level";
+import { LevelPrototype } from "./game_objects/StrikeTime/Levels/LevelPrototype";
 
 type EnemyCreator = (pos: [number, number, number] | [number, number], angle?: number) => GameObject;
 
@@ -40,6 +44,7 @@ export class StrikeTimeScript {
     engine: GameEngine;
     startPosition: [number, number, number];
     initialCameraZPos: number;
+    currentLevel: Level | null;
     
     enemyCreatorMap: EnemyCreatorMap;
 
@@ -81,18 +86,8 @@ export class StrikeTimeScript {
             this.rootScene.gameElements = this.loadGameElements(game.serializedGameElements, this.rootScene);
             this.playFromRootScene = true; 
         }
-        this.loadStrikeTimeContent();
-    }
-
-    loadStrikeTimeContent() {
-        new Aurora(this.engine, [this.startPosition[0], this.startPosition[1]]);
-        new PatriotMissileSite(this.engine, [150, 150]);
-        // buildings
-        for (let yPosition = 0; yPosition < 5; yPosition++) {
-            for(let xPosition = 0; xPosition < 5; xPosition ++) {
-                new Building1(this.engine, [550 + xPosition * 24, 300 + yPosition * 20]);
-            }  
-        }
+        this.currentLevel = new LevelPrototype(this.engine, this);
+        this.currentLevel.createLevel();
     }
 
     loadGameElements(serializedGameElements: SerializedGameElement[], parentScene: Scene) {
@@ -154,6 +149,9 @@ export class StrikeTimeScript {
             this.gameTime += deltaTime;
         }
         this.changeExplosionColor();
+        if(this.currentLevel?.runWinCondition()) {
+            this.winGame();
+        }
     }
 
     changeExplosionColor() {
@@ -168,9 +166,13 @@ export class StrikeTimeScript {
         // }
     }
 
-    resetGame() {
+    startLevelAgain() {
+        this.currentLevel.createLevel();
+    }
+
+    loseLevel() {
         this.engine.paused = true;
-        const modal = document.getElementById("endModal");
+        const modal = document.getElementById("endOfStrikeTimeModalLost");
         modal.style.display = "block";
 
         // Get the button that opens the modal
@@ -186,7 +188,72 @@ export class StrikeTimeScript {
             this.engine.paused = false;
             window.removeEventListener("click", closeModalWithClick, false);
             if (!this.engine.muted) {
-                this.theme.play();
+                this.theme?.play();
+            }
+            this.explodeEverything();
+            this.startLevelAgain();
+        };
+
+        const closeModalWithClick = (e: MouseEvent) => {
+            if (e.target == modal) {
+                this.engine.paused = false;
+                if (!this.engine.muted) {
+                    this.theme?.play();
+                }
+                modal.style.display = "none";
+                window.removeEventListener("click", closeModalWithClick, false);
+                this.explodeEverything();
+                this.startLevelAgain();
+            }
+        };
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.addEventListener("click", closeModalWithClick, false);
+    }
+
+    explodeEverything() {
+        // should be defined by the level
+        const removeList: GameObject[] = [];
+        const typesToRemove = [
+            "Aurora",
+            "Airport",
+            "EndingLine",
+            "Building1",
+            "TargetBuilding",
+            "PatriotMissileSite",
+        ];
+        this.engine.gameObjects.forEach((object) => {
+            if (typesToRemove.includes(object.constructor.name)) {
+                const objectTransform = object.transform;
+                const pos = objectTransform.absolutePosition();
+                new ParticleExplosion(this.engine, pos);
+                removeList.push(object);
+            }
+        });
+        removeList.forEach((removeThis) => {
+            removeThis.remove();
+        });
+    }
+
+    winGame() {
+        this.engine.paused = true;
+        const modal = document.getElementById("endOfStrikeTimeModal");
+        modal.style.display = "block";
+
+        // Get the button that opens the modal
+        // var btn = document.getElementById("myBtn");
+
+        // Get the <span> element that closes the modal
+        const xclose = document.getElementsByClassName("endClose")[0] as HTMLElement;
+
+        // When the user clicks on <span> (x), close the modal
+        xclose.onclick = (e) => {
+            e.stopPropagation();
+            modal.style.display = "none";
+            this.engine.paused = false;
+            window.removeEventListener("click", closeModalWithClick, false);
+            if (!this.engine.muted) {
+                this.theme?.play();
             }
         };
 
@@ -194,7 +261,7 @@ export class StrikeTimeScript {
             if (e.target == modal) {
                 this.engine.paused = false;
                 if (!this.engine.muted) {
-                    this.theme.play();
+                    this.theme?.play();
                 }
                 modal.style.display = "none";
                 window.removeEventListener("click", closeModalWithClick, false);
@@ -210,36 +277,6 @@ export class StrikeTimeScript {
 
     gameOver() {
     // end the game here
-    }
-
-    explodeEverything() {
-        const removeList: GameObject[] = [];
-        const typesToRemove = [
-            "Grunt",
-            "Pinwheel",
-            "BoxBox",
-            "Arrow",
-            "Singularity",
-            "Weaver",
-            "AlienShip",
-        ];
-        this.engine.gameObjects.forEach((object) => {
-            if (object.constructor.name === "Aurora") {
-                const auroraTransform = object.transform;
-                const pos = auroraTransform.absolutePosition();
-                new ShipExplosion(this.engine, pos);
-            } else if (object.constructor.name === "Bullet") {
-                removeList.push(object);
-            } else if (typesToRemove.includes(object.constructor.name)) {
-                const objectTransform = object.transform;
-                const pos = objectTransform.absolutePosition();
-                new ParticleExplosion(this.engine, pos);
-                removeList.push(object);
-            }
-        });
-        removeList.forEach((removeThis) => {
-            removeThis.remove();
-        });
     }
 
     // levelDesigner() {

@@ -38,7 +38,7 @@ export class Ship extends GameObject {
     flashInterval: number;
     spawnTime: number;
     controllerInUse: boolean;
-    gameEditorHasBeenOpened: boolean;
+    isLevelDesignerOpened: boolean;
     static MOVES = {
         s: [0, 1],
         a: [-1, 0],
@@ -52,6 +52,8 @@ export class Ship extends GameObject {
         this.transform.pos[2] = 0;
         // I should add this to GameObject as this.addCamera
         this.camera = new Camera(engine, new Transform(null, [pos[0], pos[1]]), "ShipCamera");
+        this.camera.zoomScale = 1.3;
+        this.camera.defaultZoomScale = 1.3;
         
         this.setAsControllableGameObject();
         // when you add it as a focus controllable game object, 
@@ -101,7 +103,7 @@ export class Ship extends GameObject {
         this.spawnTime = 2500;
         this.lineSprite.flashHide = true;
         this.controllerInUse = false;
-        this.gameEditorHasBeenOpened = false;
+        this.isLevelDesignerOpened = false;
     // 1/8 of a second flash every half second
     }
 
@@ -113,11 +115,11 @@ export class Ship extends GameObject {
     update(deltaTime: number){
         // no idea where this shit will have to belong
         // brain currently melted
-        if(this.gameEngine instanceof GameEngine && this.gameEngine.gameEditorOpened) {
-            if(!this.gameEditorHasBeenOpened) {
+        if(this.gameEngine instanceof GameEngine && this.gameEngine.isLevelDesignerOpened) {
+            if(!this.isLevelDesignerOpened) {
                 const _width = DIM_X;
                 const _height = DIM_Y;
-                const _zoomScale = this.gameEngine.zoomScale;
+                const _zoomScale = this.gameEngine.activeCamera.zoomScale;
                 const _yPosition = this.transform.pos[1];
                 const _xPosition = this.transform.pos[0];
                 console.log({_width, _height, _zoomScale, _xPosition, _yPosition});
@@ -127,10 +129,10 @@ export class Ship extends GameObject {
                 );
                 this.gameEngine.activeCamera.zoomScale = 1 
             }
-            this.gameEditorHasBeenOpened = true;
+            this.isLevelDesignerOpened = true;
             return;
         } else {
-            this.gameEditorHasBeenOpened = false;
+            this.isLevelDesignerOpened = false;
         }
         this.bulletTimeCheck += deltaTime;
 

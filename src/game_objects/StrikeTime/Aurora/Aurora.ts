@@ -9,10 +9,13 @@ import { AirDecelerationParticles } from "./AirDecelerationParticles";
 import { BombBasic } from "../Bombs/BombBasic";
 import { VectorMath } from "../../../game_engine/util";
 import { BombReticle } from "./BombReticle";
+import { StrikeTimeScript } from "../../../StrikeTimeScript";
 
 export class Aurora extends GameObject {
     lineSprite: AuroraSprite;
     radius: number;
+    hits: number;
+    hitsWhenDead: number;
     turnRadius: number;
     minSpeed: number;
     maxSpeed: number;
@@ -41,6 +44,8 @@ export class Aurora extends GameObject {
     ) {
         super(engine);
         this.transform.pos = pos;
+        this.hits = 0;
+        this.hitsWhenDead = 3;
         this.transform.angle = angle;
         this.transform.vel = [0, 0];
 
@@ -96,6 +101,12 @@ export class Aurora extends GameObject {
             const bombVelocity = VectorMath.vectorCartesian(currentDirection, bombSpeed)
             new BombBasic(this.gameEngine,[this.transform.pos[0], this.transform.pos[1]], bombVelocity)
             this.bombTiming.refreshTime = 0;
+        }
+    }
+    hit() {
+        this.hits += 1;
+        if(this.hits >= this.hitsWhenDead) {
+            (this.gameEngine.gameScript as StrikeTimeScript).loseLevel();
         }
     }
     updateBKeyListener(pressed: boolean) {

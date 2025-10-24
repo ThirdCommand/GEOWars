@@ -1,5 +1,4 @@
 import { GameObject } from "../../../game_engine/game_object";
-import { VectorMath } from "../../../game_engine/util";
 import { GameEngine } from "../../../game_engine/game_engine";
 import { type Collider } from "../../../game_engine/collider";
 import { type Aurora } from "../Aurora/Aurora";
@@ -26,25 +25,24 @@ export class Missile extends GameObject {
 
     exhaust: MissileExhaust;
     planeLockedOnTransform: Transform;
+    lastMovementDirection: number;
 
     constructor(engine: GameEngine | AnimationView, pos: [number, number], vel: [number, number], planeLockedOn: Transform) {
         super(engine);
-        this.lifespan = 8000;
+        this.lifespan = 5000;
         this.timeAlive = 0;
-        this.fuelTime = 2500;
+        this.fuelTime = 2200;
         this.outOfFuel = false;
         this.transform.pos = pos;
         this.transform.vel = vel;
-
+       
         this.explodeRange = 3; // I could have it detect earlier and turn to face before within actual range. but this is a prototype so not now
-        this.radius = 5; // visual range, where it would be acceptable for something to be considering hitting it
+        this.radius = 10; // visual range, where it would be acceptable for something to be considering hitting it
         this.exist();
         this.lives = 1;
-        this.speed = 0.05;
+        this.speed = 0.08;
 
         this.planeLockedOnTransform = planeLockedOn;
-
-       
 
         this.addReplayablePhysicsComponent();
         this.addLineSprite(new MissileSprite(this.transform));
@@ -73,8 +71,8 @@ export class Missile extends GameObject {
 
         this.transform.pos[0] += speed * Math.cos(direction) * velocityScale;
         this.transform.pos[1] += speed * Math.sin(direction) * velocityScale;
-        this.transform.acc[0] = 0.00005 * Math.cos(direction) * velocityScale;
-        this.transform.acc[2] = 0.00005 * Math.sin(direction) * velocityScale;
+        this.transform.acc[0] = 0.00007 * Math.cos(direction) * velocityScale;
+        this.transform.acc[2] = 0.00007 * Math.sin(direction) * velocityScale;
         this.transform.vel[0] += this.transform.acc[0] * timeDelta
         this.transform.vel[1] += this.transform.acc[1] * timeDelta
     }
@@ -86,8 +84,10 @@ export class Missile extends GameObject {
     }
 
     explode(collider: Collider) {
-        console.log('Aurora Killed/Hit')
-        new ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]])
+        console.log('Aurora Killed/Hit');
+        (this,collider.gameObject as Aurora).hit();
+        // I should give them an initial velocity too so it looks more kinetic
+        new ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], 0.15)
         this.exhaust.remove();
         this.remove();
         // create missiles at the fire rate while still in range
@@ -134,11 +134,9 @@ export class Missile extends GameObject {
                     positionDelta[0],
                     -positionDelta[1]
                 );
+                this.lastMovementDirection = movementDirection
             } else {
-                movementDirection =  Math.atan2(
-                    this.transform.vel[0],
-                    this.transform.vel[1]
-                ) + Math.PI/2
+                movementDirection = this.lastMovementDirection
             }
         }
         this.transform.angle = movementDirection - Math.PI / 2;

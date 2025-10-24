@@ -1,5 +1,4 @@
 import { GameObject } from "../../../game_engine/game_object";
-import { VectorMath } from "../../../game_engine/util";
 import { ParticleExplosion } from "../../particles/StrikeTimeParticleExplosion";
 import { GameEngine } from "../../../game_engine/game_engine";
 import { type Collider } from "../../../game_engine/collider";
@@ -7,7 +6,6 @@ import { type Aurora } from "../Aurora/Aurora";
 import { LineSprite, Spawnable } from "../../../game_engine/line_sprite";
 import { type Transform } from "../../../game_engine/transform";
 import { type AnimationView } from "../../../AnimationView";
-import { MissileExhaust } from "./MissileExhaust";
 import { Missile } from "./Missile";
 
 type TargetableObject = Aurora;
@@ -18,19 +16,37 @@ export class PatriotMissileSite extends GameObject {
     increasing: boolean;
     lineSprite: PatriotMissileSiteSprite;
     lives: number;
-    launched: boolean;
+
+    isMissileLaunched: boolean;
+    missilesPerGroup: number;
+    numberOfMissilesLaunched: number;
     reloadTime: number;
+
+    isGroupLaunched: boolean;
+    groupReloadTime: number;
+
     timeSinceLaunch: number;
+    timeSinceGroupLaunch: number;
 
     constructor(engine: GameEngine | AnimationView, pos: [number, number]) {
         super(engine);
         this.transform.pos = pos;
-        this.launchRange = 100; // I could have it detect earlier and turn to face before within actual range. but this is a prototype so not now
+        this.launchRange = 180; // I could have it detect earlier and turn to face before within actual range. but this is a prototype so not now
         this.radius = 15;
         this.lives = 1;
-        this.launched = false;
-        this.reloadTime = 2000;
+
+        this.missilesPerGroup = 3;
+
+        this.numberOfMissilesLaunched = 0;
+        this.isMissileLaunched = false;
+        this.isGroupLaunched = false;
+
+        this.reloadTime = 300;
+        this.groupReloadTime = 3000;
+
         this.timeSinceLaunch = 0;
+        this.timeSinceGroupLaunch = 0;
+
         this.exist();
 
         this.addLineSprite(new PatriotMissileSiteSprite(this.transform));
@@ -51,9 +67,15 @@ export class PatriotMissileSite extends GameObject {
 
     startLaunchSequence(airplaneDetected: Collider) {
 
-        if(!this.launched) {
+        if(!this.isMissileLaunched) {
             console.log('launching');
-            this.launched = true;
+            this.isMissileLaunched = true;
+            this.numberOfMissilesLaunched += 1;
+
+            if(this.numberOfMissilesLaunched >= 3) {
+                this.isGroupLaunched = true;
+            }
+
             const airplanePosition = airplaneDetected.gameObject.transform.pos;
             const ourPosition = this.transform.pos;
             const dy = airplanePosition[1] - ourPosition[1];
@@ -85,11 +107,22 @@ export class PatriotMissileSite extends GameObject {
 
     update(deltaTime: number) {
         this.animate(deltaTime);
-        if(this.launched) {
+        if(this.isMissileLaunched && !this.isGroupLaunched) {
             this.timeSinceLaunch += deltaTime
             if(this.timeSinceLaunch > this.reloadTime) {
-                this.launched = false;
+                this.isMissileLaunched = false;
                 this.timeSinceLaunch = 0;
+            }
+
+        }
+        if(this.isGroupLaunched) {
+            this.timeSinceGroupLaunch += deltaTime;
+            if(this.timeSinceGroupLaunch > this.groupReloadTime) {
+                this.isMissileLaunched = false;
+                this.numberOfMissilesLaunched = 0;
+                this.timeSinceLaunch = 0;
+                this.isGroupLaunched = false;
+                this.timeSinceGroupLaunch = 0;
             }
         }
     }

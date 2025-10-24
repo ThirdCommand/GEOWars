@@ -1,7 +1,7 @@
 import { UIElement } from "../../UI_Element";
 import { Transform } from "../../transform";
 import { Scene, SceneObject } from "./Scene";
-import { type LevelDesigner } from "../levelDesigner"; 
+import { type LevelDesigner } from "../LevelDesigner"; 
 import { LineSprite } from "../../line_sprite";
 
 // wait times

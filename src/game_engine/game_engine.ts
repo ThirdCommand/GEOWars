@@ -3,7 +3,7 @@ import { type LineSprite } from "./line_sprite";
 import { PhysicsComponent, ReplayablePhysicsComponent } from "./physics_component";
 import {type Collider} from "./collider";
 import { type Sound } from "./sound";
-import { type LevelDesigner } from "./Levels/levelDesigner";
+import { type LevelDesigner } from "./Levels/LevelDesigner";
 import { Camera } from "./camera";
 import { Transform } from "./transform";
 import { DrawingGridSprite } from "./SpriteEditor/DrawingGridSprite";
@@ -34,8 +34,11 @@ type FocusableGameObject = GameObject & {
     camera: Camera;
 }
 
-interface mousePositionListenable {
+interface MousePositionListenable {
     updateMousePos(mousePos: [number, number]): void
+}
+interface MouseEventListenable {
+    updateMouseMoveEvent(mouseEvent: MouseEvent): void
 }
 
 interface DoubleClickListenable {
@@ -89,9 +92,18 @@ interface AButtonListenable {
 interface StartButtonListenable {
     updateStartButtonListener(pressed: boolean): void
 }
-
-
-
+interface LeftArrowListenable {
+    updateLeftArrowListener(pressed: boolean): void
+}
+interface UpArrowListenable {
+    updateUpArrowListener(pressed: boolean): void
+}
+interface RightArrowListenable {
+    updateRightArrowListener(pressed: boolean): void
+}
+interface DownArrowListenable {
+    updateDownArrowListener(pressed: boolean): void
+}
 
 export class GameEngine {
     placingPoint: PlacingPoint;
@@ -120,8 +132,9 @@ export class GameEngine {
     };
     subscribers: Collider[];
     muted: boolean;
-    mouseListeners: mousePositionListenable[]; 
-    mouseFocussedListeners: mousePositionListenable[]; 
+    mouseListeners: MousePositionListenable[]; 
+    mouseEventListeners: MouseEventListenable[]; 
+    mouseFocussedListeners: MousePositionListenable[]; 
 
     gameClickListeners: ClickListenable[]; 
     gameClickListenersToAdd: ClickListenable[]; 
@@ -150,14 +163,16 @@ export class GameEngine {
     aButtonListeners: AButtonListenable[]; 
     startButtonListeners: StartButtonListenable[]; 
 
+    leftArrowListeners: LeftArrowListenable[]; 
+    rightArrowListeners: RightArrowListenable[]; 
+    upArrowListeners: UpArrowListenable[]; 
+    downArrowListeners: DownArrowListenable[]; 
+
     spriteCreatorOpened: boolean;
 
     gameScript: GameScript | null;
     paused: boolean;
     focusPaused: boolean;
-
-    defaultZoomScale: number; // TODO wtf is going on here
-    zoomScale: number; // TODO wtf is going on here
 
     graphicQuality: number;
     frameCountForPerformance: number;
@@ -168,7 +183,7 @@ export class GameEngine {
     scriptTime: number;
     timePassed: number;
 
-    gameEditorOpened: boolean;
+    isLevelDesignerOpened: boolean;
     levelDesigner: LevelDesigner;
 
     controller: any | null;
@@ -185,11 +200,8 @@ export class GameEngine {
             startButtonPressed: false,
         };
         this.gameScriptAdded = false;
-        this.defaultZoomScale = 1.3;
-        this.zoomScale = 1.3;
         this.lineSprites = [];
         this.cameras = [];
-        this.activeCamera = new Camera(this, new Transform(), 'first camera');
         this.controllableGameObjects = [];
         this.controlledGameObject = null;
         this.gameObjects = [];
@@ -199,6 +211,7 @@ export class GameEngine {
         this.subscribers = [];
         this.muted = true;
         this.mouseListeners = [];
+        this.mouseEventListeners = [];
         this.mouseFocussedListeners = [];
 
         this.gameClickListeners = [];
@@ -226,6 +239,12 @@ export class GameEngine {
         this.bButtonListeners = [];
         this.aButtonListeners = [];
         this.startButtonListeners = [];
+
+        this.leftArrowListeners = [];
+        this.rightArrowListeners = [];
+        this.upArrowListeners = [];
+        this.downArrowListeners = [];
+
         // this.toRemoveQueue = [];
         this.paused = false;
         // this.currentCamera = null;
@@ -233,10 +252,11 @@ export class GameEngine {
         this.graphicQuality = 1;
         this.setupController();
         this.setupPerformance();
-        this.gameEditorOpened = false;
+        this.isLevelDesignerOpened = false;
         this.frameCountForPerformance = 0;
         this.levelDesigner = null;
         this.spriteCreatorOpened = false;
+         this.addCamera(new Camera(this, new Transform(), 'first camera'));
     }
 
     addGameScript(gameScriptToAdd: GameScript) {
@@ -493,6 +513,19 @@ export class GameEngine {
         this.levelDesignerDoubleClickListeners.push(object);
     }
 
+    addLeftArrowListener(object: LeftArrowListenable) {
+        this.leftArrowListeners.push(object);
+    }
+    addRightArrowListener(object: RightArrowListenable) {
+        this.rightArrowListeners.push(object);
+    }
+    addUpArrowListener(object: UpArrowListenable) {
+        this.upArrowListeners.push(object);
+    }
+    addDownArrowListener(object: DownArrowListenable) {
+        this.downArrowListeners.push(object);
+    }
+
     mouseDown(e: MouseEvent) {
         if (e.target instanceof HTMLElement) {
             if (e.target.classList[0] === "level-editor-canvas") {
@@ -679,10 +712,31 @@ export class GameEngine {
 
 
 
-    updateStartButtonListeners(pressed: boolean) { // TODO
+    updateStartButtonListeners(pressed: boolean) {
     // console.log([startButton, down])
         this.startButtonListeners.forEach((listener) => {
             listener.updateStartButtonListener(pressed);
+        });
+    }
+
+    updateLeftArrowListeners(pressed: boolean) {
+        this.leftArrowListeners.forEach((listener) => {
+            listener.updateLeftArrowListener(pressed);
+        });
+    }
+    updateUpArrowListeners(pressed: boolean) {
+        this.upArrowListeners.forEach((listener) => {
+            listener.updateUpArrowListener(pressed);
+        });
+    }
+    updateRightArrowListeners(pressed: boolean) {
+        this.rightArrowListeners.forEach((listener) => {
+            listener.updateRightArrowListener(pressed);
+        });
+    }
+    updateDownArrowListeners(pressed: boolean) {
+        this.downArrowListeners.forEach((listener) => {
+            listener.updateDownArrowListener(pressed);
         });
     }
 
@@ -695,11 +749,17 @@ export class GameEngine {
     }
 
     // called by game view
-    updateMousePos(mousePos: [number, number]) {
+    updateMousePos(mousePos: [number, number], e: MouseEvent) {
         // I need to check if it's supposed to be directly controlled, or just listening 
+        // not sure if I need to fix this for an actual game being played
+        const xPosition = mousePos[0] - this.activeCamera.cameraWidth/2;
+        const yPosition = mousePos[1] - this.activeCamera.cameraHeight/2;
         this.mouseListeners.forEach((object) => {
-            object.updateMousePos(mousePos);
+            object.updateMousePos([xPosition, yPosition]);
         });
+        this.mouseEventListeners.forEach((object) => {
+            object.updateMouseMoveEvent(e);
+        })
         this.controlledGameObject?.updateFocussedMousePos(mousePos);
     }
 
@@ -854,8 +914,11 @@ export class GameEngine {
     // ctx.scale(1,1)
     }
 
-    addMouseListener(object: GameObject) {
+    addMouseListener(object: MousePositionListenable) {
         this.mouseListeners.push(object);
+    }
+    addMouseEventListener(object: MouseEventListenable) {
+        this.mouseEventListeners.push(object);
     }
 
     updateGameScript(delta: number) {

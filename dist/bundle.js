@@ -1003,19 +1003,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   StrikeTimeScript: () => (/* binding */ StrikeTimeScript)
 /* harmony export */ });
 /* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_engine/sound */ "./src/game_engine/sound.ts");
-/* harmony import */ var _game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_objects/particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.ts");
-/* harmony import */ var _game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game_objects/particles/ship_explosion */ "./src/game_objects/particles/ship_explosion.ts");
-/* harmony import */ var _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Scene */ "./src/game_engine/Levels/DesignElements/Scene.ts");
-/* harmony import */ var _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.ts");
-/* harmony import */ var _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.ts");
-/* harmony import */ var _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.ts");
-/* harmony import */ var _game_engine_Levels_DesignElements_Operation__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Operation */ "./src/game_engine/Levels/DesignElements/Operation.ts");
-/* harmony import */ var _game_objects_StrikeTime_Aurora_Aurora__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./game_objects/StrikeTime/Aurora/Aurora */ "./src/game_objects/StrikeTime/Aurora/Aurora.ts");
-/* harmony import */ var _game_objects_StrikeTime_Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./game_objects/StrikeTime/Enemies/PatriotMissileSite */ "./src/game_objects/StrikeTime/Enemies/PatriotMissileSite.ts");
-/* harmony import */ var _game_objects_StrikeTime_Buildings_Building1__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./game_objects/StrikeTime/Buildings/Building1 */ "./src/game_objects/StrikeTime/Buildings/Building1.ts");
-
-
-
+/* harmony import */ var _game_objects_particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_objects/particles/StrikeTimeParticleExplosion */ "./src/game_objects/particles/StrikeTimeParticleExplosion.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Scene */ "./src/game_engine/Levels/DesignElements/Scene.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Operation__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Operation */ "./src/game_engine/Levels/DesignElements/Operation.ts");
+/* harmony import */ var _game_objects_StrikeTime_Levels_LevelPrototype__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./game_objects/StrikeTime/Levels/LevelPrototype */ "./src/game_objects/StrikeTime/Levels/LevelPrototype.ts");
 
 
 
@@ -1049,46 +1043,37 @@ var StrikeTimeScript = /** @class */ (function () {
         this.serializedGame = serializedGame;
         var game = JSON.parse(serializedGame);
         if (((_a = game === null || game === void 0 ? void 0 : game.serializedGameElements) === null || _a === void 0 ? void 0 : _a.length) > 0) {
-            this.rootScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.Scene('root');
+            this.rootScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_2__.Scene('root');
             this.rootScene.gameElements = this.loadGameElements(game.serializedGameElements, this.rootScene);
             this.playFromRootScene = true;
         }
-        this.loadStrikeTimeContent();
-    };
-    StrikeTimeScript.prototype.loadStrikeTimeContent = function () {
-        new _game_objects_StrikeTime_Aurora_Aurora__WEBPACK_IMPORTED_MODULE_8__.Aurora(this.engine, [this.startPosition[0], this.startPosition[1]]);
-        new _game_objects_StrikeTime_Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_9__.PatriotMissileSite(this.engine, [150, 150]);
-        // buildings
-        for (var yPosition = 0; yPosition < 5; yPosition++) {
-            for (var xPosition = 0; xPosition < 5; xPosition++) {
-                new _game_objects_StrikeTime_Buildings_Building1__WEBPACK_IMPORTED_MODULE_10__.Building1(this.engine, [550 + xPosition * 24, 300 + yPosition * 20]);
-            }
-        }
+        this.currentLevel = new _game_objects_StrikeTime_Levels_LevelPrototype__WEBPACK_IMPORTED_MODULE_7__.LevelPrototype(this.engine, this);
+        this.currentLevel.createLevel();
     };
     StrikeTimeScript.prototype.loadGameElements = function (serializedGameElements, parentScene) {
         var _this = this;
         return serializedGameElements.map(function (element) {
             if (element.type === "Scene") {
-                var newScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.Scene(element.name, parentScene);
+                var newScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_2__.Scene(element.name, parentScene);
                 newScene.gameElements = _this.loadGameElements(element.serializedGameElements, newScene) || [];
                 return newScene;
             }
             else if (element.type === "Event") {
-                return new _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_4__.Event(element.spawns, parentScene, element.isShipRelative, _this.engine);
+                return new _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_3__.Event(element.spawns, parentScene, element.isShipRelative, _this.engine);
             }
             else if (element.type === "Time") {
-                return new _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_5__.Time(parentScene, element.waitTime);
+                return new _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_4__.Time(parentScene, element.waitTime);
             }
             else if (element.type === "LoopBeginning") {
-                return new _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_6__.LoopBeginning(parentScene);
+                return new _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_5__.LoopBeginning(parentScene);
             }
             else if (element.type === "LoopEnd") {
-                return new _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_6__.LoopEnd({ loopIdx: element.loopIdx || 0, repeatTimes: element.repeatTimes }, parentScene);
+                return new _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_5__.LoopEnd({ loopIdx: element.loopIdx || 0, repeatTimes: element.repeatTimes }, parentScene);
             }
             else if (element.type === "Operation") {
                 // TODO some of these are GEOWars specific but don't have to be
                 // or maybe it should since operation could do things specific to the game
-                return new _game_engine_Levels_DesignElements_Operation__WEBPACK_IMPORTED_MODULE_7__.Operation(element.operand, parentScene, _this.engine, _this);
+                return new _game_engine_Levels_DesignElements_Operation__WEBPACK_IMPORTED_MODULE_6__.Operation(element.operand, parentScene, _this.engine, _this);
             }
         });
     };
@@ -1118,6 +1103,7 @@ var StrikeTimeScript = /** @class */ (function () {
     //     // }
     // }
     StrikeTimeScript.prototype.update = function (deltaTime) {
+        var _a;
         // TODO: I think this will still be useful in the future
         // but I don't have my head wrapped around it yet
         if (this.playFromRootScene) {
@@ -1127,6 +1113,9 @@ var StrikeTimeScript = /** @class */ (function () {
             this.gameTime += deltaTime;
         }
         this.changeExplosionColor();
+        if ((_a = this.currentLevel) === null || _a === void 0 ? void 0 : _a.runWinCondition()) {
+            this.winGame();
+        }
     };
     StrikeTimeScript.prototype.changeExplosionColor = function () {
         this.explosionColorWheel += 1 / 2;
@@ -1138,10 +1127,13 @@ var StrikeTimeScript = /** @class */ (function () {
         // if (this.score) {
         // }
     };
-    StrikeTimeScript.prototype.resetGame = function () {
+    StrikeTimeScript.prototype.startLevelAgain = function () {
+        this.currentLevel.createLevel();
+    };
+    StrikeTimeScript.prototype.loseLevel = function () {
         var _this = this;
         this.engine.paused = true;
-        var modal = document.getElementById("endModal");
+        var modal = document.getElementById("endOfStrikeTimeModalLost");
         modal.style.display = "block";
         // Get the button that opens the modal
         // var btn = document.getElementById("myBtn");
@@ -1149,19 +1141,83 @@ var StrikeTimeScript = /** @class */ (function () {
         var xclose = document.getElementsByClassName("endClose")[0];
         // When the user clicks on <span> (x), close the modal
         xclose.onclick = function (e) {
+            var _a;
             e.stopPropagation();
             modal.style.display = "none";
             _this.engine.paused = false;
             window.removeEventListener("click", closeModalWithClick, false);
             if (!_this.engine.muted) {
-                _this.theme.play();
+                (_a = _this.theme) === null || _a === void 0 ? void 0 : _a.play();
             }
+            _this.explodeEverything();
+            _this.startLevelAgain();
         };
         var closeModalWithClick = function (e) {
+            var _a;
             if (e.target == modal) {
                 _this.engine.paused = false;
                 if (!_this.engine.muted) {
-                    _this.theme.play();
+                    (_a = _this.theme) === null || _a === void 0 ? void 0 : _a.play();
+                }
+                modal.style.display = "none";
+                window.removeEventListener("click", closeModalWithClick, false);
+                _this.explodeEverything();
+                _this.startLevelAgain();
+            }
+        };
+        // When the user clicks anywhere outside of the modal, close it
+        window.addEventListener("click", closeModalWithClick, false);
+    };
+    StrikeTimeScript.prototype.explodeEverything = function () {
+        var _this = this;
+        // should be defined by the level
+        var removeList = [];
+        var typesToRemove = [
+            "Aurora",
+            "Airport",
+            "EndingLine",
+            "Building1",
+            "TargetBuilding",
+            "PatriotMissileSite",
+        ];
+        this.engine.gameObjects.forEach(function (object) {
+            if (typesToRemove.includes(object.constructor.name)) {
+                var objectTransform = object.transform;
+                var pos = objectTransform.absolutePosition();
+                new _game_objects_particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(_this.engine, pos);
+                removeList.push(object);
+            }
+        });
+        removeList.forEach(function (removeThis) {
+            removeThis.remove();
+        });
+    };
+    StrikeTimeScript.prototype.winGame = function () {
+        var _this = this;
+        this.engine.paused = true;
+        var modal = document.getElementById("endOfStrikeTimeModal");
+        modal.style.display = "block";
+        // Get the button that opens the modal
+        // var btn = document.getElementById("myBtn");
+        // Get the <span> element that closes the modal
+        var xclose = document.getElementsByClassName("endClose")[0];
+        // When the user clicks on <span> (x), close the modal
+        xclose.onclick = function (e) {
+            var _a;
+            e.stopPropagation();
+            modal.style.display = "none";
+            _this.engine.paused = false;
+            window.removeEventListener("click", closeModalWithClick, false);
+            if (!_this.engine.muted) {
+                (_a = _this.theme) === null || _a === void 0 ? void 0 : _a.play();
+            }
+        };
+        var closeModalWithClick = function (e) {
+            var _a;
+            if (e.target == modal) {
+                _this.engine.paused = false;
+                if (!_this.engine.muted) {
+                    (_a = _this.theme) === null || _a === void 0 ? void 0 : _a.play();
                 }
                 modal.style.display = "none";
                 window.removeEventListener("click", closeModalWithClick, false);
@@ -1174,38 +1230,6 @@ var StrikeTimeScript = /** @class */ (function () {
     };
     StrikeTimeScript.prototype.gameOver = function () {
         // end the game here
-    };
-    StrikeTimeScript.prototype.explodeEverything = function () {
-        var _this = this;
-        var removeList = [];
-        var typesToRemove = [
-            "Grunt",
-            "Pinwheel",
-            "BoxBox",
-            "Arrow",
-            "Singularity",
-            "Weaver",
-            "AlienShip",
-        ];
-        this.engine.gameObjects.forEach(function (object) {
-            if (object.constructor.name === "Aurora") {
-                var auroraTransform = object.transform;
-                var pos = auroraTransform.absolutePosition();
-                new _game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_2__.ShipExplosion(_this.engine, pos);
-            }
-            else if (object.constructor.name === "Bullet") {
-                removeList.push(object);
-            }
-            else if (typesToRemove.includes(object.constructor.name)) {
-                var objectTransform = object.transform;
-                var pos = objectTransform.absolutePosition();
-                new _game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(_this.engine, pos);
-                removeList.push(object);
-            }
-        });
-        removeList.forEach(function (removeThis) {
-            removeThis.remove();
-        });
     };
     // levelDesigner() {
     //     const modal = document.getElementById("levelDesignerModal");
@@ -2635,6 +2659,826 @@ var TimeObjectSprite = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./src/game_engine/Levels/GEOLevelDesigner.ts":
+/*!****************************************************!*\
+  !*** ./src/game_engine/Levels/GEOLevelDesigner.ts ***!
+  \****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   GEOLevelDesigner: () => (/* binding */ GEOLevelDesigner),
+/* harmony export */   isEnemyTypeArray: () => (/* binding */ isEnemyTypeArray)
+/* harmony export */ });
+/* harmony import */ var _game_objects_walls__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_objects/walls */ "./src/game_objects/walls.ts");
+/* harmony import */ var _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_objects/Overlay/overlay */ "./src/game_objects/Overlay/overlay.ts");
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.ts");
+/* harmony import */ var _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./DesignElements/Scene */ "./src/game_engine/Levels/DesignElements/Scene.ts");
+/* harmony import */ var _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./DesignElements/Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.ts");
+/* harmony import */ var _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.ts");
+/* harmony import */ var _DesignElements_Time__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.ts");
+/* harmony import */ var _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.ts");
+/* harmony import */ var _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./DesignElements/Operation */ "./src/game_engine/Levels/DesignElements/Operation.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../GEOWarsScript */ "./src/GEOWarsScript.ts");
+var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
+
+
+// import { Grid } from "../../game_objects/particles/Grid/grid";
+// import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
+
+
+
+
+
+
+
+
+// I should collect placed enemies
+// check if array of enemyType
+function isEnemyTypeArray(value) {
+    return !value.some(function (type) { return (!(0,_DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_4__.isEnemyType)(type)); });
+}
+// Perhaps level designer should be an extension of game script with connection to the
+// timeline UI and the animation window
+// for a tracker I can highlight the current game element
+// just like selecting it... but maybe the same color for 
+// all of them 
+var GEOLevelDesigner = /** @class */ (function () {
+    function GEOLevelDesigner(engine, animationView, levelDesignerCtx, serializedGame) {
+        this.transform = new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform();
+        this.DIM_X = 1200;
+        this.DIM_Y = 300;
+        this.BG_COLOR = "#000000";
+        this.overlayText = {
+            Location: [0, 0],
+            Time: 0,
+            Type: "",
+            StartingAngle: 0,
+        };
+        this.overlayTextCleared = true;
+        // // main game array is the main list of sequence objects
+        // mainGameArray = [];
+        this.isLevelDesignerOpened = false;
+        this.engine = engine;
+        this.serializedGame = serializedGame;
+        this.UIElementSprites = [];
+        // duck typing for scene
+        this.expandedScenes = [];
+        // this is added to expanded Scenes off the bat. Check addUIElement
+        this.baseScene = new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.SceneObject(this, 'main'); // top level list of game elements
+        this.transform = new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform();
+        this.widthHeight = [0, 0];
+        this.loopBeginningObjectStackForLoading = [];
+        this.animationView = animationView;
+        this.levelDesignerCtx = levelDesignerCtx;
+        this.UIActionsToRun = [];
+        this.ctx = levelDesignerCtx;
+        this.gameObjects = [];
+        this.lineSprites = [];
+        this.zoomScale = 1;
+        // might not need the ship now that I'm using cameras
+        this.ship = {
+            transform: new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform()
+        };
+        this.lastTime = 0;
+        this.animate = this.animate.bind(this);
+        this.overlayText = {
+            Location: [0, 0],
+            Time: 0,
+            Type: "",
+            StartingAngle: 0,
+        };
+        this.overlayTextCleared = true;
+        // this.palletModal = this.getPalletModal();
+        // can be scene, time, event, or loop
+        this.selectedGameElement;
+        this.currentEnemyPlacer;
+        // main game array is the main list of sequence objects
+        // this.mainGameArray = [];
+        this.isLevelDesignerOpened = false;
+    }
+    GEOLevelDesigner.prototype.openLevelDesigner = function () {
+        var _this = this;
+        this.engine.addMouseEventListener(this);
+        var addArrowButton = document.getElementById("Arrow");
+        var addGruntButton = document.getElementById("Grunt");
+        var addBoxBox = document.getElementById("BoxBox");
+        var addPinwheel = document.getElementById("Pinwheel");
+        var addWeaver = document.getElementById("Weaver");
+        var addSingularity = document.getElementById("Singularity");
+        // const makeGame = document.getElementById("LevelEditor");
+        var makeEventObject = document.getElementById("MakeEvent");
+        var addTime = document.getElementById("TimeSubmit");
+        var addLoop = document.getElementById("LoopSubmit");
+        var addOperation = document.getElementById("OperationSubmit");
+        var sceneNameSubmit = document.getElementById("sceneNameSubmit");
+        var shipRelative = document.getElementById("shipRelative");
+        this.shipRelative = shipRelative;
+        var setCoordinate = document.getElementById("changeCoordinates");
+        var setRandomCoordinates = document.getElementById("setRandomCoordinates");
+        var randomSpawnCoordinate = document.getElementById("randomSpawnCoordinate");
+        var saveGameDesign = document.getElementById("saveGameDesign");
+        // const loadGameDesign = document.getElementById("loadGameDesign");
+        var startGame = document.getElementById("startGame");
+        shipRelative.onclick = function (e) {
+            e.stopPropagation();
+            var value = shipRelative.value;
+            console.log(value);
+            if (value === "on") {
+                shipRelative.value = "off";
+                _this.makeCoordinatesShipRelative();
+            }
+            else {
+                shipRelative.value = "on";
+                _this.makeCoordinatesArenaRelative();
+            }
+        };
+        setCoordinate.onclick = function (e) {
+            var _a;
+            e.stopPropagation();
+            var x = Number(document.getElementById("xCoordinate").value);
+            var y = Number(document.getElementById("yCoordinate").value);
+            var angle = Number(document.getElementById("angle").value);
+            console.log({ x: x, y: y, angle: angle });
+            (_a = _this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.setCoordinates(x, y, angle);
+        };
+        setRandomCoordinates.onclick = function (e) {
+            var _a;
+            e.stopPropagation();
+            (_a = _this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.setRandomCoordinates();
+        };
+        randomSpawnCoordinate.onclick = function (e) {
+            var _a;
+            // should make it so you can only make one
+            // this would allow me to find the spawn and change it's value here as well
+            e.stopPropagation();
+            ((_a = _this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.type) === "RANDOM";
+            var selectedEnemies = Array.from(document.getElementById('possibleSpawns').selectedOptions).map(function (_a) {
+                var value = _a.value;
+                return value;
+            });
+            if (isEnemyTypeArray(selectedEnemies)) {
+                var numberToGenerate = document.getElementById('numberToGenerate').value;
+                var newSpawn = {
+                    location: 'RANDOM',
+                    type: 'RANDOM',
+                    possibleSpawns: selectedEnemies,
+                    numberToGenerate: Number(numberToGenerate),
+                };
+                _this.addRandomRandomSpawnToEvent(newSpawn);
+            }
+        };
+        addGruntButton.onclick = function (e) {
+            e.stopPropagation();
+            var type = "Grunt";
+            _this.addEnemyButton(type);
+        };
+        addArrowButton.onclick = function (e) {
+            e.stopPropagation();
+            var type = "Arrow";
+            _this.addEnemyButton(type);
+        };
+        addBoxBox.onclick = function (e) {
+            e.stopPropagation();
+            var type = "BoxBox";
+            _this.addEnemyButton(type);
+        };
+        addPinwheel.onclick = function (e) {
+            e.stopPropagation();
+            var type = "Pinwheel";
+            _this.addEnemyButton(type);
+        };
+        addWeaver.onclick = function (e) {
+            e.stopPropagation();
+            var type = "Weaver";
+            _this.addEnemyButton(type);
+        };
+        addSingularity.onclick = function (e) {
+            e.stopPropagation();
+            var type = "Singularity";
+            _this.addEnemyButton(type);
+        };
+        // makeGame.onclick = (e) => {
+        //     e.stopPropagation();
+        //     console.log("game editor opened clicked");
+        //     this.isLevelDesignerOpened = !this.isLevelDesignerOpened;
+        //     this.engine.isLevelDesignerOpened = this.isLevelDesignerOpened;
+        // };
+        makeEventObject.onclick = function (e) {
+            e.stopPropagation();
+            _this.UIActionsToRun.push(function () { return _this.makeEventObject(); });
+        };
+        saveGameDesign.onclick = function (e) {
+            e.stopPropagation();
+            _this.saveGameDesign();
+        };
+        sceneNameSubmit.onclick = function (e) {
+            e.stopPropagation();
+            var name = document.getElementById("sceneName").value;
+            _this.UIActionsToRun.push(function () { return _this.makeSceneObject(name); });
+        };
+        // loadGameDesign.onclick = (e) => {
+        //     e.stopPropagation();
+        //     const json = document.getElementById("loadGameDesignInput").value;
+        //     this.loadGameDesign(json);
+        // };
+        addTime.onclick = function (e) {
+            e.stopPropagation();
+            var time = document.getElementById("Time").value;
+            _this.UIActionsToRun.push(function () { return _this.makeTime(Number(time)); });
+        };
+        addOperation.onclick = function (e) {
+            e.stopPropagation();
+            var operationType = document.getElementById("OperationType").value;
+            var operationValue = document.getElementById("OperationFactor").value;
+            var operand = {
+                type: operationType,
+                factor: Number(operationValue),
+            };
+            _this.UIActionsToRun.push(function () { return _this.makeOperation(operand); });
+        };
+        // should add a loop next to the currently selected element
+        // once I have elements nested under scenes, I'm not sure how this will work
+        // maybe it will make one next to the selected scene if nothing else is selected
+        addLoop.onclick = function (e) {
+            e.stopPropagation();
+            var loop = {
+                repeatTimes: Number(document.getElementById("Repeats").value),
+                // loopIdx: Number(document.getElementById("StartingIndex").value),
+            };
+            _this.UIActionsToRun.push(function () { return _this.makeLoop(loop); });
+        };
+        // window.addEventListener("scroll", (e) => {
+        //     // get the current mouse position to know if it is within the 
+        //     // level editor
+        //     // then move the level editor up or down 
+        // });
+        window.addEventListener("keydown", function (e) {
+            var _a;
+            e.stopPropagation();
+            if (e.key === "Escape") {
+                _this.escapePressed();
+            }
+            if (e.key === "Backspace") {
+                if (_this.currentMousePos) {
+                    (_a = _this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.delete();
+                    _this.leftJustifyGameElements();
+                }
+                else if (_this.currentEnemyPlacer) {
+                    _this.currentEnemyPlacer.removeFromEvent();
+                    _this.animationView.clear();
+                }
+            }
+        });
+        startGame.onclick = function (e) {
+            e.stopPropagation();
+            // TODO: not sure what this was doing before
+            // serialize game, send to game script
+            // this.startGame();
+        };
+        // this.levelDesignerCtx.addEventListener("dblclick", (e) => {
+        //     e.stopPropagation();
+        //     console.log("double clicked");
+        //     const pos = [e.offsetX, e.offsetY];
+        //     this.mouseDoubleClicked(pos);
+        // });
+    };
+    // addToClipBoard(uiElement: UIElement) {
+    // }
+    GEOLevelDesigner.prototype.startGame = function (GEOWarsScript) {
+        this.serializedGame = {
+            type: 'Scene',
+            name: "Game",
+            serializedGameElements: this.baseScene.gameElementObjects.map(function (element) { return element.serialize(); } // set up proper return here
+            ),
+        };
+        var serializedGameString = JSON.stringify(this.serializedGame);
+        // I should unselect whatever is selected.
+        // events being the main issue since they have things
+        // on the game 
+        GEOWarsScript.startGame(serializedGameString);
+        this.engine.isLevelDesignerOpened = false;
+    };
+    GEOLevelDesigner.prototype.makeTime = function (time, parentScene) {
+        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
+        var newElementPosition = this.getNewDrawPosition();
+        var timeObject = new _DesignElements_Time__WEBPACK_IMPORTED_MODULE_6__.TimeObject(this, time, newElementPosition, parentScene);
+        this.selectedGameElement = timeObject;
+        return timeObject;
+    };
+    GEOLevelDesigner.prototype.makeOperation = function (operand, parentScene) {
+        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
+        var newElementPosition = this.getNewDrawPosition();
+        var operationObject = new _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_8__.OperationObject(this, operand, newElementPosition, parentScene);
+        operationObject.onMouseClick();
+        this.selectedGameElement = operationObject;
+        return operationObject;
+    };
+    GEOLevelDesigner.prototype.mouseDoubleClicked = function (pos) {
+        console.log(pos);
+    };
+    GEOLevelDesigner.prototype.expandScene = function (scene) {
+        var _this = this;
+        var _a, _b;
+        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
+        this.selectedGameElement = undefined;
+        var parentIndex = this.expandedScenes.indexOf(scene.parentScene);
+        if (parentIndex !== -1)
+            (_b = this.expandedScenes[parentIndex + 1]) === null || _b === void 0 ? void 0 : _b.unExpandScene();
+        scene.gameElementObjects.forEach(function (element) {
+            element.parentSceneExpanded();
+            _this.addUIElementSprite(element.UILineSprite);
+        });
+        this.expandedScenes.push(scene);
+    };
+    GEOLevelDesigner.prototype.unExpandScene = function (scene) {
+        var expandedIndex = this.expandedScenes.indexOf(scene);
+        if (expandedIndex === 0)
+            return console.log("can't unexpand the base scene");
+        if (expandedIndex === -1)
+            return console.log("scene not expanded");
+        scene.expanded = false;
+        scene.UILineSprite.expanded = false;
+        var bottomExpandedScene = this.expandedScenes.pop();
+        this.removeExpandedElements(bottomExpandedScene);
+        bottomExpandedScene.expanded = false;
+        bottomExpandedScene.UILineSprite.expanded = false;
+        if (scene !== bottomExpandedScene)
+            bottomExpandedScene.parentScene.unExpandScene();
+    };
+    GEOLevelDesigner.prototype.updateMouseMoveEvent = function (e) {
+        if (e.target instanceof HTMLElement && e.target.classList[0] === "level-editor-canvas") {
+            this.currentMousePos = [e.offsetX, e.offsetY];
+            if (this.UIElementMouseFollower) {
+                var moveToPosition = [
+                    e.offsetX - this.UIElementMouseFollower.draggingLineSprite.widthHeight[0] / 2,
+                    e.offsetY - this.UIElementMouseFollower.draggingLineSprite.widthHeight[1] / 2
+                ];
+                this.UIElementMouseFollower.draggingLineSprite.transform.pos = __spreadArray([], moveToPosition, true);
+                // check if the element is overlapping with another element
+                var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
+                var draggedElementSceneIndex = bottomExpandedScene.gameElementObjects.indexOf(this.UIElementMouseFollower);
+                if (draggedElementSceneIndex === -1)
+                    return;
+                var leftElementIndex = draggedElementSceneIndex - 1;
+                var rightElementIndex = draggedElementSceneIndex + 1;
+                var draggedElementXPosition = this.UIElementMouseFollower.draggingLineSprite.transform.pos[0];
+                var draggedElementWidth = this.UIElementMouseFollower.draggingLineSprite.widthHeight[0];
+                // check left element:
+                var moved = false;
+                if (leftElementIndex >= 0) {
+                    var leftElement = bottomExpandedScene.gameElementObjects[leftElementIndex];
+                    var leftElementWidth = leftElement.widthHeight[0];
+                    var leftElementX = leftElement.transform.pos[0];
+                    var leftElementMiddlePosition = leftElementX + leftElementWidth / 2;
+                    if (draggedElementXPosition < leftElementMiddlePosition &&
+                        draggedElementXPosition + draggedElementWidth > leftElementMiddlePosition) {
+                        this.moveLeft(this.UIElementMouseFollower);
+                        moved = true;
+                        // swap position of ghost element and 
+                    }
+                }
+                // check right:
+                if (rightElementIndex < bottomExpandedScene.gameElementObjects.length && moved === false) {
+                    var rightElement = bottomExpandedScene.gameElementObjects[rightElementIndex];
+                    var rightElementWidth = rightElement.widthHeight[0];
+                    var rightElementX = rightElement.transform.pos[0];
+                    var rightElementMiddlePosition = rightElementX + rightElementWidth / 2;
+                    if (draggedElementXPosition < rightElementMiddlePosition &&
+                        draggedElementXPosition + draggedElementWidth > rightElementMiddlePosition) {
+                        this.moveRight(this.UIElementMouseFollower);
+                        // swap position of ghost element and 
+                    }
+                }
+            }
+        }
+        else {
+            this.currentMousePos = undefined;
+        }
+    };
+    GEOLevelDesigner.prototype.getExpandedScenePosition = function () {
+        // expands into next row
+    };
+    GEOLevelDesigner.prototype.leftJustifyGameElements = function () {
+        var _this = this;
+        var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
+        var expandedElements = bottomExpandedScene.gameElementObjects;
+        bottomExpandedScene.gameElementObjects = [];
+        expandedElements.forEach(function (element) {
+            var newPos = _this.getNewDrawPosition();
+            element.transform.pos = newPos;
+            bottomExpandedScene.gameElementObjects.push(element);
+        });
+    };
+    GEOLevelDesigner.prototype.makeLoop = function (loop, parentScene) {
+        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
+        var beginningObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
+        var endObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
+        beginningObject.endLoopObject = endObject;
+        endObject.beginningLoopObject = beginningObject;
+    };
+    GEOLevelDesigner.prototype.makeLoopBeginning = function (parentScene) {
+        var loopBeginning = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
+        this.loopBeginningObjectStackForLoading.push(loopBeginning);
+        return loopBeginning;
+    };
+    GEOLevelDesigner.prototype.makeLoopEnding = function (loop, parentScene) {
+        var loopEndObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
+        var matchingBeginning = this.loopBeginningObjectStackForLoading.pop();
+        matchingBeginning.endLoopObject = loopEndObject;
+        loopEndObject.beginningLoopObject = matchingBeginning;
+        return loopEndObject;
+    };
+    GEOLevelDesigner.prototype.moveLeft = function (UIElement) {
+        var gameElements = this.expandedScenes[this.expandedScenes.length - 1].gameElementObjects;
+        for (var i = 0; i < gameElements.length; i++) {
+            var element = gameElements[i];
+            if (element === UIElement) {
+                if (i === 0)
+                    return;
+                var temp = gameElements[i - 1];
+                gameElements[i - 1] = UIElement;
+                gameElements[i] = temp;
+                this.swapAdjacentPositions(temp, UIElement);
+            }
+        }
+    };
+    GEOLevelDesigner.prototype.moveRight = function (UIElement) {
+        var gameElements = this.expandedScenes[this.expandedScenes.length - 1].gameElementObjects;
+        for (var i = 0; i < gameElements.length; i++) {
+            var currentElement = gameElements[i];
+            if (currentElement === UIElement) {
+                if (i === gameElements.length - 1)
+                    return;
+                var temp = gameElements[i + 1];
+                gameElements[i + 1] = UIElement;
+                gameElements[i] = temp;
+                this.swapAdjacentPositions(UIElement, temp);
+                return;
+            }
+        }
+    };
+    GEOLevelDesigner.prototype.saveGameDesign = function () {
+        var serializedGameElements = this.baseScene.gameElementObjects.map(function (element) { return element.serialize(); });
+        this.serializedGame = {
+            type: "Scene",
+            name: "Game",
+            serializedGameElements: serializedGameElements,
+        };
+        console.log(JSON.stringify(this.serializedGame));
+    };
+    GEOLevelDesigner.prototype.loadGameDesign = function (json) {
+        var serializedGame = JSON.parse(json);
+        this.serializedGame = serializedGame;
+        this.baseScene = new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.SceneObject(this, 'main');
+        this.expandedScenes = [this.baseScene];
+        this.baseScene.gameElementObjects = this.loadGameElements(serializedGame.serializedGameElements, this.baseScene);
+    };
+    GEOLevelDesigner.prototype.loadGameElements = function (serializedGameElements, parentScene) {
+        var _this = this;
+        return serializedGameElements.map(function (serializedElement) {
+            if (serializedElement.type === "Scene") {
+                // might be broken, not sure if should be visible or not
+                var newScene = _this.makeSceneObject(serializedElement.name, true, parentScene);
+                _this.expandedScenes.push(newScene);
+                newScene.gameElementObjects = _this.loadGameElements(serializedElement.serializedGameElements, newScene) || [];
+                newScene.unExpandScene();
+                return newScene;
+            }
+            else if (serializedElement.type === "Event") {
+                return _this.makeEventObject(serializedElement, parentScene);
+            }
+            else if (serializedElement.type === "Time") {
+                return _this.makeTime(serializedElement.waitTime, parentScene);
+            }
+            else if (serializedElement.type === "LoopBeginning") {
+                return _this.makeLoopBeginning(parentScene);
+            }
+            else if (serializedElement.type === "LoopEnd") {
+                return _this.makeLoopEnding(serializedElement, parentScene);
+            }
+            else if (serializedElement.type === "Operation") {
+                return _this.makeOperation(serializedElement.operand, parentScene);
+            }
+        });
+    };
+    GEOLevelDesigner.prototype.makeEventObject = function (eventToLoad, parentScene) {
+        var _a;
+        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
+        // should provide this the current scene to know which array of elements to use
+        var newElementPosition = this.getNewDrawPosition();
+        var event = new _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject(this, eventToLoad, newElementPosition, parentScene);
+        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
+        this.selectedGameElement = event;
+        return event;
+    };
+    GEOLevelDesigner.prototype.swapAdjacentPositions = function (leftUIElement, rightUIElement) {
+        var _a;
+        var newLeftX = ((_a = leftUIElement === null || leftUIElement === void 0 ? void 0 : leftUIElement.transform) === null || _a === void 0 ? void 0 : _a.pos[0]) || 0;
+        var newRightX = newLeftX + (rightUIElement === null || rightUIElement === void 0 ? void 0 : rightUIElement.widthHeight[0]) + 4;
+        leftUIElement.transform.pos[0] = newRightX;
+        rightUIElement.transform.pos[0] = newLeftX;
+    };
+    GEOLevelDesigner.prototype.getNewDrawPosition = function () {
+        var _a, _b;
+        var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
+        var expandedElements = bottomExpandedScene.gameElementObjects;
+        var lastElement = expandedElements[expandedElements.length - 1];
+        var lastXPosition = ((_a = lastElement === null || lastElement === void 0 ? void 0 : lastElement.transform) === null || _a === void 0 ? void 0 : _a.pos[0]) || 0;
+        var lastYPosition = ((_b = lastElement === null || lastElement === void 0 ? void 0 : lastElement.transform) === null || _b === void 0 ? void 0 : _b.pos[1]) || bottomExpandedScene.widthHeight[1] + bottomExpandedScene.transform.pos[1] + 4;
+        var lastWidth = (lastElement === null || lastElement === void 0 ? void 0 : lastElement.widthHeight[0]) || 0;
+        return [lastXPosition + lastWidth + 4, lastYPosition];
+    };
+    GEOLevelDesigner.prototype.makeSceneObject = function (name, visible, parentScene) {
+        if (visible === void 0) { visible = true; }
+        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
+        // this should add a box inside either the game sequence as a whole,
+        // or inside the current scene
+        var newElementPosition;
+        if (visible) {
+            newElementPosition = this.getNewDrawPosition();
+        }
+        // sprites are made and added automatically
+        return (new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.SceneObject(this, name, parentScene, newElementPosition));
+    };
+    GEOLevelDesigner.prototype.loopSelected = function (loop) {
+        var _a;
+        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
+        this.selectedGameElement = loop;
+    };
+    GEOLevelDesigner.prototype.timeSelected = function (time) {
+        var _a;
+        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
+        this.selectedGameElement = time;
+    };
+    GEOLevelDesigner.prototype.operationSelected = function (operation) {
+        var _a;
+        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
+        this.selectedGameElement = operation;
+    };
+    GEOLevelDesigner.prototype.eventSelected = function (event) {
+        var _a;
+        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
+        this.selectedGameElement = event;
+        this.shipRelative.value = event.isShipRelative.toString();
+    };
+    GEOLevelDesigner.prototype.eventUnselected = function () {
+        var _a;
+        (_a = this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.remove();
+        this.currentEnemyPlacer = undefined;
+    };
+    GEOLevelDesigner.prototype.enemyPlacerClicked = function (enemyPlacer) {
+        this.animationView.enemyPlacerSelected(enemyPlacer);
+        this.currentEnemyPlacer = enemyPlacer;
+    };
+    GEOLevelDesigner.prototype.sceneDoubleClicked = function (scene) {
+        // this should open the array of elements in the scene
+        console.log("scene double clicked: ", scene);
+        // should move this into scene object
+        // this.selectedScene.UILineSprite.selected = false;
+        // this.selectedScene = scene;
+        // scene.UILineSprite.selected = true;
+    };
+    GEOLevelDesigner.prototype.sceneSelected = function (scene) {
+        var _a;
+        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
+        this.selectedGameElement = scene;
+    };
+    // getPalletModal() {
+    //     const modal = document.getElementById("pallet");
+    //     // add functions to buttons of the pallet
+    // }
+    // enemyPlaced(spawn) {
+    //     this.animationView.enemyPlaced(spawn);
+    // }
+    GEOLevelDesigner.prototype.escapePressed = function () {
+        var _a;
+        if (this.currentEnemyPlacer && !this.currentEnemyPlacer.isPlaced) {
+            (_a = this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.remove();
+        }
+        this.UIElementSprites.forEach(function (sprite) { return sprite.selected = false; });
+        this.animationView.clear();
+        this.currentEnemyPlacer = undefined;
+    };
+    GEOLevelDesigner.prototype.addEnemyButton = function (type) {
+        var _a;
+        this.animationView.clear();
+        this.animationView.addEnemy(type);
+        (_a = this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.remove();
+        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject) {
+            this.currentEnemyPlacer = this.selectedGameElement.createEnemyPlacer(type);
+        }
+        else {
+            throw Error('event should be selected to add an enemy');
+        }
+    };
+    GEOLevelDesigner.prototype.updateAnimationViewAngle = function (radiansAngle) {
+        this.animationView.gameObjects[0].transform.angle = radiansAngle;
+    };
+    GEOLevelDesigner.prototype.addingAnotherEnemy = function (enemyPlacer) {
+        this.currentEnemyPlacer = enemyPlacer;
+    };
+    // might be redundent and useless TODO
+    GEOLevelDesigner.prototype.downClick = function () {
+        this.clickedDown = true;
+    };
+    GEOLevelDesigner.prototype.unClicked = function () {
+        if (this.UIElementMouseFollower) {
+            this.UIElementMouseFollower.elementLetGo();
+            this.removeUIElementSprite(this.UIElementMouseFollower.draggingLineSprite);
+            this.UIElementMouseFollower = null;
+        }
+        this.clickedDown = false;
+    };
+    GEOLevelDesigner.prototype.addMouseClickListener = function (object) {
+        this.engine.addLevelDesignerClickListener(object);
+    };
+    GEOLevelDesigner.prototype.addMouseDoubleClickListener = function (object) {
+        this.engine.addLevelDesignerDoubleClickListener(object);
+    };
+    GEOLevelDesigner.prototype.removeMouseClickListener = function (object) {
+        this.engine.removeLevelDesignerClickListener(object);
+    };
+    GEOLevelDesigner.prototype.removeMouseDoubleClickListener = function (object) {
+        this.engine.removeLevelDesignerDoubleClickListener(object);
+    };
+    GEOLevelDesigner.prototype.addRandomRandomSpawnToEvent = function (spawnData) {
+        var _a;
+        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject) {
+            (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.addRandomRandom(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_4__.Spawn(spawnData, this.engine));
+        }
+    };
+    GEOLevelDesigner.prototype.update = function () {
+    };
+    GEOLevelDesigner.prototype.createWalls = function () {
+        return new _game_objects_walls__WEBPACK_IMPORTED_MODULE_0__.Walls(this.engine);
+    };
+    GEOLevelDesigner.prototype.createOverlay = function () {
+        return new _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_1__.Overlay(this.engine, this);
+    };
+    GEOLevelDesigner.prototype.isOutOfBounds = function (pos, radius) {
+        var max = [_GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.DIM_X - radius, _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.DIM_Y - radius];
+        if (radius) {
+            return (pos[0] <= radius ||
+                pos[0] >= max[0] ||
+                pos[1] <= radius ||
+                pos[1] >= max[1]);
+        }
+        else {
+            return (pos[0] < 0 ||
+                pos[1] < 0 ||
+                pos[0] > _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.DIM_X ||
+                pos[1] > _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.DIM_Y);
+        }
+    };
+    GEOLevelDesigner.prototype.runUIActions = function () {
+        this.UIActionsToRun.forEach(function (action) { return action(); });
+        this.UIActionsToRun = [];
+    };
+    GEOLevelDesigner.prototype.animate = function (timeDelta) {
+        // it might be cool to animate the tiny enemies in the spawn card
+        // this.animateGameObjects(timeDelta);
+        this.clearCanvas();
+        this.runUIActions();
+        this.renderLineSprites(this.levelDesignerCtx);
+        this.renderUILineSprites(this.levelDesignerCtx);
+        this.renderOverlayText();
+    };
+    GEOLevelDesigner.prototype.renderOverlayText = function () {
+        // if(this.overlayTextCleared) return;
+        // this.ctx.save();
+        // this.ctx.font = 18 + "px " + "Arial";
+        // this.ctx.fillStyle = "white";
+        // const typeText = "Type: " + this.overlayText.Type;
+        // const positionText = "Location: " + this.overlayText.Location;
+        // this.ctx.fillText(
+        //     typeText,
+        //     10,
+        //     20
+        // );
+        // this.ctx.fillText(
+        //     positionText,
+        //     10,
+        //     38
+        // );
+        // this.ctx.restore();
+    };
+    GEOLevelDesigner.prototype.animateGameObjects = function () {
+        // this.gameObjects.forEach((object) => {
+        //     object.animate(delta);
+        // });
+    };
+    GEOLevelDesigner.prototype.clearCanvas = function () {
+        this.ctx.clearRect(0, 0, this.DIM_X, this.DIM_Y);
+        this.ctx.fillStyle = "#000000";
+        this.ctx.fillRect(0, 0, this.DIM_X, this.DIM_Y);
+    };
+    GEOLevelDesigner.prototype.clear = function () {
+        var _this = this;
+        var removeList = __spreadArray([], this.gameObjects, true);
+        removeList.forEach(function (gameObject) {
+            _this.remove(gameObject);
+        });
+        this.overlayTextCleared = true;
+    };
+    GEOLevelDesigner.prototype.renderLineSprites = function (ctx) {
+        ctx.save();
+        ctx.scale(this.zoomScale, this.zoomScale);
+        this.lineSprites.forEach(function (sprite) {
+            sprite.draw(ctx);
+        });
+        ctx.restore();
+    };
+    GEOLevelDesigner.prototype.renderUILineSprites = function (ctx) {
+        ctx.save();
+        this.UIElementSprites.forEach(function (sprite) {
+            sprite.draw(ctx);
+        });
+        ctx.restore();
+    };
+    GEOLevelDesigner.prototype.addGameObject = function (gameObject) {
+        this.gameObjects.push(gameObject);
+    };
+    GEOLevelDesigner.prototype.queueSound = function () {
+    };
+    GEOLevelDesigner.prototype.addCollider = function () { };
+    GEOLevelDesigner.prototype.addPhysicsComponent = function () { };
+    GEOLevelDesigner.prototype.remove = function (gameObject) {
+        if (gameObject.lineSprite) {
+            var lineSpriteIndex = this.lineSprites.indexOf(gameObject.lineSprite);
+            if (lineSpriteIndex > -1)
+                this.lineSprites.splice(lineSpriteIndex, 1);
+        }
+        var index = this.gameObjects.indexOf(gameObject);
+        if (index !== -1)
+            this.gameObjects.splice(index, 1);
+    };
+    GEOLevelDesigner.prototype.removeExpandedElements = function (expandedScene) {
+        var _this = this;
+        var UIElements = expandedScene.gameElementObjects;
+        UIElements.forEach(function (UIElement) {
+            UIElement.parentSceneUnexpanded();
+            if (UIElement.UILineSprite) {
+                var index = _this.UIElementSprites.indexOf(UIElement.UILineSprite);
+                if (index !== -1)
+                    _this.UIElementSprites.splice(index, 1);
+            }
+        });
+    };
+    GEOLevelDesigner.prototype.removeUIElementSprite = function (UILineSprite) {
+        var index = this.UIElementSprites.indexOf(UILineSprite);
+        if (index !== -1)
+            this.UIElementSprites.splice(index, 1);
+    };
+    GEOLevelDesigner.prototype.removeUIElement = function (element) {
+        var index = this.baseScene.gameElementObjects.indexOf(element);
+        if (index !== -1)
+            this.baseScene.gameElementObjects.splice(index, 1);
+    };
+    GEOLevelDesigner.prototype.addUIElementSprite = function (UILineSprite) {
+        this.UIElementSprites.push(UILineSprite);
+    };
+    GEOLevelDesigner.prototype.addUIElement = function (UIElement) {
+        var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
+        if (!bottomExpandedScene && UIElement instanceof _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.SceneObject) {
+            setTimeout(function () { return UIElement.expandScene(); });
+            // this.expandedScenes.push(UIElement);
+        }
+        else {
+            bottomExpandedScene.gameElementObjects.push(UIElement);
+        }
+    };
+    GEOLevelDesigner.prototype.addLineSprite = function (lineSprite) {
+        this.lineSprites.push(lineSprite);
+    };
+    GEOLevelDesigner.prototype.makeCoordinatesShipRelative = function () {
+        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject)
+            this.selectedGameElement.makeCoordinatesShipRelative();
+    };
+    GEOLevelDesigner.prototype.eventLoadShipRelative = function (isRelative) {
+        this.shipRelative.checked = isRelative;
+        console.log('loading ship', this.shipRelative);
+    };
+    GEOLevelDesigner.prototype.makeCoordinatesArenaRelative = function () {
+        var _a;
+        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject)
+            (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.makeCoordinatesArenaRelative();
+    };
+    return GEOLevelDesigner;
+}());
+
+
+
+/***/ }),
+
 /***/ "./src/game_engine/Levels/LevelDesign/EnemyPlacer.ts":
 /*!***********************************************************!*\
   !*** ./src/game_engine/Levels/LevelDesign/EnemyPlacer.ts ***!
@@ -2848,10 +3692,12 @@ var PlacingAnimation = /** @class */ (function (_super) {
     }
     // Mouse handling should call this I think?
     PlacingAnimation.prototype.placeEnemy = function () {
+        this.parentObject.lineSprite.spawningScale = 1;
         this.removeMouseListeners();
         this.parentObject.place();
         this.remove();
     };
+    // why is the position not mapping right
     PlacingAnimation.prototype.updateMousePos = function (mousePos) {
         this.parentObject.transform.pos[0] = mousePos[0];
         this.parentObject.transform.pos[1] = mousePos[1];
@@ -2881,15 +3727,15 @@ var NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 /***/ }),
 
-/***/ "./src/game_engine/Levels/levelDesigner.ts":
-/*!*************************************************!*\
-  !*** ./src/game_engine/Levels/levelDesigner.ts ***!
-  \*************************************************/
+/***/ "./src/game_engine/Levels/StrikeTimeLevelDesigner.ts":
+/*!***********************************************************!*\
+  !*** ./src/game_engine/Levels/StrikeTimeLevelDesigner.ts ***!
+  \***********************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   LevelDesigner: () => (/* binding */ LevelDesigner),
+/* harmony export */   StrikeTimeLevelDesigner: () => (/* binding */ StrikeTimeLevelDesigner),
 /* harmony export */   isEnemyTypeArray: () => (/* binding */ isEnemyTypeArray)
 /* harmony export */ });
 /* harmony import */ var _game_objects_walls__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_objects/walls */ "./src/game_objects/walls.ts");
@@ -2902,6 +3748,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.ts");
 /* harmony import */ var _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./DesignElements/Operation */ "./src/game_engine/Levels/DesignElements/Operation.ts");
 /* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../GEOWarsScript */ "./src/GEOWarsScript.ts");
+/* harmony import */ var _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../game_objects/enemies/BoxBox/boxbox */ "./src/game_objects/enemies/BoxBox/boxbox.ts");
 var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from, pack) {
     if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
         if (ar || !(i in from)) {
@@ -2923,17 +3770,19 @@ var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from
 
 
 
+
 // I should collect placed enemies
 // check if array of enemyType
 function isEnemyTypeArray(value) {
     return !value.some(function (type) { return (!(0,_DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_4__.isEnemyType)(type)); });
 }
+// Perhaps level designer should be an extension of game script with connection to the
+// timeline UI and the animation window
 // for a tracker I can highlight the current game element
 // just like selecting it... but maybe the same color for 
 // all of them 
-var LevelDesigner = /** @class */ (function () {
-    function LevelDesigner(engine, animationView, levelDesignerCtx, serializedGame) {
-        var _this = this;
+var StrikeTimeLevelDesigner = /** @class */ (function () {
+    function StrikeTimeLevelDesigner(engine, animationView, levelDesignerCtx, serializedGame) {
         this.transform = new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform();
         this.DIM_X = 1200;
         this.DIM_Y = 300;
@@ -2947,7 +3796,7 @@ var LevelDesigner = /** @class */ (function () {
         this.overlayTextCleared = true;
         // // main game array is the main list of sequence objects
         // mainGameArray = [];
-        this.gameEditorOpened = false;
+        this.isLevelDesignerOpened = false;
         this.engine = engine;
         this.serializedGame = serializedGame;
         this.UIElementSprites = [];
@@ -2965,9 +3814,6 @@ var LevelDesigner = /** @class */ (function () {
         this.gameObjects = [];
         this.lineSprites = [];
         this.zoomScale = 1;
-        this.ship = {
-            transform: new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform()
-        };
         this.lastTime = 0;
         this.animate = this.animate.bind(this);
         this.overlayText = {
@@ -2980,17 +3826,15 @@ var LevelDesigner = /** @class */ (function () {
         // this.palletModal = this.getPalletModal();
         // can be scene, time, event, or loop
         this.selectedGameElement;
+        //TODO: rename
         this.currentEnemyPlacer;
-        // main game array is the main list of sequence objects
-        // this.mainGameArray = [];
-        this.gameEditorOpened = false;
-        var addArrowButton = document.getElementById("Arrow");
-        var addGruntButton = document.getElementById("Grunt");
-        var addBoxBox = document.getElementById("BoxBox");
-        var addPinwheel = document.getElementById("Pinwheel");
-        var addWeaver = document.getElementById("Weaver");
-        var addSingularity = document.getElementById("Singularity");
-        // const makeGame = document.getElementById("LevelEditor");
+        this.isLevelDesignerOpened = false;
+    }
+    StrikeTimeLevelDesigner.prototype.openLevelDesigner = function () {
+        var _this = this;
+        this.addArrowListeners();
+        this.engine.addMouseEventListener(this);
+        this.isLevelDesignerOpened = true;
         var makeEventObject = document.getElementById("MakeEvent");
         var addTime = document.getElementById("TimeSubmit");
         var addLoop = document.getElementById("LoopSubmit");
@@ -3017,6 +3861,7 @@ var LevelDesigner = /** @class */ (function () {
                 _this.makeCoordinatesArenaRelative();
             }
         };
+        new _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_10__.BoxBox(this.engine, [300, 150]);
         setCoordinate.onclick = function (e) {
             var _a;
             e.stopPropagation();
@@ -3052,41 +3897,11 @@ var LevelDesigner = /** @class */ (function () {
                 _this.addRandomRandomSpawnToEvent(newSpawn);
             }
         };
-        addGruntButton.onclick = function (e) {
-            e.stopPropagation();
-            var type = "Grunt";
-            _this.addEnemyButton(type);
-        };
-        addArrowButton.onclick = function (e) {
-            e.stopPropagation();
-            var type = "Arrow";
-            _this.addEnemyButton(type);
-        };
-        addBoxBox.onclick = function (e) {
-            e.stopPropagation();
-            var type = "BoxBox";
-            _this.addEnemyButton(type);
-        };
-        addPinwheel.onclick = function (e) {
-            e.stopPropagation();
-            var type = "Pinwheel";
-            _this.addEnemyButton(type);
-        };
-        addWeaver.onclick = function (e) {
-            e.stopPropagation();
-            var type = "Weaver";
-            _this.addEnemyButton(type);
-        };
-        addSingularity.onclick = function (e) {
-            e.stopPropagation();
-            var type = "Singularity";
-            _this.addEnemyButton(type);
-        };
         // makeGame.onclick = (e) => {
         //     e.stopPropagation();
         //     console.log("game editor opened clicked");
-        //     this.gameEditorOpened = !this.gameEditorOpened;
-        //     this.engine.gameEditorOpened = this.gameEditorOpened;
+        //     this.isLevelDesignerOpened = !this.isLevelDesignerOpened;
+        //     this.engine.isLevelDesignerOpened = this.isLevelDesignerOpened;
         // };
         makeEventObject.onclick = function (e) {
             e.stopPropagation();
@@ -3160,16 +3975,10 @@ var LevelDesigner = /** @class */ (function () {
             // serialize game, send to game script
             // this.startGame();
         };
-        // this.levelDesignerCtx.addEventListener("dblclick", (e) => {
-        //     e.stopPropagation();
-        //     console.log("double clicked");
-        //     const pos = [e.offsetX, e.offsetY];
-        //     this.mouseDoubleClicked(pos);
-        // });
-    }
+    };
     // addToClipBoard(uiElement: UIElement) {
     // }
-    LevelDesigner.prototype.startGame = function (GEOWarsScript) {
+    StrikeTimeLevelDesigner.prototype.startGame = function (GEOWarsScript) {
         this.serializedGame = {
             type: 'Scene',
             name: "Game",
@@ -3181,16 +3990,16 @@ var LevelDesigner = /** @class */ (function () {
         // events being the main issue since they have things
         // on the game 
         GEOWarsScript.startGame(serializedGameString);
-        this.engine.gameEditorOpened = false;
+        this.engine.isLevelDesignerOpened = false;
     };
-    LevelDesigner.prototype.makeTime = function (time, parentScene) {
+    StrikeTimeLevelDesigner.prototype.makeTime = function (time, parentScene) {
         if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
         var newElementPosition = this.getNewDrawPosition();
         var timeObject = new _DesignElements_Time__WEBPACK_IMPORTED_MODULE_6__.TimeObject(this, time, newElementPosition, parentScene);
         this.selectedGameElement = timeObject;
         return timeObject;
     };
-    LevelDesigner.prototype.makeOperation = function (operand, parentScene) {
+    StrikeTimeLevelDesigner.prototype.makeOperation = function (operand, parentScene) {
         if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
         var newElementPosition = this.getNewDrawPosition();
         var operationObject = new _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_8__.OperationObject(this, operand, newElementPosition, parentScene);
@@ -3198,10 +4007,10 @@ var LevelDesigner = /** @class */ (function () {
         this.selectedGameElement = operationObject;
         return operationObject;
     };
-    LevelDesigner.prototype.mouseDoubleClicked = function (pos) {
+    StrikeTimeLevelDesigner.prototype.mouseDoubleClicked = function (pos) {
         console.log(pos);
     };
-    LevelDesigner.prototype.expandScene = function (scene) {
+    StrikeTimeLevelDesigner.prototype.expandScene = function (scene) {
         var _this = this;
         var _a, _b;
         (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
@@ -3215,7 +4024,7 @@ var LevelDesigner = /** @class */ (function () {
         });
         this.expandedScenes.push(scene);
     };
-    LevelDesigner.prototype.unExpandScene = function (scene) {
+    StrikeTimeLevelDesigner.prototype.unExpandScene = function (scene) {
         var expandedIndex = this.expandedScenes.indexOf(scene);
         if (expandedIndex === 0)
             return console.log("can't unexpand the base scene");
@@ -3230,7 +4039,7 @@ var LevelDesigner = /** @class */ (function () {
         if (scene !== bottomExpandedScene)
             bottomExpandedScene.parentScene.unExpandScene();
     };
-    LevelDesigner.prototype.mouseMoveEvent = function (e) {
+    StrikeTimeLevelDesigner.prototype.updateMouseMoveEvent = function (e) {
         if (e.target instanceof HTMLElement && e.target.classList[0] === "level-editor-canvas") {
             this.currentMousePos = [e.offsetX, e.offsetY];
             if (this.UIElementMouseFollower) {
@@ -3280,10 +4089,10 @@ var LevelDesigner = /** @class */ (function () {
             this.currentMousePos = undefined;
         }
     };
-    LevelDesigner.prototype.getExpandedScenePosition = function () {
+    StrikeTimeLevelDesigner.prototype.getExpandedScenePosition = function () {
         // expands into next row
     };
-    LevelDesigner.prototype.leftJustifyGameElements = function () {
+    StrikeTimeLevelDesigner.prototype.leftJustifyGameElements = function () {
         var _this = this;
         var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
         var expandedElements = bottomExpandedScene.gameElementObjects;
@@ -3294,26 +4103,26 @@ var LevelDesigner = /** @class */ (function () {
             bottomExpandedScene.gameElementObjects.push(element);
         });
     };
-    LevelDesigner.prototype.makeLoop = function (loop, parentScene) {
+    StrikeTimeLevelDesigner.prototype.makeLoop = function (loop, parentScene) {
         if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
         var beginningObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
         var endObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
         beginningObject.endLoopObject = endObject;
         endObject.beginningLoopObject = beginningObject;
     };
-    LevelDesigner.prototype.makeLoopBeginning = function (parentScene) {
+    StrikeTimeLevelDesigner.prototype.makeLoopBeginning = function (parentScene) {
         var loopBeginning = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
         this.loopBeginningObjectStackForLoading.push(loopBeginning);
         return loopBeginning;
     };
-    LevelDesigner.prototype.makeLoopEnding = function (loop, parentScene) {
+    StrikeTimeLevelDesigner.prototype.makeLoopEnding = function (loop, parentScene) {
         var loopEndObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
         var matchingBeginning = this.loopBeginningObjectStackForLoading.pop();
         matchingBeginning.endLoopObject = loopEndObject;
         loopEndObject.beginningLoopObject = matchingBeginning;
         return loopEndObject;
     };
-    LevelDesigner.prototype.moveLeft = function (UIElement) {
+    StrikeTimeLevelDesigner.prototype.moveLeft = function (UIElement) {
         var gameElements = this.expandedScenes[this.expandedScenes.length - 1].gameElementObjects;
         for (var i = 0; i < gameElements.length; i++) {
             var element = gameElements[i];
@@ -3327,7 +4136,7 @@ var LevelDesigner = /** @class */ (function () {
             }
         }
     };
-    LevelDesigner.prototype.moveRight = function (UIElement) {
+    StrikeTimeLevelDesigner.prototype.moveRight = function (UIElement) {
         var gameElements = this.expandedScenes[this.expandedScenes.length - 1].gameElementObjects;
         for (var i = 0; i < gameElements.length; i++) {
             var currentElement = gameElements[i];
@@ -3342,7 +4151,7 @@ var LevelDesigner = /** @class */ (function () {
             }
         }
     };
-    LevelDesigner.prototype.saveGameDesign = function () {
+    StrikeTimeLevelDesigner.prototype.saveGameDesign = function () {
         var serializedGameElements = this.baseScene.gameElementObjects.map(function (element) { return element.serialize(); });
         this.serializedGame = {
             type: "Scene",
@@ -3351,14 +4160,14 @@ var LevelDesigner = /** @class */ (function () {
         };
         console.log(JSON.stringify(this.serializedGame));
     };
-    LevelDesigner.prototype.loadGameDesign = function (json) {
+    StrikeTimeLevelDesigner.prototype.loadGameDesign = function (json) {
         var serializedGame = JSON.parse(json);
         this.serializedGame = serializedGame;
         this.baseScene = new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.SceneObject(this, 'main');
         this.expandedScenes = [this.baseScene];
         this.baseScene.gameElementObjects = this.loadGameElements(serializedGame.serializedGameElements, this.baseScene);
     };
-    LevelDesigner.prototype.loadGameElements = function (serializedGameElements, parentScene) {
+    StrikeTimeLevelDesigner.prototype.loadGameElements = function (serializedGameElements, parentScene) {
         var _this = this;
         return serializedGameElements.map(function (serializedElement) {
             if (serializedElement.type === "Scene") {
@@ -3386,7 +4195,7 @@ var LevelDesigner = /** @class */ (function () {
             }
         });
     };
-    LevelDesigner.prototype.makeEventObject = function (eventToLoad, parentScene) {
+    StrikeTimeLevelDesigner.prototype.makeEventObject = function (eventToLoad, parentScene) {
         var _a;
         if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
         // should provide this the current scene to know which array of elements to use
@@ -3396,14 +4205,14 @@ var LevelDesigner = /** @class */ (function () {
         this.selectedGameElement = event;
         return event;
     };
-    LevelDesigner.prototype.swapAdjacentPositions = function (leftUIElement, rightUIElement) {
+    StrikeTimeLevelDesigner.prototype.swapAdjacentPositions = function (leftUIElement, rightUIElement) {
         var _a;
         var newLeftX = ((_a = leftUIElement === null || leftUIElement === void 0 ? void 0 : leftUIElement.transform) === null || _a === void 0 ? void 0 : _a.pos[0]) || 0;
         var newRightX = newLeftX + (rightUIElement === null || rightUIElement === void 0 ? void 0 : rightUIElement.widthHeight[0]) + 4;
         leftUIElement.transform.pos[0] = newRightX;
         rightUIElement.transform.pos[0] = newLeftX;
     };
-    LevelDesigner.prototype.getNewDrawPosition = function () {
+    StrikeTimeLevelDesigner.prototype.getNewDrawPosition = function () {
         var _a, _b;
         var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
         var expandedElements = bottomExpandedScene.gameElementObjects;
@@ -3413,7 +4222,7 @@ var LevelDesigner = /** @class */ (function () {
         var lastWidth = (lastElement === null || lastElement === void 0 ? void 0 : lastElement.widthHeight[0]) || 0;
         return [lastXPosition + lastWidth + 4, lastYPosition];
     };
-    LevelDesigner.prototype.makeSceneObject = function (name, visible, parentScene) {
+    StrikeTimeLevelDesigner.prototype.makeSceneObject = function (name, visible, parentScene) {
         if (visible === void 0) { visible = true; }
         if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
         // this should add a box inside either the game sequence as a whole,
@@ -3425,37 +4234,37 @@ var LevelDesigner = /** @class */ (function () {
         // sprites are made and added automatically
         return (new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.SceneObject(this, name, parentScene, newElementPosition));
     };
-    LevelDesigner.prototype.loopSelected = function (loop) {
+    StrikeTimeLevelDesigner.prototype.loopSelected = function (loop) {
         var _a;
         (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
         this.selectedGameElement = loop;
     };
-    LevelDesigner.prototype.timeSelected = function (time) {
+    StrikeTimeLevelDesigner.prototype.timeSelected = function (time) {
         var _a;
         (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
         this.selectedGameElement = time;
     };
-    LevelDesigner.prototype.operationSelected = function (operation) {
+    StrikeTimeLevelDesigner.prototype.operationSelected = function (operation) {
         var _a;
         (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
         this.selectedGameElement = operation;
     };
-    LevelDesigner.prototype.eventSelected = function (event) {
+    StrikeTimeLevelDesigner.prototype.eventSelected = function (event) {
         var _a;
         (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
         this.selectedGameElement = event;
         this.shipRelative.value = event.isShipRelative.toString();
     };
-    LevelDesigner.prototype.eventUnselected = function () {
+    StrikeTimeLevelDesigner.prototype.eventUnselected = function () {
         var _a;
         (_a = this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.remove();
         this.currentEnemyPlacer = undefined;
     };
-    LevelDesigner.prototype.enemyPlacerClicked = function (enemyPlacer) {
+    StrikeTimeLevelDesigner.prototype.enemyPlacerClicked = function (enemyPlacer) {
         this.animationView.enemyPlacerSelected(enemyPlacer);
         this.currentEnemyPlacer = enemyPlacer;
     };
-    LevelDesigner.prototype.sceneDoubleClicked = function (scene) {
+    StrikeTimeLevelDesigner.prototype.sceneDoubleClicked = function (scene) {
         // this should open the array of elements in the scene
         console.log("scene double clicked: ", scene);
         // should move this into scene object
@@ -3463,7 +4272,7 @@ var LevelDesigner = /** @class */ (function () {
         // this.selectedScene = scene;
         // scene.UILineSprite.selected = true;
     };
-    LevelDesigner.prototype.sceneSelected = function (scene) {
+    StrikeTimeLevelDesigner.prototype.sceneSelected = function (scene) {
         var _a;
         (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
         this.selectedGameElement = scene;
@@ -3475,7 +4284,7 @@ var LevelDesigner = /** @class */ (function () {
     // enemyPlaced(spawn) {
     //     this.animationView.enemyPlaced(spawn);
     // }
-    LevelDesigner.prototype.escapePressed = function () {
+    StrikeTimeLevelDesigner.prototype.escapePressed = function () {
         var _a;
         if (this.currentEnemyPlacer && !this.currentEnemyPlacer.isPlaced) {
             (_a = this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.remove();
@@ -3484,7 +4293,7 @@ var LevelDesigner = /** @class */ (function () {
         this.animationView.clear();
         this.currentEnemyPlacer = undefined;
     };
-    LevelDesigner.prototype.addEnemyButton = function (type) {
+    StrikeTimeLevelDesigner.prototype.addEnemyButton = function (type) {
         var _a;
         this.animationView.clear();
         this.animationView.addEnemy(type);
@@ -3496,17 +4305,17 @@ var LevelDesigner = /** @class */ (function () {
             throw Error('event should be selected to add an enemy');
         }
     };
-    LevelDesigner.prototype.updateAnimationViewAngle = function (radiansAngle) {
+    StrikeTimeLevelDesigner.prototype.updateAnimationViewAngle = function (radiansAngle) {
         this.animationView.gameObjects[0].transform.angle = radiansAngle;
     };
-    LevelDesigner.prototype.addingAnotherEnemy = function (enemyPlacer) {
+    StrikeTimeLevelDesigner.prototype.addingAnotherEnemy = function (enemyPlacer) {
         this.currentEnemyPlacer = enemyPlacer;
     };
     // might be redundent and useless TODO
-    LevelDesigner.prototype.downClick = function () {
+    StrikeTimeLevelDesigner.prototype.downClick = function () {
         this.clickedDown = true;
     };
-    LevelDesigner.prototype.unClicked = function () {
+    StrikeTimeLevelDesigner.prototype.unClicked = function () {
         if (this.UIElementMouseFollower) {
             this.UIElementMouseFollower.elementLetGo();
             this.removeUIElementSprite(this.UIElementMouseFollower.draggingLineSprite);
@@ -3514,33 +4323,51 @@ var LevelDesigner = /** @class */ (function () {
         }
         this.clickedDown = false;
     };
-    LevelDesigner.prototype.addMouseClickListener = function (object) {
+    StrikeTimeLevelDesigner.prototype.addArrowListeners = function () {
+        this.engine.addLeftArrowListener(this);
+        this.engine.addRightArrowListener(this);
+        this.engine.addDownArrowListener(this);
+        this.engine.addUpArrowListener(this);
+    };
+    StrikeTimeLevelDesigner.prototype.updateLeftArrowListener = function (pressed) {
+        this.engine.activeCamera.transform.pos[0] -= 5;
+    };
+    StrikeTimeLevelDesigner.prototype.updateUpArrowListener = function (pressed) {
+        this.engine.activeCamera.transform.pos[1] -= 5;
+    };
+    StrikeTimeLevelDesigner.prototype.updateRightArrowListener = function (pressed) {
+        this.engine.activeCamera.transform.pos[0] += 5;
+    };
+    StrikeTimeLevelDesigner.prototype.updateDownArrowListener = function (pressed) {
+        this.engine.activeCamera.transform.pos[1] += 5;
+    };
+    StrikeTimeLevelDesigner.prototype.addMouseClickListener = function (object) {
         this.engine.addLevelDesignerClickListener(object);
     };
-    LevelDesigner.prototype.addMouseDoubleClickListener = function (object) {
+    StrikeTimeLevelDesigner.prototype.addMouseDoubleClickListener = function (object) {
         this.engine.addLevelDesignerDoubleClickListener(object);
     };
-    LevelDesigner.prototype.removeMouseClickListener = function (object) {
+    StrikeTimeLevelDesigner.prototype.removeMouseClickListener = function (object) {
         this.engine.removeLevelDesignerClickListener(object);
     };
-    LevelDesigner.prototype.removeMouseDoubleClickListener = function (object) {
+    StrikeTimeLevelDesigner.prototype.removeMouseDoubleClickListener = function (object) {
         this.engine.removeLevelDesignerDoubleClickListener(object);
     };
-    LevelDesigner.prototype.addRandomRandomSpawnToEvent = function (spawnData) {
+    StrikeTimeLevelDesigner.prototype.addRandomRandomSpawnToEvent = function (spawnData) {
         var _a;
         if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject) {
             (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.addRandomRandom(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_4__.Spawn(spawnData, this.engine));
         }
     };
-    LevelDesigner.prototype.update = function () {
+    StrikeTimeLevelDesigner.prototype.update = function () {
     };
-    LevelDesigner.prototype.createWalls = function () {
+    StrikeTimeLevelDesigner.prototype.createWalls = function () {
         return new _game_objects_walls__WEBPACK_IMPORTED_MODULE_0__.Walls(this.engine);
     };
-    LevelDesigner.prototype.createOverlay = function () {
+    StrikeTimeLevelDesigner.prototype.createOverlay = function () {
         return new _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_1__.Overlay(this.engine, this);
     };
-    LevelDesigner.prototype.isOutOfBounds = function (pos, radius) {
+    StrikeTimeLevelDesigner.prototype.isOutOfBounds = function (pos, radius) {
         var max = [_GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.DIM_X - radius, _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.DIM_Y - radius];
         if (radius) {
             return (pos[0] <= radius ||
@@ -3555,11 +4382,11 @@ var LevelDesigner = /** @class */ (function () {
                 pos[1] > _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.DIM_Y);
         }
     };
-    LevelDesigner.prototype.runUIActions = function () {
+    StrikeTimeLevelDesigner.prototype.runUIActions = function () {
         this.UIActionsToRun.forEach(function (action) { return action(); });
         this.UIActionsToRun = [];
     };
-    LevelDesigner.prototype.animate = function (timeDelta) {
+    StrikeTimeLevelDesigner.prototype.animate = function (timeDelta) {
         // it might be cool to animate the tiny enemies in the spawn card
         // this.animateGameObjects(timeDelta);
         this.clearCanvas();
@@ -3568,7 +4395,7 @@ var LevelDesigner = /** @class */ (function () {
         this.renderUILineSprites(this.levelDesignerCtx);
         this.renderOverlayText();
     };
-    LevelDesigner.prototype.renderOverlayText = function () {
+    StrikeTimeLevelDesigner.prototype.renderOverlayText = function () {
         // if(this.overlayTextCleared) return;
         // this.ctx.save();
         // this.ctx.font = 18 + "px " + "Arial";
@@ -3587,17 +4414,17 @@ var LevelDesigner = /** @class */ (function () {
         // );
         // this.ctx.restore();
     };
-    LevelDesigner.prototype.animateGameObjects = function () {
+    StrikeTimeLevelDesigner.prototype.animateGameObjects = function () {
         // this.gameObjects.forEach((object) => {
         //     object.animate(delta);
         // });
     };
-    LevelDesigner.prototype.clearCanvas = function () {
+    StrikeTimeLevelDesigner.prototype.clearCanvas = function () {
         this.ctx.clearRect(0, 0, this.DIM_X, this.DIM_Y);
         this.ctx.fillStyle = "#000000";
         this.ctx.fillRect(0, 0, this.DIM_X, this.DIM_Y);
     };
-    LevelDesigner.prototype.clear = function () {
+    StrikeTimeLevelDesigner.prototype.clear = function () {
         var _this = this;
         var removeList = __spreadArray([], this.gameObjects, true);
         removeList.forEach(function (gameObject) {
@@ -3605,7 +4432,7 @@ var LevelDesigner = /** @class */ (function () {
         });
         this.overlayTextCleared = true;
     };
-    LevelDesigner.prototype.renderLineSprites = function (ctx) {
+    StrikeTimeLevelDesigner.prototype.renderLineSprites = function (ctx) {
         ctx.save();
         ctx.scale(this.zoomScale, this.zoomScale);
         this.lineSprites.forEach(function (sprite) {
@@ -3613,21 +4440,21 @@ var LevelDesigner = /** @class */ (function () {
         });
         ctx.restore();
     };
-    LevelDesigner.prototype.renderUILineSprites = function (ctx) {
+    StrikeTimeLevelDesigner.prototype.renderUILineSprites = function (ctx) {
         ctx.save();
         this.UIElementSprites.forEach(function (sprite) {
             sprite.draw(ctx);
         });
         ctx.restore();
     };
-    LevelDesigner.prototype.addGameObject = function (gameObject) {
+    StrikeTimeLevelDesigner.prototype.addGameObject = function (gameObject) {
         this.gameObjects.push(gameObject);
     };
-    LevelDesigner.prototype.queueSound = function () {
+    StrikeTimeLevelDesigner.prototype.queueSound = function () {
     };
-    LevelDesigner.prototype.addCollider = function () { };
-    LevelDesigner.prototype.addPhysicsComponent = function () { };
-    LevelDesigner.prototype.remove = function (gameObject) {
+    StrikeTimeLevelDesigner.prototype.addCollider = function () { };
+    StrikeTimeLevelDesigner.prototype.addPhysicsComponent = function () { };
+    StrikeTimeLevelDesigner.prototype.remove = function (gameObject) {
         if (gameObject.lineSprite) {
             var lineSpriteIndex = this.lineSprites.indexOf(gameObject.lineSprite);
             if (lineSpriteIndex > -1)
@@ -3637,7 +4464,7 @@ var LevelDesigner = /** @class */ (function () {
         if (index !== -1)
             this.gameObjects.splice(index, 1);
     };
-    LevelDesigner.prototype.removeExpandedElements = function (expandedScene) {
+    StrikeTimeLevelDesigner.prototype.removeExpandedElements = function (expandedScene) {
         var _this = this;
         var UIElements = expandedScene.gameElementObjects;
         UIElements.forEach(function (UIElement) {
@@ -3649,20 +4476,20 @@ var LevelDesigner = /** @class */ (function () {
             }
         });
     };
-    LevelDesigner.prototype.removeUIElementSprite = function (UILineSprite) {
+    StrikeTimeLevelDesigner.prototype.removeUIElementSprite = function (UILineSprite) {
         var index = this.UIElementSprites.indexOf(UILineSprite);
         if (index !== -1)
             this.UIElementSprites.splice(index, 1);
     };
-    LevelDesigner.prototype.removeUIElement = function (element) {
+    StrikeTimeLevelDesigner.prototype.removeUIElement = function (element) {
         var index = this.baseScene.gameElementObjects.indexOf(element);
         if (index !== -1)
             this.baseScene.gameElementObjects.splice(index, 1);
     };
-    LevelDesigner.prototype.addUIElementSprite = function (UILineSprite) {
+    StrikeTimeLevelDesigner.prototype.addUIElementSprite = function (UILineSprite) {
         this.UIElementSprites.push(UILineSprite);
     };
-    LevelDesigner.prototype.addUIElement = function (UIElement) {
+    StrikeTimeLevelDesigner.prototype.addUIElement = function (UIElement) {
         var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
         if (!bottomExpandedScene && UIElement instanceof _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.SceneObject) {
             setTimeout(function () { return UIElement.expandScene(); });
@@ -3672,23 +4499,23 @@ var LevelDesigner = /** @class */ (function () {
             bottomExpandedScene.gameElementObjects.push(UIElement);
         }
     };
-    LevelDesigner.prototype.addLineSprite = function (lineSprite) {
+    StrikeTimeLevelDesigner.prototype.addLineSprite = function (lineSprite) {
         this.lineSprites.push(lineSprite);
     };
-    LevelDesigner.prototype.makeCoordinatesShipRelative = function () {
+    StrikeTimeLevelDesigner.prototype.makeCoordinatesShipRelative = function () {
         if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject)
             this.selectedGameElement.makeCoordinatesShipRelative();
     };
-    LevelDesigner.prototype.eventLoadShipRelative = function (isRelative) {
+    StrikeTimeLevelDesigner.prototype.eventLoadShipRelative = function (isRelative) {
         this.shipRelative.checked = isRelative;
         console.log('loading ship', this.shipRelative);
     };
-    LevelDesigner.prototype.makeCoordinatesArenaRelative = function () {
+    StrikeTimeLevelDesigner.prototype.makeCoordinatesArenaRelative = function () {
         var _a;
         if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject)
             (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.makeCoordinatesArenaRelative();
     };
-    return LevelDesigner;
+    return StrikeTimeLevelDesigner;
 }());
 
 
@@ -4625,10 +5452,10 @@ var Camera = /** @class */ (function () {
         this.initialCameraZPos = -1000;
         this.cameraHeight = 600;
         this.cameraWidth = 1000;
-        this.defaultZoomScale = 1.3;
+        this.defaultZoomScale = 1;
         this.transform = transform;
         this.transform.pos[2] = this.initialCameraZPos;
-        this.zoomScale = 1.3;
+        this.zoomScale = 1;
     }
     Camera.prototype.makeActiveCamera = function () {
         this.gameEngine.setActiveCamera(this);
@@ -4842,11 +5669,8 @@ var GameEngine = /** @class */ (function () {
             startButtonPressed: false,
         };
         this.gameScriptAdded = false;
-        this.defaultZoomScale = 1.3;
-        this.zoomScale = 1.3;
         this.lineSprites = [];
         this.cameras = [];
-        this.activeCamera = new _camera__WEBPACK_IMPORTED_MODULE_0__.Camera(this, new _transform__WEBPACK_IMPORTED_MODULE_1__.Transform(), 'first camera');
         this.controllableGameObjects = [];
         this.controlledGameObject = null;
         this.gameObjects = [];
@@ -4856,6 +5680,7 @@ var GameEngine = /** @class */ (function () {
         this.subscribers = [];
         this.muted = true;
         this.mouseListeners = [];
+        this.mouseEventListeners = [];
         this.mouseFocussedListeners = [];
         this.gameClickListeners = [];
         this.gameClickListenersToAdd = [];
@@ -4879,16 +5704,21 @@ var GameEngine = /** @class */ (function () {
         this.bButtonListeners = [];
         this.aButtonListeners = [];
         this.startButtonListeners = [];
+        this.leftArrowListeners = [];
+        this.rightArrowListeners = [];
+        this.upArrowListeners = [];
+        this.downArrowListeners = [];
         // this.toRemoveQueue = [];
         this.paused = false;
         // this.currentCamera = null;
         this.graphicQuality = 1;
         this.setupController();
         this.setupPerformance();
-        this.gameEditorOpened = false;
+        this.isLevelDesignerOpened = false;
         this.frameCountForPerformance = 0;
         this.levelDesigner = null;
         this.spriteCreatorOpened = false;
+        this.addCamera(new _camera__WEBPACK_IMPORTED_MODULE_0__.Camera(this, new _transform__WEBPACK_IMPORTED_MODULE_1__.Transform(), 'first camera'));
     }
     GameEngine.prototype.addGameScript = function (gameScriptToAdd) {
         this.gameScript = gameScriptToAdd;
@@ -5096,6 +5926,18 @@ var GameEngine = /** @class */ (function () {
     GameEngine.prototype.addLevelDesignerDoubleClickListener = function (object) {
         this.levelDesignerDoubleClickListeners.push(object);
     };
+    GameEngine.prototype.addLeftArrowListener = function (object) {
+        this.leftArrowListeners.push(object);
+    };
+    GameEngine.prototype.addRightArrowListener = function (object) {
+        this.rightArrowListeners.push(object);
+    };
+    GameEngine.prototype.addUpArrowListener = function (object) {
+        this.upArrowListeners.push(object);
+    };
+    GameEngine.prototype.addDownArrowListener = function (object) {
+        this.downArrowListeners.push(object);
+    };
     GameEngine.prototype.mouseDown = function (e) {
         if (e.target instanceof HTMLElement) {
             if (e.target.classList[0] === "level-editor-canvas") {
@@ -5276,6 +6118,26 @@ var GameEngine = /** @class */ (function () {
             listener.updateStartButtonListener(pressed);
         });
     };
+    GameEngine.prototype.updateLeftArrowListeners = function (pressed) {
+        this.leftArrowListeners.forEach(function (listener) {
+            listener.updateLeftArrowListener(pressed);
+        });
+    };
+    GameEngine.prototype.updateUpArrowListeners = function (pressed) {
+        this.upArrowListeners.forEach(function (listener) {
+            listener.updateUpArrowListener(pressed);
+        });
+    };
+    GameEngine.prototype.updateRightArrowListeners = function (pressed) {
+        this.rightArrowListeners.forEach(function (listener) {
+            listener.updateRightArrowListener(pressed);
+        });
+    };
+    GameEngine.prototype.updateDownArrowListeners = function (pressed) {
+        this.downArrowListeners.forEach(function (listener) {
+            listener.updateDownArrowListener(pressed);
+        });
+    };
     GameEngine.prototype.focusUnPause = function () {
         this.focusPaused = false;
     };
@@ -5283,11 +6145,17 @@ var GameEngine = /** @class */ (function () {
         this.focusPaused = true;
     };
     // called by game view
-    GameEngine.prototype.updateMousePos = function (mousePos) {
+    GameEngine.prototype.updateMousePos = function (mousePos, e) {
         var _a;
         // I need to check if it's supposed to be directly controlled, or just listening 
+        // not sure if I need to fix this for an actual game being played
+        var xPosition = mousePos[0] - this.activeCamera.cameraWidth / 2;
+        var yPosition = mousePos[1] - this.activeCamera.cameraHeight / 2;
         this.mouseListeners.forEach(function (object) {
-            object.updateMousePos(mousePos);
+            object.updateMousePos([xPosition, yPosition]);
+        });
+        this.mouseEventListeners.forEach(function (object) {
+            object.updateMouseMoveEvent(e);
         });
         (_a = this.controlledGameObject) === null || _a === void 0 ? void 0 : _a.updateFocussedMousePos(mousePos);
     };
@@ -5426,6 +6294,9 @@ var GameEngine = /** @class */ (function () {
     };
     GameEngine.prototype.addMouseListener = function (object) {
         this.mouseListeners.push(object);
+    };
+    GameEngine.prototype.addMouseEventListener = function (object) {
+        this.mouseEventListeners.push(object);
     };
     GameEngine.prototype.updateGameScript = function (delta) {
         if (this.gameScript)
@@ -8878,6 +9749,8 @@ var Ship = /** @class */ (function (_super) {
         _this.transform.pos[2] = 0;
         // I should add this to GameObject as this.addCamera
         _this.camera = new _game_engine_camera__WEBPACK_IMPORTED_MODULE_7__.Camera(engine, new _game_engine_transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, [pos[0], pos[1]]), "ShipCamera");
+        _this.camera.zoomScale = 1.3;
+        _this.camera.defaultZoomScale = 1.3;
         _this.setAsControllableGameObject();
         // when you add it as a focus controllable game object, 
         // I think you're forced to add functions to handle the different focussed input
@@ -8920,7 +9793,7 @@ var Ship = /** @class */ (function (_super) {
         _this.spawnTime = 2500;
         _this.lineSprite.flashHide = true;
         _this.controllerInUse = false;
-        _this.gameEditorHasBeenOpened = false;
+        _this.isLevelDesignerOpened = false;
         return _this;
         // 1/8 of a second flash every half second
     }
@@ -8929,22 +9802,22 @@ var Ship = /** @class */ (function (_super) {
     Ship.prototype.update = function (deltaTime) {
         // no idea where this shit will have to belong
         // brain currently melted
-        if (this.gameEngine instanceof _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_5__.GameEngine && this.gameEngine.gameEditorOpened) {
-            if (!this.gameEditorHasBeenOpened) {
+        if (this.gameEngine instanceof _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_5__.GameEngine && this.gameEngine.isLevelDesignerOpened) {
+            if (!this.isLevelDesignerOpened) {
                 var _width = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__.DIM_X;
                 var _height = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__.DIM_Y;
-                var _zoomScale = this.gameEngine.zoomScale;
+                var _zoomScale = this.gameEngine.activeCamera.zoomScale;
                 var _yPosition = this.transform.pos[1];
                 var _xPosition = this.transform.pos[0];
                 console.log({ _width: _width, _height: _height, _zoomScale: _zoomScale, _xPosition: _xPosition, _yPosition: _yPosition });
                 this.gameEngine.ctx.translate(((_xPosition * _zoomScale - _width / (2))), ((_yPosition * _zoomScale - _height / (2))));
                 this.gameEngine.activeCamera.zoomScale = 1;
             }
-            this.gameEditorHasBeenOpened = true;
+            this.isLevelDesignerOpened = true;
             return;
         }
         else {
-            this.gameEditorHasBeenOpened = false;
+            this.isLevelDesignerOpened = false;
         }
         this.bulletTimeCheck += deltaTime;
         // game state stuff that doesn't belong in the ship #gamestate
@@ -9270,6 +10143,209 @@ var ShipSprite = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./src/game_objects/StrikeTime/Airport/Airport.ts":
+/*!********************************************************!*\
+  !*** ./src/game_objects/StrikeTime/Airport/Airport.ts ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Airport: () => (/* binding */ Airport),
+/* harmony export */   AirportSprite: () => (/* binding */ AirportSprite)
+/* harmony export */ });
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+var Airport = /** @class */ (function (_super) {
+    __extends(Airport, _super);
+    function Airport(engine, pos) {
+        var _this = _super.call(this, engine) || this;
+        _this.transform.pos = pos;
+        _this.addReplayablePhysicsComponent();
+        _this.addLineSprite(new AirportSprite(_this.transform));
+        return _this;
+    }
+    Airport.prototype.update = function (deltaTime) {
+        this.animate(deltaTime);
+    };
+    Airport.prototype.animate = function (timeDelta) {
+    };
+    return Airport;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
+
+var AirportSprite = /** @class */ (function (_super) {
+    __extends(AirportSprite, _super);
+    function AirportSprite(transform) {
+        return _super.call(this, transform) || this;
+    }
+    AirportSprite.prototype.draw = function (ctx) {
+        ctx.save();
+        this.drawAirport(ctx);
+        ctx.restore();
+    };
+    AirportSprite.prototype.drawAirport = function (ctx) {
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        var s = 3;
+        var pos = this.transform.absolutePosition();
+        ctx.translate(pos[0], pos[1]);
+        // Piece 1: 
+        ctx.beginPath();
+        ctx.moveTo(-30 * s, -6 * s);
+        ctx.lineTo(30 * s, -6 * s);
+        ctx.stroke();
+        // Piece 2: 
+        ctx.beginPath();
+        ctx.moveTo(-30 * s, 6 * s);
+        ctx.lineTo(30 * s, 6 * s);
+        ctx.stroke();
+        // Piece 3: 
+        ctx.beginPath();
+        ctx.setLineDash([10, 20]);
+        ctx.moveTo(-30 * s, 0 * s);
+        ctx.lineTo(30 * s, 0 * s);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        // Piece 4: 
+        ctx.beginPath();
+        ctx.moveTo(6 * s, -6 * s);
+        ctx.lineTo(6 * s, -18 * s);
+        ctx.lineTo(3 * s, -20 * s);
+        ctx.lineTo(3 * s, -24 * s);
+        ctx.lineTo(6 * s, -27 * s);
+        ctx.lineTo(12 * s, -27 * s);
+        ctx.lineTo(15 * s, -24 * s);
+        ctx.lineTo(15 * s, -20 * s);
+        ctx.lineTo(12 * s, -18 * s);
+        ctx.lineTo(12 * s, -6 * s);
+        ctx.stroke();
+        // Piece 5: 
+        ctx.beginPath();
+        ctx.moveTo(0 * s, -6 * s);
+        ctx.lineTo(0 * s, -12 * s);
+        ctx.bezierCurveTo(-1 * s, -15 * s, -5 * s, -15 * s, -6 * s, -12 * s);
+        ctx.lineTo(-6 * s, -6 * s);
+        ctx.stroke();
+        // Piece 6: 
+        ctx.beginPath();
+        ctx.moveTo(-9 * s, -6 * s);
+        ctx.lineTo(-9 * s, -12 * s);
+        ctx.bezierCurveTo(-10 * s, -15 * s, -14 * s, -15 * s, -15 * s, -12 * s);
+        ctx.lineTo(-15 * s, -6 * s);
+        ctx.stroke();
+        // Piece 7: 
+        ctx.beginPath();
+        ctx.moveTo(-18 * s, -6 * s);
+        ctx.lineTo(-18 * s, -12 * s);
+        ctx.bezierCurveTo(-19 * s, -15 * s, -23 * s, -15 * s, -24 * s, -12 * s);
+        ctx.lineTo(-24 * s, -6 * s);
+        ctx.stroke();
+        // Piece 8: 
+        ctx.beginPath();
+        ctx.moveTo(18 * s, -6 * s);
+        ctx.lineTo(18 * s, -12 * s);
+        ctx.bezierCurveTo(19 * s, -15 * s, 23 * s, -15 * s, 24 * s, -12 * s);
+        ctx.lineTo(24 * s, -6 * s);
+        ctx.stroke();
+    };
+    return AirportSprite;
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
+
+
+
+/***/ }),
+
+/***/ "./src/game_objects/StrikeTime/Airport/EndingLine.ts":
+/*!***********************************************************!*\
+  !*** ./src/game_objects/StrikeTime/Airport/EndingLine.ts ***!
+  \***********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   EndingLine: () => (/* binding */ EndingLine),
+/* harmony export */   EndingLineSprite: () => (/* binding */ EndingLineSprite)
+/* harmony export */ });
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+var EndingLine = /** @class */ (function (_super) {
+    __extends(EndingLine, _super);
+    function EndingLine(engine, xPosition) {
+        var _this = _super.call(this, engine) || this;
+        _this.transform.pos = [xPosition, 0];
+        _this.endLineXPosition = xPosition;
+        _this.addReplayablePhysicsComponent();
+        _this.addLineSprite(new EndingLineSprite(_this.transform));
+        return _this;
+    }
+    EndingLine.prototype.update = function (deltaTime) {
+    };
+    EndingLine.prototype.animate = function (timeDelta) {
+    };
+    return EndingLine;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
+
+var EndingLineSprite = /** @class */ (function (_super) {
+    __extends(EndingLineSprite, _super);
+    function EndingLineSprite(transform) {
+        return _super.call(this, transform) || this;
+    }
+    EndingLineSprite.prototype.draw = function (ctx) {
+        ctx.save();
+        this.drawEndingLine(ctx);
+        ctx.restore();
+    };
+    EndingLineSprite.prototype.drawEndingLine = function (ctx) {
+        ctx.strokeStyle = "#63b2e3ff";
+        ctx.lineWidth = 2;
+        var pos = this.transform.absolutePosition();
+        ctx.setLineDash([10, 20]);
+        ctx.moveTo(pos[0], -20000);
+        ctx.lineTo(pos[0], 20000);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    };
+    return EndingLineSprite;
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
+
+
+
+/***/ }),
+
 /***/ "./src/game_objects/StrikeTime/Aurora/AirDecelerationParticles.ts":
 /*!************************************************************************!*\
   !*** ./src/game_objects/StrikeTime/Aurora/AirDecelerationParticles.ts ***!
@@ -9447,6 +10523,8 @@ var Aurora = /** @class */ (function (_super) {
         _this.controlsDirection = [0, 0];
         _this.controlsAngle = null;
         _this.transform.pos = pos;
+        _this.hits = 0;
+        _this.hitsWhenDead = 3;
         _this.transform.angle = angle;
         _this.transform.vel = [0, 0];
         _this.radius = 30;
@@ -9494,6 +10572,12 @@ var Aurora = /** @class */ (function (_super) {
             var bombVelocity = _game_engine_util__WEBPACK_IMPORTED_MODULE_8__.VectorMath.vectorCartesian(currentDirection, bombSpeed);
             new _Bombs_BombBasic__WEBPACK_IMPORTED_MODULE_7__.BombBasic(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], bombVelocity);
             this.bombTiming.refreshTime = 0;
+        }
+    };
+    Aurora.prototype.hit = function () {
+        this.hits += 1;
+        if (this.hits >= this.hitsWhenDead) {
+            this.gameEngine.gameScript.loseLevel();
         }
     };
     Aurora.prototype.updateBKeyListener = function (pressed) {
@@ -10208,7 +11292,7 @@ var BombBasic = /** @class */ (function (_super) {
     }
     BombBasic.prototype.exist = function () {
         this.addCollider("General", this, this.radius);
-        this.addCollider("BombBasicExplosion", this, this.explosionRadius, ["PatriotMissileSite", "Building1"], ["General"]);
+        this.addCollider("BombBasicExplosion", this, this.explosionRadius, ["PatriotMissileSite", "Building1", "TargetBuilding"], ["General"]);
     };
     BombBasic.prototype.explode = function () {
         new _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], 0.05);
@@ -10408,6 +11492,118 @@ var Building1Sprite = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./src/game_objects/StrikeTime/Buildings/TargetBuilding.ts":
+/*!*****************************************************************!*\
+  !*** ./src/game_objects/StrikeTime/Buildings/TargetBuilding.ts ***!
+  \*****************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   TargetBuilding: () => (/* binding */ TargetBuilding),
+/* harmony export */   TargetBuildingSprite: () => (/* binding */ TargetBuildingSprite)
+/* harmony export */ });
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../particles/StrikeTimeParticleExplosion */ "./src/game_objects/particles/StrikeTimeParticleExplosion.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+var TargetBuilding = /** @class */ (function (_super) {
+    __extends(TargetBuilding, _super);
+    function TargetBuilding(engine, pos) {
+        var _this = _super.call(this, engine) || this;
+        _this.transform.pos = pos;
+        _this.isAlive = true;
+        _this.radius = 15;
+        _this.lives = 1;
+        _this.exist();
+        _this.addLineSprite(new TargetBuildingSprite(_this.transform));
+        return _this;
+    }
+    TargetBuilding.prototype.exist = function () {
+        this.addCollider("General", this, this.radius);
+        // this doesn't actually move... so I don't think I need a physics component...
+        // I can just animate it instead... but I'll have to have the animations be reversible
+    };
+    TargetBuilding.prototype.hit = function () {
+        this.lives -= 1;
+        var pos = this.transform.absolutePosition();
+        if (this.lives <= 0) {
+            this.isAlive = false;
+            new _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, pos);
+            this.remove();
+        }
+        // if not dead, I can have a different type of explosion
+    };
+    TargetBuilding.prototype.update = function (deltaTime) {
+        this.animate(deltaTime);
+    };
+    TargetBuilding.prototype.animate = function (timeDelta) {
+        // I should stick to no animation for now
+        // for my own sanity
+    };
+    return TargetBuilding;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
+
+var NORMAL_FRAME_TIME_DELTA = 1000 / 60;
+var TargetBuildingSprite = /** @class */ (function (_super) {
+    __extends(TargetBuildingSprite, _super);
+    function TargetBuildingSprite(transform) {
+        return _super.call(this, transform) || this;
+    }
+    TargetBuildingSprite.prototype.draw = function (ctx) {
+        ctx.save();
+        this.drawTargetBuilding(ctx);
+        ctx.restore();
+    };
+    TargetBuildingSprite.prototype.drawTargetBuilding = function (ctx) {
+        ctx.strokeStyle = "#DAA520";
+        ctx.lineWidth = 1.5;
+        var s = 1;
+        var pos = this.transform.absolutePosition();
+        ctx.translate(pos[0], pos[1]);
+        // Piece 1: 
+        ctx.beginPath();
+        ctx.moveTo(0 * s, -12 * s);
+        ctx.lineTo(-6 * s, -8 * s);
+        ctx.lineTo(-6 * s, 0 * s);
+        ctx.lineTo(6 * s, 0 * s);
+        ctx.lineTo(6 * s, -8 * s);
+        ctx.lineTo(12 * s, -11 * s);
+        ctx.lineTo(12 * s, -3 * s);
+        ctx.lineTo(6 * s, 0 * s);
+        ctx.stroke();
+        // Piece 2: 
+        ctx.beginPath();
+        ctx.moveTo(6 * s, -8 * s);
+        ctx.lineTo(0 * s, -12 * s);
+        ctx.lineTo(6 * s, -15 * s);
+        ctx.lineTo(12 * s, -11 * s);
+        ctx.stroke();
+    };
+    return TargetBuildingSprite;
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__.LineSprite));
+
+
+
+/***/ }),
+
 /***/ "./src/game_objects/StrikeTime/Enemies/Missile.ts":
 /*!********************************************************!*\
   !*** ./src/game_objects/StrikeTime/Enemies/Missile.ts ***!
@@ -10446,17 +11642,17 @@ var Missile = /** @class */ (function (_super) {
     __extends(Missile, _super);
     function Missile(engine, pos, vel, planeLockedOn) {
         var _this = _super.call(this, engine) || this;
-        _this.lifespan = 8000;
+        _this.lifespan = 5000;
         _this.timeAlive = 0;
-        _this.fuelTime = 2500;
+        _this.fuelTime = 2200;
         _this.outOfFuel = false;
         _this.transform.pos = pos;
         _this.transform.vel = vel;
         _this.explodeRange = 3; // I could have it detect earlier and turn to face before within actual range. but this is a prototype so not now
-        _this.radius = 5; // visual range, where it would be acceptable for something to be considering hitting it
+        _this.radius = 10; // visual range, where it would be acceptable for something to be considering hitting it
         _this.exist();
         _this.lives = 1;
-        _this.speed = 0.05;
+        _this.speed = 0.08;
         _this.planeLockedOnTransform = planeLockedOn;
         _this.addReplayablePhysicsComponent();
         _this.addLineSprite(new MissileSprite(_this.transform));
@@ -10482,8 +11678,8 @@ var Missile = /** @class */ (function (_super) {
         var direction = Math.atan2(dy, dx);
         this.transform.pos[0] += speed * Math.cos(direction) * velocityScale;
         this.transform.pos[1] += speed * Math.sin(direction) * velocityScale;
-        this.transform.acc[0] = 0.00005 * Math.cos(direction) * velocityScale;
-        this.transform.acc[2] = 0.00005 * Math.sin(direction) * velocityScale;
+        this.transform.acc[0] = 0.00007 * Math.cos(direction) * velocityScale;
+        this.transform.acc[2] = 0.00007 * Math.sin(direction) * velocityScale;
         this.transform.vel[0] += this.transform.acc[0] * timeDelta;
         this.transform.vel[1] += this.transform.acc[1] * timeDelta;
     };
@@ -10494,7 +11690,9 @@ var Missile = /** @class */ (function (_super) {
     };
     Missile.prototype.explode = function (collider) {
         console.log('Aurora Killed/Hit');
-        new _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_3__.ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]]);
+        (this, collider.gameObject).hit();
+        // I should give them an initial velocity too so it looks more kinetic
+        new _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_3__.ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], 0.15);
         this.exhaust.remove();
         this.remove();
         // create missiles at the fire rate while still in range
@@ -10534,9 +11732,10 @@ var Missile = /** @class */ (function (_super) {
                     this.transform.pos[1] - originalPositionBeforeChase[1]
                 ];
                 movementDirection = Math.atan2(positionDelta[0], -positionDelta[1]);
+                this.lastMovementDirection = movementDirection;
             }
             else {
-                movementDirection = Math.atan2(this.transform.vel[0], this.transform.vel[1]) + Math.PI / 2;
+                movementDirection = this.lastMovementDirection;
             }
         }
         this.transform.angle = movementDirection - Math.PI / 2;
@@ -10730,12 +11929,17 @@ var PatriotMissileSite = /** @class */ (function (_super) {
     function PatriotMissileSite(engine, pos) {
         var _this = _super.call(this, engine) || this;
         _this.transform.pos = pos;
-        _this.launchRange = 100; // I could have it detect earlier and turn to face before within actual range. but this is a prototype so not now
+        _this.launchRange = 180; // I could have it detect earlier and turn to face before within actual range. but this is a prototype so not now
         _this.radius = 15;
         _this.lives = 1;
-        _this.launched = false;
-        _this.reloadTime = 2000;
+        _this.missilesPerGroup = 3;
+        _this.numberOfMissilesLaunched = 0;
+        _this.isMissileLaunched = false;
+        _this.isGroupLaunched = false;
+        _this.reloadTime = 300;
+        _this.groupReloadTime = 3000;
         _this.timeSinceLaunch = 0;
+        _this.timeSinceGroupLaunch = 0;
         _this.exist();
         _this.addLineSprite(new PatriotMissileSiteSprite(_this.transform));
         return _this;
@@ -10752,9 +11956,13 @@ var PatriotMissileSite = /** @class */ (function (_super) {
         }
     };
     PatriotMissileSite.prototype.startLaunchSequence = function (airplaneDetected) {
-        if (!this.launched) {
+        if (!this.isMissileLaunched) {
             console.log('launching');
-            this.launched = true;
+            this.isMissileLaunched = true;
+            this.numberOfMissilesLaunched += 1;
+            if (this.numberOfMissilesLaunched >= 3) {
+                this.isGroupLaunched = true;
+            }
             var airplanePosition = airplaneDetected.gameObject.transform.pos;
             var ourPosition = this.transform.pos;
             var dy = airplanePosition[1] - ourPosition[1];
@@ -10782,11 +11990,21 @@ var PatriotMissileSite = /** @class */ (function (_super) {
     };
     PatriotMissileSite.prototype.update = function (deltaTime) {
         this.animate(deltaTime);
-        if (this.launched) {
+        if (this.isMissileLaunched && !this.isGroupLaunched) {
             this.timeSinceLaunch += deltaTime;
             if (this.timeSinceLaunch > this.reloadTime) {
-                this.launched = false;
+                this.isMissileLaunched = false;
                 this.timeSinceLaunch = 0;
+            }
+        }
+        if (this.isGroupLaunched) {
+            this.timeSinceGroupLaunch += deltaTime;
+            if (this.timeSinceGroupLaunch > this.groupReloadTime) {
+                this.isMissileLaunched = false;
+                this.numberOfMissilesLaunched = 0;
+                this.timeSinceLaunch = 0;
+                this.isGroupLaunched = false;
+                this.timeSinceGroupLaunch = 0;
             }
         }
     };
@@ -10873,6 +12091,118 @@ var PatriotMissileSiteSprite = /** @class */ (function (_super) {
     };
     return PatriotMissileSiteSprite;
 }(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__.LineSprite));
+
+
+
+/***/ }),
+
+/***/ "./src/game_objects/StrikeTime/Levels/Level.ts":
+/*!*****************************************************!*\
+  !*** ./src/game_objects/StrikeTime/Levels/Level.ts ***!
+  \*****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Level: () => (/* binding */ Level)
+/* harmony export */ });
+var Level = /** @class */ (function () {
+    function Level(gameEngine, gameScript) {
+        this.gameScript = gameScript;
+        this.engine = gameEngine;
+    }
+    return Level;
+}());
+
+
+
+/***/ }),
+
+/***/ "./src/game_objects/StrikeTime/Levels/LevelPrototype.ts":
+/*!**************************************************************!*\
+  !*** ./src/game_objects/StrikeTime/Levels/LevelPrototype.ts ***!
+  \**************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   LevelPrototype: () => (/* binding */ LevelPrototype)
+/* harmony export */ });
+/* harmony import */ var _Airport_Airport__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Airport/Airport */ "./src/game_objects/StrikeTime/Airport/Airport.ts");
+/* harmony import */ var _Airport_EndingLine__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Airport/EndingLine */ "./src/game_objects/StrikeTime/Airport/EndingLine.ts");
+/* harmony import */ var _Aurora_Aurora__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../Aurora/Aurora */ "./src/game_objects/StrikeTime/Aurora/Aurora.ts");
+/* harmony import */ var _Buildings_Building1__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Buildings/Building1 */ "./src/game_objects/StrikeTime/Buildings/Building1.ts");
+/* harmony import */ var _Buildings_TargetBuilding__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../Buildings/TargetBuilding */ "./src/game_objects/StrikeTime/Buildings/TargetBuilding.ts");
+/* harmony import */ var _Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../Enemies/PatriotMissileSite */ "./src/game_objects/StrikeTime/Enemies/PatriotMissileSite.ts");
+/* harmony import */ var _Level__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./Level */ "./src/game_objects/StrikeTime/Levels/Level.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+
+
+
+
+var LevelPrototype = /** @class */ (function (_super) {
+    __extends(LevelPrototype, _super);
+    function LevelPrototype(gameEngine, gameScript) {
+        var _this = _super.call(this, gameEngine, gameScript) || this;
+        _this.startPosition = [500, 300, 0];
+        _this.endXPosition = 650;
+        return _this;
+    }
+    LevelPrototype.prototype.createLevel = function () {
+        new _Airport_Airport__WEBPACK_IMPORTED_MODULE_0__.Airport(this.engine, [this.startPosition[0], this.startPosition[1]]);
+        this.endingLine = new _Airport_EndingLine__WEBPACK_IMPORTED_MODULE_1__.EndingLine(this.engine, this.endXPosition);
+        this.controlledShip = new _Aurora_Aurora__WEBPACK_IMPORTED_MODULE_2__.Aurora(this.engine, [this.startPosition[0], this.startPosition[1]]);
+        // in a wide circle around the buildings
+        // buildings coordinate center: [24 * 2.5 + 2000, 300 + 2.5 * 20]
+        var center_x = 24 * 2.5 + 2000;
+        var center_y = 300 + 2.5 * 20;
+        var radiusOfDefenses = 500;
+        for (var i = 0; i < 10; i++) {
+            var positionAngle = i * (2 * Math.PI) / 10;
+            var position = [
+                center_x + radiusOfDefenses * Math.cos(positionAngle),
+                center_y + radiusOfDefenses * Math.sin(positionAngle)
+            ];
+            new _Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_5__.PatriotMissileSite(this.engine, [position[0], position[1]]);
+        }
+        // buildings
+        for (var yPosition = 0; yPosition < 5; yPosition++) {
+            for (var xPosition = 0; xPosition < 5; xPosition++) {
+                if (xPosition === 3 && yPosition === 3) {
+                    this.targetBuilding = new _Buildings_TargetBuilding__WEBPACK_IMPORTED_MODULE_4__.TargetBuilding(this.engine, [2000 + xPosition * 24, 300 + yPosition * 20]);
+                }
+                else {
+                    new _Buildings_Building1__WEBPACK_IMPORTED_MODULE_3__.Building1(this.engine, [2000 + xPosition * 24, 300 + yPosition * 20]);
+                }
+            }
+        }
+    };
+    LevelPrototype.prototype.runWinCondition = function () {
+        if (!this.targetBuilding.isAlive && this.controlledShip.transform.pos[0] <= this.endingLine.endLineXPosition - this.controlledShip.lineSprite.length) {
+            console.log('YOU WIN');
+            return true;
+        }
+        return false;
+    };
+    return LevelPrototype;
+}(_Level__WEBPACK_IMPORTED_MODULE_6__.Level));
 
 
 
@@ -14823,18 +16153,19 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var GameView = /** @class */ (function () {
-    function GameView(engine, ctx, canvasEl, levelDesigner, animationView) {
+    function GameView(engine, ctx, canvasEl, geoLevelDesigner, strikeTimeLevelDesigner, animationView) {
         this.ctx = ctx;
         this.engine = engine;
         // this.ship = this.game.addShip(); belongs in game script
         this.canvasEl = canvasEl;
-        this.levelDesigner = levelDesigner;
+        this.geoLevelDesigner = geoLevelDesigner;
+        this.strikeTimeLevelDesigner = strikeTimeLevelDesigner;
         this.animationView = animationView;
         this.bindKeyboardKeys = this.bindKeyboardKeys.bind(this);
         this.initialUnmute = true;
         this.gameStarted = false;
         this.modelClosed = false;
-        this.gameEditorOpened = false;
+        this.isLevelDesignerOpened = false;
         this.levelDesignLoaded = true;
         this.lastTime = 0;
         this.animate = this.animate.bind(this);
@@ -14847,7 +16178,7 @@ var GameView = /** @class */ (function () {
     // TODO this is somehow supposed to handle both mouse and controller inputs
     // but I only see it being use as a string at the moment
     GameView.prototype.updateMovementDirection = function (move, down) {
-        if (!this.gameEditorOpened) {
+        if (!this.isLevelDesignerOpened) {
             // check this function
             // have this be the controlled gameObject instead
             this.engine.updateLeftControlStickListeners(move, down);
@@ -14917,6 +16248,22 @@ var GameView = /** @class */ (function () {
             if (e.key === "p") {
                 _this.engine.updateStartButtonListeners(down);
             }
+            if (e.key === "ArrowLeft") {
+                e.preventDefault();
+                _this.engine.updateLeftArrowListeners(down);
+            }
+            if (e.key === "ArrowUp") {
+                e.preventDefault();
+                _this.engine.updateUpArrowListeners(down);
+            }
+            if (e.key === "ArrowRight") {
+                e.preventDefault();
+                _this.engine.updateRightArrowListeners(down);
+            }
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                _this.engine.updateDownArrowListeners(down);
+            }
         };
     };
     GameView.prototype.bindKeyHandlers = function () {
@@ -14940,8 +16287,9 @@ var GameView = /** @class */ (function () {
             // const y = { y: e.layerY }; // TODO mouse position
             // TODO test with firefox 
             var mousePos = [e.offsetX, e.offsetY]; // TODO mouse position layerX vs offsetX
-            _this.engine.updateMousePos(mousePos);
-            _this.levelDesigner.mouseMoveEvent(e);
+            _this.engine.updateMousePos(mousePos, e);
+            // I need to add the listener in each level designer instead of throwing it here randomly
+            // this.levelDesigner.updateMouseMoveEvent(e);
             // ship.setFireAngle(mousePos); add to game script event listener thing
         });
         window.addEventListener("click", function (e) {
@@ -14982,6 +16330,12 @@ var GameView = /** @class */ (function () {
         this.bindKeyHandlers();
         // Get the modal
         var modal = document.getElementById("myModal");
+        var strikeTimeLevelCreator = document.getElementById("StrikeTimeLevelEditor");
+        var geoWarsLevelCreator = document.getElementById('GEOWarsLevelEditor');
+        var levelEditorCanvas = document.getElementById('LevelEditorCanvas');
+        geoWarsLevelCreator.style.display = 'none';
+        strikeTimeLevelCreator.style.display = 'none';
+        levelEditorCanvas.style.display = 'none';
         // Get the button that opens the modal
         // var btn = document.getElementById("myBtn");
         // Get the <span> element that closes the modal
@@ -15013,6 +16367,7 @@ var GameView = /** @class */ (function () {
         var startGEOWarsButtonModal = document.getElementById("startGEOWars");
         // open the level editor
         var levelEditorButton = document.getElementById("LevelEditorModal");
+        var strikeTimeLevelEditor = document.getElementById("StrikeTimeEditorStart");
         var createSprite = document.getElementById("SpriteEditor");
         // load a level either for level editor or for starting the game
         var loadGameDesignButtonModal = document.getElementById("loadGameDesignModal");
@@ -15024,7 +16379,7 @@ var GameView = /** @class */ (function () {
             _this.engine.addGameScript(geoWarsScript);
             _this.bindKeyboardKeys();
             if (_this.levelDesignLoaded) {
-                _this.levelDesigner.startGame(geoWarsScript);
+                _this.geoLevelDesigner.startGame(geoWarsScript);
             }
             requestAnimationFrame(_this.animate);
             modal.style.display = "none";
@@ -15042,14 +16397,38 @@ var GameView = /** @class */ (function () {
         levelEditorButton.onclick = function (e) {
             e.stopPropagation();
             _this.gameStarted = true;
-            _this.gameEditorOpened = true;
+            _this.isLevelDesignerOpened = true;
+            _this.openedLevelEditor = _this.geoLevelDesigner;
+            _this.openedLevelEditor.openLevelDesigner();
             _this.bindKeyboardKeys();
             requestAnimationFrame(_this.animate);
             modal.style.display = "none";
+            geoWarsLevelCreator.style.display = "flex";
+            strikeTimeLevelCreator.style.display = "none";
+            levelEditorCanvas.style.display = "flex";
             _this.modelClosed = true;
             setTimeout(function () {
-                _this.levelDesigner.gameEditorOpened = true;
-                _this.engine.gameEditorOpened = true;
+                _this.openedLevelEditor.isLevelDesignerOpened = true;
+                _this.engine.isLevelDesignerOpened = true;
+                _this.engine.addGameScript(_this.openedLevelEditor);
+            }, 50);
+        };
+        strikeTimeLevelEditor.onclick = function (e) {
+            e.stopPropagation();
+            _this.gameStarted = true;
+            _this.isLevelDesignerOpened = true;
+            _this.strikeTimeLevelDesigner.openLevelDesigner();
+            _this.openedLevelEditor = _this.strikeTimeLevelDesigner;
+            _this.bindKeyboardKeys();
+            requestAnimationFrame(_this.animate);
+            modal.style.display = "none";
+            geoWarsLevelCreator.style.display = "none";
+            strikeTimeLevelCreator.style.display = "flex";
+            levelEditorCanvas.style.display = 'flex';
+            _this.modelClosed = true;
+            setTimeout(function () {
+                _this.engine.isLevelDesignerOpened = true;
+                _this.engine.addGameScript(_this.strikeTimeLevelDesigner);
             }, 50);
         };
         createSprite.onclick = function (e) {
@@ -15063,17 +16442,27 @@ var GameView = /** @class */ (function () {
             _this.engine.addGameScript(gameScript);
             new _game_engine_SpriteEditor_SpriteEditor__WEBPACK_IMPORTED_MODULE_1__.SpriteEditor(_this.engine);
         };
+        // TODO: will need to split this up into one or the other 
         loadGameDesignButtonModal.onclick = function (e) {
             e.stopPropagation();
             var json = document.getElementById("loadGameDesignInputModal").value;
-            _this.levelDesigner.loadGameDesign(json);
+            // will need two different buttons I think for accepting a loading string
+            _this.geoLevelDesigner.loadGameDesign(json);
             _this.levelDesignLoaded = true;
         };
+        // loadGameDesignButtonModal.onclick = (e) => {
+        //     e.stopPropagation();
+        //     const json = (document.getElementById("loadGameDesignInputModal") as HTMLInputElement).value;
+        //     // will need two different buttons I think for accepting a loading string
+        //     this.levelDesigner.loadGameDesign(json);
+        //     this.levelDesignLoaded = true;
+        // };
     };
     GameView.prototype.animate = function (time) {
+        var _a;
         var timeDelta = time - this.lastTime;
         this.engine.tick(timeDelta);
-        this.levelDesigner.animate(timeDelta);
+        (_a = this.openedLevelEditor) === null || _a === void 0 ? void 0 : _a.animate(timeDelta);
         this.animationView.animate(timeDelta);
         this.lastTime = time;
         // every call to animate requests causes another call to animate
@@ -15225,8 +16614,10 @@ var __webpack_exports__ = {};
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_view__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_view */ "./src/game_view.ts");
 /* harmony import */ var _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_engine/game_engine */ "./src/game_engine/game_engine.ts");
-/* harmony import */ var _game_engine_Levels_levelDesigner__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game_engine/Levels/levelDesigner */ "./src/game_engine/Levels/levelDesigner.ts");
+/* harmony import */ var _game_engine_Levels_GEOLevelDesigner__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game_engine/Levels/GEOLevelDesigner */ "./src/game_engine/Levels/GEOLevelDesigner.ts");
 /* harmony import */ var _AnimationView__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./AnimationView */ "./src/AnimationView.ts");
+/* harmony import */ var _game_engine_Levels_StrikeTimeLevelDesigner__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./game_engine/Levels/StrikeTimeLevelDesigner */ "./src/game_engine/Levels/StrikeTimeLevelDesigner.ts");
+
 
 
 
@@ -15238,10 +16629,11 @@ document.addEventListener("DOMContentLoaded", function () {
     var ctx = canvasEl.getContext("2d");
     var gameEngine = new _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_1__.GameEngine(ctx);
     var animationWindow = document.getElementsByTagName("canvas")[1].getContext("2d");
-    var levelDesignerCanvas = document.getElementsByTagName("canvas")[2];
-    var levelDesignerCtx = levelDesignerCanvas.getContext("2d");
+    var levelEditorCanvas = document.getElementById("LevelEditorCanvas").querySelector("canvas");
+    var levelEditorCtx = levelEditorCanvas.getContext("2d");
     var animationView = new _AnimationView__WEBPACK_IMPORTED_MODULE_3__.AnimationView(animationWindow);
-    var levelDesigner = new _game_engine_Levels_levelDesigner__WEBPACK_IMPORTED_MODULE_2__.LevelDesigner(gameEngine, animationView, levelDesignerCtx);
+    var levelDesigner = new _game_engine_Levels_GEOLevelDesigner__WEBPACK_IMPORTED_MODULE_2__.GEOLevelDesigner(gameEngine, animationView, levelEditorCtx);
+    var strikeTimeLevelDesigner = new _game_engine_Levels_StrikeTimeLevelDesigner__WEBPACK_IMPORTED_MODULE_4__.StrikeTimeLevelDesigner(gameEngine, animationView, levelEditorCtx);
     gameEngine.levelDesigner = levelDesigner;
     window.addEventListener('focus', function () {
         gameEngine.focusUnPause();
@@ -15251,7 +16643,7 @@ document.addEventListener("DOMContentLoaded", function () {
         gameEngine.focusPause();
         animationView.focusPause();
     });
-    new _game_view__WEBPACK_IMPORTED_MODULE_0__.GameView(gameEngine, ctx, canvasEl, levelDesigner, animationView).start();
+    new _game_view__WEBPACK_IMPORTED_MODULE_0__.GameView(gameEngine, ctx, canvasEl, levelDesigner, strikeTimeLevelDesigner, animationView).start();
 });
 
 })();

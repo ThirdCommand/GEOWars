@@ -1,7 +1,8 @@
 import { GameView } from "./game_view";
 import { GameEngine } from "./game_engine/game_engine";
-import { LevelDesigner } from "./game_engine/Levels/levelDesigner";
+import { GEOLevelDesigner } from "./game_engine/Levels/GEOLevelDesigner";
 import { AnimationView } from "./AnimationView";
+import { StrikeTimeLevelDesigner } from "./game_engine/Levels/StrikeTimeLevelDesigner";
 
 document.addEventListener("DOMContentLoaded", () => {
     const canvasEl = document.getElementsByTagName("canvas")[0];
@@ -11,10 +12,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const ctx = canvasEl.getContext("2d");
     const gameEngine = new GameEngine(ctx);
     const animationWindow = document.getElementsByTagName("canvas")[1].getContext("2d");
-    const levelDesignerCanvas = document.getElementsByTagName("canvas")[2];
-    const levelDesignerCtx = levelDesignerCanvas.getContext("2d");
+    const levelEditorCanvas = document.getElementById("LevelEditorCanvas").querySelector("canvas");
+    const levelEditorCtx = levelEditorCanvas.getContext("2d");
     const animationView = new AnimationView(animationWindow);
-    const levelDesigner = new LevelDesigner(gameEngine, animationView, levelDesignerCtx);
+    const levelDesigner = new GEOLevelDesigner(gameEngine, animationView, levelEditorCtx);
+    const strikeTimeLevelDesigner = new StrikeTimeLevelDesigner(gameEngine, animationView, levelEditorCtx);
     gameEngine.levelDesigner = levelDesigner;
 
     window.addEventListener('focus', () => {
@@ -27,5 +29,5 @@ document.addEventListener("DOMContentLoaded", () => {
         animationView.focusPause();
     });
 
-    new GameView(gameEngine, ctx, canvasEl, levelDesigner, animationView).start();
+    new GameView(gameEngine, ctx, canvasEl, levelDesigner, strikeTimeLevelDesigner, animationView).start();
 });

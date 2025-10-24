@@ -7,6 +7,7 @@ import { type AnimationView } from "../../../AnimationView";
 import { Collider } from "../../../game_engine/collider";
 import { type PatriotMissileSite } from "../Enemies/PatriotMissileSite";
 import { type Building1 } from "../Buildings/Building1";
+import { type TargetBuilding } from "../Buildings/TargetBuilding";
 
 export class BombBasic extends GameObject {
     radius: number;
@@ -16,7 +17,7 @@ export class BombBasic extends GameObject {
     bombFuseTime: number;
     spinSpeed: number;
     explosionRadius: number;
-    gameElementsInExplosionRange: (PatriotMissileSite | Building1)[];
+    gameElementsInExplosionRange: (PatriotMissileSite | Building1 | TargetBuilding)[];
 
 
     constructor(engine: GameEngine | AnimationView, pos: [number, number], vel: [number, number]) {
@@ -39,7 +40,7 @@ export class BombBasic extends GameObject {
 
     exist() {
         this.addCollider("General", this, this.radius);
-        this.addCollider("BombBasicExplosion", this, this.explosionRadius, ["PatriotMissileSite", "Building1"], ["General"]);
+        this.addCollider("BombBasicExplosion", this, this.explosionRadius, ["PatriotMissileSite", "Building1", "TargetBuilding"], ["General"]);
     }
 
     explode() {

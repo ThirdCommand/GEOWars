@@ -17,11 +17,13 @@ export class PlacingAnimation extends GameObject {
 
     // Mouse handling should call this I think?
     placeEnemy() {
+        this.parentObject.lineSprite.spawningScale = 1;
         this.removeMouseListeners();
         this.parentObject.place();
         this.remove();
     }
 
+    // why is the position not mapping right
     updateMousePos(mousePos: [number, number]) {
         this.parentObject.transform.pos[0] = mousePos[0];
         this.parentObject.transform.pos[1] = mousePos[1];

@@ -1,6 +1,6 @@
 import { Transform } from "./transform";
 import { VectorMath } from "./util";
-import { type LevelDesigner } from "./Levels/levelDesigner";
+import { type LevelDesigner } from "./Levels/LevelDesigner";
 import { SceneSerialized, type SceneObject, GameElementObject } from "./Levels/DesignElements/Scene";
 import { LineSprite } from "./line_sprite";
 import { EventSerialized } from "./Levels/DesignElements/Event";

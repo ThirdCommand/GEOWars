@@ -1,7 +1,7 @@
 import { UIElement } from "../../UI_Element";
 import { LineSprite } from "../../line_sprite";
 import { Transform } from "../../transform";
-import { LevelDesigner } from "../levelDesigner";
+import { LevelDesigner } from "../LevelDesigner";
 import { type Scene, UpdateAble, type SceneObject } from "./Scene";
 // loop, wait, 
 

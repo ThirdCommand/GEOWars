@@ -5,7 +5,7 @@ import {EnemyPlacer, spriteMap} from "../LevelDesign/EnemyPlacer";
 import {EnemyType, Spawn, type SpawnSerialized} from "./Spawn";
 
 import {type UpdateAble, type Scene, type SceneObject } from "./Scene";
-import { type LevelDesigner } from "../levelDesigner";
+import { type LevelDesigner } from "../LevelDesigner";
 import { type GameEngine } from "../../game_engine";
 import { LineSprite } from "../../line_sprite";
 

@@ -4,7 +4,7 @@ import { Transform } from "../../transform";
 import { EventObject, type Event, type EventSerialized, EventObjectSprite} from "./Event";
 import {type LoopEnd, LoopBeginning, LoopEndObject, LoopBeginningObject, LoopBeginningSerialized, LoopEndSerialized, LoopBeginningObjectSprite, LoopEndingObjectSprite} from "./Loop";
 import {OperationObject, type Operation, Operand, OperationSerialized, OperationObjectSprite} from "./Operation";
-import { type LevelDesigner } from "../levelDesigner";
+import { type LevelDesigner } from "../LevelDesigner";
 import { LineSprite } from "../../line_sprite";
 import { Time, TimeObject, TimeObjectSprite, TimeSerialized } from "./Time";
 

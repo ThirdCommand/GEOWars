@@ -1,26 +1,32 @@
 import { type AnimationView } from "./AnimationView";
 import { SpriteEditorScript } from "./SpriteEditorScript";
-import { type LevelDesigner } from "./game_engine/Levels/levelDesigner";
+import { GEOLevelDesigner } from "./game_engine/Levels/GEOLevelDesigner";
+import { type LevelDesigner } from "./game_engine/Levels/LevelDesigner";
 import { SpriteEditor } from "./game_engine/SpriteEditor/SpriteEditor";
 import { type GameEngine } from "./game_engine/game_engine";
 import {type DirectionKey} from "./game_objects/Ship/ship";
 import { GEOWarsScript } from "./GEOWarsScript";
 import { StrikeTimeScript } from "./StrikeTimeScript";
+import { StrikeTimeLevelDesigner } from "./game_engine/Levels/StrikeTimeLevelDesigner";
 
 
-export class GameView { engine: GameEngine;
+export class GameView { 
+    engine: GameEngine;
     ctx: CanvasRenderingContext2D;
     lastTime: number;
     animationView: AnimationView;
-    levelDesigner: LevelDesigner;
+    geoLevelDesigner: GEOLevelDesigner;
+    strikeTimeLevelDesigner: StrikeTimeLevelDesigner;
 
-    gameEditorOpened: boolean;
+    isLevelDesignerOpened: boolean;
     initialUnmute: boolean;
     gameStarted: boolean;
     spriteCreatorOpened: boolean;
     modelClosed: boolean;
     levelDesignLoaded: boolean;
     canvasEl: HTMLCanvasElement;
+
+    openedLevelEditor: LevelDesigner | null;
 
     static MOVES = {
         s: [0, 1],
@@ -33,7 +39,8 @@ export class GameView { engine: GameEngine;
         engine: GameEngine, 
         ctx: CanvasRenderingContext2D, 
         canvasEl: HTMLCanvasElement, 
-        levelDesigner: LevelDesigner, 
+        geoLevelDesigner: GEOLevelDesigner,
+        strikeTimeLevelDesigner: StrikeTimeLevelDesigner, 
         animationView: AnimationView,
     ) {
         this.ctx = ctx;
@@ -41,13 +48,15 @@ export class GameView { engine: GameEngine;
         // this.ship = this.game.addShip(); belongs in game script
         this.canvasEl = canvasEl;
        
-        this.levelDesigner = levelDesigner;
+        this.geoLevelDesigner = geoLevelDesigner;
+        this.strikeTimeLevelDesigner = strikeTimeLevelDesigner;
+
         this.animationView = animationView;
         this.bindKeyboardKeys = this.bindKeyboardKeys.bind(this);
         this.initialUnmute = true;
         this.gameStarted = false;
         this.modelClosed = false;
-        this.gameEditorOpened = false;
+        this.isLevelDesignerOpened = false;
         this.levelDesignLoaded = true;
         this.lastTime = 0;
         this.animate = this.animate.bind(this);
@@ -63,7 +72,7 @@ export class GameView { engine: GameEngine;
     // but I only see it being use as a string at the moment
 
     updateMovementDirection(move: DirectionKey, down: boolean) {
-        if (!this.gameEditorOpened) {
+        if (!this.isLevelDesignerOpened) {
             // check this function
             // have this be the controlled gameObject instead
             this.engine.updateLeftControlStickListeners(move, down);
@@ -139,6 +148,23 @@ export class GameView { engine: GameEngine;
             if (e.key === "p") {
                 this.engine.updateStartButtonListeners(down);
             }
+
+            if (e.key === "ArrowLeft") {
+                e.preventDefault()
+                this.engine.updateLeftArrowListeners(down);
+            }
+            if (e.key === "ArrowUp") {
+                e.preventDefault()
+                this.engine.updateUpArrowListeners(down);
+            }
+            if (e.key === "ArrowRight") {
+                e.preventDefault()
+                this.engine.updateRightArrowListeners(down);
+            }
+            if (e.key === "ArrowDown") {
+                e.preventDefault()
+                this.engine.updateDownArrowListeners(down);
+            }
         };
     }
 
@@ -164,8 +190,9 @@ export class GameView { engine: GameEngine;
             // const y = { y: e.layerY }; // TODO mouse position
             // TODO test with firefox 
             const mousePos: [number, number] = [e.offsetX, e.offsetY]; // TODO mouse position layerX vs offsetX
-            this.engine.updateMousePos(mousePos);
-            this.levelDesigner.mouseMoveEvent(e);
+            this.engine.updateMousePos(mousePos, e);
+            // I need to add the listener in each level designer instead of throwing it here randomly
+            // this.levelDesigner.updateMouseMoveEvent(e);
             // ship.setFireAngle(mousePos); add to game script event listener thing
         });
 
@@ -214,6 +241,12 @@ export class GameView { engine: GameEngine;
 
         // Get the modal
         const modal = document.getElementById("myModal");
+        const strikeTimeLevelCreator = document.getElementById("StrikeTimeLevelEditor");
+        const geoWarsLevelCreator = document.getElementById('GEOWarsLevelEditor')
+        const levelEditorCanvas = document.getElementById('LevelEditorCanvas')
+        geoWarsLevelCreator.style.display = 'none';
+        strikeTimeLevelCreator.style.display = 'none';
+        levelEditorCanvas.style.display = 'none';
 
         // Get the button that opens the modal
         // var btn = document.getElementById("myBtn");
@@ -250,6 +283,7 @@ export class GameView { engine: GameEngine;
         const startGEOWarsButtonModal = document.getElementById("startGEOWars");
         // open the level editor
         const levelEditorButton = document.getElementById("LevelEditorModal");
+        const strikeTimeLevelEditor = document.getElementById("StrikeTimeEditorStart");
         const createSprite = document.getElementById("SpriteEditor");
         
         // load a level either for level editor or for starting the game
@@ -263,7 +297,7 @@ export class GameView { engine: GameEngine;
             this.engine.addGameScript(geoWarsScript);
             this.bindKeyboardKeys();
             if(this.levelDesignLoaded){
-                this.levelDesigner.startGame(geoWarsScript);
+                this.geoLevelDesigner.startGame(geoWarsScript);
             }
             requestAnimationFrame(this.animate);
             modal.style.display = "none";
@@ -283,14 +317,42 @@ export class GameView { engine: GameEngine;
         levelEditorButton.onclick = (e) => {
             e.stopPropagation();
             this.gameStarted = true;
-            this.gameEditorOpened = true;
+            this.isLevelDesignerOpened = true;
+            this.openedLevelEditor = this.geoLevelDesigner;
+            this.openedLevelEditor.openLevelDesigner();
             this.bindKeyboardKeys();
             requestAnimationFrame(this.animate);
             modal.style.display = "none";
+            geoWarsLevelCreator.style.display = "flex";
+            strikeTimeLevelCreator.style.display = "none";
+            levelEditorCanvas.style.display = "flex";
             this.modelClosed = true;
             setTimeout(() => {
-                this.levelDesigner.gameEditorOpened = true;
-                this.engine.gameEditorOpened = true;
+                this.openedLevelEditor.isLevelDesignerOpened = true;
+                this.engine.isLevelDesignerOpened = true;
+                this.engine.addGameScript(this.openedLevelEditor);
+            },50);
+        };
+        
+        strikeTimeLevelEditor.onclick = (e) => {
+            e.stopPropagation();
+            this.gameStarted = true;
+            this.isLevelDesignerOpened = true;
+            this.strikeTimeLevelDesigner.openLevelDesigner();
+            this.openedLevelEditor = this.strikeTimeLevelDesigner;
+            this.bindKeyboardKeys();
+
+            requestAnimationFrame(this.animate);
+
+            modal.style.display = "none";
+            geoWarsLevelCreator.style.display = "none";
+            strikeTimeLevelCreator.style.display = "flex";
+            levelEditorCanvas.style.display = 'flex';
+            this.modelClosed = true;
+
+            setTimeout(() => {
+                this.engine.isLevelDesignerOpened = true;
+                this.engine.addGameScript(this.strikeTimeLevelDesigner);
             },50);
         };
 
@@ -305,19 +367,27 @@ export class GameView { engine: GameEngine;
                 this.engine.addGameScript(gameScript);
                 new SpriteEditor(this.engine);
         };
-
+        // TODO: will need to split this up into one or the other 
         loadGameDesignButtonModal.onclick = (e) => {
             e.stopPropagation();
             const json = (document.getElementById("loadGameDesignInputModal") as HTMLInputElement).value;
-            this.levelDesigner.loadGameDesign(json);
+            // will need two different buttons I think for accepting a loading string
+            this.geoLevelDesigner.loadGameDesign(json);
             this.levelDesignLoaded = true;
         };
+        // loadGameDesignButtonModal.onclick = (e) => {
+        //     e.stopPropagation();
+        //     const json = (document.getElementById("loadGameDesignInputModal") as HTMLInputElement).value;
+        //     // will need two different buttons I think for accepting a loading string
+        //     this.levelDesigner.loadGameDesign(json);
+        //     this.levelDesignLoaded = true;
+        // };
     }
 
     animate(time: number) {
         const timeDelta = time - this.lastTime;
         this.engine.tick(timeDelta);
-        this.levelDesigner.animate(timeDelta);
+        this.openedLevelEditor?.animate(timeDelta);
         this.animationView.animate(timeDelta);
         this.lastTime = time;
         // every call to animate requests causes another call to animate

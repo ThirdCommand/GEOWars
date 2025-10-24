@@ -6,7 +6,7 @@ import {  Scene, type GameElement, type SceneObject } from "./Scene";
 import { Event} from "./Event";
 import { Time } from "./Time";
 import { LoopBeginning, LoopEnd } from "./Loop";
-import { type LevelDesigner } from "../levelDesigner";
+import { type LevelDesigner } from "../LevelDesigner";
 import { LineSprite } from "../../line_sprite";
 
 // will likely need to make this work generically

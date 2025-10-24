@@ -24,10 +24,10 @@ export class Camera {
         this.initialCameraZPos = -1000;
         this.cameraHeight = 600;
         this.cameraWidth = 1000;
-        this.defaultZoomScale = 1.3;
+        this.defaultZoomScale = 1; 
         this.transform = transform;
         this.transform.pos[2] = this.initialCameraZPos;
-        this.zoomScale = 1.3;
+        this.zoomScale = 1;
     }
 
     makeActiveCamera() {
