@@ -9,6 +9,7 @@ import {EnemySpawn} from "../../particles/enemy_spawn";
 import { LineSprite, Spawnable } from "../../../game_engine/line_sprite";
 import { type AnimationView } from "../../../AnimationView";
 
+
 export class Weaver extends GameObject {
     rotation_speed: number;
     speed: number;
@@ -22,9 +23,10 @@ export class Weaver extends GameObject {
     bumpInfluencers: Array<[number, number]>;
     bumpAcceleration: number;
     bulletDodgeSpeed: number;
-    spawnSound: Sound;
     exists: boolean;
     lineSprite: WeaverSprite;
+
+    static SPAWN_SOUND_URL =  "sounds/Enemy_spawn_green.wav"
 
     BOX_SIZE = 10;
     COLOR = "#3cff0b";
@@ -47,10 +49,10 @@ export class Weaver extends GameObject {
         this.bumpAcceleration = 1.5;
         this.bulletDodgeSpeed = 4;
 
-        this.spawnSound = new Sound("sounds/Enemy_spawn_green.wav", 0.5, this.gameEngine.muted);
-        this.playSound(this.spawnSound);
+        this.playSound(Weaver.SPAWN_SOUND_URL);
+        
         this.addLineSprite(new WeaverSprite(this.transform));
-        this.addChildGameObject(new EnemySpawn(this.gameEngine));
+        this.addChildGameObject(new EnemySpawn(this.gameEngine, this));
         this.exists = false;
     
     }

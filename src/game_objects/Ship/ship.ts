@@ -1,5 +1,4 @@
 import { GameObject } from "../../game_engine/game_object";
-import { Sound } from "../../game_engine/sound";
 import { Bullet } from "../Bullet/bullet";
 import { Transform } from "../../game_engine/transform";
 
@@ -17,8 +16,6 @@ export class Ship extends GameObject {
     maxSpeed: number;
     mousePos: [number,number];
     fireAngle: number;
-    bulletSound: Sound;
-    upgradeBulletsSound: Sound;
     bulletTimeCheck: number;
     bulletInterval: number;
     controlsDirection = [0,0];
@@ -45,6 +42,10 @@ export class Ship extends GameObject {
         w: [0, -1],
         d: [1, 0],
     };
+    previousVelocityCorrection: [number, number];
+
+    static BULLET_SOUND_URL = "sounds/Fire_normal.wav";
+    static UPGRADE_BULLET_SOUND_URL = "sounds/Hi_Score_achieved.wav";
 
     constructor(engine: GameEngine, pos: [number, number, number?]) { 
         super(engine);
@@ -54,6 +55,7 @@ export class Ship extends GameObject {
         this.camera = new Camera(engine, new Transform(null, [pos[0], pos[1]]), "ShipCamera");
         this.camera.zoomScale = 1.3;
         this.camera.defaultZoomScale = 1.3;
+        this.previousVelocityCorrection = [0,0]
         
         this.setAsControllableGameObject();
         // when you add it as a focus controllable game object, 
@@ -66,6 +68,7 @@ export class Ship extends GameObject {
         this.addPhysicsComponent();
 
         this.addMousePosListener();
+        
 
         // will need to differentiate between direct focus and not
         // this.addLeftControlStickListener();
@@ -79,8 +82,6 @@ export class Ship extends GameObject {
         this.maxSpeed = 2.5; // 2.5
         this.mousePos = [0,0];
         this.fireAngle = 0;
-        this.bulletSound = new Sound("sounds/Fire_normal.wav", 0.2, engine.muted);
-        this.upgradeBulletsSound = new Sound("sounds/Hi_Score_achieved.wav", 1, engine.muted);
         this.bulletTimeCheck = 0;
         this.bulletInterval = 120;
         this.controlsDirection = [0,0];
@@ -202,8 +203,8 @@ export class Ship extends GameObject {
     }
 
     upgradeBullets() {
-        this.powerLevel += 1;
-        this.playSound(this.upgradeBulletsSound);
+        if(this.powerLevel === 1) this.playSound(Ship.UPGRADE_BULLET_SOUND_URL);
+        this.powerLevel = 3;
     }
   
     findSmallestDistanceToAWall(){
@@ -241,12 +242,15 @@ export class Ship extends GameObject {
     }
 
     movementMechanics() {
-    // get dV
-    //    mV => max speed in the direction of the controller
-    //    Vo => current velocity
-    //    dV~ =  mV - Vo
-    // if dv~ > 0.2 (or something)
-    //    a = ma~ 
+        // get dV
+        //    mV => max speed in the direction of the controller
+        //    Vo => current velocity
+        //    dV~ =  mV - Vo
+        // if dv~ > 0.2 (or something)
+        //    a = ma~ 
+
+        // TODO: uhhhh this is somehow causing absurd performance issues. especially when not moving
+        // okay it's way better now but still a huge problem
         if (!this.controllerInUse) {
             this.calcControlsDirection();
         }
@@ -255,8 +259,9 @@ export class Ship extends GameObject {
         const Vo = this.transform.absoluteVelocity();
         let mV = [];
 
-        if(this.controlsDirection[0] == 0 && this.controlsDirection[1] == 0){
+        if(this.controlsDirection[0] === 0 && this.controlsDirection[1] === 0){
             mV = [0, 0];
+            if(this.transform.vel[0] === 0 && this.transform.vel[1] === 0) return;
         } else {
             mV = [this.maxSpeed * Math.cos(movementAngle), this.maxSpeed * Math.sin(movementAngle)];
             this.transform.angle = movementAngle;
@@ -264,9 +269,23 @@ export class Ship extends GameObject {
 
         const dV = [mV[0] - Vo[0], mV[1] - Vo[1]];
         const alpha = Math.atan2(dV[1], dV[0]);
+        const vC = this.previousVelocityCorrection;
 
-        this.transform.acc[0] += this.shipEngineAcceleration * Math.cos(alpha);
-        this.transform.acc[1] += this.shipEngineAcceleration * Math.sin(alpha);
+        if(this.signsSwapped(dV[0], vC[0]) && this.signsSwapped(dV[1], vC[1])) {
+            this.transform.vel[0] = 0;
+            this.transform.vel[1] = 0;
+        } else if ( mV[0]===0 && mV[1]===0 ) {
+            this.transform.acc[0] += this.shipEngineAcceleration/4 * Math.cos(alpha);
+            this.transform.acc[1] += this.shipEngineAcceleration/4 * Math.sin(alpha);
+        } else {
+            this.transform.acc[0] += this.shipEngineAcceleration * Math.cos(alpha);
+            this.transform.acc[1] += this.shipEngineAcceleration * Math.sin(alpha);
+        }
+       
+    }
+
+    signsSwapped(originalNumber: number, newNumber: number) {
+        return originalNumber > 0 && newNumber < 0 || originalNumber < 0 && newNumber > 0
     }
 
     isOutOfBounds(){
@@ -386,7 +405,7 @@ export class Ship extends GameObject {
 
     fireBullet() {
     
-        this.gameEngine.queueSound(this.bulletSound);
+        this.playSound(Ship.BULLET_SOUND_URL);
         const shipvx = this.transform.vel[0];
         const shipvy = this.transform.vel[1];
 

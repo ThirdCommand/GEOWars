@@ -41,6 +41,11 @@ export class Singularity extends GameObject {
     increasing: boolean;
     lineSprite: SingularitySprite;
     lives: number;
+    static SPAWN_SOUND_URL =  "sounds/Enemy_spawn_red.wav";
+    static DEATH_SOUND_URL =  "sounds/Gravity_well_die.wav";
+    static GRAVITY_WELL_HIT_SOUND_URL = "sounds/Gravity_well_hit.wav";
+    static OPEN_GATE_SOUND_URL =  "sounds/Gravity_well_explode.wav";
+    
 
     constructor(engine: GameEngine | AnimationView, pos: [number, number]) {
         super(engine);
@@ -55,16 +60,12 @@ export class Singularity extends GameObject {
         this.alienSpawnAmount = 10;
         this.alienSpawnSpeed = 1.5;
         this.gravityPulsateScale = 1;
-        this.deathSound = new Sound("sounds/Gravity_well_die.wav", 1, engine.muted);
-        this.gravityWellHitSound = new Sound("sounds/Gravity_well_hit.wav", 0.5, engine.muted);
-        this.openGateSound = new Sound("sounds/Gravity_well_explode.wav", 1, engine.muted);
         // this.id = options.id
-        this.spawnSound = new Sound("sounds/Enemy_spawn_red.wav", 1, engine.muted);
-        this.playSound(this.spawnSound);
+        this.playSound(Singularity.SPAWN_SOUND_URL);
 
         this.increasing = true;
         this.addLineSprite(new SingularitySprite(this.transform));
-        this.addChildGameObject(new EnemySpawn(this.gameEngine));
+        this.addChildGameObject(new EnemySpawn(this.gameEngine, this));
         this.lineSprite.throbbingScale = 1;
         this.lives = 5;
     }
@@ -72,7 +73,7 @@ export class Singularity extends GameObject {
     exist() {
     // leaving off subscriptions means that things will subscribe to it
         this.addCollider("General", this, this.radius);
-        this.addCollider("GravityWell", this, this.gravityWellSize, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver", "Particle", "SingularityParticle", "GridPoint"],  ["General"]);
+        this.addCollider("GravityWell", this, this.gravityWellSize, ["Grunt", "Pinwheel", "Bullet", "BoxBox", "Arrow", "Singularity", "Weaver", "Particle", "SingularityParticle", "GridPoint"],  ["General"]);
         this.addCollider("Absorb", this, this.radius, ["Grunt", "Pinwheel", "BoxBox", "Arrow", "Weaver"],  ["General"]);
         // now it will move
         this.addPhysicsComponent();
@@ -101,11 +102,11 @@ export class Singularity extends GameObject {
         if (this.lives <= 0) {
             new ParticleExplosion(this.gameEngine, pos);
             (this.gameEngine.gameScript as GEOWarsScript).tallyScore(this);
-            this.playSound(this.deathSound);
+            this.playSound(Singularity.DEATH_SOUND_URL);
             this.remove();
         } else {
             new SingularityHitExplosion(this.gameEngine, pos);
-            this.playSound(this.gravityWellHitSound);
+            this.playSound(Singularity.GRAVITY_WELL_HIT_SOUND_URL);
             this.throbbingCycleSpeed /= 1.2;
             this.numberAbsorbed -= 1;
         }
@@ -210,7 +211,7 @@ export class Singularity extends GameObject {
     }
 
     openGate(){
-        this.playSound(this.openGateSound);
+        this.playSound(Singularity.OPEN_GATE_SOUND_URL);
         for (let i = 0; i < this.alienSpawnAmount; i++) {
             const angle = Math.random() * Math.PI * 2;
             const velocity: [number, number] = [this.alienSpawnSpeed * Math.cos(angle), this.alienSpawnSpeed * Math.sin(angle)];

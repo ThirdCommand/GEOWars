@@ -16,6 +16,8 @@ export class Arrow extends GameObject implements Scorable {
     time: number;
     lineSprite: ArrowSprite;
 
+    static SPAWN_SOUND_URL =  "sounds/Enemy_spawn_purple.wav";
+
 
     constructor(engine: GameEngine | AnimationView, pos: [number, number], angle = Math.random() * Math.PI * 2) {
         super(engine);
@@ -25,10 +27,9 @@ export class Arrow extends GameObject implements Scorable {
         this.points = 50;
         this.transform.vel = VectorMath.vectorCartesian(this.transform.angle, this.speed);
         this.radius = 6;
-        this.spawnSound = new Sound("sounds/Enemy_spawn_purple.wav", 0.5, this.gameEngine.muted);
-        this.playSound(this.spawnSound);
+        this.playSound(Arrow.SPAWN_SOUND_URL);
         this.addLineSprite(new ArrowSprite(this.transform));
-        this.addChildGameObject(new EnemySpawn(this.gameEngine));
+        this.addChildGameObject(new EnemySpawn(this.gameEngine, this));
         this.exists = false;
         this.time = 0;
     }

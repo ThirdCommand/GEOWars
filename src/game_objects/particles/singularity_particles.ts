@@ -25,7 +25,6 @@ export class SingularityParticles extends GameObject {
 
         this.particleNum = 80;
         this.currentParticleCount = 0;
-        // let explosionSound = new Sound("sounds/Enemy_explode.wav", 0.2)
         this.createSingularityParticles();
     
     }

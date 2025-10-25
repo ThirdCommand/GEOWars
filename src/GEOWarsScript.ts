@@ -11,6 +11,7 @@ import { Weaver } from "./game_objects/enemies/Weaver/weaver";
 import { Singularity } from "./game_objects/enemies/Singularity/singularity";
 import { AlienShip } from "./game_objects/enemies/Singularity/alien_ship";
 import { ParticleExplosion } from "./game_objects/particles/particle_explosion";
+import { SingularityParticleExplosion } from "./game_objects/particles/singularity_explosion";
 import { ShipExplosion } from "./game_objects/particles/ship_explosion";
 import {Star} from "./game_objects/particles/star";
 
@@ -23,6 +24,8 @@ import {Operation} from "./game_engine/Levels/DesignElements/Operation";
 import { GameScript, type GameEngine } from "./game_engine/game_engine";
 import { type GameObject } from "./game_engine/game_object";
 import { Transform } from "./game_engine/transform";
+import { BulletWallExplosion } from "./game_objects/particles/bullet_wall_explosion";
+import { SingularityHitExplosion } from "./game_objects/particles/singularity_hit_explosion";
 
 type EnemyCreator = (pos: [number, number, number] | [number, number], angle?: number) => GameObject;
 
@@ -39,7 +42,11 @@ export interface Scorable {
     points: number;
 }
 
-export class GEOWarsScript implements GameScript{
+type Sounds = {
+    [key: string]: Sound[];
+}
+
+export class GEOWarsScript implements GameScript {
     serializedGame: string;
     theme: Sound;
     gameOverSound: Sound;
@@ -80,21 +87,27 @@ export class GEOWarsScript implements GameScript{
     playFromRootScene: boolean;
     rootScene: Scene;
 
+    sounds: {
+
+    }
+
     constructor(engine: GameEngine) {
+        this.engine = engine;
         this.serializedGame = "";
        
-        this.gameOverSound = new Sound("sounds/Game_over.wav", 1, engine.muted);
-        this.gameStartSound = new Sound("sounds/Game_start.wav", 1, engine.muted);
+        this.gameOverSound = new Sound("sounds/Game_over.wav", 1);
+        this.gameStartSound = new Sound("sounds/Game_start.wav", 1);
        
         this.gameTime = 0;
         this.score = 0;
-        this.engine = engine;
         this.arrowAdded = false;
         this.startPosition = [500, 300, 0];
         this.initialCameraZPos = -1000;
 
-        this.theme = new Sound("sounds/Geometry_OST.mp3", 1, this.engine.muted);
-        this.shipDeathSound = new Sound("sounds/Ship_explode.wav", 1, this.engine.muted);
+        this.loadSounds();
+
+        this.theme = new Sound("sounds/Geometry_OST.mp3", 1);
+        this.shipDeathSound = new Sound("sounds/Ship_explode.wav", 1);
         this.ship = this.createShip();
         this.createStars();
         this.walls = this.createWalls();
@@ -123,6 +136,39 @@ export class GEOWarsScript implements GameScript{
         this.explosionColorWheel = 0;
 
         this.playFromRootScene = false;
+    }
+    loadSounds() {
+        // const types = 'BoxBox' | 'Pinwheel' | 'Arrow' | 'Grunt' | 'Weaver' | 'Singularity' | 'AlienShip';
+        const soundMagazineMap: {[url: string]: Sound[]} = {};
+
+        soundMagazineMap[Arrow.SPAWN_SOUND_URL] = this.loadSoundMagazine(Arrow.SPAWN_SOUND_URL, 0.5);
+        soundMagazineMap[BoxBox.SPAWN_SOUND_URL] = this.loadSoundMagazine(BoxBox.SPAWN_SOUND_URL, 0.5);
+        soundMagazineMap[Pinwheel.SPAWN_SOUND_URL] = this.loadSoundMagazine(Pinwheel.SPAWN_SOUND_URL, 0.5)
+        soundMagazineMap[Grunt.SPAWN_SOUND_URL] = this.loadSoundMagazine(Grunt.SPAWN_SOUND_URL, 0.5);
+        soundMagazineMap[Weaver.SPAWN_SOUND_URL] = this.loadSoundMagazine(Weaver.SPAWN_SOUND_URL, 0.5);
+        soundMagazineMap[Singularity.SPAWN_SOUND_URL] = this.loadSoundMagazine(Singularity.SPAWN_SOUND_URL, 1);
+        soundMagazineMap[BulletWallExplosion.BULLET_WALL_HIT_SOUND_URL] = this.loadSoundMagazine(BulletWallExplosion.BULLET_WALL_HIT_SOUND_URL, 0.1);
+        soundMagazineMap[ParticleExplosion.EXPLOSION_SOUND_URL] = this.loadSoundMagazine(ParticleExplosion.EXPLOSION_SOUND_URL, 0.1);
+        soundMagazineMap[ShipExplosion.EXPLOSION_SOUND_URL] = this.loadSoundMagazine(ShipExplosion.EXPLOSION_SOUND_URL, 0.1);
+        soundMagazineMap[SingularityParticleExplosion.EXPLOSION_SOUND_URL] = this.loadSoundMagazine(SingularityParticleExplosion.EXPLOSION_SOUND_URL, 0.1);
+        soundMagazineMap[SingularityHitExplosion.EXPLOSION_SOUND_URL] = this.loadSoundMagazine(SingularityHitExplosion.EXPLOSION_SOUND_URL, 0.1);
+        soundMagazineMap[Ship.BULLET_SOUND_URL] = this.loadSoundMagazine(Ship.BULLET_SOUND_URL,0.2)
+        soundMagazineMap[Ship.UPGRADE_BULLET_SOUND_URL] = this.loadSoundMagazine(Ship.UPGRADE_BULLET_SOUND_URL,1)
+        soundMagazineMap[Singularity.DEATH_SOUND_URL] = this.loadSoundMagazine(Singularity.DEATH_SOUND_URL, 1);
+        soundMagazineMap[Singularity.GRAVITY_WELL_HIT_SOUND_URL] = this.loadSoundMagazine(Singularity.GRAVITY_WELL_HIT_SOUND_URL, 0.5);
+        soundMagazineMap[Singularity.OPEN_GATE_SOUND_URL] = this.loadSoundMagazine(Singularity.OPEN_GATE_SOUND_URL, 1);
+
+       
+        this.engine.loadSounds(soundMagazineMap);
+
+    }
+
+    loadSoundMagazine(url: string, volume: number) {
+        const sounds = [];
+        for(let i=0;i<20;i++) {
+            sounds.push(new Sound(url, volume))
+        }
+        return sounds
     }
 
     nextElement() {

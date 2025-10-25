@@ -25,8 +25,8 @@ export class PlacingAnimation extends GameObject {
 
     // why is the position not mapping right
     updateMousePos(mousePos: [number, number]) {
-        this.parentObject.transform.pos[0] = mousePos[0];
-        this.parentObject.transform.pos[1] = mousePos[1];
+        this.parentObject.transform.pos[0] = mousePos[0] + this.gameEngine.activeCamera.transform.pos[0];
+        this.parentObject.transform.pos[1] = mousePos[1] + this.gameEngine.activeCamera.transform.pos[1];
     }
 
     mouseDoubleClicked() {

@@ -63,7 +63,7 @@ export class StrikeTimeScript {
         this.initialCameraZPos = -1000;
         this.score = 0;
 
-        this.theme = new Sound("sounds/Geometry_OST.mp3", 1, engine.muted);
+        this.theme = new Sound("", 1);
         
         this.enemyCreatorMap = this.createEnemyCreators();
 
@@ -76,6 +76,19 @@ export class StrikeTimeScript {
 
     nextElement() {
         this.rootScene.currentElementIndex = 0;
+    }
+
+    loadSounds() {
+        // const types = 'BoxBox' | 'Pinwheel' | 'Arrow' | 'Grunt' | 'Weaver' | 'Singularity' | 'AlienShip';
+        const particleExplosionSoundMagazine = this.loadSoundMagazine(ParticleExplosion.EXPLOSION_SOUND_URL, 0.2);
+    }
+
+    loadSoundMagazine(url: string, volume: number) {
+        const sounds = [];
+        for(let i=0;i<10;i++) {
+            sounds.push(new Sound(url, volume))
+        }
+        return sounds
     }
 
     startGame(serializedGame: string) {

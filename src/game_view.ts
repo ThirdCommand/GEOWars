@@ -99,7 +99,6 @@ export class GameView {
             }
 
             if (e.key === "m" && down) {
-                
                 if(!this.engine.spriteCreatorOpened) {
                     this.engine.toggleMute();
                     if (this.engine.muted) {
@@ -108,7 +107,6 @@ export class GameView {
                         this.engine.gameScript.theme.unmute();
                     }
                 }
-                
             }
             if(e.key === 'a' || e.key === 's' || e.key === 'w' || e.key === 'd') {
                 const unitVector = GameView.MOVES[e.key];
@@ -281,6 +279,7 @@ export class GameView {
         // for starting the game after loading one, or starting the default one
         const startStrikeTimeModal = document.getElementById("startStrikeTime");
         const startGEOWarsButtonModal = document.getElementById("startGEOWars");
+        const startGEOWarsButtonLevelEditor = document.getElementById("startGEOWarsGameFromLevelEditor");
         // open the level editor
         const levelEditorButton = document.getElementById("LevelEditorModal");
         const strikeTimeLevelEditor = document.getElementById("StrikeTimeEditorStart");
@@ -290,10 +289,21 @@ export class GameView {
         const loadGameDesignButtonModal = document.getElementById("loadGameDesignModal");
         // get the text from element: loadGameDesignInputModal
 
+        startGEOWarsButtonLevelEditor.onclick = (e) => {
+            e.stopPropagation();
+            this.gameStarted = true;
+            const geoWarsScript = new GEOWarsScript(this.engine);
+            this.engine.addGameScript(geoWarsScript);
+            this.bindKeyboardKeys();
+            this.geoLevelDesigner.startGame(geoWarsScript);
+            requestAnimationFrame(this.animate);
+            modal.style.display = "none";
+        };
+
         startGEOWarsButtonModal.onclick = (e) => {
             e.stopPropagation();
             this.gameStarted = true;
-            const geoWarsScript = new GEOWarsScript( this.engine);
+            const geoWarsScript = new GEOWarsScript(this.engine);
             this.engine.addGameScript(geoWarsScript);
             this.bindKeyboardKeys();
             if(this.levelDesignLoaded){
@@ -374,6 +384,7 @@ export class GameView {
             // will need two different buttons I think for accepting a loading string
             this.geoLevelDesigner.loadGameDesign(json);
             this.levelDesignLoaded = true;
+
         };
         // loadGameDesignButtonModal.onclick = (e) => {
         //     e.stopPropagation();

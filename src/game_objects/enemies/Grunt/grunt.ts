@@ -21,6 +21,7 @@ export class Grunt extends GameObject {
     bumpDirectionInfluenced = false;
     spawnSound: Sound;
     lineSprite: GruntSprite;
+    static SPAWN_SOUND_URL = "sounds/Enemy_spawn_blue.wav";
     constructor(engine: GameEngine | AnimationView, pos: [number, number], shipTransform: Transform) {
         super(engine);
         this.transform.pos = pos;
@@ -33,10 +34,9 @@ export class Grunt extends GameObject {
         this.bumpAcceleration = 1.5;
         this.bumpInfluencers = [];
         this.bumpDirectionInfluenced = false;
-        this.spawnSound = new Sound("sounds/Enemy_spawn_blue.wav", 0.5, this.gameEngine.muted);
-        this.playSound(this.spawnSound);
+        this.playSound(Grunt.SPAWN_SOUND_URL);
         this.addLineSprite(new GruntSprite(this.transform));
-        this.addChildGameObject(new EnemySpawn(this.gameEngine));
+        this.addChildGameObject(new EnemySpawn(this.gameEngine, this));
     }
 
     exist() {

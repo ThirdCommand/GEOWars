@@ -1,7 +1,6 @@
 import { GameView } from "./game_view";
 import { GameEngine } from "./game_engine/game_engine";
-import { GEOLevelDesigner } from "./game_engine/Levels/GEOLevelDesigner";
-import { AnimationView } from "./AnimationView";
+import { GEOLevelDesigner } from "./game_engine/Levels/GEOLevelDesigner"; import { AnimationView } from "./AnimationView";
 import { StrikeTimeLevelDesigner } from "./game_engine/Levels/StrikeTimeLevelDesigner";
 
 document.addEventListener("DOMContentLoaded", () => {

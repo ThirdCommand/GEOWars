@@ -212,8 +212,8 @@ export abstract class GameObject implements controllable{
         this.gameEngine.addCollider(newCollider);
     }
 
-    playSound(sound: Sound) {
-        this.gameEngine.queueSound(sound);
+    playSound(soundURL: string) {
+        this.gameEngine.queueSound(soundURL);
     }
 
     // relative motion needs to be fixed... FOR ANOTHER TIME

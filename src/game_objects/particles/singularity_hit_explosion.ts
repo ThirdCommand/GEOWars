@@ -1,6 +1,5 @@
 import { GEOParticle } from "./particle";
 import { GameObject } from "../../game_engine/game_object";
-import { Sound } from "../../game_engine/sound";
 import { Color } from "../../game_engine/color";
 import { type GameEngine } from "../../game_engine/game_engine";
 import { type AnimationView } from "../../AnimationView";
@@ -8,6 +7,7 @@ import { type GEOWarsScript } from "../../GEOWarsScript";
 export class SingularityHitExplosion extends GameObject {
     currentColor: Color;
     particleNum: number;
+    static EXPLOSION_SOUND_URL = "sounds/Enemy_explode.wav"
     constructor(engine: GameEngine | AnimationView, pos: [number, number, number?]) {
         super(engine);
         this.transform.pos[0] = pos[0];
@@ -28,8 +28,8 @@ export class SingularityHitExplosion extends GameObject {
             this.particleNum = 15;
         }
         // find singularity hit sound
-        const explosionSound = new Sound("sounds/Enemy_explode.wav", 0.2, this.gameEngine.muted);
-        this.playSound(explosionSound);
+       
+        this.playSound(SingularityHitExplosion.EXPLOSION_SOUND_URL);
         this.createExplosionParticles();
     }
 

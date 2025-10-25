@@ -9,10 +9,13 @@ import {DIM_X, DIM_Y, GEOWarsScript } from "../../GEOWarsScript";
 import { type AnimationView } from "../../AnimationView";
 
 type WallHitDirection = "LEFT" | "RIGHT" | "TOP" | "BOTTOM";
+
+
 export class BulletWallExplosion extends GameObject{
     currentColor: Color;
     particleNum: number;
     wallHit: WallHitDirection;
+    static BULLET_WALL_HIT_SOUND_URL = "sounds/bullet_hitwall.wav"
     constructor(engine: GameEngine | AnimationView, pos: [number, number, number?]) {
         super(engine);
         this.transform.pos[0] = pos[0];
@@ -23,9 +26,8 @@ export class BulletWallExplosion extends GameObject{
             "hsla", [startingH, 100, 50, opacity]
         );
         this.particleNum = 20;
-        const bulletWallHit = new Sound("sounds/bullet_hitwall.wav", 0.4, this.gameEngine.muted);
         this.wallHit = this.whichWall();
-        this.playSound(bulletWallHit);
+        this.playSound(BulletWallExplosion.BULLET_WALL_HIT_SOUND_URL);
         this.createParticles();
     }
 

@@ -310,7 +310,7 @@ export class BoxBox extends GameObject implements Scorable {
     static shapeStates = ["BottomLeft", "TopLeft"] as const;
 
 
-    spawnSound: Sound;
+    static SPAWN_SOUND_URL = "sounds/Enemy_spawn_blue.wav";
     radius: number;
     points: number;
     boxDepth: number;
@@ -321,7 +321,6 @@ export class BoxBox extends GameObject implements Scorable {
 
     constructor(engine: GameEngine | AnimationView, pos: [number, number]) {
         super(engine);
-        this.spawnSound = new Sound("sounds/Enemy_spawn_blue.wav", 0.5, engine.muted);
         this.transform.pos = pos;
         this.radius = 10;
         this.points = 20;
@@ -363,8 +362,8 @@ export class BoxBox extends GameObject implements Scorable {
             pauseTime: 1000,
         };
         this.addLineSprite(new BoxBoxSprite(this.transform, this.rotationState, this.projectedDrawCoordinates));
-        this.addChildGameObject(new EnemySpawn(this.gameEngine));
-        this.playSound(this.spawnSound);
+        this.addChildGameObject(new EnemySpawn(this.gameEngine, this));
+        this.playSound(BoxBox.SPAWN_SOUND_URL);
     }
 
     // the radius will have to change as it spins

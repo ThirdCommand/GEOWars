@@ -1,6 +1,7 @@
 import { type GameEngine, type GameScript } from "./game_engine/game_engine";
 import { Transform } from "./game_engine/transform";
 import { DrawingGridSprite } from "./game_engine/SpriteEditor/DrawingGridSprite";
+import { Sound } from "./game_engine/sound";
 
 export const DIM_X =  1000;
 export const DIM_Y = 600;
@@ -13,11 +14,7 @@ export class SpriteEditorScript implements GameScript {
 
     gameTime: number;
     engine: GameEngine;
-    theme: {
-        play: () => void;
-        mute: () => void;
-        unmute: () => void;
-    }
+    theme: Sound;
 
     constructor(engine: GameEngine) {
        
@@ -25,11 +22,7 @@ export class SpriteEditorScript implements GameScript {
         this.engine = engine;
 
         this.spriteCreatorOpened = true;
-        this.theme = {
-            play: () => null,
-            mute: () => null,
-            unmute: () => null
-        };
+        this.theme = new Sound('');
         engine.gameObjects = [];
         engine.lineSprites = [];
         engine.activeCamera.zoomScale = 1;

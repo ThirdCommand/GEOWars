@@ -8,6 +8,7 @@ import { Camera } from "./camera";
 import { Transform } from "./transform";
 import { DrawingGridSprite } from "./SpriteEditor/DrawingGridSprite";
 import { PlacingPoint } from "./SpriteEditor/Point";
+import { Ship } from "../game_objects/Ship/ship";
 
 declare global {
     interface Window {
@@ -22,11 +23,7 @@ export interface GameScript {
     onPause: () => void;
     onUnPause: () => void;
     gameTime: number;
-    theme: {
-        play: () => void;
-        mute: () => void;
-        unmute: () => void;
-    }
+    theme: Sound
 }
 
 type FocusableGameObject = GameObject & {
@@ -124,12 +121,13 @@ export class GameEngine {
     physicsComponents: PhysicsComponent[];
     replayablePhysicsComponents: ReplayablePhysicsComponent[] = [];
     lineSprites: LineSprite[];
-    soundsToPlay: {[key: string]: Sound};
+    soundsToPlay: Set<string>;
     colliders: {
         [key: string]: {
             [key: string]: Collider[]
         }
     };
+    backgroundSounds: Sound[];
     subscribers: Collider[];
     muted: boolean;
     mouseListeners: MousePositionListenable[]; 
@@ -188,9 +186,10 @@ export class GameEngine {
 
     controller: any | null;
     gameScriptAdded: boolean;
+    overlappingSoundMap: {[url: string]: Sound[]};
 
     constructor(ctx: CanvasRenderingContext2D) {
-        this.isPerformanceCheckOn = true;
+        this.isPerformanceCheckOn = false;
         this.ctx = ctx;
         window.engine = this;
         this.buttonState = {
@@ -206,13 +205,15 @@ export class GameEngine {
         this.controlledGameObject = null;
         this.gameObjects = [];
         this.physicsComponents = [];
-        this.soundsToPlay = {};
+        this.soundsToPlay = new Set;
         this.colliders = {};
         this.subscribers = [];
         this.muted = true;
         this.mouseListeners = [];
         this.mouseEventListeners = [];
         this.mouseFocussedListeners = [];
+        this.backgroundSounds = [];
+        this.overlappingSoundMap = {};
 
         this.gameClickListeners = [];
         this.gameClickListenersToAdd = [];
@@ -256,7 +257,11 @@ export class GameEngine {
         this.frameCountForPerformance = 0;
         this.levelDesigner = null;
         this.spriteCreatorOpened = false;
-         this.addCamera(new Camera(this, new Transform(), 'first camera'));
+        this.addCamera(new Camera(this, new Transform(), 'first camera'));
+    }
+
+    loadSounds(soundMap: {[url: string]: Sound[]}) {
+        this.overlappingSoundMap = soundMap;
     }
 
     addGameScript(gameScriptToAdd: GameScript) {
@@ -874,13 +879,18 @@ export class GameEngine {
 
     toggleMute() {
         this.muted = !this.muted;
+        this.muted ? this.backgroundSounds.forEach((sound) => sound.mute()) : this.backgroundSounds.forEach((sound) => sound.unmute())
     }
 
     playSounds() {
-        Object.values(this.soundsToPlay).forEach((sound) => {
-            sound.play();
+        // use magazine of sounds, each with a counter so it knows which song is next
+       
+        this.soundsToPlay.forEach((soundURL) => {
+            if(soundURL === "sounds/Hi_Score_achieved.wav") console.log(this.soundsToPlay);
+            const sound = this.overlappingSoundMap[soundURL].find((sound) => sound.sound.currentTime === 0 || sound.sound.ended);
+            sound?.play();
         });
-        this.soundsToPlay = {};
+        this.soundsToPlay = new Set();
     }
 
     addCamera(camera: Camera) {
@@ -942,10 +952,18 @@ export class GameEngine {
         this.lineSprites.push(lineSprite);
     }
 
-    queueSound(sound: Sound) {
+    queueSound(soundURL: string) {
         if (!this.muted) {
-            this.soundsToPlay[sound.url] = sound;
+            this.soundsToPlay.add(soundURL);
         }
+    }
+
+    playBackgroundSound(sound: Sound) {
+        sound.play();
+        if (this.muted) {
+            sound.sound.volume = 0;
+        }
+        this.backgroundSounds.push(sound)
     }
 
     // remove(gameObject){

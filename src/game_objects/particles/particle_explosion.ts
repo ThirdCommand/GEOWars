@@ -9,6 +9,7 @@ import { type GEOWarsScript } from "../../GEOWarsScript";
 export class ParticleExplosion extends GameObject{
     currentColor: Color;
     particleNum: number;
+    static EXPLOSION_SOUND_URL = "sounds/Enemy_explode.wav";
     constructor(engine: GameEngine | AnimationView, pos: [number, number, number?]){
         super(engine);
         this.transform.pos[0] = pos[0];
@@ -29,8 +30,7 @@ export class ParticleExplosion extends GameObject{
             this.particleNum = 20;
         }
 
-        const explosionSound = new Sound("sounds/Enemy_explode.wav", 0.2, this.gameEngine.muted);
-        this.playSound(explosionSound);
+        this.playSound(ParticleExplosion.EXPLOSION_SOUND_URL);
         this.createExplosionParticles();
         (engine.gameScript as GEOWarsScript).grid.Explosion(pos);
     }

@@ -2,8 +2,6 @@ import { GameEngine } from "../../../game_engine/game_engine";
 import { GameObject } from "../../../game_engine/game_object";
 import { GEOWarsScript } from "../../../GEOWarsScript";
 import { type Transform } from "../../../game_engine/transform";
-// import { Sound } from "../../../game_engine/sound";
-// import { Util } from "../../../game_engine/util";
 
 export class AlienShip extends GameObject {
     radius: number;

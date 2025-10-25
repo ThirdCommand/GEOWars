@@ -284,13 +284,19 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/singularity */ "./src/game_objects/enemies/Singularity/singularity.ts");
 /* harmony import */ var _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./game_objects/enemies/Singularity/alien_ship */ "./src/game_objects/enemies/Singularity/alien_ship.ts");
 /* harmony import */ var _game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./game_objects/particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.ts");
-/* harmony import */ var _game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./game_objects/particles/ship_explosion */ "./src/game_objects/particles/ship_explosion.ts");
-/* harmony import */ var _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./game_objects/particles/star */ "./src/game_objects/particles/star.ts");
-/* harmony import */ var _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Scene */ "./src/game_engine/Levels/DesignElements/Scene.ts");
-/* harmony import */ var _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.ts");
-/* harmony import */ var _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.ts");
-/* harmony import */ var _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.ts");
-/* harmony import */ var _game_engine_Levels_DesignElements_Operation__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Operation */ "./src/game_engine/Levels/DesignElements/Operation.ts");
+/* harmony import */ var _game_objects_particles_singularity_explosion__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./game_objects/particles/singularity_explosion */ "./src/game_objects/particles/singularity_explosion.ts");
+/* harmony import */ var _game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./game_objects/particles/ship_explosion */ "./src/game_objects/particles/ship_explosion.ts");
+/* harmony import */ var _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./game_objects/particles/star */ "./src/game_objects/particles/star.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Scene */ "./src/game_engine/Levels/DesignElements/Scene.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.ts");
+/* harmony import */ var _game_engine_Levels_DesignElements_Operation__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./game_engine/Levels/DesignElements/Operation */ "./src/game_engine/Levels/DesignElements/Operation.ts");
+/* harmony import */ var _game_objects_particles_bullet_wall_explosion__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./game_objects/particles/bullet_wall_explosion */ "./src/game_objects/particles/bullet_wall_explosion.ts");
+/* harmony import */ var _game_objects_particles_singularity_hit_explosion__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./game_objects/particles/singularity_hit_explosion */ "./src/game_objects/particles/singularity_hit_explosion.ts");
+
+
+
 
 
 
@@ -316,17 +322,18 @@ var DIM_X = 1000;
 var DIM_Y = 600;
 var GEOWarsScript = /** @class */ (function () {
     function GEOWarsScript(engine) {
+        this.engine = engine;
         this.serializedGame = "";
-        this.gameOverSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Game_over.wav", 1, engine.muted);
-        this.gameStartSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Game_start.wav", 1, engine.muted);
+        this.gameOverSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Game_over.wav", 1);
+        this.gameStartSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Game_start.wav", 1);
         this.gameTime = 0;
         this.score = 0;
-        this.engine = engine;
         this.arrowAdded = false;
         this.startPosition = [500, 300, 0];
         this.initialCameraZPos = -1000;
-        this.theme = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Geometry_OST.mp3", 1, this.engine.muted);
-        this.shipDeathSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Ship_explode.wav", 1, this.engine.muted);
+        this.loadSounds();
+        this.theme = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Geometry_OST.mp3", 1);
+        this.shipDeathSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Ship_explode.wav", 1);
         this.ship = this.createShip();
         this.createStars();
         this.walls = this.createWalls();
@@ -352,6 +359,34 @@ var GEOWarsScript = /** @class */ (function () {
         this.explosionColorWheel = 0;
         this.playFromRootScene = false;
     }
+    GEOWarsScript.prototype.loadSounds = function () {
+        // const types = 'BoxBox' | 'Pinwheel' | 'Arrow' | 'Grunt' | 'Weaver' | 'Singularity' | 'AlienShip';
+        var soundMagazineMap = {};
+        soundMagazineMap[_game_objects_enemies_Arrow_arrow__WEBPACK_IMPORTED_MODULE_7__.Arrow.SPAWN_SOUND_URL] = this.loadSoundMagazine(_game_objects_enemies_Arrow_arrow__WEBPACK_IMPORTED_MODULE_7__.Arrow.SPAWN_SOUND_URL, 0.5);
+        soundMagazineMap[_game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_5__.BoxBox.SPAWN_SOUND_URL] = this.loadSoundMagazine(_game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_5__.BoxBox.SPAWN_SOUND_URL, 0.5);
+        soundMagazineMap[_game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_6__.Pinwheel.SPAWN_SOUND_URL] = this.loadSoundMagazine(_game_objects_enemies_Pinwheel_pinwheel__WEBPACK_IMPORTED_MODULE_6__.Pinwheel.SPAWN_SOUND_URL, 0.5);
+        soundMagazineMap[_game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_8__.Grunt.SPAWN_SOUND_URL] = this.loadSoundMagazine(_game_objects_enemies_Grunt_grunt__WEBPACK_IMPORTED_MODULE_8__.Grunt.SPAWN_SOUND_URL, 0.5);
+        soundMagazineMap[_game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_9__.Weaver.SPAWN_SOUND_URL] = this.loadSoundMagazine(_game_objects_enemies_Weaver_weaver__WEBPACK_IMPORTED_MODULE_9__.Weaver.SPAWN_SOUND_URL, 0.5);
+        soundMagazineMap[_game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__.Singularity.SPAWN_SOUND_URL] = this.loadSoundMagazine(_game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__.Singularity.SPAWN_SOUND_URL, 1);
+        soundMagazineMap[_game_objects_particles_bullet_wall_explosion__WEBPACK_IMPORTED_MODULE_21__.BulletWallExplosion.BULLET_WALL_HIT_SOUND_URL] = this.loadSoundMagazine(_game_objects_particles_bullet_wall_explosion__WEBPACK_IMPORTED_MODULE_21__.BulletWallExplosion.BULLET_WALL_HIT_SOUND_URL, 0.1);
+        soundMagazineMap[_game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_12__.ParticleExplosion.EXPLOSION_SOUND_URL] = this.loadSoundMagazine(_game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_12__.ParticleExplosion.EXPLOSION_SOUND_URL, 0.1);
+        soundMagazineMap[_game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_14__.ShipExplosion.EXPLOSION_SOUND_URL] = this.loadSoundMagazine(_game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_14__.ShipExplosion.EXPLOSION_SOUND_URL, 0.1);
+        soundMagazineMap[_game_objects_particles_singularity_explosion__WEBPACK_IMPORTED_MODULE_13__.SingularityParticleExplosion.EXPLOSION_SOUND_URL] = this.loadSoundMagazine(_game_objects_particles_singularity_explosion__WEBPACK_IMPORTED_MODULE_13__.SingularityParticleExplosion.EXPLOSION_SOUND_URL, 0.1);
+        soundMagazineMap[_game_objects_particles_singularity_hit_explosion__WEBPACK_IMPORTED_MODULE_22__.SingularityHitExplosion.EXPLOSION_SOUND_URL] = this.loadSoundMagazine(_game_objects_particles_singularity_hit_explosion__WEBPACK_IMPORTED_MODULE_22__.SingularityHitExplosion.EXPLOSION_SOUND_URL, 0.1);
+        soundMagazineMap[_game_objects_Ship_ship__WEBPACK_IMPORTED_MODULE_1__.Ship.BULLET_SOUND_URL] = this.loadSoundMagazine(_game_objects_Ship_ship__WEBPACK_IMPORTED_MODULE_1__.Ship.BULLET_SOUND_URL, 0.2);
+        soundMagazineMap[_game_objects_Ship_ship__WEBPACK_IMPORTED_MODULE_1__.Ship.UPGRADE_BULLET_SOUND_URL] = this.loadSoundMagazine(_game_objects_Ship_ship__WEBPACK_IMPORTED_MODULE_1__.Ship.UPGRADE_BULLET_SOUND_URL, 1);
+        soundMagazineMap[_game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__.Singularity.DEATH_SOUND_URL] = this.loadSoundMagazine(_game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__.Singularity.DEATH_SOUND_URL, 1);
+        soundMagazineMap[_game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__.Singularity.GRAVITY_WELL_HIT_SOUND_URL] = this.loadSoundMagazine(_game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__.Singularity.GRAVITY_WELL_HIT_SOUND_URL, 0.5);
+        soundMagazineMap[_game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__.Singularity.OPEN_GATE_SOUND_URL] = this.loadSoundMagazine(_game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__.Singularity.OPEN_GATE_SOUND_URL, 1);
+        this.engine.loadSounds(soundMagazineMap);
+    };
+    GEOWarsScript.prototype.loadSoundMagazine = function (url, volume) {
+        var sounds = [];
+        for (var i = 0; i < 20; i++) {
+            sounds.push(new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound(url, volume));
+        }
+        return sounds;
+    };
     GEOWarsScript.prototype.nextElement = function () {
         this.rootScene.currentElementIndex = 0;
     };
@@ -359,7 +394,7 @@ var GEOWarsScript = /** @class */ (function () {
         this.serializedGame = serializedGame;
         var game = JSON.parse(serializedGame);
         if (game.serializedGameElements.length > 0) {
-            this.rootScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_15__.Scene('root');
+            this.rootScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_16__.Scene('root');
             this.rootScene.gameElements = this.loadGameElements(game.serializedGameElements, this.rootScene);
             this.playFromRootScene = true;
         }
@@ -370,24 +405,24 @@ var GEOWarsScript = /** @class */ (function () {
         var _this = this;
         return serializedGameElements.map(function (element) {
             if (element.type === "Scene") {
-                var newScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_15__.Scene(element.name, parentScene);
+                var newScene = new _game_engine_Levels_DesignElements_Scene__WEBPACK_IMPORTED_MODULE_16__.Scene(element.name, parentScene);
                 newScene.gameElements = _this.loadGameElements(element.serializedGameElements, newScene) || [];
                 return newScene;
             }
             else if (element.type === "Event") {
-                return new _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_16__.Event(element.spawns, parentScene, element.isShipRelative, _this.engine);
+                return new _game_engine_Levels_DesignElements_Event__WEBPACK_IMPORTED_MODULE_17__.Event(element.spawns, parentScene, element.isShipRelative, _this.engine);
             }
             else if (element.type === "Time") {
-                return new _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_17__.Time(parentScene, element.waitTime);
+                return new _game_engine_Levels_DesignElements_Time__WEBPACK_IMPORTED_MODULE_18__.Time(parentScene, element.waitTime);
             }
             else if (element.type === "LoopBeginning") {
-                return new _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_18__.LoopBeginning(parentScene);
+                return new _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_19__.LoopBeginning(parentScene);
             }
             else if (element.type === "LoopEnd") {
-                return new _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_18__.LoopEnd({ loopIdx: element.loopIdx || 0, repeatTimes: element.repeatTimes }, parentScene);
+                return new _game_engine_Levels_DesignElements_Loop__WEBPACK_IMPORTED_MODULE_19__.LoopEnd({ loopIdx: element.loopIdx || 0, repeatTimes: element.repeatTimes }, parentScene);
             }
             else if (element.type === "Operation") {
-                return new _game_engine_Levels_DesignElements_Operation__WEBPACK_IMPORTED_MODULE_19__.Operation(element.operand, parentScene, _this.engine, _this);
+                return new _game_engine_Levels_DesignElements_Operation__WEBPACK_IMPORTED_MODULE_20__.Operation(element.operand, parentScene, _this.engine, _this);
             }
         });
     };
@@ -398,7 +433,7 @@ var GEOWarsScript = /** @class */ (function () {
             var Y = (runoffFactor * Math.random() - runoffFactor / 2) * DIM_Y;
             // const Z = -this.initialCameraZPos * 0.25 + -this.initialCameraZPos * 2 * Math.random();
             var Z = -this.initialCameraZPos * (0.5 + 2 * Math.random());
-            new _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_14__.Star(this.engine, [X, Y, Z]);
+            new _game_objects_particles_star__WEBPACK_IMPORTED_MODULE_15__.Star(this.engine, [X, Y, Z]);
         }
     };
     GEOWarsScript.prototype.updateXButtonListener = function (pressed) {
@@ -546,7 +581,7 @@ var GEOWarsScript = /** @class */ (function () {
             if (object.constructor.name === "Ship") {
                 var objectTransform = object.transform;
                 var pos = objectTransform.absolutePosition();
-                new _game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_13__.ShipExplosion(_this.engine, pos);
+                new _game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_14__.ShipExplosion(_this.engine, pos);
             }
             else if (object.constructor.name === "Bullet") {
                 removeList.push(object);
@@ -952,6 +987,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _game_engine_transform__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game_engine/transform */ "./src/game_engine/transform.ts");
 /* harmony import */ var _game_engine_SpriteEditor_DrawingGridSprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./game_engine/SpriteEditor/DrawingGridSprite */ "./src/game_engine/SpriteEditor/DrawingGridSprite.ts");
+/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./game_engine/sound */ "./src/game_engine/sound.ts");
+
 
 
 var DIM_X = 1000;
@@ -961,11 +998,7 @@ var SpriteEditorScript = /** @class */ (function () {
         this.gameTime = 0;
         this.engine = engine;
         this.spriteCreatorOpened = true;
-        this.theme = {
-            play: function () { return null; },
-            mute: function () { return null; },
-            unmute: function () { return null; }
-        };
+        this.theme = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound('');
         engine.gameObjects = [];
         engine.lineSprites = [];
         engine.activeCamera.zoomScale = 1;
@@ -1029,7 +1062,7 @@ var StrikeTimeScript = /** @class */ (function () {
         this.startPosition = [500, 300, 0];
         this.initialCameraZPos = -1000;
         this.score = 0;
-        this.theme = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Geometry_OST.mp3", 1, engine.muted);
+        this.theme = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("", 1);
         this.enemyCreatorMap = this.createEnemyCreators();
         this.explosionColorWheel = 0;
         // not sure if this is a loaded level or a hardcoded one
@@ -1037,6 +1070,17 @@ var StrikeTimeScript = /** @class */ (function () {
     }
     StrikeTimeScript.prototype.nextElement = function () {
         this.rootScene.currentElementIndex = 0;
+    };
+    StrikeTimeScript.prototype.loadSounds = function () {
+        // const types = 'BoxBox' | 'Pinwheel' | 'Arrow' | 'Grunt' | 'Weaver' | 'Singularity' | 'AlienShip';
+        var particleExplosionSoundMagazine = this.loadSoundMagazine(_game_objects_particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion.EXPLOSION_SOUND_URL, 0.2);
+    };
+    StrikeTimeScript.prototype.loadSoundMagazine = function (url, volume) {
+        var sounds = [];
+        for (var i = 0; i < 10; i++) {
+            sounds.push(new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound(url, volume));
+        }
+        return sounds;
     };
     StrikeTimeScript.prototype.startGame = function (serializedGame) {
         var _a;
@@ -2671,25 +2715,25 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   isEnemyTypeArray: () => (/* binding */ isEnemyTypeArray)
 /* harmony export */ });
 /* harmony import */ var _game_objects_walls__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_objects/walls */ "./src/game_objects/walls.ts");
-/* harmony import */ var _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_objects/Overlay/overlay */ "./src/game_objects/Overlay/overlay.ts");
-/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.ts");
-/* harmony import */ var _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./DesignElements/Scene */ "./src/game_engine/Levels/DesignElements/Scene.ts");
-/* harmony import */ var _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./DesignElements/Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.ts");
-/* harmony import */ var _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.ts");
-/* harmony import */ var _DesignElements_Time__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.ts");
-/* harmony import */ var _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.ts");
-/* harmony import */ var _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./DesignElements/Operation */ "./src/game_engine/Levels/DesignElements/Operation.ts");
-/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../GEOWarsScript */ "./src/GEOWarsScript.ts");
-var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.ts");
+/* harmony import */ var _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./DesignElements/Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../GEOWarsScript */ "./src/GEOWarsScript.ts");
+/* harmony import */ var _LevelDesigner__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./LevelDesigner */ "./src/game_engine/Levels/LevelDesigner.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 
 // import { Grid } from "../../game_objects/particles/Grid/grid";
 // import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
@@ -2697,77 +2741,34 @@ var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from
 
 
 
-
-
-
-
 // I should collect placed enemies
 // check if array of enemyType
 function isEnemyTypeArray(value) {
-    return !value.some(function (type) { return (!(0,_DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_4__.isEnemyType)(type)); });
+    return !value.some(function (type) { return (!(0,_DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_2__.isEnemyType)(type)); });
 }
 // Perhaps level designer should be an extension of game script with connection to the
 // timeline UI and the animation window
 // for a tracker I can highlight the current game element
 // just like selecting it... but maybe the same color for 
 // all of them 
-var GEOLevelDesigner = /** @class */ (function () {
+var GEOLevelDesigner = /** @class */ (function (_super) {
+    __extends(GEOLevelDesigner, _super);
     function GEOLevelDesigner(engine, animationView, levelDesignerCtx, serializedGame) {
-        this.transform = new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform();
-        this.DIM_X = 1200;
-        this.DIM_Y = 300;
-        this.BG_COLOR = "#000000";
-        this.overlayText = {
-            Location: [0, 0],
-            Time: 0,
-            Type: "",
-            StartingAngle: 0,
-        };
-        this.overlayTextCleared = true;
-        // // main game array is the main list of sequence objects
-        // mainGameArray = [];
-        this.isLevelDesignerOpened = false;
-        this.engine = engine;
-        this.serializedGame = serializedGame;
-        this.UIElementSprites = [];
-        // duck typing for scene
-        this.expandedScenes = [];
-        // this is added to expanded Scenes off the bat. Check addUIElement
-        this.baseScene = new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.SceneObject(this, 'main'); // top level list of game elements
-        this.transform = new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform();
-        this.widthHeight = [0, 0];
-        this.loopBeginningObjectStackForLoading = [];
-        this.animationView = animationView;
-        this.levelDesignerCtx = levelDesignerCtx;
-        this.UIActionsToRun = [];
-        this.ctx = levelDesignerCtx;
-        this.gameObjects = [];
-        this.lineSprites = [];
-        this.zoomScale = 1;
+        var _this = _super.call(this, engine, animationView, levelDesignerCtx, serializedGame) || this;
+        _this.transform = new _transform__WEBPACK_IMPORTED_MODULE_1__.Transform();
+        _this.transform = new _transform__WEBPACK_IMPORTED_MODULE_1__.Transform();
         // might not need the ship now that I'm using cameras
-        this.ship = {
-            transform: new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform()
+        _this.ship = {
+            transform: new _transform__WEBPACK_IMPORTED_MODULE_1__.Transform()
         };
-        this.lastTime = 0;
-        this.animate = this.animate.bind(this);
-        this.overlayText = {
-            Location: [0, 0],
-            Time: 0,
-            Type: "",
-            StartingAngle: 0,
-        };
-        this.overlayTextCleared = true;
-        // this.palletModal = this.getPalletModal();
-        // can be scene, time, event, or loop
-        this.selectedGameElement;
-        this.currentEnemyPlacer;
-        // main game array is the main list of sequence objects
-        // this.mainGameArray = [];
-        this.isLevelDesignerOpened = false;
+        _this.lastTime = 0;
+        return _this;
     }
     GEOLevelDesigner.prototype.openLevelDesigner = function () {
         var _this = this;
         this.engine.addMouseEventListener(this);
+        this.engine.activeCamera.transform.pos[0] = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.DIM_X / 2;
+        this.engine.activeCamera.transform.pos[1] = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.DIM_Y / 2;
         var addArrowButton = document.getElementById("Arrow");
         var addGruntButton = document.getElementById("Grunt");
         var addBoxBox = document.getElementById("BoxBox");
@@ -2787,7 +2788,6 @@ var GEOLevelDesigner = /** @class */ (function () {
         var randomSpawnCoordinate = document.getElementById("randomSpawnCoordinate");
         var saveGameDesign = document.getElementById("saveGameDesign");
         // const loadGameDesign = document.getElementById("loadGameDesign");
-        var startGame = document.getElementById("startGame");
         shipRelative.onclick = function (e) {
             e.stopPropagation();
             var value = shipRelative.value;
@@ -2938,12 +2938,6 @@ var GEOLevelDesigner = /** @class */ (function () {
                 }
             }
         });
-        startGame.onclick = function (e) {
-            e.stopPropagation();
-            // TODO: not sure what this was doing before
-            // serialize game, send to game script
-            // this.startGame();
-        };
         // this.levelDesignerCtx.addEventListener("dblclick", (e) => {
         //     e.stopPropagation();
         //     console.log("double clicked");
@@ -2967,365 +2961,11 @@ var GEOLevelDesigner = /** @class */ (function () {
         GEOWarsScript.startGame(serializedGameString);
         this.engine.isLevelDesignerOpened = false;
     };
-    GEOLevelDesigner.prototype.makeTime = function (time, parentScene) {
-        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
-        var newElementPosition = this.getNewDrawPosition();
-        var timeObject = new _DesignElements_Time__WEBPACK_IMPORTED_MODULE_6__.TimeObject(this, time, newElementPosition, parentScene);
-        this.selectedGameElement = timeObject;
-        return timeObject;
-    };
-    GEOLevelDesigner.prototype.makeOperation = function (operand, parentScene) {
-        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
-        var newElementPosition = this.getNewDrawPosition();
-        var operationObject = new _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_8__.OperationObject(this, operand, newElementPosition, parentScene);
-        operationObject.onMouseClick();
-        this.selectedGameElement = operationObject;
-        return operationObject;
-    };
-    GEOLevelDesigner.prototype.mouseDoubleClicked = function (pos) {
-        console.log(pos);
-    };
-    GEOLevelDesigner.prototype.expandScene = function (scene) {
-        var _this = this;
-        var _a, _b;
-        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
-        this.selectedGameElement = undefined;
-        var parentIndex = this.expandedScenes.indexOf(scene.parentScene);
-        if (parentIndex !== -1)
-            (_b = this.expandedScenes[parentIndex + 1]) === null || _b === void 0 ? void 0 : _b.unExpandScene();
-        scene.gameElementObjects.forEach(function (element) {
-            element.parentSceneExpanded();
-            _this.addUIElementSprite(element.UILineSprite);
-        });
-        this.expandedScenes.push(scene);
-    };
-    GEOLevelDesigner.prototype.unExpandScene = function (scene) {
-        var expandedIndex = this.expandedScenes.indexOf(scene);
-        if (expandedIndex === 0)
-            return console.log("can't unexpand the base scene");
-        if (expandedIndex === -1)
-            return console.log("scene not expanded");
-        scene.expanded = false;
-        scene.UILineSprite.expanded = false;
-        var bottomExpandedScene = this.expandedScenes.pop();
-        this.removeExpandedElements(bottomExpandedScene);
-        bottomExpandedScene.expanded = false;
-        bottomExpandedScene.UILineSprite.expanded = false;
-        if (scene !== bottomExpandedScene)
-            bottomExpandedScene.parentScene.unExpandScene();
-    };
-    GEOLevelDesigner.prototype.updateMouseMoveEvent = function (e) {
-        if (e.target instanceof HTMLElement && e.target.classList[0] === "level-editor-canvas") {
-            this.currentMousePos = [e.offsetX, e.offsetY];
-            if (this.UIElementMouseFollower) {
-                var moveToPosition = [
-                    e.offsetX - this.UIElementMouseFollower.draggingLineSprite.widthHeight[0] / 2,
-                    e.offsetY - this.UIElementMouseFollower.draggingLineSprite.widthHeight[1] / 2
-                ];
-                this.UIElementMouseFollower.draggingLineSprite.transform.pos = __spreadArray([], moveToPosition, true);
-                // check if the element is overlapping with another element
-                var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
-                var draggedElementSceneIndex = bottomExpandedScene.gameElementObjects.indexOf(this.UIElementMouseFollower);
-                if (draggedElementSceneIndex === -1)
-                    return;
-                var leftElementIndex = draggedElementSceneIndex - 1;
-                var rightElementIndex = draggedElementSceneIndex + 1;
-                var draggedElementXPosition = this.UIElementMouseFollower.draggingLineSprite.transform.pos[0];
-                var draggedElementWidth = this.UIElementMouseFollower.draggingLineSprite.widthHeight[0];
-                // check left element:
-                var moved = false;
-                if (leftElementIndex >= 0) {
-                    var leftElement = bottomExpandedScene.gameElementObjects[leftElementIndex];
-                    var leftElementWidth = leftElement.widthHeight[0];
-                    var leftElementX = leftElement.transform.pos[0];
-                    var leftElementMiddlePosition = leftElementX + leftElementWidth / 2;
-                    if (draggedElementXPosition < leftElementMiddlePosition &&
-                        draggedElementXPosition + draggedElementWidth > leftElementMiddlePosition) {
-                        this.moveLeft(this.UIElementMouseFollower);
-                        moved = true;
-                        // swap position of ghost element and 
-                    }
-                }
-                // check right:
-                if (rightElementIndex < bottomExpandedScene.gameElementObjects.length && moved === false) {
-                    var rightElement = bottomExpandedScene.gameElementObjects[rightElementIndex];
-                    var rightElementWidth = rightElement.widthHeight[0];
-                    var rightElementX = rightElement.transform.pos[0];
-                    var rightElementMiddlePosition = rightElementX + rightElementWidth / 2;
-                    if (draggedElementXPosition < rightElementMiddlePosition &&
-                        draggedElementXPosition + draggedElementWidth > rightElementMiddlePosition) {
-                        this.moveRight(this.UIElementMouseFollower);
-                        // swap position of ghost element and 
-                    }
-                }
-            }
-        }
-        else {
-            this.currentMousePos = undefined;
-        }
-    };
-    GEOLevelDesigner.prototype.getExpandedScenePosition = function () {
-        // expands into next row
-    };
-    GEOLevelDesigner.prototype.leftJustifyGameElements = function () {
-        var _this = this;
-        var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
-        var expandedElements = bottomExpandedScene.gameElementObjects;
-        bottomExpandedScene.gameElementObjects = [];
-        expandedElements.forEach(function (element) {
-            var newPos = _this.getNewDrawPosition();
-            element.transform.pos = newPos;
-            bottomExpandedScene.gameElementObjects.push(element);
-        });
-    };
-    GEOLevelDesigner.prototype.makeLoop = function (loop, parentScene) {
-        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
-        var beginningObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
-        var endObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
-        beginningObject.endLoopObject = endObject;
-        endObject.beginningLoopObject = beginningObject;
-    };
-    GEOLevelDesigner.prototype.makeLoopBeginning = function (parentScene) {
-        var loopBeginning = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
-        this.loopBeginningObjectStackForLoading.push(loopBeginning);
-        return loopBeginning;
-    };
-    GEOLevelDesigner.prototype.makeLoopEnding = function (loop, parentScene) {
-        var loopEndObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
-        var matchingBeginning = this.loopBeginningObjectStackForLoading.pop();
-        matchingBeginning.endLoopObject = loopEndObject;
-        loopEndObject.beginningLoopObject = matchingBeginning;
-        return loopEndObject;
-    };
-    GEOLevelDesigner.prototype.moveLeft = function (UIElement) {
-        var gameElements = this.expandedScenes[this.expandedScenes.length - 1].gameElementObjects;
-        for (var i = 0; i < gameElements.length; i++) {
-            var element = gameElements[i];
-            if (element === UIElement) {
-                if (i === 0)
-                    return;
-                var temp = gameElements[i - 1];
-                gameElements[i - 1] = UIElement;
-                gameElements[i] = temp;
-                this.swapAdjacentPositions(temp, UIElement);
-            }
-        }
-    };
-    GEOLevelDesigner.prototype.moveRight = function (UIElement) {
-        var gameElements = this.expandedScenes[this.expandedScenes.length - 1].gameElementObjects;
-        for (var i = 0; i < gameElements.length; i++) {
-            var currentElement = gameElements[i];
-            if (currentElement === UIElement) {
-                if (i === gameElements.length - 1)
-                    return;
-                var temp = gameElements[i + 1];
-                gameElements[i + 1] = UIElement;
-                gameElements[i] = temp;
-                this.swapAdjacentPositions(UIElement, temp);
-                return;
-            }
-        }
-    };
-    GEOLevelDesigner.prototype.saveGameDesign = function () {
-        var serializedGameElements = this.baseScene.gameElementObjects.map(function (element) { return element.serialize(); });
-        this.serializedGame = {
-            type: "Scene",
-            name: "Game",
-            serializedGameElements: serializedGameElements,
-        };
-        console.log(JSON.stringify(this.serializedGame));
-    };
-    GEOLevelDesigner.prototype.loadGameDesign = function (json) {
-        var serializedGame = JSON.parse(json);
-        this.serializedGame = serializedGame;
-        this.baseScene = new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.SceneObject(this, 'main');
-        this.expandedScenes = [this.baseScene];
-        this.baseScene.gameElementObjects = this.loadGameElements(serializedGame.serializedGameElements, this.baseScene);
-    };
-    GEOLevelDesigner.prototype.loadGameElements = function (serializedGameElements, parentScene) {
-        var _this = this;
-        return serializedGameElements.map(function (serializedElement) {
-            if (serializedElement.type === "Scene") {
-                // might be broken, not sure if should be visible or not
-                var newScene = _this.makeSceneObject(serializedElement.name, true, parentScene);
-                _this.expandedScenes.push(newScene);
-                newScene.gameElementObjects = _this.loadGameElements(serializedElement.serializedGameElements, newScene) || [];
-                newScene.unExpandScene();
-                return newScene;
-            }
-            else if (serializedElement.type === "Event") {
-                return _this.makeEventObject(serializedElement, parentScene);
-            }
-            else if (serializedElement.type === "Time") {
-                return _this.makeTime(serializedElement.waitTime, parentScene);
-            }
-            else if (serializedElement.type === "LoopBeginning") {
-                return _this.makeLoopBeginning(parentScene);
-            }
-            else if (serializedElement.type === "LoopEnd") {
-                return _this.makeLoopEnding(serializedElement, parentScene);
-            }
-            else if (serializedElement.type === "Operation") {
-                return _this.makeOperation(serializedElement.operand, parentScene);
-            }
-        });
-    };
-    GEOLevelDesigner.prototype.makeEventObject = function (eventToLoad, parentScene) {
-        var _a;
-        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
-        // should provide this the current scene to know which array of elements to use
-        var newElementPosition = this.getNewDrawPosition();
-        var event = new _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject(this, eventToLoad, newElementPosition, parentScene);
-        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
-        this.selectedGameElement = event;
-        return event;
-    };
-    GEOLevelDesigner.prototype.swapAdjacentPositions = function (leftUIElement, rightUIElement) {
-        var _a;
-        var newLeftX = ((_a = leftUIElement === null || leftUIElement === void 0 ? void 0 : leftUIElement.transform) === null || _a === void 0 ? void 0 : _a.pos[0]) || 0;
-        var newRightX = newLeftX + (rightUIElement === null || rightUIElement === void 0 ? void 0 : rightUIElement.widthHeight[0]) + 4;
-        leftUIElement.transform.pos[0] = newRightX;
-        rightUIElement.transform.pos[0] = newLeftX;
-    };
-    GEOLevelDesigner.prototype.getNewDrawPosition = function () {
-        var _a, _b;
-        var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
-        var expandedElements = bottomExpandedScene.gameElementObjects;
-        var lastElement = expandedElements[expandedElements.length - 1];
-        var lastXPosition = ((_a = lastElement === null || lastElement === void 0 ? void 0 : lastElement.transform) === null || _a === void 0 ? void 0 : _a.pos[0]) || 0;
-        var lastYPosition = ((_b = lastElement === null || lastElement === void 0 ? void 0 : lastElement.transform) === null || _b === void 0 ? void 0 : _b.pos[1]) || bottomExpandedScene.widthHeight[1] + bottomExpandedScene.transform.pos[1] + 4;
-        var lastWidth = (lastElement === null || lastElement === void 0 ? void 0 : lastElement.widthHeight[0]) || 0;
-        return [lastXPosition + lastWidth + 4, lastYPosition];
-    };
-    GEOLevelDesigner.prototype.makeSceneObject = function (name, visible, parentScene) {
-        if (visible === void 0) { visible = true; }
-        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
-        // this should add a box inside either the game sequence as a whole,
-        // or inside the current scene
-        var newElementPosition;
-        if (visible) {
-            newElementPosition = this.getNewDrawPosition();
-        }
-        // sprites are made and added automatically
-        return (new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.SceneObject(this, name, parentScene, newElementPosition));
-    };
-    GEOLevelDesigner.prototype.loopSelected = function (loop) {
-        var _a;
-        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
-        this.selectedGameElement = loop;
-    };
-    GEOLevelDesigner.prototype.timeSelected = function (time) {
-        var _a;
-        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
-        this.selectedGameElement = time;
-    };
-    GEOLevelDesigner.prototype.operationSelected = function (operation) {
-        var _a;
-        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
-        this.selectedGameElement = operation;
-    };
-    GEOLevelDesigner.prototype.eventSelected = function (event) {
-        var _a;
-        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
-        this.selectedGameElement = event;
-        this.shipRelative.value = event.isShipRelative.toString();
-    };
-    GEOLevelDesigner.prototype.eventUnselected = function () {
-        var _a;
-        (_a = this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.remove();
-        this.currentEnemyPlacer = undefined;
-    };
-    GEOLevelDesigner.prototype.enemyPlacerClicked = function (enemyPlacer) {
-        this.animationView.enemyPlacerSelected(enemyPlacer);
-        this.currentEnemyPlacer = enemyPlacer;
-    };
-    GEOLevelDesigner.prototype.sceneDoubleClicked = function (scene) {
-        // this should open the array of elements in the scene
-        console.log("scene double clicked: ", scene);
-        // should move this into scene object
-        // this.selectedScene.UILineSprite.selected = false;
-        // this.selectedScene = scene;
-        // scene.UILineSprite.selected = true;
-    };
-    GEOLevelDesigner.prototype.sceneSelected = function (scene) {
-        var _a;
-        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
-        this.selectedGameElement = scene;
-    };
-    // getPalletModal() {
-    //     const modal = document.getElementById("pallet");
-    //     // add functions to buttons of the pallet
-    // }
-    // enemyPlaced(spawn) {
-    //     this.animationView.enemyPlaced(spawn);
-    // }
-    GEOLevelDesigner.prototype.escapePressed = function () {
-        var _a;
-        if (this.currentEnemyPlacer && !this.currentEnemyPlacer.isPlaced) {
-            (_a = this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.remove();
-        }
-        this.UIElementSprites.forEach(function (sprite) { return sprite.selected = false; });
-        this.animationView.clear();
-        this.currentEnemyPlacer = undefined;
-    };
-    GEOLevelDesigner.prototype.addEnemyButton = function (type) {
-        var _a;
-        this.animationView.clear();
-        this.animationView.addEnemy(type);
-        (_a = this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.remove();
-        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject) {
-            this.currentEnemyPlacer = this.selectedGameElement.createEnemyPlacer(type);
-        }
-        else {
-            throw Error('event should be selected to add an enemy');
-        }
-    };
-    GEOLevelDesigner.prototype.updateAnimationViewAngle = function (radiansAngle) {
-        this.animationView.gameObjects[0].transform.angle = radiansAngle;
-    };
-    GEOLevelDesigner.prototype.addingAnotherEnemy = function (enemyPlacer) {
-        this.currentEnemyPlacer = enemyPlacer;
-    };
-    // might be redundent and useless TODO
-    GEOLevelDesigner.prototype.downClick = function () {
-        this.clickedDown = true;
-    };
-    GEOLevelDesigner.prototype.unClicked = function () {
-        if (this.UIElementMouseFollower) {
-            this.UIElementMouseFollower.elementLetGo();
-            this.removeUIElementSprite(this.UIElementMouseFollower.draggingLineSprite);
-            this.UIElementMouseFollower = null;
-        }
-        this.clickedDown = false;
-    };
-    GEOLevelDesigner.prototype.addMouseClickListener = function (object) {
-        this.engine.addLevelDesignerClickListener(object);
-    };
-    GEOLevelDesigner.prototype.addMouseDoubleClickListener = function (object) {
-        this.engine.addLevelDesignerDoubleClickListener(object);
-    };
-    GEOLevelDesigner.prototype.removeMouseClickListener = function (object) {
-        this.engine.removeLevelDesignerClickListener(object);
-    };
-    GEOLevelDesigner.prototype.removeMouseDoubleClickListener = function (object) {
-        this.engine.removeLevelDesignerDoubleClickListener(object);
-    };
-    GEOLevelDesigner.prototype.addRandomRandomSpawnToEvent = function (spawnData) {
-        var _a;
-        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject) {
-            (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.addRandomRandom(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_4__.Spawn(spawnData, this.engine));
-        }
-    };
-    GEOLevelDesigner.prototype.update = function () {
-    };
-    GEOLevelDesigner.prototype.createWalls = function () {
-        return new _game_objects_walls__WEBPACK_IMPORTED_MODULE_0__.Walls(this.engine);
-    };
-    GEOLevelDesigner.prototype.createOverlay = function () {
-        return new _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_1__.Overlay(this.engine, this);
-    };
+    GEOLevelDesigner.prototype.queueSound = function () { };
+    GEOLevelDesigner.prototype.addCollider = function () { };
+    GEOLevelDesigner.prototype.addPhysicsComponent = function () { };
     GEOLevelDesigner.prototype.isOutOfBounds = function (pos, radius) {
-        var max = [_GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.DIM_X - radius, _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.DIM_Y - radius];
+        var max = [_GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.DIM_X - radius, _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.DIM_Y - radius];
         if (radius) {
             return (pos[0] <= radius ||
                 pos[0] >= max[0] ||
@@ -3335,145 +2975,15 @@ var GEOLevelDesigner = /** @class */ (function () {
         else {
             return (pos[0] < 0 ||
                 pos[1] < 0 ||
-                pos[0] > _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.DIM_X ||
-                pos[1] > _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.DIM_Y);
+                pos[0] > _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.DIM_X ||
+                pos[1] > _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.DIM_Y);
         }
     };
-    GEOLevelDesigner.prototype.runUIActions = function () {
-        this.UIActionsToRun.forEach(function (action) { return action(); });
-        this.UIActionsToRun = [];
-    };
-    GEOLevelDesigner.prototype.animate = function (timeDelta) {
-        // it might be cool to animate the tiny enemies in the spawn card
-        // this.animateGameObjects(timeDelta);
-        this.clearCanvas();
-        this.runUIActions();
-        this.renderLineSprites(this.levelDesignerCtx);
-        this.renderUILineSprites(this.levelDesignerCtx);
-        this.renderOverlayText();
-    };
-    GEOLevelDesigner.prototype.renderOverlayText = function () {
-        // if(this.overlayTextCleared) return;
-        // this.ctx.save();
-        // this.ctx.font = 18 + "px " + "Arial";
-        // this.ctx.fillStyle = "white";
-        // const typeText = "Type: " + this.overlayText.Type;
-        // const positionText = "Location: " + this.overlayText.Location;
-        // this.ctx.fillText(
-        //     typeText,
-        //     10,
-        //     20
-        // );
-        // this.ctx.fillText(
-        //     positionText,
-        //     10,
-        //     38
-        // );
-        // this.ctx.restore();
-    };
-    GEOLevelDesigner.prototype.animateGameObjects = function () {
-        // this.gameObjects.forEach((object) => {
-        //     object.animate(delta);
-        // });
-    };
-    GEOLevelDesigner.prototype.clearCanvas = function () {
-        this.ctx.clearRect(0, 0, this.DIM_X, this.DIM_Y);
-        this.ctx.fillStyle = "#000000";
-        this.ctx.fillRect(0, 0, this.DIM_X, this.DIM_Y);
-    };
-    GEOLevelDesigner.prototype.clear = function () {
-        var _this = this;
-        var removeList = __spreadArray([], this.gameObjects, true);
-        removeList.forEach(function (gameObject) {
-            _this.remove(gameObject);
-        });
-        this.overlayTextCleared = true;
-    };
-    GEOLevelDesigner.prototype.renderLineSprites = function (ctx) {
-        ctx.save();
-        ctx.scale(this.zoomScale, this.zoomScale);
-        this.lineSprites.forEach(function (sprite) {
-            sprite.draw(ctx);
-        });
-        ctx.restore();
-    };
-    GEOLevelDesigner.prototype.renderUILineSprites = function (ctx) {
-        ctx.save();
-        this.UIElementSprites.forEach(function (sprite) {
-            sprite.draw(ctx);
-        });
-        ctx.restore();
-    };
-    GEOLevelDesigner.prototype.addGameObject = function (gameObject) {
-        this.gameObjects.push(gameObject);
-    };
-    GEOLevelDesigner.prototype.queueSound = function () {
-    };
-    GEOLevelDesigner.prototype.addCollider = function () { };
-    GEOLevelDesigner.prototype.addPhysicsComponent = function () { };
-    GEOLevelDesigner.prototype.remove = function (gameObject) {
-        if (gameObject.lineSprite) {
-            var lineSpriteIndex = this.lineSprites.indexOf(gameObject.lineSprite);
-            if (lineSpriteIndex > -1)
-                this.lineSprites.splice(lineSpriteIndex, 1);
-        }
-        var index = this.gameObjects.indexOf(gameObject);
-        if (index !== -1)
-            this.gameObjects.splice(index, 1);
-    };
-    GEOLevelDesigner.prototype.removeExpandedElements = function (expandedScene) {
-        var _this = this;
-        var UIElements = expandedScene.gameElementObjects;
-        UIElements.forEach(function (UIElement) {
-            UIElement.parentSceneUnexpanded();
-            if (UIElement.UILineSprite) {
-                var index = _this.UIElementSprites.indexOf(UIElement.UILineSprite);
-                if (index !== -1)
-                    _this.UIElementSprites.splice(index, 1);
-            }
-        });
-    };
-    GEOLevelDesigner.prototype.removeUIElementSprite = function (UILineSprite) {
-        var index = this.UIElementSprites.indexOf(UILineSprite);
-        if (index !== -1)
-            this.UIElementSprites.splice(index, 1);
-    };
-    GEOLevelDesigner.prototype.removeUIElement = function (element) {
-        var index = this.baseScene.gameElementObjects.indexOf(element);
-        if (index !== -1)
-            this.baseScene.gameElementObjects.splice(index, 1);
-    };
-    GEOLevelDesigner.prototype.addUIElementSprite = function (UILineSprite) {
-        this.UIElementSprites.push(UILineSprite);
-    };
-    GEOLevelDesigner.prototype.addUIElement = function (UIElement) {
-        var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
-        if (!bottomExpandedScene && UIElement instanceof _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.SceneObject) {
-            setTimeout(function () { return UIElement.expandScene(); });
-            // this.expandedScenes.push(UIElement);
-        }
-        else {
-            bottomExpandedScene.gameElementObjects.push(UIElement);
-        }
-    };
-    GEOLevelDesigner.prototype.addLineSprite = function (lineSprite) {
-        this.lineSprites.push(lineSprite);
-    };
-    GEOLevelDesigner.prototype.makeCoordinatesShipRelative = function () {
-        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject)
-            this.selectedGameElement.makeCoordinatesShipRelative();
-    };
-    GEOLevelDesigner.prototype.eventLoadShipRelative = function (isRelative) {
-        this.shipRelative.checked = isRelative;
-        console.log('loading ship', this.shipRelative);
-    };
-    GEOLevelDesigner.prototype.makeCoordinatesArenaRelative = function () {
-        var _a;
-        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject)
-            (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.makeCoordinatesArenaRelative();
+    GEOLevelDesigner.prototype.createWalls = function () {
+        return new _game_objects_walls__WEBPACK_IMPORTED_MODULE_0__.Walls(this.engine);
     };
     return GEOLevelDesigner;
-}());
+}(_LevelDesigner__WEBPACK_IMPORTED_MODULE_4__.LevelDesigner));
 
 
 
@@ -3699,8 +3209,8 @@ var PlacingAnimation = /** @class */ (function (_super) {
     };
     // why is the position not mapping right
     PlacingAnimation.prototype.updateMousePos = function (mousePos) {
-        this.parentObject.transform.pos[0] = mousePos[0];
-        this.parentObject.transform.pos[1] = mousePos[1];
+        this.parentObject.transform.pos[0] = mousePos[0] + this.gameEngine.activeCamera.transform.pos[0];
+        this.parentObject.transform.pos[1] = mousePos[1] + this.gameEngine.activeCamera.transform.pos[1];
     };
     PlacingAnimation.prototype.mouseDoubleClicked = function () {
     };
@@ -3727,28 +3237,23 @@ var NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
 /***/ }),
 
-/***/ "./src/game_engine/Levels/StrikeTimeLevelDesigner.ts":
-/*!***********************************************************!*\
-  !*** ./src/game_engine/Levels/StrikeTimeLevelDesigner.ts ***!
-  \***********************************************************/
+/***/ "./src/game_engine/Levels/LevelDesigner.ts":
+/*!*************************************************!*\
+  !*** ./src/game_engine/Levels/LevelDesigner.ts ***!
+  \*************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   StrikeTimeLevelDesigner: () => (/* binding */ StrikeTimeLevelDesigner),
-/* harmony export */   isEnemyTypeArray: () => (/* binding */ isEnemyTypeArray)
+/* harmony export */   LevelDesigner: () => (/* binding */ LevelDesigner)
 /* harmony export */ });
-/* harmony import */ var _game_objects_walls__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_objects/walls */ "./src/game_objects/walls.ts");
-/* harmony import */ var _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_objects/Overlay/overlay */ "./src/game_objects/Overlay/overlay.ts");
-/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.ts");
-/* harmony import */ var _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./DesignElements/Scene */ "./src/game_engine/Levels/DesignElements/Scene.ts");
-/* harmony import */ var _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./DesignElements/Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.ts");
-/* harmony import */ var _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.ts");
-/* harmony import */ var _DesignElements_Time__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.ts");
-/* harmony import */ var _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.ts");
-/* harmony import */ var _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./DesignElements/Operation */ "./src/game_engine/Levels/DesignElements/Operation.ts");
-/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../GEOWarsScript */ "./src/GEOWarsScript.ts");
-/* harmony import */ var _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../game_objects/enemies/BoxBox/boxbox */ "./src/game_objects/enemies/BoxBox/boxbox.ts");
+/* harmony import */ var _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./DesignElements/Scene */ "./src/game_engine/Levels/DesignElements/Scene.ts");
+/* harmony import */ var _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./DesignElements/Operation */ "./src/game_engine/Levels/DesignElements/Operation.ts");
+/* harmony import */ var _DesignElements_Time__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./DesignElements/Time */ "./src/game_engine/Levels/DesignElements/Time.ts");
+/* harmony import */ var _DesignElements_Event__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./DesignElements/Event */ "./src/game_engine/Levels/DesignElements/Event.ts");
+/* harmony import */ var _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./DesignElements/Loop */ "./src/game_engine/Levels/DesignElements/Loop.ts");
+/* harmony import */ var _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../game_objects/Overlay/overlay */ "./src/game_objects/Overlay/overlay.ts");
+/* harmony import */ var _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./DesignElements/Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.ts");
 var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from, pack) {
     if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
         if (ar || !(i in from)) {
@@ -3760,30 +3265,47 @@ var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from
 };
 
 
-// import { Grid } from "../../game_objects/particles/Grid/grid";
-// import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
 
 
 
 
 
-
-
-
-
-// I should collect placed enemies
-// check if array of enemyType
-function isEnemyTypeArray(value) {
-    return !value.some(function (type) { return (!(0,_DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_4__.isEnemyType)(type)); });
-}
-// Perhaps level designer should be an extension of game script with connection to the
-// timeline UI and the animation window
-// for a tracker I can highlight the current game element
-// just like selecting it... but maybe the same color for 
-// all of them 
-var StrikeTimeLevelDesigner = /** @class */ (function () {
-    function StrikeTimeLevelDesigner(engine, animationView, levelDesignerCtx, serializedGame) {
-        this.transform = new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform();
+// export interface LevelDesigner extends GameScript {
+//     UIElementMouseFollower: GameElementObject;
+//     isLevelDesignerOpened: boolean;
+//     engine: GameEngine
+//     timeSelected: (time: TimeObject) => void;
+//     sceneSelected: (sceneObject: SceneObject) => void;
+//     expandScene: (sceneObject: SceneObject) => void;
+//     openLevelDesigner: () => void;
+//     unExpandScene: (sceneObject: SceneObject) => void;
+//     operationSelected: (operation: OperationObject) => void;
+//     moveLeft: (gameElement: GameElementObject) => void;
+//     moveRight: (gameElement: GameElementObject) => void;
+//     loopSelected: (gameElement: GameElementObject) => void;
+//     addUIElement: (gameElement: GameElementObject) => void;
+//     addUIElementSprite: (lineSprite: LineSprite) => void;
+//     addMouseClickListener: (uiElement: UIElement) => void;
+//     addMouseDoubleClickListener: (uiElement: UIElement) => void;
+//     removeMouseClickListener: (uiElement: UIElement) => void;
+//     removeMouseDoubleClickListener: (uiElement: UIElement) => void;
+//     removeUIElementSprite: (lineSprite: LineSprite) => void;
+//     eventLoadShipRelative: (isShipRelative: boolean) => void;
+//     // make more generic in the future
+//     addingAnotherEnemy: (gameObjectPlacer: EnemyPlacer) => void;
+//     enemyPlacerClicked: (gameObjectPlacer: EnemyPlacer) => void;
+//     eventSelected: (event: EventObject) => void;
+//     eventUnselected: () => void;
+//     // what this do?
+//     updateAnimationViewAngle: (angle: number) => void;
+//     animate: (timeDelta: number) => void;
+//     loadGameElements: (serializedGameElements: SerializedGameElement[], sceneObject: SceneObject) => GameElementObject[];
+//     downClick: () => void;
+//     unClicked: () => void;
+//     updateMouseMoveEvent: (e: MouseEvent) => void;
+// }
+var LevelDesigner = /** @class */ (function () {
+    function LevelDesigner(engine, animationView, levelDesignerCtx, serializedGame) {
         this.DIM_X = 1200;
         this.DIM_Y = 300;
         this.BG_COLOR = "#000000";
@@ -3794,25 +3316,26 @@ var StrikeTimeLevelDesigner = /** @class */ (function () {
             StartingAngle: 0,
         };
         this.overlayTextCleared = true;
-        // // main game array is the main list of sequence objects
-        // mainGameArray = [];
         this.isLevelDesignerOpened = false;
         this.engine = engine;
+        this.animationView = animationView;
+        // I think I need one for the animation window too
+        this.ctx = this.engine.ctx;
+        this.levelDesignerCtx = levelDesignerCtx;
         this.serializedGame = serializedGame;
         this.UIElementSprites = [];
         // duck typing for scene
         this.expandedScenes = [];
         // this is added to expanded Scenes off the bat. Check addUIElement
-        this.baseScene = new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.SceneObject(this, 'main'); // top level list of game elements
-        this.transform = new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform();
+        this.baseScene = new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_0__.SceneObject(this, 'main'); // top level list of game elements
         this.widthHeight = [0, 0];
         this.loopBeginningObjectStackForLoading = [];
         this.animationView = animationView;
         this.levelDesignerCtx = levelDesignerCtx;
         this.UIActionsToRun = [];
-        this.ctx = levelDesignerCtx;
         this.gameObjects = [];
         this.lineSprites = [];
+        // might not need this:
         this.zoomScale = 1;
         this.lastTime = 0;
         this.animate = this.animate.bind(this);
@@ -3823,12 +3346,562 @@ var StrikeTimeLevelDesigner = /** @class */ (function () {
             StartingAngle: 0,
         };
         this.overlayTextCleared = true;
-        // this.palletModal = this.getPalletModal();
-        // can be scene, time, event, or loop
+        // can be scene, time, event, or loo
         this.selectedGameElement;
-        //TODO: rename
         this.currentEnemyPlacer;
         this.isLevelDesignerOpened = false;
+    }
+    LevelDesigner.prototype.startGame = function (gameScript) { console.log('this should be overrided'); };
+    LevelDesigner.prototype.openLevelDesigner = function () { console.log('overwrite openLevelDesigner'); };
+    LevelDesigner.prototype.makeTime = function (time, parentScene) {
+        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
+        var newElementPosition = this.getNewDrawPosition();
+        var timeObject = new _DesignElements_Time__WEBPACK_IMPORTED_MODULE_2__.TimeObject(this, time, newElementPosition, parentScene);
+        this.selectedGameElement = timeObject;
+        return timeObject;
+    };
+    LevelDesigner.prototype.makeOperation = function (operand, parentScene) {
+        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
+        var newElementPosition = this.getNewDrawPosition();
+        var operationObject = new _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_1__.OperationObject(this, operand, newElementPosition, parentScene);
+        operationObject.onMouseClick();
+        this.selectedGameElement = operationObject;
+        return operationObject;
+    };
+    LevelDesigner.prototype.mouseDoubleClicked = function (pos) {
+        console.log(pos);
+    };
+    LevelDesigner.prototype.expandScene = function (scene) {
+        var _this = this;
+        var _a, _b;
+        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
+        this.selectedGameElement = undefined;
+        var parentIndex = this.expandedScenes.indexOf(scene.parentScene);
+        if (parentIndex !== -1)
+            (_b = this.expandedScenes[parentIndex + 1]) === null || _b === void 0 ? void 0 : _b.unExpandScene();
+        scene.gameElementObjects.forEach(function (element) {
+            element.parentSceneExpanded();
+            _this.addUIElementSprite(element.UILineSprite);
+        });
+        this.expandedScenes.push(scene);
+    };
+    LevelDesigner.prototype.unExpandScene = function (scene) {
+        var expandedIndex = this.expandedScenes.indexOf(scene);
+        if (expandedIndex === 0)
+            return console.log("can't unexpand the base scene");
+        if (expandedIndex === -1)
+            return console.log("scene not expanded");
+        scene.expanded = false;
+        scene.UILineSprite.expanded = false;
+        var bottomExpandedScene = this.expandedScenes.pop();
+        this.removeExpandedElements(bottomExpandedScene);
+        bottomExpandedScene.expanded = false;
+        bottomExpandedScene.UILineSprite.expanded = false;
+        if (scene !== bottomExpandedScene)
+            bottomExpandedScene.parentScene.unExpandScene();
+    };
+    LevelDesigner.prototype.updateMouseMoveEvent = function (e) {
+        if (e.target instanceof HTMLElement && e.target.classList[0] === "level-editor-canvas") {
+            this.currentMousePos = [e.offsetX, e.offsetY];
+            if (this.UIElementMouseFollower) {
+                var moveToPosition = [
+                    e.offsetX - this.UIElementMouseFollower.draggingLineSprite.widthHeight[0] / 2,
+                    e.offsetY - this.UIElementMouseFollower.draggingLineSprite.widthHeight[1] / 2
+                ];
+                this.UIElementMouseFollower.draggingLineSprite.transform.pos = __spreadArray([], moveToPosition, true);
+                // check if the element is overlapping with another element
+                var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
+                var draggedElementSceneIndex = bottomExpandedScene.gameElementObjects.indexOf(this.UIElementMouseFollower);
+                if (draggedElementSceneIndex === -1)
+                    return;
+                var leftElementIndex = draggedElementSceneIndex - 1;
+                var rightElementIndex = draggedElementSceneIndex + 1;
+                var draggedElementXPosition = this.UIElementMouseFollower.draggingLineSprite.transform.pos[0];
+                var draggedElementWidth = this.UIElementMouseFollower.draggingLineSprite.widthHeight[0];
+                // check left element:
+                var moved = false;
+                if (leftElementIndex >= 0) {
+                    var leftElement = bottomExpandedScene.gameElementObjects[leftElementIndex];
+                    var leftElementWidth = leftElement.widthHeight[0];
+                    var leftElementX = leftElement.transform.pos[0];
+                    var leftElementMiddlePosition = leftElementX + leftElementWidth / 2;
+                    if (draggedElementXPosition < leftElementMiddlePosition &&
+                        draggedElementXPosition + draggedElementWidth > leftElementMiddlePosition) {
+                        this.moveLeft(this.UIElementMouseFollower);
+                        moved = true;
+                        // swap position of ghost element and 
+                    }
+                }
+                // check right:
+                if (rightElementIndex < bottomExpandedScene.gameElementObjects.length && moved === false) {
+                    var rightElement = bottomExpandedScene.gameElementObjects[rightElementIndex];
+                    var rightElementWidth = rightElement.widthHeight[0];
+                    var rightElementX = rightElement.transform.pos[0];
+                    var rightElementMiddlePosition = rightElementX + rightElementWidth / 2;
+                    if (draggedElementXPosition < rightElementMiddlePosition &&
+                        draggedElementXPosition + draggedElementWidth > rightElementMiddlePosition) {
+                        this.moveRight(this.UIElementMouseFollower);
+                        // swap position of ghost element and 
+                    }
+                }
+            }
+        }
+        else {
+            this.currentMousePos = undefined;
+        }
+    };
+    LevelDesigner.prototype.getExpandedScenePosition = function () {
+        // expands into next row
+    };
+    LevelDesigner.prototype.leftJustifyGameElements = function () {
+        var _this = this;
+        var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
+        var expandedElements = bottomExpandedScene.gameElementObjects;
+        bottomExpandedScene.gameElementObjects = [];
+        expandedElements.forEach(function (element) {
+            var newPos = _this.getNewDrawPosition();
+            element.transform.pos = newPos;
+            bottomExpandedScene.gameElementObjects.push(element);
+        });
+    };
+    LevelDesigner.prototype.makeLoop = function (loop, parentScene) {
+        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
+        var beginningObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_4__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
+        var endObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_4__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
+        beginningObject.endLoopObject = endObject;
+        endObject.beginningLoopObject = beginningObject;
+    };
+    LevelDesigner.prototype.makeLoopBeginning = function (parentScene) {
+        var loopBeginning = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_4__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
+        this.loopBeginningObjectStackForLoading.push(loopBeginning);
+        return loopBeginning;
+    };
+    LevelDesigner.prototype.makeLoopEnding = function (loop, parentScene) {
+        var loopEndObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_4__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
+        var matchingBeginning = this.loopBeginningObjectStackForLoading.pop();
+        matchingBeginning.endLoopObject = loopEndObject;
+        loopEndObject.beginningLoopObject = matchingBeginning;
+        return loopEndObject;
+    };
+    LevelDesigner.prototype.moveLeft = function (UIElement) {
+        var gameElements = this.expandedScenes[this.expandedScenes.length - 1].gameElementObjects;
+        for (var i = 0; i < gameElements.length; i++) {
+            var element = gameElements[i];
+            if (element === UIElement) {
+                if (i === 0)
+                    return;
+                var temp = gameElements[i - 1];
+                gameElements[i - 1] = UIElement;
+                gameElements[i] = temp;
+                this.swapAdjacentPositions(temp, UIElement);
+            }
+        }
+    };
+    LevelDesigner.prototype.moveRight = function (UIElement) {
+        var gameElements = this.expandedScenes[this.expandedScenes.length - 1].gameElementObjects;
+        for (var i = 0; i < gameElements.length; i++) {
+            var currentElement = gameElements[i];
+            if (currentElement === UIElement) {
+                if (i === gameElements.length - 1)
+                    return;
+                var temp = gameElements[i + 1];
+                gameElements[i + 1] = UIElement;
+                gameElements[i] = temp;
+                this.swapAdjacentPositions(UIElement, temp);
+                return;
+            }
+        }
+    };
+    LevelDesigner.prototype.saveGameDesign = function () {
+        var serializedGameElements = this.baseScene.gameElementObjects.map(function (element) { return element.serialize(); });
+        // TODO
+        // I should name it after the game itself, that way both games can load this way
+        // might as well add a level name too
+        this.serializedGame = {
+            type: "Scene",
+            name: "Game",
+            serializedGameElements: serializedGameElements,
+        };
+        console.log(JSON.stringify(this.serializedGame));
+    };
+    LevelDesigner.prototype.loadGameDesign = function (json) {
+        var serializedGame = JSON.parse(json);
+        this.serializedGame = serializedGame;
+        this.baseScene = new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_0__.SceneObject(this, 'main');
+        this.expandedScenes = [this.baseScene];
+        this.baseScene.gameElementObjects = this.loadGameElements(serializedGame.serializedGameElements, this.baseScene);
+    };
+    LevelDesigner.prototype.loadGameElements = function (serializedGameElements, parentScene) {
+        var _this = this;
+        return serializedGameElements.map(function (serializedElement) {
+            if (serializedElement.type === "Scene") {
+                // might be broken, not sure if should be visible or not
+                var newScene = _this.makeSceneObject(serializedElement.name, true, parentScene);
+                _this.expandedScenes.push(newScene);
+                newScene.gameElementObjects = _this.loadGameElements(serializedElement.serializedGameElements, newScene) || [];
+                newScene.unExpandScene();
+                return newScene;
+            }
+            else if (serializedElement.type === "Event") {
+                return _this.makeEventObject(serializedElement, parentScene);
+            }
+            else if (serializedElement.type === "Time") {
+                return _this.makeTime(serializedElement.waitTime, parentScene);
+            }
+            else if (serializedElement.type === "LoopBeginning") {
+                return _this.makeLoopBeginning(parentScene);
+            }
+            else if (serializedElement.type === "LoopEnd") {
+                return _this.makeLoopEnding(serializedElement, parentScene);
+            }
+            else if (serializedElement.type === "Operation") {
+                return _this.makeOperation(serializedElement.operand, parentScene);
+            }
+        });
+    };
+    LevelDesigner.prototype.makeEventObject = function (eventToLoad, parentScene) {
+        var _a;
+        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
+        // should provide this the current scene to know which array of elements to use
+        var newElementPosition = this.getNewDrawPosition();
+        var event = new _DesignElements_Event__WEBPACK_IMPORTED_MODULE_3__.EventObject(this, eventToLoad, newElementPosition, parentScene);
+        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
+        this.selectedGameElement = event;
+        return event;
+    };
+    LevelDesigner.prototype.swapAdjacentPositions = function (leftUIElement, rightUIElement) {
+        var _a;
+        var newLeftX = ((_a = leftUIElement === null || leftUIElement === void 0 ? void 0 : leftUIElement.transform) === null || _a === void 0 ? void 0 : _a.pos[0]) || 0;
+        var newRightX = newLeftX + (rightUIElement === null || rightUIElement === void 0 ? void 0 : rightUIElement.widthHeight[0]) + 4;
+        leftUIElement.transform.pos[0] = newRightX;
+        rightUIElement.transform.pos[0] = newLeftX;
+    };
+    LevelDesigner.prototype.getNewDrawPosition = function () {
+        var _a, _b;
+        var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
+        var expandedElements = bottomExpandedScene.gameElementObjects;
+        var lastElement = expandedElements[expandedElements.length - 1];
+        var lastXPosition = ((_a = lastElement === null || lastElement === void 0 ? void 0 : lastElement.transform) === null || _a === void 0 ? void 0 : _a.pos[0]) || 0;
+        var lastYPosition = ((_b = lastElement === null || lastElement === void 0 ? void 0 : lastElement.transform) === null || _b === void 0 ? void 0 : _b.pos[1]) || bottomExpandedScene.widthHeight[1] + bottomExpandedScene.transform.pos[1] + 4;
+        var lastWidth = (lastElement === null || lastElement === void 0 ? void 0 : lastElement.widthHeight[0]) || 0;
+        return [lastXPosition + lastWidth + 4, lastYPosition];
+    };
+    LevelDesigner.prototype.makeSceneObject = function (name, visible, parentScene) {
+        if (visible === void 0) { visible = true; }
+        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
+        // this should add a box inside either the game sequence as a whole,
+        // or inside the current scene
+        var newElementPosition;
+        if (visible) {
+            newElementPosition = this.getNewDrawPosition();
+        }
+        // sprites are made and added automatically
+        return (new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_0__.SceneObject(this, name, parentScene, newElementPosition));
+    };
+    LevelDesigner.prototype.loopSelected = function (loop) {
+        var _a;
+        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
+        this.selectedGameElement = loop;
+    };
+    LevelDesigner.prototype.timeSelected = function (time) {
+        var _a;
+        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
+        this.selectedGameElement = time;
+    };
+    LevelDesigner.prototype.operationSelected = function (operation) {
+        var _a;
+        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
+        this.selectedGameElement = operation;
+    };
+    LevelDesigner.prototype.eventSelected = function (event) {
+        var _a;
+        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
+        this.selectedGameElement = event;
+        this.shipRelative.value = event.isShipRelative.toString();
+    };
+    LevelDesigner.prototype.eventUnselected = function () {
+        var _a;
+        (_a = this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.remove();
+        this.currentEnemyPlacer = undefined;
+    };
+    LevelDesigner.prototype.enemyPlacerClicked = function (enemyPlacer) {
+        this.animationView.enemyPlacerSelected(enemyPlacer);
+        this.currentEnemyPlacer = enemyPlacer;
+    };
+    LevelDesigner.prototype.sceneDoubleClicked = function (scene) {
+        // this should open the array of elements in the scene
+        console.log("scene double clicked: ", scene);
+        // should move this into scene object
+        // this.selectedScene.UILineSprite.selected = false;
+        // this.selectedScene = scene;
+        // scene.UILineSprite.selected = true;
+    };
+    LevelDesigner.prototype.sceneSelected = function (scene) {
+        var _a;
+        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
+        this.selectedGameElement = scene;
+    };
+    // getPalletModal() {
+    //     const modal = document.getElementById("pallet");
+    //     // add functions to buttons of the pallet
+    // }
+    // enemyPlaced(spawn) {
+    //     this.animationView.enemyPlaced(spawn);
+    // }
+    LevelDesigner.prototype.escapePressed = function () {
+        var _a;
+        if (this.currentEnemyPlacer && !this.currentEnemyPlacer.isPlaced) {
+            (_a = this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.remove();
+        }
+        this.UIElementSprites.forEach(function (sprite) { return sprite.selected = false; });
+        this.animationView.clear();
+        this.currentEnemyPlacer = undefined;
+    };
+    LevelDesigner.prototype.addEnemyButton = function (type) {
+        var _a;
+        this.animationView.clear();
+        this.animationView.addEnemy(type);
+        (_a = this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.remove();
+        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_3__.EventObject) {
+            this.currentEnemyPlacer = this.selectedGameElement.createEnemyPlacer(type);
+        }
+        else {
+            throw Error('event should be selected to add an enemy');
+        }
+    };
+    LevelDesigner.prototype.updateAnimationViewAngle = function (radiansAngle) {
+        this.animationView.gameObjects[0].transform.angle = radiansAngle;
+    };
+    LevelDesigner.prototype.addingAnotherEnemy = function (enemyPlacer) {
+        this.currentEnemyPlacer = enemyPlacer;
+    };
+    // might be redundent and useless TODO
+    LevelDesigner.prototype.downClick = function () {
+        this.clickedDown = true;
+    };
+    LevelDesigner.prototype.unClicked = function () {
+        if (this.UIElementMouseFollower) {
+            this.UIElementMouseFollower.elementLetGo();
+            this.removeUIElementSprite(this.UIElementMouseFollower.draggingLineSprite);
+            this.UIElementMouseFollower = null;
+        }
+        this.clickedDown = false;
+    };
+    LevelDesigner.prototype.addMouseClickListener = function (object) {
+        this.engine.addLevelDesignerClickListener(object);
+    };
+    LevelDesigner.prototype.addMouseDoubleClickListener = function (object) {
+        this.engine.addLevelDesignerDoubleClickListener(object);
+    };
+    LevelDesigner.prototype.removeMouseClickListener = function (object) {
+        this.engine.removeLevelDesignerClickListener(object);
+    };
+    LevelDesigner.prototype.removeMouseDoubleClickListener = function (object) {
+        this.engine.removeLevelDesignerDoubleClickListener(object);
+    };
+    LevelDesigner.prototype.createOverlay = function () {
+        return new _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_5__.Overlay(this.engine, this);
+    };
+    LevelDesigner.prototype.animate = function (timeDelta) {
+        // it might be cool to animate the tiny enemies in the spawn card
+        // this.animateGameObjects(timeDelta);
+        this.clearCanvas();
+        this.runUIActions();
+        this.renderLineSprites(this.levelDesignerCtx);
+        this.renderUILineSprites(this.levelDesignerCtx);
+        this.renderOverlayText();
+    };
+    LevelDesigner.prototype.animateGameObjects = function () {
+        // this.gameObjects.forEach((object) => {
+        //     object.animate(delta);
+        // });
+    };
+    // addToClipBoard(uiElement: UIElement) {
+    // }
+    LevelDesigner.prototype.clearCanvas = function () {
+        this.levelDesignerCtx.clearRect(0, 0, this.DIM_X, this.DIM_Y);
+        this.levelDesignerCtx.fillStyle = "#000000";
+        this.levelDesignerCtx.fillRect(0, 0, this.DIM_X, this.DIM_Y);
+    };
+    LevelDesigner.prototype.clear = function () {
+        var _this = this;
+        var removeList = __spreadArray([], this.gameObjects, true);
+        removeList.forEach(function (gameObject) {
+            _this.remove(gameObject);
+        });
+        this.overlayTextCleared = true;
+    };
+    LevelDesigner.prototype.runUIActions = function () {
+        this.UIActionsToRun.forEach(function (action) { return action(); });
+        this.UIActionsToRun = [];
+    };
+    LevelDesigner.prototype.renderLineSprites = function (ctx) {
+        ctx.save();
+        ctx.scale(this.zoomScale, this.zoomScale);
+        this.lineSprites.forEach(function (sprite) {
+            sprite.draw(ctx);
+        });
+        ctx.restore();
+    };
+    LevelDesigner.prototype.renderUILineSprites = function (ctx) {
+        ctx.save();
+        this.UIElementSprites.forEach(function (sprite) {
+            sprite.draw(ctx);
+        });
+        ctx.restore();
+    };
+    LevelDesigner.prototype.addGameObject = function (gameObject) {
+        this.gameObjects.push(gameObject);
+    };
+    LevelDesigner.prototype.renderOverlayText = function () {
+        // if(this.overlayTextCleared) return;
+        // this.ctx.save();
+        // this.ctx.font = 18 + "px " + "Arial";
+        // this.ctx.fillStyle = "white";
+        // const typeText = "Type: " + this.overlayText.Type;
+        // const positionText = "Location: " + this.overlayText.Location;
+        // this.ctx.fillText(
+        //     typeText,
+        //     10,
+        //     20
+        // );
+        // this.ctx.fillText(
+        //     positionText,
+        //     10,
+        //     38
+        // );
+        // this.ctx.restore();
+    };
+    LevelDesigner.prototype.remove = function (gameObject) {
+        if (gameObject.lineSprite) {
+            var lineSpriteIndex = this.lineSprites.indexOf(gameObject.lineSprite);
+            if (lineSpriteIndex > -1)
+                this.lineSprites.splice(lineSpriteIndex, 1);
+        }
+        var index = this.gameObjects.indexOf(gameObject);
+        if (index !== -1)
+            this.gameObjects.splice(index, 1);
+    };
+    LevelDesigner.prototype.removeExpandedElements = function (expandedScene) {
+        var _this = this;
+        var UIElements = expandedScene.gameElementObjects;
+        UIElements.forEach(function (UIElement) {
+            UIElement.parentSceneUnexpanded();
+            if (UIElement.UILineSprite) {
+                var index = _this.UIElementSprites.indexOf(UIElement.UILineSprite);
+                if (index !== -1)
+                    _this.UIElementSprites.splice(index, 1);
+            }
+        });
+    };
+    LevelDesigner.prototype.removeUIElementSprite = function (UILineSprite) {
+        var index = this.UIElementSprites.indexOf(UILineSprite);
+        if (index !== -1)
+            this.UIElementSprites.splice(index, 1);
+    };
+    LevelDesigner.prototype.removeUIElement = function (element) {
+        var index = this.baseScene.gameElementObjects.indexOf(element);
+        if (index !== -1)
+            this.baseScene.gameElementObjects.splice(index, 1);
+    };
+    LevelDesigner.prototype.addUIElementSprite = function (UILineSprite) {
+        this.UIElementSprites.push(UILineSprite);
+    };
+    LevelDesigner.prototype.addUIElement = function (UIElement) {
+        var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
+        if (!bottomExpandedScene && UIElement instanceof _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_0__.SceneObject) {
+            setTimeout(function () { return UIElement.expandScene(); });
+            // this.expandedScenes.push(UIElement);
+        }
+        else {
+            bottomExpandedScene.gameElementObjects.push(UIElement);
+        }
+    };
+    LevelDesigner.prototype.addLineSprite = function (lineSprite) {
+        this.lineSprites.push(lineSprite);
+    };
+    LevelDesigner.prototype.makeCoordinatesShipRelative = function () {
+        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_3__.EventObject)
+            this.selectedGameElement.makeCoordinatesShipRelative();
+    };
+    LevelDesigner.prototype.eventLoadShipRelative = function (isRelative) {
+        if (this.shipRelative) {
+            this.shipRelative.checked = isRelative;
+        }
+    };
+    LevelDesigner.prototype.makeCoordinatesArenaRelative = function () {
+        var _a;
+        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_3__.EventObject)
+            (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.makeCoordinatesArenaRelative();
+    };
+    // this needs to be generalized. GEOWars adds a spawner, striketime doesn't
+    LevelDesigner.prototype.addRandomRandomSpawnToEvent = function (spawnData) {
+        var _a;
+        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_3__.EventObject) {
+            (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.addRandomRandom(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_6__.Spawn(spawnData, this.engine));
+        }
+    };
+    LevelDesigner.prototype.update = function (deltaTime) { };
+    ;
+    return LevelDesigner;
+}());
+
+
+
+/***/ }),
+
+/***/ "./src/game_engine/Levels/StrikeTimeLevelDesigner.ts":
+/*!***********************************************************!*\
+  !*** ./src/game_engine/Levels/StrikeTimeLevelDesigner.ts ***!
+  \***********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   StrikeTimeLevelDesigner: () => (/* binding */ StrikeTimeLevelDesigner),
+/* harmony export */   isEnemyTypeArray: () => (/* binding */ isEnemyTypeArray)
+/* harmony export */ });
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.ts");
+/* harmony import */ var _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./DesignElements/Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.ts");
+/* harmony import */ var _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_objects/enemies/BoxBox/boxbox */ "./src/game_objects/enemies/BoxBox/boxbox.ts");
+/* harmony import */ var _LevelDesigner__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./LevelDesigner */ "./src/game_engine/Levels/LevelDesigner.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+// import { Grid } from "../../game_objects/particles/Grid/grid";
+// import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
+
+
+
+
+// I should collect placed enemies
+// check if array of enemyType
+function isEnemyTypeArray(value) {
+    return !value.some(function (type) { return (!(0,_DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_1__.isEnemyType)(type)); });
+}
+// Perhaps level designer should be an extension of game script with connection to the
+// timeline UI and the animation window
+// for a tracker I can highlight the current game element
+// just like selecting it... but maybe the same color for 
+// all of them 
+var StrikeTimeLevelDesigner = /** @class */ (function (_super) {
+    __extends(StrikeTimeLevelDesigner, _super);
+    function StrikeTimeLevelDesigner(engine, animationView, levelDesignerCtx, serializedGame) {
+        var _this = _super.call(this, engine, animationView, levelDesignerCtx, serializedGame) || this;
+        _this.transform = new _transform__WEBPACK_IMPORTED_MODULE_0__.Transform();
+        return _this;
     }
     StrikeTimeLevelDesigner.prototype.openLevelDesigner = function () {
         var _this = this;
@@ -3847,7 +3920,7 @@ var StrikeTimeLevelDesigner = /** @class */ (function () {
         var randomSpawnCoordinate = document.getElementById("randomSpawnCoordinate");
         var saveGameDesign = document.getElementById("saveGameDesign");
         // const loadGameDesign = document.getElementById("loadGameDesign");
-        var startGame = document.getElementById("startGame");
+        var startGame = document.getElementById("startStrikeTimeGame");
         shipRelative.onclick = function (e) {
             e.stopPropagation();
             var value = shipRelative.value;
@@ -3861,7 +3934,7 @@ var StrikeTimeLevelDesigner = /** @class */ (function () {
                 _this.makeCoordinatesArenaRelative();
             }
         };
-        new _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_10__.BoxBox(this.engine, [300, 150]);
+        new _game_objects_enemies_BoxBox_boxbox__WEBPACK_IMPORTED_MODULE_2__.BoxBox(this.engine, [300, 150]);
         setCoordinate.onclick = function (e) {
             var _a;
             e.stopPropagation();
@@ -3971,357 +4044,9 @@ var StrikeTimeLevelDesigner = /** @class */ (function () {
         });
         startGame.onclick = function (e) {
             e.stopPropagation();
-            // TODO: not sure what this was doing before
-            // serialize game, send to game script
-            // this.startGame();
+            // I'm not sure if this is correct
+            // this.startGame(true);
         };
-    };
-    // addToClipBoard(uiElement: UIElement) {
-    // }
-    StrikeTimeLevelDesigner.prototype.startGame = function (GEOWarsScript) {
-        this.serializedGame = {
-            type: 'Scene',
-            name: "Game",
-            serializedGameElements: this.baseScene.gameElementObjects.map(function (element) { return element.serialize(); } // set up proper return here
-            ),
-        };
-        var serializedGameString = JSON.stringify(this.serializedGame);
-        // I should unselect whatever is selected.
-        // events being the main issue since they have things
-        // on the game 
-        GEOWarsScript.startGame(serializedGameString);
-        this.engine.isLevelDesignerOpened = false;
-    };
-    StrikeTimeLevelDesigner.prototype.makeTime = function (time, parentScene) {
-        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
-        var newElementPosition = this.getNewDrawPosition();
-        var timeObject = new _DesignElements_Time__WEBPACK_IMPORTED_MODULE_6__.TimeObject(this, time, newElementPosition, parentScene);
-        this.selectedGameElement = timeObject;
-        return timeObject;
-    };
-    StrikeTimeLevelDesigner.prototype.makeOperation = function (operand, parentScene) {
-        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
-        var newElementPosition = this.getNewDrawPosition();
-        var operationObject = new _DesignElements_Operation__WEBPACK_IMPORTED_MODULE_8__.OperationObject(this, operand, newElementPosition, parentScene);
-        operationObject.onMouseClick();
-        this.selectedGameElement = operationObject;
-        return operationObject;
-    };
-    StrikeTimeLevelDesigner.prototype.mouseDoubleClicked = function (pos) {
-        console.log(pos);
-    };
-    StrikeTimeLevelDesigner.prototype.expandScene = function (scene) {
-        var _this = this;
-        var _a, _b;
-        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
-        this.selectedGameElement = undefined;
-        var parentIndex = this.expandedScenes.indexOf(scene.parentScene);
-        if (parentIndex !== -1)
-            (_b = this.expandedScenes[parentIndex + 1]) === null || _b === void 0 ? void 0 : _b.unExpandScene();
-        scene.gameElementObjects.forEach(function (element) {
-            element.parentSceneExpanded();
-            _this.addUIElementSprite(element.UILineSprite);
-        });
-        this.expandedScenes.push(scene);
-    };
-    StrikeTimeLevelDesigner.prototype.unExpandScene = function (scene) {
-        var expandedIndex = this.expandedScenes.indexOf(scene);
-        if (expandedIndex === 0)
-            return console.log("can't unexpand the base scene");
-        if (expandedIndex === -1)
-            return console.log("scene not expanded");
-        scene.expanded = false;
-        scene.UILineSprite.expanded = false;
-        var bottomExpandedScene = this.expandedScenes.pop();
-        this.removeExpandedElements(bottomExpandedScene);
-        bottomExpandedScene.expanded = false;
-        bottomExpandedScene.UILineSprite.expanded = false;
-        if (scene !== bottomExpandedScene)
-            bottomExpandedScene.parentScene.unExpandScene();
-    };
-    StrikeTimeLevelDesigner.prototype.updateMouseMoveEvent = function (e) {
-        if (e.target instanceof HTMLElement && e.target.classList[0] === "level-editor-canvas") {
-            this.currentMousePos = [e.offsetX, e.offsetY];
-            if (this.UIElementMouseFollower) {
-                var moveToPosition = [
-                    e.offsetX - this.UIElementMouseFollower.draggingLineSprite.widthHeight[0] / 2,
-                    e.offsetY - this.UIElementMouseFollower.draggingLineSprite.widthHeight[1] / 2
-                ];
-                this.UIElementMouseFollower.draggingLineSprite.transform.pos = __spreadArray([], moveToPosition, true);
-                // check if the element is overlapping with another element
-                var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
-                var draggedElementSceneIndex = bottomExpandedScene.gameElementObjects.indexOf(this.UIElementMouseFollower);
-                if (draggedElementSceneIndex === -1)
-                    return;
-                var leftElementIndex = draggedElementSceneIndex - 1;
-                var rightElementIndex = draggedElementSceneIndex + 1;
-                var draggedElementXPosition = this.UIElementMouseFollower.draggingLineSprite.transform.pos[0];
-                var draggedElementWidth = this.UIElementMouseFollower.draggingLineSprite.widthHeight[0];
-                // check left element:
-                var moved = false;
-                if (leftElementIndex >= 0) {
-                    var leftElement = bottomExpandedScene.gameElementObjects[leftElementIndex];
-                    var leftElementWidth = leftElement.widthHeight[0];
-                    var leftElementX = leftElement.transform.pos[0];
-                    var leftElementMiddlePosition = leftElementX + leftElementWidth / 2;
-                    if (draggedElementXPosition < leftElementMiddlePosition &&
-                        draggedElementXPosition + draggedElementWidth > leftElementMiddlePosition) {
-                        this.moveLeft(this.UIElementMouseFollower);
-                        moved = true;
-                        // swap position of ghost element and 
-                    }
-                }
-                // check right:
-                if (rightElementIndex < bottomExpandedScene.gameElementObjects.length && moved === false) {
-                    var rightElement = bottomExpandedScene.gameElementObjects[rightElementIndex];
-                    var rightElementWidth = rightElement.widthHeight[0];
-                    var rightElementX = rightElement.transform.pos[0];
-                    var rightElementMiddlePosition = rightElementX + rightElementWidth / 2;
-                    if (draggedElementXPosition < rightElementMiddlePosition &&
-                        draggedElementXPosition + draggedElementWidth > rightElementMiddlePosition) {
-                        this.moveRight(this.UIElementMouseFollower);
-                        // swap position of ghost element and 
-                    }
-                }
-            }
-        }
-        else {
-            this.currentMousePos = undefined;
-        }
-    };
-    StrikeTimeLevelDesigner.prototype.getExpandedScenePosition = function () {
-        // expands into next row
-    };
-    StrikeTimeLevelDesigner.prototype.leftJustifyGameElements = function () {
-        var _this = this;
-        var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
-        var expandedElements = bottomExpandedScene.gameElementObjects;
-        bottomExpandedScene.gameElementObjects = [];
-        expandedElements.forEach(function (element) {
-            var newPos = _this.getNewDrawPosition();
-            element.transform.pos = newPos;
-            bottomExpandedScene.gameElementObjects.push(element);
-        });
-    };
-    StrikeTimeLevelDesigner.prototype.makeLoop = function (loop, parentScene) {
-        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
-        var beginningObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
-        var endObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
-        beginningObject.endLoopObject = endObject;
-        endObject.beginningLoopObject = beginningObject;
-    };
-    StrikeTimeLevelDesigner.prototype.makeLoopBeginning = function (parentScene) {
-        var loopBeginning = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopBeginningObject(this, this.getNewDrawPosition(), parentScene);
-        this.loopBeginningObjectStackForLoading.push(loopBeginning);
-        return loopBeginning;
-    };
-    StrikeTimeLevelDesigner.prototype.makeLoopEnding = function (loop, parentScene) {
-        var loopEndObject = new _DesignElements_Loop__WEBPACK_IMPORTED_MODULE_7__.LoopEndObject(this, loop, this.getNewDrawPosition(), parentScene);
-        var matchingBeginning = this.loopBeginningObjectStackForLoading.pop();
-        matchingBeginning.endLoopObject = loopEndObject;
-        loopEndObject.beginningLoopObject = matchingBeginning;
-        return loopEndObject;
-    };
-    StrikeTimeLevelDesigner.prototype.moveLeft = function (UIElement) {
-        var gameElements = this.expandedScenes[this.expandedScenes.length - 1].gameElementObjects;
-        for (var i = 0; i < gameElements.length; i++) {
-            var element = gameElements[i];
-            if (element === UIElement) {
-                if (i === 0)
-                    return;
-                var temp = gameElements[i - 1];
-                gameElements[i - 1] = UIElement;
-                gameElements[i] = temp;
-                this.swapAdjacentPositions(temp, UIElement);
-            }
-        }
-    };
-    StrikeTimeLevelDesigner.prototype.moveRight = function (UIElement) {
-        var gameElements = this.expandedScenes[this.expandedScenes.length - 1].gameElementObjects;
-        for (var i = 0; i < gameElements.length; i++) {
-            var currentElement = gameElements[i];
-            if (currentElement === UIElement) {
-                if (i === gameElements.length - 1)
-                    return;
-                var temp = gameElements[i + 1];
-                gameElements[i + 1] = UIElement;
-                gameElements[i] = temp;
-                this.swapAdjacentPositions(UIElement, temp);
-                return;
-            }
-        }
-    };
-    StrikeTimeLevelDesigner.prototype.saveGameDesign = function () {
-        var serializedGameElements = this.baseScene.gameElementObjects.map(function (element) { return element.serialize(); });
-        this.serializedGame = {
-            type: "Scene",
-            name: "Game",
-            serializedGameElements: serializedGameElements,
-        };
-        console.log(JSON.stringify(this.serializedGame));
-    };
-    StrikeTimeLevelDesigner.prototype.loadGameDesign = function (json) {
-        var serializedGame = JSON.parse(json);
-        this.serializedGame = serializedGame;
-        this.baseScene = new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.SceneObject(this, 'main');
-        this.expandedScenes = [this.baseScene];
-        this.baseScene.gameElementObjects = this.loadGameElements(serializedGame.serializedGameElements, this.baseScene);
-    };
-    StrikeTimeLevelDesigner.prototype.loadGameElements = function (serializedGameElements, parentScene) {
-        var _this = this;
-        return serializedGameElements.map(function (serializedElement) {
-            if (serializedElement.type === "Scene") {
-                // might be broken, not sure if should be visible or not
-                var newScene = _this.makeSceneObject(serializedElement.name, true, parentScene);
-                _this.expandedScenes.push(newScene);
-                newScene.gameElementObjects = _this.loadGameElements(serializedElement.serializedGameElements, newScene) || [];
-                newScene.unExpandScene();
-                return newScene;
-            }
-            else if (serializedElement.type === "Event") {
-                return _this.makeEventObject(serializedElement, parentScene);
-            }
-            else if (serializedElement.type === "Time") {
-                return _this.makeTime(serializedElement.waitTime, parentScene);
-            }
-            else if (serializedElement.type === "LoopBeginning") {
-                return _this.makeLoopBeginning(parentScene);
-            }
-            else if (serializedElement.type === "LoopEnd") {
-                return _this.makeLoopEnding(serializedElement, parentScene);
-            }
-            else if (serializedElement.type === "Operation") {
-                return _this.makeOperation(serializedElement.operand, parentScene);
-            }
-        });
-    };
-    StrikeTimeLevelDesigner.prototype.makeEventObject = function (eventToLoad, parentScene) {
-        var _a;
-        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
-        // should provide this the current scene to know which array of elements to use
-        var newElementPosition = this.getNewDrawPosition();
-        var event = new _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject(this, eventToLoad, newElementPosition, parentScene);
-        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
-        this.selectedGameElement = event;
-        return event;
-    };
-    StrikeTimeLevelDesigner.prototype.swapAdjacentPositions = function (leftUIElement, rightUIElement) {
-        var _a;
-        var newLeftX = ((_a = leftUIElement === null || leftUIElement === void 0 ? void 0 : leftUIElement.transform) === null || _a === void 0 ? void 0 : _a.pos[0]) || 0;
-        var newRightX = newLeftX + (rightUIElement === null || rightUIElement === void 0 ? void 0 : rightUIElement.widthHeight[0]) + 4;
-        leftUIElement.transform.pos[0] = newRightX;
-        rightUIElement.transform.pos[0] = newLeftX;
-    };
-    StrikeTimeLevelDesigner.prototype.getNewDrawPosition = function () {
-        var _a, _b;
-        var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
-        var expandedElements = bottomExpandedScene.gameElementObjects;
-        var lastElement = expandedElements[expandedElements.length - 1];
-        var lastXPosition = ((_a = lastElement === null || lastElement === void 0 ? void 0 : lastElement.transform) === null || _a === void 0 ? void 0 : _a.pos[0]) || 0;
-        var lastYPosition = ((_b = lastElement === null || lastElement === void 0 ? void 0 : lastElement.transform) === null || _b === void 0 ? void 0 : _b.pos[1]) || bottomExpandedScene.widthHeight[1] + bottomExpandedScene.transform.pos[1] + 4;
-        var lastWidth = (lastElement === null || lastElement === void 0 ? void 0 : lastElement.widthHeight[0]) || 0;
-        return [lastXPosition + lastWidth + 4, lastYPosition];
-    };
-    StrikeTimeLevelDesigner.prototype.makeSceneObject = function (name, visible, parentScene) {
-        if (visible === void 0) { visible = true; }
-        if (parentScene === void 0) { parentScene = this.expandedScenes[this.expandedScenes.length - 1]; }
-        // this should add a box inside either the game sequence as a whole,
-        // or inside the current scene
-        var newElementPosition;
-        if (visible) {
-            newElementPosition = this.getNewDrawPosition();
-        }
-        // sprites are made and added automatically
-        return (new _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.SceneObject(this, name, parentScene, newElementPosition));
-    };
-    StrikeTimeLevelDesigner.prototype.loopSelected = function (loop) {
-        var _a;
-        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
-        this.selectedGameElement = loop;
-    };
-    StrikeTimeLevelDesigner.prototype.timeSelected = function (time) {
-        var _a;
-        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
-        this.selectedGameElement = time;
-    };
-    StrikeTimeLevelDesigner.prototype.operationSelected = function (operation) {
-        var _a;
-        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
-        this.selectedGameElement = operation;
-    };
-    StrikeTimeLevelDesigner.prototype.eventSelected = function (event) {
-        var _a;
-        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
-        this.selectedGameElement = event;
-        this.shipRelative.value = event.isShipRelative.toString();
-    };
-    StrikeTimeLevelDesigner.prototype.eventUnselected = function () {
-        var _a;
-        (_a = this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.remove();
-        this.currentEnemyPlacer = undefined;
-    };
-    StrikeTimeLevelDesigner.prototype.enemyPlacerClicked = function (enemyPlacer) {
-        this.animationView.enemyPlacerSelected(enemyPlacer);
-        this.currentEnemyPlacer = enemyPlacer;
-    };
-    StrikeTimeLevelDesigner.prototype.sceneDoubleClicked = function (scene) {
-        // this should open the array of elements in the scene
-        console.log("scene double clicked: ", scene);
-        // should move this into scene object
-        // this.selectedScene.UILineSprite.selected = false;
-        // this.selectedScene = scene;
-        // scene.UILineSprite.selected = true;
-    };
-    StrikeTimeLevelDesigner.prototype.sceneSelected = function (scene) {
-        var _a;
-        (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.unSelected();
-        this.selectedGameElement = scene;
-    };
-    // getPalletModal() {
-    //     const modal = document.getElementById("pallet");
-    //     // add functions to buttons of the pallet
-    // }
-    // enemyPlaced(spawn) {
-    //     this.animationView.enemyPlaced(spawn);
-    // }
-    StrikeTimeLevelDesigner.prototype.escapePressed = function () {
-        var _a;
-        if (this.currentEnemyPlacer && !this.currentEnemyPlacer.isPlaced) {
-            (_a = this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.remove();
-        }
-        this.UIElementSprites.forEach(function (sprite) { return sprite.selected = false; });
-        this.animationView.clear();
-        this.currentEnemyPlacer = undefined;
-    };
-    StrikeTimeLevelDesigner.prototype.addEnemyButton = function (type) {
-        var _a;
-        this.animationView.clear();
-        this.animationView.addEnemy(type);
-        (_a = this.currentEnemyPlacer) === null || _a === void 0 ? void 0 : _a.remove();
-        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject) {
-            this.currentEnemyPlacer = this.selectedGameElement.createEnemyPlacer(type);
-        }
-        else {
-            throw Error('event should be selected to add an enemy');
-        }
-    };
-    StrikeTimeLevelDesigner.prototype.updateAnimationViewAngle = function (radiansAngle) {
-        this.animationView.gameObjects[0].transform.angle = radiansAngle;
-    };
-    StrikeTimeLevelDesigner.prototype.addingAnotherEnemy = function (enemyPlacer) {
-        this.currentEnemyPlacer = enemyPlacer;
-    };
-    // might be redundent and useless TODO
-    StrikeTimeLevelDesigner.prototype.downClick = function () {
-        this.clickedDown = true;
-    };
-    StrikeTimeLevelDesigner.prototype.unClicked = function () {
-        if (this.UIElementMouseFollower) {
-            this.UIElementMouseFollower.elementLetGo();
-            this.removeUIElementSprite(this.UIElementMouseFollower.draggingLineSprite);
-            this.UIElementMouseFollower = null;
-        }
-        this.clickedDown = false;
     };
     StrikeTimeLevelDesigner.prototype.addArrowListeners = function () {
         this.engine.addLeftArrowListener(this);
@@ -4341,182 +4066,30 @@ var StrikeTimeLevelDesigner = /** @class */ (function () {
     StrikeTimeLevelDesigner.prototype.updateDownArrowListener = function (pressed) {
         this.engine.activeCamera.transform.pos[1] += 5;
     };
-    StrikeTimeLevelDesigner.prototype.addMouseClickListener = function (object) {
-        this.engine.addLevelDesignerClickListener(object);
-    };
-    StrikeTimeLevelDesigner.prototype.addMouseDoubleClickListener = function (object) {
-        this.engine.addLevelDesignerDoubleClickListener(object);
-    };
-    StrikeTimeLevelDesigner.prototype.removeMouseClickListener = function (object) {
-        this.engine.removeLevelDesignerClickListener(object);
-    };
-    StrikeTimeLevelDesigner.prototype.removeMouseDoubleClickListener = function (object) {
-        this.engine.removeLevelDesignerDoubleClickListener(object);
-    };
-    StrikeTimeLevelDesigner.prototype.addRandomRandomSpawnToEvent = function (spawnData) {
-        var _a;
-        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject) {
-            (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.addRandomRandom(new _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_4__.Spawn(spawnData, this.engine));
-        }
-    };
-    StrikeTimeLevelDesigner.prototype.update = function () {
-    };
-    StrikeTimeLevelDesigner.prototype.createWalls = function () {
-        return new _game_objects_walls__WEBPACK_IMPORTED_MODULE_0__.Walls(this.engine);
-    };
-    StrikeTimeLevelDesigner.prototype.createOverlay = function () {
-        return new _game_objects_Overlay_overlay__WEBPACK_IMPORTED_MODULE_1__.Overlay(this.engine, this);
-    };
-    StrikeTimeLevelDesigner.prototype.isOutOfBounds = function (pos, radius) {
-        var max = [_GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.DIM_X - radius, _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.DIM_Y - radius];
-        if (radius) {
-            return (pos[0] <= radius ||
-                pos[0] >= max[0] ||
-                pos[1] <= radius ||
-                pos[1] >= max[1]);
-        }
-        else {
-            return (pos[0] < 0 ||
-                pos[1] < 0 ||
-                pos[0] > _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.DIM_X ||
-                pos[1] > _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.DIM_Y);
-        }
-    };
-    StrikeTimeLevelDesigner.prototype.runUIActions = function () {
-        this.UIActionsToRun.forEach(function (action) { return action(); });
-        this.UIActionsToRun = [];
-    };
-    StrikeTimeLevelDesigner.prototype.animate = function (timeDelta) {
-        // it might be cool to animate the tiny enemies in the spawn card
-        // this.animateGameObjects(timeDelta);
-        this.clearCanvas();
-        this.runUIActions();
-        this.renderLineSprites(this.levelDesignerCtx);
-        this.renderUILineSprites(this.levelDesignerCtx);
-        this.renderOverlayText();
-    };
-    StrikeTimeLevelDesigner.prototype.renderOverlayText = function () {
-        // if(this.overlayTextCleared) return;
-        // this.ctx.save();
-        // this.ctx.font = 18 + "px " + "Arial";
-        // this.ctx.fillStyle = "white";
-        // const typeText = "Type: " + this.overlayText.Type;
-        // const positionText = "Location: " + this.overlayText.Location;
-        // this.ctx.fillText(
-        //     typeText,
-        //     10,
-        //     20
-        // );
-        // this.ctx.fillText(
-        //     positionText,
-        //     10,
-        //     38
-        // );
-        // this.ctx.restore();
-    };
-    StrikeTimeLevelDesigner.prototype.animateGameObjects = function () {
-        // this.gameObjects.forEach((object) => {
-        //     object.animate(delta);
-        // });
-    };
-    StrikeTimeLevelDesigner.prototype.clearCanvas = function () {
-        this.ctx.clearRect(0, 0, this.DIM_X, this.DIM_Y);
-        this.ctx.fillStyle = "#000000";
-        this.ctx.fillRect(0, 0, this.DIM_X, this.DIM_Y);
-    };
-    StrikeTimeLevelDesigner.prototype.clear = function () {
-        var _this = this;
-        var removeList = __spreadArray([], this.gameObjects, true);
-        removeList.forEach(function (gameObject) {
-            _this.remove(gameObject);
-        });
-        this.overlayTextCleared = true;
-    };
-    StrikeTimeLevelDesigner.prototype.renderLineSprites = function (ctx) {
-        ctx.save();
-        ctx.scale(this.zoomScale, this.zoomScale);
-        this.lineSprites.forEach(function (sprite) {
-            sprite.draw(ctx);
-        });
-        ctx.restore();
-    };
-    StrikeTimeLevelDesigner.prototype.renderUILineSprites = function (ctx) {
-        ctx.save();
-        this.UIElementSprites.forEach(function (sprite) {
-            sprite.draw(ctx);
-        });
-        ctx.restore();
-    };
-    StrikeTimeLevelDesigner.prototype.addGameObject = function (gameObject) {
-        this.gameObjects.push(gameObject);
-    };
-    StrikeTimeLevelDesigner.prototype.queueSound = function () {
-    };
-    StrikeTimeLevelDesigner.prototype.addCollider = function () { };
-    StrikeTimeLevelDesigner.prototype.addPhysicsComponent = function () { };
-    StrikeTimeLevelDesigner.prototype.remove = function (gameObject) {
-        if (gameObject.lineSprite) {
-            var lineSpriteIndex = this.lineSprites.indexOf(gameObject.lineSprite);
-            if (lineSpriteIndex > -1)
-                this.lineSprites.splice(lineSpriteIndex, 1);
-        }
-        var index = this.gameObjects.indexOf(gameObject);
-        if (index !== -1)
-            this.gameObjects.splice(index, 1);
-    };
-    StrikeTimeLevelDesigner.prototype.removeExpandedElements = function (expandedScene) {
-        var _this = this;
-        var UIElements = expandedScene.gameElementObjects;
-        UIElements.forEach(function (UIElement) {
-            UIElement.parentSceneUnexpanded();
-            if (UIElement.UILineSprite) {
-                var index = _this.UIElementSprites.indexOf(UIElement.UILineSprite);
-                if (index !== -1)
-                    _this.UIElementSprites.splice(index, 1);
-            }
-        });
-    };
-    StrikeTimeLevelDesigner.prototype.removeUIElementSprite = function (UILineSprite) {
-        var index = this.UIElementSprites.indexOf(UILineSprite);
-        if (index !== -1)
-            this.UIElementSprites.splice(index, 1);
-    };
-    StrikeTimeLevelDesigner.prototype.removeUIElement = function (element) {
-        var index = this.baseScene.gameElementObjects.indexOf(element);
-        if (index !== -1)
-            this.baseScene.gameElementObjects.splice(index, 1);
-    };
-    StrikeTimeLevelDesigner.prototype.addUIElementSprite = function (UILineSprite) {
-        this.UIElementSprites.push(UILineSprite);
-    };
-    StrikeTimeLevelDesigner.prototype.addUIElement = function (UIElement) {
-        var bottomExpandedScene = this.expandedScenes[this.expandedScenes.length - 1];
-        if (!bottomExpandedScene && UIElement instanceof _DesignElements_Scene__WEBPACK_IMPORTED_MODULE_3__.SceneObject) {
-            setTimeout(function () { return UIElement.expandScene(); });
-            // this.expandedScenes.push(UIElement);
-        }
-        else {
-            bottomExpandedScene.gameElementObjects.push(UIElement);
-        }
-    };
-    StrikeTimeLevelDesigner.prototype.addLineSprite = function (lineSprite) {
-        this.lineSprites.push(lineSprite);
-    };
-    StrikeTimeLevelDesigner.prototype.makeCoordinatesShipRelative = function () {
-        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject)
-            this.selectedGameElement.makeCoordinatesShipRelative();
-    };
-    StrikeTimeLevelDesigner.prototype.eventLoadShipRelative = function (isRelative) {
-        this.shipRelative.checked = isRelative;
-        console.log('loading ship', this.shipRelative);
-    };
-    StrikeTimeLevelDesigner.prototype.makeCoordinatesArenaRelative = function () {
-        var _a;
-        if (this.selectedGameElement instanceof _DesignElements_Event__WEBPACK_IMPORTED_MODULE_5__.EventObject)
-            (_a = this.selectedGameElement) === null || _a === void 0 ? void 0 : _a.makeCoordinatesArenaRelative();
+    // there's two start buttons
+    // one directly from the first modal
+    // the second within the level editor
+    StrikeTimeLevelDesigner.prototype.startGame = function (strikeTimeGameScript) {
+        this.serializedGame = {
+            type: 'Scene',
+            name: "Game",
+            serializedGameElements: this.baseScene.gameElementObjects.map(function (element) { return element.serialize(); }),
+        };
+        var serializedGameString = JSON.stringify(this.serializedGame);
+        // I should unselect whatever is selected.
+        // events being the main issue since they have things
+        // on the game 
+        strikeTimeGameScript.startGame(serializedGameString);
+        this.engine.isLevelDesignerOpened = false;
+        var strikeTimeLevelCreator = document.getElementById("StrikeTimeLevelEditor");
+        var geoWarsLevelCreator = document.getElementById('GEOWarsLevelEditor');
+        var levelEditorCanvas = document.getElementById('LevelEditorCanvas');
+        geoWarsLevelCreator.style.display = "none";
+        strikeTimeLevelCreator.style.display = "none";
+        levelEditorCanvas.style.display = "none";
     };
     return StrikeTimeLevelDesigner;
-}());
+}(_LevelDesigner__WEBPACK_IMPORTED_MODULE_3__.LevelDesigner));
 
 
 
@@ -5659,7 +5232,7 @@ var GameEngine = /** @class */ (function () {
     function GameEngine(ctx) {
         this.isControllerConnected = false;
         this.replayablePhysicsComponents = [];
-        this.isPerformanceCheckOn = true;
+        this.isPerformanceCheckOn = false;
         this.ctx = ctx;
         window.engine = this;
         this.buttonState = {
@@ -5675,13 +5248,15 @@ var GameEngine = /** @class */ (function () {
         this.controlledGameObject = null;
         this.gameObjects = [];
         this.physicsComponents = [];
-        this.soundsToPlay = {};
+        this.soundsToPlay = new Set;
         this.colliders = {};
         this.subscribers = [];
         this.muted = true;
         this.mouseListeners = [];
         this.mouseEventListeners = [];
         this.mouseFocussedListeners = [];
+        this.backgroundSounds = [];
+        this.overlappingSoundMap = {};
         this.gameClickListeners = [];
         this.gameClickListenersToAdd = [];
         this.gameClickListenersToRemove = [];
@@ -5720,6 +5295,9 @@ var GameEngine = /** @class */ (function () {
         this.spriteCreatorOpened = false;
         this.addCamera(new _camera__WEBPACK_IMPORTED_MODULE_0__.Camera(this, new _transform__WEBPACK_IMPORTED_MODULE_1__.Transform(), 'first camera'));
     }
+    GameEngine.prototype.loadSounds = function (soundMap) {
+        this.overlappingSoundMap = soundMap;
+    };
     GameEngine.prototype.addGameScript = function (gameScriptToAdd) {
         this.gameScript = gameScriptToAdd;
         this.gameScriptAdded = true;
@@ -6257,12 +5835,18 @@ var GameEngine = /** @class */ (function () {
     };
     GameEngine.prototype.toggleMute = function () {
         this.muted = !this.muted;
+        this.muted ? this.backgroundSounds.forEach(function (sound) { return sound.mute(); }) : this.backgroundSounds.forEach(function (sound) { return sound.unmute(); });
     };
     GameEngine.prototype.playSounds = function () {
-        Object.values(this.soundsToPlay).forEach(function (sound) {
-            sound.play();
+        // use magazine of sounds, each with a counter so it knows which song is next
+        var _this = this;
+        this.soundsToPlay.forEach(function (soundURL) {
+            if (soundURL === "sounds/Hi_Score_achieved.wav")
+                console.log(_this.soundsToPlay);
+            var sound = _this.overlappingSoundMap[soundURL].find(function (sound) { return sound.sound.currentTime === 0 || sound.sound.ended; });
+            sound === null || sound === void 0 ? void 0 : sound.play();
         });
-        this.soundsToPlay = {};
+        this.soundsToPlay = new Set();
     };
     GameEngine.prototype.addCamera = function (camera) {
         this.cameras.push(camera);
@@ -6315,10 +5899,17 @@ var GameEngine = /** @class */ (function () {
         lineSprite.transform.cameraTransform = this.activeCamera.transform;
         this.lineSprites.push(lineSprite);
     };
-    GameEngine.prototype.queueSound = function (sound) {
+    GameEngine.prototype.queueSound = function (soundURL) {
         if (!this.muted) {
-            this.soundsToPlay[sound.url] = sound;
+            this.soundsToPlay.add(soundURL);
         }
+    };
+    GameEngine.prototype.playBackgroundSound = function (sound) {
+        sound.play();
+        if (this.muted) {
+            sound.sound.volume = 0;
+        }
+        this.backgroundSounds.push(sound);
     };
     // remove(gameObject){
     //   this.toRemoveQueue.push(gameObject)
@@ -6537,8 +6128,8 @@ var GameObject = /** @class */ (function () {
         this.colliders.push(newCollider);
         this.gameEngine.addCollider(newCollider);
     };
-    GameObject.prototype.playSound = function (sound) {
-        this.gameEngine.queueSound(sound);
+    GameObject.prototype.playSound = function (soundURL) {
+        this.gameEngine.queueSound(soundURL);
     };
     // relative motion needs to be fixed... FOR ANOTHER TIME
     GameObject.prototype.addChildGameObject = function (obj) {
@@ -6625,14 +6216,14 @@ var PhysicsComponent = /** @class */ (function () {
         // if the computer is busy the time delta will be larger
         // in this case the PhysicsObject should move farther in this frame
         var timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-        this.transform.pos[0] += this.transform.vel[0] * timeScale + (this.transform.acc[0] * (timeScale * timeScale)) / 2;
-        this.transform.pos[1] += this.transform.vel[1] * timeScale + (this.transform.acc[1] * (timeScale * timeScale)) / 2;
-        this.transform.pos[2] += this.transform.vel[2] * timeScale + (this.transform.acc[2] * (timeScale * timeScale)) / 2;
+        this.transform.pos[0] += this.transform.vel[0] * timeScale + (this.transform.acc[0] * (Math.pow(timeScale, 2))) / 2;
+        this.transform.pos[1] += this.transform.vel[1] * timeScale + (this.transform.acc[1] * (Math.pow(timeScale, 2))) / 2;
+        this.transform.pos[2] += this.transform.vel[2] * timeScale + (this.transform.acc[2] * (Math.pow(timeScale, 2))) / 2;
         this.transform.vel[0] += this.transform.acc[0] * timeScale;
         this.transform.vel[1] += this.transform.acc[1] * timeScale;
         this.transform.vel[2] += this.transform.acc[2] * timeScale;
-        this.transform.angle += this.transform.aVel;
-        this.transform.aVel += this.transform.aAcc;
+        this.transform.angle += this.transform.aVel * timeScale + this.transform.aAcc * (Math.pow(timeScale, 2)) / 2;
+        this.transform.aVel += this.transform.aAcc * timeScale;
         this.transform.acc = [0, 0, 0];
         this.transform.aAcc = 0;
     };
@@ -6999,19 +6590,30 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Sound: () => (/* binding */ Sound)
 /* harmony export */ });
+// finally I think I found an optimizing thing
+// I need to load all the sounds at the start of the game
+// then play the individual sound
+// instead of creating new sounds each time
+// to have overlapping sounds, I'll need to pre-create a bunch of them and play them in a loop large enough to handle how many overlaps I might have
+// I'll have the game script load up the sounds in to the game engine, then the game engine will grab the next one from each array
 var Sound = /** @class */ (function () {
-    function Sound(url, volume, muted) {
+    function Sound(url, volume) {
         this.url = url;
-        this.volume = volume;
-        this.muted = muted;
+        this.volume = volume || 1;
+        this.sound = new Audio(this.url);
+        this.isPlaying = false;
     }
     Sound.prototype.play = function () {
         // if (this.sound) {
         //   this.sound.play()
         // } else {
-        this.sound = new Audio(this.url);
+        // whoops, forgot to fix this part that's actually important
         this.sound.volume = this.volume;
+        // this needs to be fixed lol
+        if (!this.isPlaying || this.sound.ended)
+            this.sound.play();
         this.sound.play();
+        this.isPlaying = true;
         // }
     };
     Sound.prototype.toggleMute = function () {
@@ -9709,13 +9311,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   ShipSprite: () => (/* binding */ ShipSprite)
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/sound */ "./src/game_engine/sound.ts");
-/* harmony import */ var _Bullet_bullet__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../Bullet/bullet */ "./src/game_objects/Bullet/bullet.ts");
-/* harmony import */ var _game_engine_transform__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/transform */ "./src/game_engine/transform.ts");
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
-/* harmony import */ var _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../game_engine/game_engine */ "./src/game_engine/game_engine.ts");
-/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../GEOWarsScript */ "./src/GEOWarsScript.ts");
-/* harmony import */ var _game_engine_camera__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../game_engine/camera */ "./src/game_engine/camera.ts");
+/* harmony import */ var _Bullet_bullet__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Bullet/bullet */ "./src/game_objects/Bullet/bullet.ts");
+/* harmony import */ var _game_engine_transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/transform */ "./src/game_engine/transform.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+/* harmony import */ var _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_engine/game_engine */ "./src/game_engine/game_engine.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../GEOWarsScript */ "./src/GEOWarsScript.ts");
+/* harmony import */ var _game_engine_camera__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../game_engine/camera */ "./src/game_engine/camera.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -9738,7 +9339,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
-
 var Ship = /** @class */ (function (_super) {
     __extends(Ship, _super);
     function Ship(engine, pos) {
@@ -9748,9 +9348,10 @@ var Ship = /** @class */ (function (_super) {
         _this.transform.pos = pos;
         _this.transform.pos[2] = 0;
         // I should add this to GameObject as this.addCamera
-        _this.camera = new _game_engine_camera__WEBPACK_IMPORTED_MODULE_7__.Camera(engine, new _game_engine_transform__WEBPACK_IMPORTED_MODULE_3__.Transform(null, [pos[0], pos[1]]), "ShipCamera");
+        _this.camera = new _game_engine_camera__WEBPACK_IMPORTED_MODULE_6__.Camera(engine, new _game_engine_transform__WEBPACK_IMPORTED_MODULE_2__.Transform(null, [pos[0], pos[1]]), "ShipCamera");
         _this.camera.zoomScale = 1.3;
         _this.camera.defaultZoomScale = 1.3;
+        _this.previousVelocityCorrection = [0, 0];
         _this.setAsControllableGameObject();
         // when you add it as a focus controllable game object, 
         // I think you're forced to add functions to handle the different focussed input
@@ -9771,8 +9372,6 @@ var Ship = /** @class */ (function (_super) {
         _this.maxSpeed = 2.5; // 2.5
         _this.mousePos = [0, 0];
         _this.fireAngle = 0;
-        _this.bulletSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Fire_normal.wav", 0.2, engine.muted);
-        _this.upgradeBulletsSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Hi_Score_achieved.wav", 1, engine.muted);
         _this.bulletTimeCheck = 0;
         _this.bulletInterval = 120;
         _this.controlsDirection = [0, 0];
@@ -9802,10 +9401,10 @@ var Ship = /** @class */ (function (_super) {
     Ship.prototype.update = function (deltaTime) {
         // no idea where this shit will have to belong
         // brain currently melted
-        if (this.gameEngine instanceof _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_5__.GameEngine && this.gameEngine.isLevelDesignerOpened) {
+        if (this.gameEngine instanceof _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_4__.GameEngine && this.gameEngine.isLevelDesignerOpened) {
             if (!this.isLevelDesignerOpened) {
-                var _width = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__.DIM_X;
-                var _height = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__.DIM_Y;
+                var _width = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_5__.DIM_X;
+                var _height = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_5__.DIM_Y;
                 var _zoomScale = this.gameEngine.activeCamera.zoomScale;
                 var _yPosition = this.transform.pos[1];
                 var _xPosition = this.transform.pos[0];
@@ -9878,15 +9477,16 @@ var Ship = /** @class */ (function (_super) {
         this.camera.transform.pos[1] = shipYPos;
     };
     Ship.prototype.upgradeBullets = function () {
-        this.powerLevel += 1;
-        this.playSound(this.upgradeBulletsSound);
+        if (this.powerLevel === 1)
+            this.playSound(Ship.UPGRADE_BULLET_SOUND_URL);
+        this.powerLevel = 3;
     };
     Ship.prototype.findSmallestDistanceToAWall = function () {
         var pos = this.transform.pos;
         var leftDistance = pos[0] - 0;
-        var rightDistance = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__.DIM_X - pos[0];
+        var rightDistance = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_5__.DIM_X - pos[0];
         var upDistance = pos[1] - 0;
-        var downDistance = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__.DIM_Y - pos[1];
+        var downDistance = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_5__.DIM_Y - pos[1];
         var distances = [leftDistance, rightDistance, upDistance, downDistance];
         return Math.min.apply(null, distances);
     };
@@ -9918,14 +9518,18 @@ var Ship = /** @class */ (function (_super) {
         //    dV~ =  mV - Vo
         // if dv~ > 0.2 (or something)
         //    a = ma~ 
+        // TODO: uhhhh this is somehow causing absurd performance issues. especially when not moving
+        // okay it's way better now but still a huge problem
         if (!this.controllerInUse) {
             this.calcControlsDirection();
         }
         var movementAngle = Math.atan2(this.controlsDirection[1], this.controlsDirection[0]);
         var Vo = this.transform.absoluteVelocity();
         var mV = [];
-        if (this.controlsDirection[0] == 0 && this.controlsDirection[1] == 0) {
+        if (this.controlsDirection[0] === 0 && this.controlsDirection[1] === 0) {
             mV = [0, 0];
+            if (this.transform.vel[0] === 0 && this.transform.vel[1] === 0)
+                return;
         }
         else {
             mV = [this.maxSpeed * Math.cos(movementAngle), this.maxSpeed * Math.sin(movementAngle)];
@@ -9933,11 +9537,25 @@ var Ship = /** @class */ (function (_super) {
         }
         var dV = [mV[0] - Vo[0], mV[1] - Vo[1]];
         var alpha = Math.atan2(dV[1], dV[0]);
-        this.transform.acc[0] += this.shipEngineAcceleration * Math.cos(alpha);
-        this.transform.acc[1] += this.shipEngineAcceleration * Math.sin(alpha);
+        var vC = this.previousVelocityCorrection;
+        if (this.signsSwapped(dV[0], vC[0]) && this.signsSwapped(dV[1], vC[1])) {
+            this.transform.vel[0] = 0;
+            this.transform.vel[1] = 0;
+        }
+        else if (mV[0] === 0 && mV[1] === 0) {
+            this.transform.acc[0] += this.shipEngineAcceleration / 4 * Math.cos(alpha);
+            this.transform.acc[1] += this.shipEngineAcceleration / 4 * Math.sin(alpha);
+        }
+        else {
+            this.transform.acc[0] += this.shipEngineAcceleration * Math.cos(alpha);
+            this.transform.acc[1] += this.shipEngineAcceleration * Math.sin(alpha);
+        }
+    };
+    Ship.prototype.signsSwapped = function (originalNumber, newNumber) {
+        return originalNumber > 0 && newNumber < 0 || originalNumber < 0 && newNumber > 0;
     };
     Ship.prototype.isOutOfBounds = function () {
-        return _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__.GEOWarsScript.isOutOfBounds(this.transform.pos, this.radius);
+        return _GEOWarsScript__WEBPACK_IMPORTED_MODULE_5__.GEOWarsScript.isOutOfBounds(this.transform.pos, this.radius);
     };
     Ship.prototype.updateMousePos = function (mousePos) {
         // this is what happens when not focussed on. 
@@ -10012,7 +9630,7 @@ var Ship = /** @class */ (function (_super) {
         }
     };
     Ship.prototype.wallGraze = function () {
-        _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__.GEOWarsScript.wallGraze(this.transform, this.radius * 2);
+        _GEOWarsScript__WEBPACK_IMPORTED_MODULE_5__.GEOWarsScript.wallGraze(this.transform, this.radius * 2);
     };
     Ship.prototype.onCollision = function (collider, type) {
         if (type === "ShipDeath") {
@@ -10034,8 +9652,8 @@ var Ship = /** @class */ (function (_super) {
         var shipXPos = this.transform.pos[0];
         var shipYPos = this.transform.pos[1];
         var zoomScale = this.camera.zoomScale;
-        var width = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__.DIM_X;
-        var height = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_6__.DIM_Y;
+        var width = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_5__.DIM_X;
+        var height = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_5__.DIM_Y;
         var mouseX = mousePos[0] / zoomScale + shipXPos - width / (2 * zoomScale);
         var mouseY = mousePos[1] / zoomScale + shipYPos - height / (2 * zoomScale);
         // SCALE NUMBER
@@ -10044,23 +9662,23 @@ var Ship = /** @class */ (function (_super) {
         this.fireAngle = Math.atan2(dy, dx);
     };
     Ship.prototype.fireBullet = function () {
-        this.gameEngine.queueSound(this.bulletSound);
+        this.playSound(Ship.BULLET_SOUND_URL);
         var shipvx = this.transform.vel[0];
         var shipvy = this.transform.vel[1];
-        var relBulletVelX1 = _Bullet_bullet__WEBPACK_IMPORTED_MODULE_2__.Bullet.SPEED * Math.cos(this.fireAngle);
-        var relBulletVelY1 = _Bullet_bullet__WEBPACK_IMPORTED_MODULE_2__.Bullet.SPEED * Math.sin(this.fireAngle);
+        var relBulletVelX1 = _Bullet_bullet__WEBPACK_IMPORTED_MODULE_1__.Bullet.SPEED * Math.cos(this.fireAngle);
+        var relBulletVelY1 = _Bullet_bullet__WEBPACK_IMPORTED_MODULE_1__.Bullet.SPEED * Math.sin(this.fireAngle);
         var bulletVel1 = [shipvx + relBulletVelX1, shipvy + relBulletVelY1];
-        this.addChildGameObject(new _Bullet_bullet__WEBPACK_IMPORTED_MODULE_2__.Bullet(this.gameEngine, this.transform.pos, bulletVel1, this.bulletNumber, 'middle', this.powerLevel));
+        this.addChildGameObject(new _Bullet_bullet__WEBPACK_IMPORTED_MODULE_1__.Bullet(this.gameEngine, this.transform.pos, bulletVel1, this.bulletNumber, 'middle', this.powerLevel));
         if (this.powerLevel >= 2) {
-            var relBulletVelX2 = (_Bullet_bullet__WEBPACK_IMPORTED_MODULE_2__.Bullet.SPEED - 0.5) * Math.cos(this.fireAngle + Math.PI / 32);
-            var relBulletVelY2 = (_Bullet_bullet__WEBPACK_IMPORTED_MODULE_2__.Bullet.SPEED - 0.5) * Math.sin(this.fireAngle + Math.PI / 32);
-            var relBulletVelX3 = (_Bullet_bullet__WEBPACK_IMPORTED_MODULE_2__.Bullet.SPEED - 0.5) * Math.cos(this.fireAngle - Math.PI / 32);
-            var relBulletVelY3 = (_Bullet_bullet__WEBPACK_IMPORTED_MODULE_2__.Bullet.SPEED - 0.5) * Math.sin(this.fireAngle - Math.PI / 32);
+            var relBulletVelX2 = (_Bullet_bullet__WEBPACK_IMPORTED_MODULE_1__.Bullet.SPEED - 0.5) * Math.cos(this.fireAngle + Math.PI / 32);
+            var relBulletVelY2 = (_Bullet_bullet__WEBPACK_IMPORTED_MODULE_1__.Bullet.SPEED - 0.5) * Math.sin(this.fireAngle + Math.PI / 32);
+            var relBulletVelX3 = (_Bullet_bullet__WEBPACK_IMPORTED_MODULE_1__.Bullet.SPEED - 0.5) * Math.cos(this.fireAngle - Math.PI / 32);
+            var relBulletVelY3 = (_Bullet_bullet__WEBPACK_IMPORTED_MODULE_1__.Bullet.SPEED - 0.5) * Math.sin(this.fireAngle - Math.PI / 32);
             var bulletVel2 = [shipvx + relBulletVelX2, shipvy + relBulletVelY2];
             var bulletVel3 = [shipvx + relBulletVelX3, shipvy + relBulletVelY3];
             // doesn't support parent transformations... yet
-            this.addChildGameObject(new _Bullet_bullet__WEBPACK_IMPORTED_MODULE_2__.Bullet(this.gameEngine, this.transform.pos, bulletVel2, this.bulletNumber, 'left', this.powerLevel));
-            this.addChildGameObject(new _Bullet_bullet__WEBPACK_IMPORTED_MODULE_2__.Bullet(this.gameEngine, this.transform.pos, bulletVel3, this.bulletNumber, 'right', this.powerLevel));
+            this.addChildGameObject(new _Bullet_bullet__WEBPACK_IMPORTED_MODULE_1__.Bullet(this.gameEngine, this.transform.pos, bulletVel2, this.bulletNumber, 'left', this.powerLevel));
+            this.addChildGameObject(new _Bullet_bullet__WEBPACK_IMPORTED_MODULE_1__.Bullet(this.gameEngine, this.transform.pos, bulletVel3, this.bulletNumber, 'right', this.powerLevel));
         }
     };
     // implement threshold so it's not too sensitive
@@ -10076,6 +9694,8 @@ var Ship = /** @class */ (function (_super) {
         w: [0, -1],
         d: [1, 0],
     };
+    Ship.BULLET_SOUND_URL = "sounds/Fire_normal.wav";
+    Ship.UPGRADE_BULLET_SOUND_URL = "sounds/Hi_Score_achieved.wav";
     return Ship;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
@@ -10137,7 +9757,7 @@ var ShipSprite = /** @class */ (function (_super) {
         ctx.stroke();
     };
     return ShipSprite;
-}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__.LineSprite));
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_3__.LineSprite));
 
 
 
@@ -12690,10 +12310,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
 /* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/sound */ "./src/game_engine/sound.ts");
-/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.ts");
-/* harmony import */ var _arrow_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./arrow_sprite */ "./src/game_objects/enemies/Arrow/arrow_sprite.ts");
-/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
+/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.ts");
+/* harmony import */ var _arrow_sprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./arrow_sprite */ "./src/game_objects/enemies/Arrow/arrow_sprite.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -12714,7 +12333,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
-
 var Arrow = /** @class */ (function (_super) {
     __extends(Arrow, _super);
     function Arrow(engine, pos, angle) {
@@ -12726,10 +12344,9 @@ var Arrow = /** @class */ (function (_super) {
         _this.points = 50;
         _this.transform.vel = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.VectorMath.vectorCartesian(_this.transform.angle, _this.speed);
         _this.radius = 6;
-        _this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Enemy_spawn_purple.wav", 0.5, _this.gameEngine.muted);
-        _this.playSound(_this.spawnSound);
-        _this.addLineSprite(new _arrow_sprite__WEBPACK_IMPORTED_MODULE_4__.ArrowSprite(_this.transform));
-        _this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__.EnemySpawn(_this.gameEngine));
+        _this.playSound(Arrow.SPAWN_SOUND_URL);
+        _this.addLineSprite(new _arrow_sprite__WEBPACK_IMPORTED_MODULE_3__.ArrowSprite(_this.transform));
+        _this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_2__.EnemySpawn(_this.gameEngine, _this));
         _this.exists = false;
         _this.time = 0;
         return _this;
@@ -12758,10 +12375,11 @@ var Arrow = /** @class */ (function (_super) {
         // ADD TO UPDATE FOR THE OBJECTS
         this.animate(delta);
         var pos = this.transform.absolutePosition();
-        if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_5__.GEOWarsScript.isOutOfBounds(pos, this.radius)) {
-            _GEOWarsScript__WEBPACK_IMPORTED_MODULE_5__.GEOWarsScript.redirect(this.transform);
+        if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__.GEOWarsScript.isOutOfBounds(pos, this.radius)) {
+            _GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__.GEOWarsScript.redirect(this.transform);
         }
     };
+    Arrow.SPAWN_SOUND_URL = "sounds/Enemy_spawn_purple.wav";
     return Arrow;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
@@ -12940,10 +12558,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   BoxBox: () => (/* binding */ BoxBox)
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./src/game_engine/sound.ts");
-/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
-/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.ts");
-/* harmony import */ var _boxbox_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./boxbox_sprite */ "./src/game_objects/enemies/BoxBox/boxbox_sprite.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
+/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.ts");
+/* harmony import */ var _boxbox_sprite__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./boxbox_sprite */ "./src/game_objects/enemies/BoxBox/boxbox_sprite.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -12972,12 +12589,10 @@ var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from
 
 
 
-
 var BoxBox = /** @class */ (function (_super) {
     __extends(BoxBox, _super);
     function BoxBox(engine, pos) {
         var _this = _super.call(this, engine) || this;
-        _this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Enemy_spawn_blue.wav", 0.5, engine.muted);
         _this.transform.pos = pos;
         _this.radius = 10;
         _this.points = 20;
@@ -13015,9 +12630,9 @@ var BoxBox = /** @class */ (function (_super) {
             midPauseTime: 400,
             pauseTime: 1000,
         };
-        _this.addLineSprite(new _boxbox_sprite__WEBPACK_IMPORTED_MODULE_4__.BoxBoxSprite(_this.transform, _this.rotationState, _this.projectedDrawCoordinates));
-        _this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__.EnemySpawn(_this.gameEngine));
-        _this.playSound(_this.spawnSound);
+        _this.addLineSprite(new _boxbox_sprite__WEBPACK_IMPORTED_MODULE_3__.BoxBoxSprite(_this.transform, _this.rotationState, _this.projectedDrawCoordinates));
+        _this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_2__.EnemySpawn(_this.gameEngine, _this));
+        _this.playSound(BoxBox.SPAWN_SOUND_URL);
         return _this;
     }
     // the radius will have to change as it spins
@@ -13299,11 +12914,11 @@ var BoxBox = /** @class */ (function (_super) {
         this.addPhysicsComponent();
     };
     BoxBox.prototype.wallGraze = function () {
-        _GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__.GEOWarsScript.wallGraze(this.transform, this.radius);
+        _GEOWarsScript__WEBPACK_IMPORTED_MODULE_1__.GEOWarsScript.wallGraze(this.transform, this.radius);
     };
     BoxBox.prototype.update = function (delta) {
         this.animate(delta);
-        if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__.GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius * 2)) {
+        if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_1__.GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius * 2)) {
             this.wallGraze();
         }
     };
@@ -13439,6 +13054,7 @@ var BoxBox = /** @class */ (function (_super) {
     BoxBox.animationStates = ["Paused", "Rotating", "MidPaused", "CompletingRotation"];
     BoxBox.rotationDirections = ["Bottom", "Top", "Left", "Right"];
     BoxBox.shapeStates = ["BottomLeft", "TopLeft"];
+    BoxBox.SPAWN_SOUND_URL = "sounds/Enemy_spawn_blue.wav";
     return BoxBox;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
@@ -13670,11 +13286,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   GruntSprite: () => (/* binding */ GruntSprite)
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./src/game_engine/sound.ts");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
-/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
-/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.ts");
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
+/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -13690,7 +13305,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-
 
 
 
@@ -13715,10 +13329,9 @@ var Grunt = /** @class */ (function (_super) {
         _this.bumpAcceleration = 1.5;
         _this.bumpInfluencers = [];
         _this.bumpDirectionInfluenced = false;
-        _this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Enemy_spawn_blue.wav", 0.5, _this.gameEngine.muted);
-        _this.playSound(_this.spawnSound);
+        _this.playSound(Grunt.SPAWN_SOUND_URL);
         _this.addLineSprite(new GruntSprite(_this.transform));
-        _this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_4__.EnemySpawn(_this.gameEngine));
+        _this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__.EnemySpawn(_this.gameEngine, _this));
         return _this;
     }
     Grunt.prototype.exist = function () {
@@ -13738,7 +13351,7 @@ var Grunt = /** @class */ (function (_super) {
         this.bumpDirectionInfluenced = true;
         var dy = this.transform.pos[1] - source[1];
         var dx = this.transform.pos[0] - source[0];
-        var unitVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.dir([dx, dy]);
+        var unitVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.VectorMath.dir([dx, dy]);
         this.bumpInfluencers.push(unitVector);
         // first 1
     };
@@ -13748,7 +13361,7 @@ var Grunt = /** @class */ (function (_super) {
             var dx = directionVector[0] + influencer[0];
             var dy = directionVector[1] + influencer[1];
             var newVector = [dx, dy];
-            directionVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.dir(newVector);
+            directionVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.VectorMath.dir(newVector);
         });
         var influencedDirection = Math.atan2(directionVector[1], directionVector[0]);
         return influencedDirection;
@@ -13784,7 +13397,7 @@ var Grunt = /** @class */ (function (_super) {
                 this.transform.acc[1] += bumpAcceleration * Math.sin(direction) / 100;
             }
             this.chase(timeDelta);
-            if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
+            if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__.GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
                 this.wallGraze();
             }
             this.bumpInfluencers = [];
@@ -13792,8 +13405,9 @@ var Grunt = /** @class */ (function (_super) {
         }
     };
     Grunt.prototype.wallGraze = function () {
-        _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.GEOWarsScript.wallGraze(this.transform, this.radius);
+        _GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__.GEOWarsScript.wallGraze(this.transform, this.radius);
     };
+    Grunt.SPAWN_SOUND_URL = "sounds/Enemy_spawn_blue.wav";
     return Grunt;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
@@ -13848,7 +13462,7 @@ var GruntSprite = /** @class */ (function (_super) {
         ctx.stroke();
     };
     return GruntSprite;
-}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_5__.LineSprite));
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__.LineSprite));
 
 var NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 
@@ -13866,12 +13480,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   Pinwheel: () => (/* binding */ Pinwheel),
 /* harmony export */   PinwheelSprite: () => (/* binding */ PinwheelSprite)
 /* harmony export */ });
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/sound */ "./src/game_engine/sound.ts");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
-/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.ts");
-/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -13892,7 +13505,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
-
 var Pinwheel = /** @class */ (function (_super) {
     __extends(Pinwheel, _super);
     function Pinwheel(engine, pos) {
@@ -13901,11 +13513,10 @@ var Pinwheel = /** @class */ (function (_super) {
         var speed = 1;
         _this.points = 20;
         _this.transform.pos = pos;
-        _this.transform.vel = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.VectorMath.randomVec(speed);
-        _this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound("sounds/Enemy_spawn_blue.wav", 0.5, _this.gameEngine.muted);
-        _this.playSound(_this.spawnSound);
+        _this.transform.vel = _game_engine_util__WEBPACK_IMPORTED_MODULE_0__.VectorMath.randomVec(speed);
+        _this.playSound(Pinwheel.SPAWN_SOUND_URL);
         _this.addLineSprite(new PinwheelSprite(_this.transform));
-        _this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__.EnemySpawn(_this.gameEngine));
+        _this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_2__.EnemySpawn(_this.gameEngine, _this));
         _this.radius = 5;
         return _this;
     }
@@ -13921,12 +13532,13 @@ var Pinwheel = /** @class */ (function (_super) {
     };
     Pinwheel.prototype.update = function (deltaTime) {
         this.animate(deltaTime);
-        if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__.GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
-            _GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__.GEOWarsScript.bounce(this.transform, this.radius); // HARD CODED
+        if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
+            _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.GEOWarsScript.bounce(this.transform, this.radius); // HARD CODED
         }
     };
+    Pinwheel.SPAWN_SOUND_URL = "sounds/Enemy_spawn_blue.wav";
     return Pinwheel;
-}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_2__.GameObject));
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
 
 var NORMAL_FRAME_TIME_DELTA = 1000 / 60;
 var PinwheelSprite = /** @class */ (function (_super) {
@@ -13992,7 +13604,7 @@ var PinwheelSprite = /** @class */ (function (_super) {
         ctx.stroke();
     };
     return PinwheelSprite;
-}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_5__.LineSprite));
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__.LineSprite));
 
 
 
@@ -14110,8 +13722,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
 })();
 
 
-// import { Sound } from "../../../game_engine/sound";
-// import { Util } from "../../../game_engine/util";
 var AlienShip = /** @class */ (function (_super) {
     __extends(AlienShip, _super);
     function AlienShip(engine, pos, velocity) {
@@ -14230,16 +13840,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   Singularity: () => (/* binding */ Singularity)
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./src/game_engine/sound.ts");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
-/* harmony import */ var _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.ts");
-/* harmony import */ var _particles_singularity_hit_explosion__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../particles/singularity_hit_explosion */ "./src/game_objects/particles/singularity_hit_explosion.ts");
-/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.ts");
-/* harmony import */ var _singularity_sprite__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./singularity_sprite */ "./src/game_objects/enemies/Singularity/singularity_sprite.ts");
-/* harmony import */ var _particles_singularity_particles__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../particles/singularity_particles */ "./src/game_objects/particles/singularity_particles.ts");
-/* harmony import */ var _alien_ship__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./alien_ship */ "./src/game_objects/enemies/Singularity/alien_ship.ts");
-/* harmony import */ var _particles_Grid_grid_point__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../particles/Grid/grid_point */ "./src/game_objects/particles/Grid/grid_point.ts");
-/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
+/* harmony import */ var _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../particles/particle_explosion */ "./src/game_objects/particles/particle_explosion.ts");
+/* harmony import */ var _particles_singularity_hit_explosion__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/singularity_hit_explosion */ "./src/game_objects/particles/singularity_hit_explosion.ts");
+/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.ts");
+/* harmony import */ var _singularity_sprite__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./singularity_sprite */ "./src/game_objects/enemies/Singularity/singularity_sprite.ts");
+/* harmony import */ var _particles_singularity_particles__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../particles/singularity_particles */ "./src/game_objects/particles/singularity_particles.ts");
+/* harmony import */ var _alien_ship__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./alien_ship */ "./src/game_objects/enemies/Singularity/alien_ship.ts");
+/* harmony import */ var _particles_Grid_grid_point__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../particles/Grid/grid_point */ "./src/game_objects/particles/Grid/grid_point.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -14265,7 +13874,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
-
 var Singularity = /** @class */ (function (_super) {
     __extends(Singularity, _super);
     function Singularity(engine, pos) {
@@ -14281,15 +13889,11 @@ var Singularity = /** @class */ (function (_super) {
         _this.alienSpawnAmount = 10;
         _this.alienSpawnSpeed = 1.5;
         _this.gravityPulsateScale = 1;
-        _this.deathSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Gravity_well_die.wav", 1, engine.muted);
-        _this.gravityWellHitSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Gravity_well_hit.wav", 0.5, engine.muted);
-        _this.openGateSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Gravity_well_explode.wav", 1, engine.muted);
         // this.id = options.id
-        _this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Enemy_spawn_red.wav", 1, engine.muted);
-        _this.playSound(_this.spawnSound);
+        _this.playSound(Singularity.SPAWN_SOUND_URL);
         _this.increasing = true;
-        _this.addLineSprite(new _singularity_sprite__WEBPACK_IMPORTED_MODULE_6__.SingularitySprite(_this.transform));
-        _this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_5__.EnemySpawn(_this.gameEngine));
+        _this.addLineSprite(new _singularity_sprite__WEBPACK_IMPORTED_MODULE_5__.SingularitySprite(_this.transform));
+        _this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_4__.EnemySpawn(_this.gameEngine, _this));
         _this.lineSprite.throbbingScale = 1;
         _this.lives = 5;
         return _this;
@@ -14297,12 +13901,12 @@ var Singularity = /** @class */ (function (_super) {
     Singularity.prototype.exist = function () {
         // leaving off subscriptions means that things will subscribe to it
         this.addCollider("General", this, this.radius);
-        this.addCollider("GravityWell", this, this.gravityWellSize, ["Grunt", "Pinwheel", "Bullet", "Ship", "BoxBox", "Arrow", "Singularity", "Weaver", "Particle", "SingularityParticle", "GridPoint"], ["General"]);
+        this.addCollider("GravityWell", this, this.gravityWellSize, ["Grunt", "Pinwheel", "Bullet", "BoxBox", "Arrow", "Singularity", "Weaver", "Particle", "SingularityParticle", "GridPoint"], ["General"]);
         this.addCollider("Absorb", this, this.radius, ["Grunt", "Pinwheel", "BoxBox", "Arrow", "Weaver"], ["General"]);
         // now it will move
         this.addPhysicsComponent();
         this.lineSprite.spawning = false;
-        this.addChildGameObject(new _particles_singularity_particles__WEBPACK_IMPORTED_MODULE_7__.SingularityParticles(this.gameEngine, this.transform));
+        this.addChildGameObject(new _particles_singularity_particles__WEBPACK_IMPORTED_MODULE_6__.SingularityParticles(this.gameEngine, this.transform));
     };
     Singularity.prototype.onCollision = function (collider, type) {
         if (type === "GravityWell") {
@@ -14312,7 +13916,7 @@ var Singularity = /** @class */ (function (_super) {
             var hitObjectTransform = collider.gameObject.transform;
             var pos = hitObjectTransform.absolutePosition();
             // const vel = hitObjectTransform.vel;
-            new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_3__.ParticleExplosion(this.gameEngine, pos);
+            new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_2__.ParticleExplosion(this.gameEngine, pos);
             collider.gameObject.remove();
             this.throbbingCycleSpeed *= 1.2;
             this.numberAbsorbed += 1; // put back to 1 
@@ -14322,23 +13926,23 @@ var Singularity = /** @class */ (function (_super) {
         this.lives -= 1;
         var pos = this.transform.absolutePosition();
         if (this.lives <= 0) {
-            new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_3__.ParticleExplosion(this.gameEngine, pos);
+            new _particles_particle_explosion__WEBPACK_IMPORTED_MODULE_2__.ParticleExplosion(this.gameEngine, pos);
             this.gameEngine.gameScript.tallyScore(this);
-            this.playSound(this.deathSound);
+            this.playSound(Singularity.DEATH_SOUND_URL);
             this.remove();
         }
         else {
-            new _particles_singularity_hit_explosion__WEBPACK_IMPORTED_MODULE_4__.SingularityHitExplosion(this.gameEngine, pos);
-            this.playSound(this.gravityWellHitSound);
+            new _particles_singularity_hit_explosion__WEBPACK_IMPORTED_MODULE_3__.SingularityHitExplosion(this.gameEngine, pos);
+            this.playSound(Singularity.GRAVITY_WELL_HIT_SOUND_URL);
             this.throbbingCycleSpeed /= 1.2;
             this.numberAbsorbed -= 1;
         }
     };
     Singularity.prototype.wallGraze = function () {
-        _GEOWarsScript__WEBPACK_IMPORTED_MODULE_10__.GEOWarsScript.wallGraze(this.transform, this.radius);
+        _GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.GEOWarsScript.wallGraze(this.transform, this.radius);
     };
     Singularity.prototype.update = function (deltaTime) {
-        if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_10__.GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
+        if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_9__.GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
             this.wallGraze();
         }
         if (this.numberAbsorbed === 5) {
@@ -14372,14 +13976,14 @@ var Singularity = /** @class */ (function (_super) {
     };
     Singularity.prototype.influenceAcceleration = function (object) {
         var pos = this.transform.absolutePosition();
-        if (object instanceof _particles_Grid_grid_point__WEBPACK_IMPORTED_MODULE_9__.GridPoint) {
+        if (object instanceof _particles_Grid_grid_point__WEBPACK_IMPORTED_MODULE_8__.GridPoint) {
             // let's try moving their original position in the z direction 
             // depending on strength of gravity influence
             var objectPos3D = [object.transform.pos[0], object.transform.pos[1], object.transform.pos[2]];
             var dVector = [pos[0] - objectPos3D[0], pos[1] - objectPos3D[1], -200 - objectPos3D[2]]; // -200 is the z position of the gravity well for the grid
             var dVectorZOrigin = [pos[0] - objectPos3D[0], pos[1] - objectPos3D[1], 0]; // -200 is the z position of the gravity well for the grid
-            var r = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.dist([0, 0, 0], dVector);
-            var rZOrigin = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.dist([0, 0, 0], dVectorZOrigin);
+            var r = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.VectorMath.dist([0, 0, 0], dVector);
+            var rZOrigin = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.VectorMath.dist([0, 0, 0], dVectorZOrigin);
             if (r < 25)
                 r = 25;
             if (rZOrigin < 25)
@@ -14388,7 +13992,7 @@ var Singularity = /** @class */ (function (_super) {
             // and then tuning it would be harder
             // I really like the wave effect that happens with z acceleration being 25, and the spring -0.0025 + dampening -0.04
             // but Z's effect distends too far
-            var unitVector3D = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.scale(dVector, 1 / r);
+            var unitVector3D = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.VectorMath.scale(dVector, 1 / r);
             var accContribution = [
                 unitVector3D[0] * this.gravityConstant * 20 * this.gravityPulsateScale / (r * r),
                 unitVector3D[1] * this.gravityConstant * 20 * this.gravityPulsateScale / (r * r),
@@ -14407,9 +14011,9 @@ var Singularity = /** @class */ (function (_super) {
         else {
             var objectPos = object.transform.absolutePosition();
             var dVector2D = [pos[0] - objectPos[0], pos[1] - objectPos[1]];
-            var r = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.dist([0, 0], dVector2D);
+            var r = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.VectorMath.dist([0, 0], dVector2D);
             if (!(r > this.gravityWellSize * 7 / 8 || r < this.radius * 2)) {
-                var unitVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.scale(dVector2D, 1 / r);
+                var unitVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.VectorMath.scale(dVector2D, 1 / r);
                 var accContribution = [
                     unitVector[0] * this.gravityConstant / (r * r),
                     unitVector[1] * this.gravityConstant / (r * r)
@@ -14420,14 +14024,18 @@ var Singularity = /** @class */ (function (_super) {
         }
     };
     Singularity.prototype.openGate = function () {
-        this.playSound(this.openGateSound);
+        this.playSound(Singularity.OPEN_GATE_SOUND_URL);
         for (var i = 0; i < this.alienSpawnAmount; i++) {
             var angle = Math.random() * Math.PI * 2;
             var velocity = [this.alienSpawnSpeed * Math.cos(angle), this.alienSpawnSpeed * Math.sin(angle)];
-            new _alien_ship__WEBPACK_IMPORTED_MODULE_8__.AlienShip(this.gameEngine, this.transform.pos, velocity);
+            new _alien_ship__WEBPACK_IMPORTED_MODULE_7__.AlienShip(this.gameEngine, this.transform.pos, velocity);
         }
         this.remove();
     };
+    Singularity.SPAWN_SOUND_URL = "sounds/Enemy_spawn_red.wav";
+    Singularity.DEATH_SOUND_URL = "sounds/Gravity_well_die.wav";
+    Singularity.GRAVITY_WELL_HIT_SOUND_URL = "sounds/Gravity_well_hit.wav";
+    Singularity.OPEN_GATE_SOUND_URL = "sounds/Gravity_well_explode.wav";
     return Singularity;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
@@ -14532,11 +14140,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   WeaverSprite: () => (/* binding */ WeaverSprite)
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/sound */ "./src/game_engine/sound.ts");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
-/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
-/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.ts");
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../GEOWarsScript */ "./src/GEOWarsScript.ts");
+/* harmony import */ var _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../particles/enemy_spawn */ "./src/game_objects/particles/enemy_spawn.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -14552,7 +14159,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-
 
 
 
@@ -14578,10 +14184,9 @@ var Weaver = /** @class */ (function (_super) {
         _this.bumpInfluencers = [];
         _this.bumpAcceleration = 1.5;
         _this.bulletDodgeSpeed = 4;
-        _this.spawnSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_1__.Sound("sounds/Enemy_spawn_green.wav", 0.5, _this.gameEngine.muted);
-        _this.playSound(_this.spawnSound);
+        _this.playSound(Weaver.SPAWN_SOUND_URL);
         _this.addLineSprite(new WeaverSprite(_this.transform));
-        _this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_4__.EnemySpawn(_this.gameEngine));
+        _this.addChildGameObject(new _particles_enemy_spawn__WEBPACK_IMPORTED_MODULE_3__.EnemySpawn(_this.gameEngine, _this));
         _this.exists = false;
         return _this;
     }
@@ -14606,7 +14211,7 @@ var Weaver = /** @class */ (function (_super) {
         this.bumpDirectionInfluenced = true;
         var dy = this.transform.pos[1] - source[1];
         var dx = this.transform.pos[0] - source[0];
-        var unitVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.dir([dx, dy]);
+        var unitVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.VectorMath.dir([dx, dy]);
         this.bumpInfluencers.push(unitVector);
     };
     Weaver.prototype.influenceDirection = function (influencers) {
@@ -14615,7 +14220,7 @@ var Weaver = /** @class */ (function (_super) {
             var dx = directionVector[0] + influencer[0];
             var dy = directionVector[1] + influencer[1];
             var newVector = [dx, dy];
-            directionVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.dir(newVector);
+            directionVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.VectorMath.dir(newVector);
         });
         var influencedDirection = Math.atan2(directionVector[1], directionVector[0]);
         return influencedDirection;
@@ -14624,7 +14229,7 @@ var Weaver = /** @class */ (function (_super) {
         this.bulletDirectionInfluenced = true;
         var dy = this.transform.pos[1] - source[1];
         var dx = this.transform.pos[0] - source[0];
-        var unitVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.dir([dx, dy]);
+        var unitVector = _game_engine_util__WEBPACK_IMPORTED_MODULE_1__.VectorMath.dir([dx, dy]);
         this.bulletInfluencers.push(unitVector);
         // first 
     };
@@ -14654,13 +14259,13 @@ var Weaver = /** @class */ (function (_super) {
             this.bulletDirectionInfluenced = false;
             this.bumpInfluencers = [];
             this.bulletInfluencers = [];
-            if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
+            if (_GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__.GEOWarsScript.isOutOfBounds(this.transform.absolutePosition(), this.radius)) {
                 this.wallGraze();
             }
         }
     };
     Weaver.prototype.wallGraze = function () {
-        _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.GEOWarsScript.wallGraze(this.transform, this.radius);
+        _GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__.GEOWarsScript.wallGraze(this.transform, this.radius);
     };
     Weaver.prototype.chase = function (timeDelta) {
         var speed = 2;
@@ -14672,6 +14277,7 @@ var Weaver = /** @class */ (function (_super) {
         this.transform.pos[0] += speed * Math.cos(direction) * velocityScale;
         this.transform.pos[1] += speed * Math.sin(direction) * velocityScale;
     };
+    Weaver.SPAWN_SOUND_URL = "sounds/Enemy_spawn_green.wav";
     return Weaver;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
@@ -14739,7 +14345,7 @@ var WeaverSprite = /** @class */ (function (_super) {
         ctx.stroke();
     };
     return WeaverSprite;
-}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_5__.LineSprite));
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__.LineSprite));
 
 
 
@@ -15084,9 +14690,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _particle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./particle */ "./src/game_objects/particles/particle.ts");
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/sound */ "./src/game_engine/sound.ts");
-/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.ts");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_engine/util */ "./src/game_engine/util.ts");
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.ts");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/util */ "./src/game_engine/util.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -15106,7 +14711,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
-
 var ParticleExplosion = /** @class */ (function (_super) {
     __extends(ParticleExplosion, _super);
     function ParticleExplosion(engine, pos, size) {
@@ -15115,7 +14719,7 @@ var ParticleExplosion = /** @class */ (function (_super) {
         _this.transform.pos[1] = pos[1];
         var startingH = (_this.gameEngine.gameScript.explosionColorWheel + Math.random() * 60) % 360;
         var opacity = Math.random() * 0.35 + 0.6;
-        _this.currentColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_3__.Color("hsla", [startingH, 100, 50, opacity]);
+        _this.currentColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_2__.Color("hsla", [startingH, 100, 50, opacity]);
         if (engine.graphicQuality === 1) {
             // console.log("best")
             _this.particleNum = 120; // was 80
@@ -15128,8 +14732,7 @@ var ParticleExplosion = /** @class */ (function (_super) {
             // console.log("potato")
             _this.particleNum = 20;
         }
-        var explosionSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Enemy_explode.wav", 0.2, _this.gameEngine.muted);
-        _this.playSound(explosionSound);
+        _this.playSound(ParticleExplosion.EXPLOSION_SOUND_URL);
         _this.createExplosionParticles(size);
         return _this;
     }
@@ -15146,7 +14749,7 @@ var ParticleExplosion = /** @class */ (function (_super) {
             var y = this.transform.absolutePosition()[1];
             var z = 0;
             var movementAngle = this.createMovementAngle();
-            var vel = _game_engine_util__WEBPACK_IMPORTED_MODULE_4__.VectorMath.vector3Cartesian(movementAngle, speed);
+            var vel = _game_engine_util__WEBPACK_IMPORTED_MODULE_3__.VectorMath.vector3Cartesian(movementAngle, speed);
             this.addChildGameObject(new _particle__WEBPACK_IMPORTED_MODULE_0__.Particle(this.gameEngine, [x, y, z], vel, color, null, size));
         }
     };
@@ -15159,6 +14762,7 @@ var ParticleExplosion = /** @class */ (function (_super) {
     ParticleExplosion.prototype.createMovementAngle = function () {
         return [(Math.random() * Math.PI * 2), Math.random() * Math.PI * 2];
     };
+    ParticleExplosion.EXPLOSION_SOUND_URL = "sounds/Enemy_explode.wave";
     return ParticleExplosion;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
 
@@ -15178,9 +14782,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _particle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./particle */ "./src/game_objects/particles/particle.ts");
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/sound */ "./src/game_engine/sound.ts");
-/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.ts");
-/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../GEOWarsScript */ "./src/GEOWarsScript.ts");
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../GEOWarsScript */ "./src/GEOWarsScript.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -15200,7 +14803,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
-
 var BulletWallExplosion = /** @class */ (function (_super) {
     __extends(BulletWallExplosion, _super);
     function BulletWallExplosion(engine, pos) {
@@ -15209,17 +14811,16 @@ var BulletWallExplosion = /** @class */ (function (_super) {
         _this.transform.pos[1] = pos[1];
         var startingH = (_this.gameEngine.gameScript.explosionColorWheel + 180 + Math.random() * 60) % 360;
         var opacity = Math.random() * 0.35 + 0.6;
-        _this.currentColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_3__.Color("hsla", [startingH, 100, 50, opacity]);
+        _this.currentColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_2__.Color("hsla", [startingH, 100, 50, opacity]);
         _this.particleNum = 20;
-        var bulletWallHit = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/bullet_hitwall.wav", 0.4, _this.gameEngine.muted);
         _this.wallHit = _this.whichWall();
-        _this.playSound(bulletWallHit);
+        _this.playSound(BulletWallExplosion.BULLET_WALL_HIT_SOUND_URL);
         _this.createParticles();
         return _this;
     }
     BulletWallExplosion.prototype.whichWall = function () {
         var pos = this.transform.pos;
-        var max = [_GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__.DIM_X, _GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__.DIM_Y];
+        var max = [_GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.DIM_X, _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.DIM_Y];
         if (pos[0] <= 0) {
             return "LEFT";
         }
@@ -15253,6 +14854,7 @@ var BulletWallExplosion = /** @class */ (function (_super) {
             this.remove();
         }
     };
+    BulletWallExplosion.BULLET_WALL_HIT_SOUND_URL = "sounds/bullet_hitwall.wav";
     return BulletWallExplosion;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
 
@@ -15289,11 +14891,12 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 var EnemySpawn = /** @class */ (function (_super) {
     __extends(EnemySpawn, _super);
-    function EnemySpawn(engine) {
+    function EnemySpawn(engine, parentObject) {
         var _this = _super.call(this, engine) || this;
         _this.initialSpawningScale = 1.5;
         _this.lifeTime = 1000;
         _this.existTime = 0;
+        parentObject.lineSprite.spawning = true;
         return _this;
         // this.gameEngine.queueSound(this.parentObject.spawnSound)
     }
@@ -15302,7 +14905,6 @@ var EnemySpawn = /** @class */ (function (_super) {
     };
     EnemySpawn.prototype.update = function (timeDelta) {
         this.existTime += timeDelta;
-        this.parentObject.lineSprite.spawning = true;
         if (this.existTime >= this.lifeTime) {
             this.parentObject.lineSprite.spawningScale = 1;
             this.parentObject.exist();
@@ -15311,11 +14913,9 @@ var EnemySpawn = /** @class */ (function (_super) {
         }
         var cycleSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
         var cycleSpeed = 0.1;
+        this.parentObject.lineSprite.spawningScale -= cycleSpeed * cycleSpeedScale;
         if (this.parentObject.lineSprite.spawningScale < 0.7) {
             this.parentObject.lineSprite.spawningScale = this.initialSpawningScale;
-        }
-        else {
-            this.parentObject.lineSprite.spawningScale -= cycleSpeed * cycleSpeedScale;
         }
     };
     return EnemySpawn;
@@ -15618,8 +15218,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _particle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./particle */ "./src/game_objects/particles/particle.ts");
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/sound */ "./src/game_engine/sound.ts");
-/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.ts");
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -15638,7 +15237,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
-
 var ParticleExplosion = /** @class */ (function (_super) {
     __extends(ParticleExplosion, _super);
     function ParticleExplosion(engine, pos) {
@@ -15647,7 +15245,7 @@ var ParticleExplosion = /** @class */ (function (_super) {
         _this.transform.pos[1] = pos[1];
         var startingH = (_this.gameEngine.gameScript.explosionColorWheel + Math.random() * 60) % 360;
         var opacity = Math.random() * 0.35 + 0.6;
-        _this.currentColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_3__.Color("hsla", [startingH, 100, 50, opacity]);
+        _this.currentColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_2__.Color("hsla", [startingH, 100, 50, opacity]);
         if (engine.graphicQuality === 1) {
             // console.log("best")
             _this.particleNum = 120; // was 80
@@ -15660,8 +15258,7 @@ var ParticleExplosion = /** @class */ (function (_super) {
             // console.log("potato")
             _this.particleNum = 20;
         }
-        var explosionSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Enemy_explode.wav", 0.2, _this.gameEngine.muted);
-        _this.playSound(explosionSound);
+        _this.playSound(ParticleExplosion.EXPLOSION_SOUND_URL);
         _this.createExplosionParticles();
         engine.gameScript.grid.Explosion(pos);
         return _this;
@@ -15686,6 +15283,7 @@ var ParticleExplosion = /** @class */ (function (_super) {
         }
     };
     ParticleExplosion.prototype.animate = function () { };
+    ParticleExplosion.EXPLOSION_SOUND_URL = "sounds/Enemy_explode.wav";
     return ParticleExplosion;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
 
@@ -15705,8 +15303,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _particle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./particle */ "./src/game_objects/particles/particle.ts");
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/sound */ "./src/game_engine/sound.ts");
-/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.ts");
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -15725,7 +15322,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
-
 var ShipExplosion = /** @class */ (function (_super) {
     __extends(ShipExplosion, _super);
     function ShipExplosion(engine, pos) {
@@ -15734,10 +15330,9 @@ var ShipExplosion = /** @class */ (function (_super) {
         _this.transform.pos[1] = pos[1];
         var startingH = (_this.gameEngine.gameScript.explosionColorWheel + Math.random() * 60) % 360;
         var opacity = Math.random() * 0.35 + 0.6;
-        _this.currentColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_3__.Color("hsla", [startingH, 100, 50, opacity]);
+        _this.currentColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_2__.Color("hsla", [startingH, 100, 50, opacity]);
         _this.particleNum = 400;
-        var explosionSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Enemy_explode.wav", 0.2, _this.gameEngine.muted);
-        _this.playSound(explosionSound);
+        _this.playSound(ShipExplosion.EXPLOSION_SOUND_URL);
         _this.createExplosionParticles();
         return _this;
     }
@@ -15763,6 +15358,7 @@ var ShipExplosion = /** @class */ (function (_super) {
         }
     };
     ShipExplosion.prototype.animate = function () { };
+    ShipExplosion.EXPLOSION_SOUND_URL = "sounds/Enemy_explode.wav";
     return ShipExplosion;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
 
@@ -15770,20 +15366,19 @@ var ShipExplosion = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ "./src/game_objects/particles/singularity_hit_explosion.ts":
-/*!*****************************************************************!*\
-  !*** ./src/game_objects/particles/singularity_hit_explosion.ts ***!
-  \*****************************************************************/
+/***/ "./src/game_objects/particles/singularity_explosion.ts":
+/*!*************************************************************!*\
+  !*** ./src/game_objects/particles/singularity_explosion.ts ***!
+  \*************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   SingularityHitExplosion: () => (/* binding */ SingularityHitExplosion)
+/* harmony export */   SingularityParticleExplosion: () => (/* binding */ SingularityParticleExplosion)
 /* harmony export */ });
 /* harmony import */ var _particle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./particle */ "./src/game_objects/particles/particle.ts");
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
-/* harmony import */ var _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/sound */ "./src/game_engine/sound.ts");
-/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.ts");
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -15802,6 +15397,86 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
+var SingularityParticleExplosion = /** @class */ (function (_super) {
+    __extends(SingularityParticleExplosion, _super);
+    function SingularityParticleExplosion(engine, pos) {
+        var _this = _super.call(this, engine) || this;
+        _this.transform.pos[0] = pos[0];
+        _this.transform.pos[1] = pos[1];
+        var startingH = (_this.gameEngine.gameScript.explosionColorWheel + Math.random() * 60) % 360;
+        var opacity = Math.random() * 0.35 + 0.6;
+        _this.currentColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_2__.Color("hsla", [startingH, 100, 50, opacity]);
+        if (engine.graphicQuality === 1) {
+            // console.log("best")
+            _this.particleNum = 80;
+        }
+        else if (engine.graphicQuality === 2) {
+            // console.log("medium")
+            _this.particleNum = 40;
+        }
+        else {
+            // console.log("potato")
+            _this.particleNum = 20;
+        }
+        _this.playSound(SingularityParticleExplosion.EXPLOSION_SOUND_URL);
+        _this.createExplosionParticles();
+        return _this;
+    }
+    SingularityParticleExplosion.prototype.createExplosionParticles = function () {
+        for (var i = 0; i < this.particleNum; i++) {
+            var speed = Math.random() * 3 + 4;
+            var colorVarienceDelta = 30;
+            var colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2;
+            var color = this.currentColor.dup();
+            color.a = Math.random() * 0.35 + 0.6;
+            color.h = (color.h + colorVarience) % 360;
+            this.addChildGameObject(new _particle__WEBPACK_IMPORTED_MODULE_0__.GEOParticle(this.gameEngine, this.transform.absolutePosition(), speed, color));
+        }
+    };
+    SingularityParticleExplosion.prototype.update = function () {
+        if (this.childObjects.length === 0) {
+            this.remove();
+        }
+    };
+    SingularityParticleExplosion.prototype.animate = function () { };
+    SingularityParticleExplosion.EXPLOSION_SOUND_URL = "sounds/Enemy_explode.wav";
+    return SingularityParticleExplosion;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
+
+
+
+/***/ }),
+
+/***/ "./src/game_objects/particles/singularity_hit_explosion.ts":
+/*!*****************************************************************!*\
+  !*** ./src/game_objects/particles/singularity_hit_explosion.ts ***!
+  \*****************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   SingularityHitExplosion: () => (/* binding */ SingularityHitExplosion)
+/* harmony export */ });
+/* harmony import */ var _particle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./particle */ "./src/game_objects/particles/particle.ts");
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
 
 var SingularityHitExplosion = /** @class */ (function (_super) {
     __extends(SingularityHitExplosion, _super);
@@ -15811,7 +15486,7 @@ var SingularityHitExplosion = /** @class */ (function (_super) {
         _this.transform.pos[1] = pos[1];
         var startingH = (_this.gameEngine.gameScript.explosionColorWheel + Math.random() * 60 + 180) % 360;
         var opacity = Math.random() * 0.35 + 0.3;
-        _this.currentColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_3__.Color("hsla", [startingH, 100, 50, opacity]);
+        _this.currentColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_2__.Color("hsla", [startingH, 100, 50, opacity]);
         if (engine.graphicQuality === 1) {
             // console.log("best")
             _this.particleNum = 50;
@@ -15825,8 +15500,7 @@ var SingularityHitExplosion = /** @class */ (function (_super) {
             _this.particleNum = 15;
         }
         // find singularity hit sound
-        var explosionSound = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Enemy_explode.wav", 0.2, _this.gameEngine.muted);
-        _this.playSound(explosionSound);
+        _this.playSound(SingularityHitExplosion.EXPLOSION_SOUND_URL);
         _this.createExplosionParticles();
         return _this;
     }
@@ -15848,6 +15522,7 @@ var SingularityHitExplosion = /** @class */ (function (_super) {
         }
     };
     SingularityHitExplosion.prototype.animate = function () { };
+    SingularityHitExplosion.EXPLOSION_SOUND_URL = "sounds/Enemy_explode.wav";
     return SingularityHitExplosion;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
 
@@ -15899,7 +15574,6 @@ var SingularityParticles = /** @class */ (function (_super) {
         _this.currentColor = new _game_engine_color__WEBPACK_IMPORTED_MODULE_2__.Color("hsla", [startingH, 100, 50, opacity]);
         _this.particleNum = 80;
         _this.currentParticleCount = 0;
-        // let explosionSound = new Sound("sounds/Enemy_explode.wav", 0.2)
         _this.createSingularityParticles();
         return _this;
     }
@@ -16365,6 +16039,7 @@ var GameView = /** @class */ (function () {
         // for starting the game after loading one, or starting the default one
         var startStrikeTimeModal = document.getElementById("startStrikeTime");
         var startGEOWarsButtonModal = document.getElementById("startGEOWars");
+        var startGEOWarsButtonLevelEditor = document.getElementById("startGEOWarsGameFromLevelEditor");
         // open the level editor
         var levelEditorButton = document.getElementById("LevelEditorModal");
         var strikeTimeLevelEditor = document.getElementById("StrikeTimeEditorStart");
@@ -16372,6 +16047,16 @@ var GameView = /** @class */ (function () {
         // load a level either for level editor or for starting the game
         var loadGameDesignButtonModal = document.getElementById("loadGameDesignModal");
         // get the text from element: loadGameDesignInputModal
+        startGEOWarsButtonLevelEditor.onclick = function (e) {
+            e.stopPropagation();
+            _this.gameStarted = true;
+            var geoWarsScript = new _GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__.GEOWarsScript(_this.engine);
+            _this.engine.addGameScript(geoWarsScript);
+            _this.bindKeyboardKeys();
+            _this.geoLevelDesigner.startGame(geoWarsScript);
+            requestAnimationFrame(_this.animate);
+            modal.style.display = "none";
+        };
         startGEOWarsButtonModal.onclick = function (e) {
             e.stopPropagation();
             _this.gameStarted = true;

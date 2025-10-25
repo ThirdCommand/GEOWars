@@ -1,6 +1,5 @@
 import {Particle} from "./particle";
 import {GameObject} from "../../game_engine/game_object";
-import {Sound} from "../../game_engine/sound";
 import {Color} from "../../game_engine/color";
 import { type GameEngine } from "../../game_engine/game_engine";
 import { type AnimationView } from "../../AnimationView";
@@ -10,6 +9,7 @@ import { type StrikeTimeScript } from "../../StrikeTimeScript";
 export class ParticleExplosion extends GameObject{
     currentColor: Color;
     particleNum: number;
+    static EXPLOSION_SOUND_URL = "sounds/Enemy_explode.wave";
     constructor(engine: GameEngine | AnimationView, pos: [number, number, number?], size?: number){
         super(engine);
         this.transform.pos[0] = pos[0];
@@ -30,8 +30,8 @@ export class ParticleExplosion extends GameObject{
             this.particleNum = 20;
         }
 
-        const explosionSound = new Sound("sounds/Enemy_explode.wav", 0.2, this.gameEngine.muted);
-        this.playSound(explosionSound);
+       
+        this.playSound(ParticleExplosion.EXPLOSION_SOUND_URL);
         this.createExplosionParticles(size);
     }
 
