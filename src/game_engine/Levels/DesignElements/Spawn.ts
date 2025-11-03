@@ -1,17 +1,20 @@
 // a single enemy, and location
 import { type GameEngine } from "../../game_engine";
 import { DIM_X, DIM_Y, GEOWarsScript } from "../../../GEOWarsScript";
+import { StrikeTimeScript } from "../../../StrikeTimeScript";
 
-export type EnemyType = 'BoxBox' | 'Arrow' | 'Grunt' | 'Pinwheel' | 'Weaver' | 'Singularity' | 'AlienShip' | 'RANDOM';
+export type GameElementObjectType = StrikeTimeLevelGameObjectType | GEOEnemyType
+export type GEOEnemyType = 'BoxBox' | 'Arrow' | 'Grunt' | 'Pinwheel' | 'Weaver' | 'Singularity' | 'AlienShip' | 'RANDOM';
+export type StrikeTimeLevelGameObjectType = 'Aurora' | 'PatriotSite' | 'Building' | 'TargetBuilding' | 'RANDOM';
 
-export function isEnemyType(value: string): value is EnemyType {
+export function isEnemyType(value: string): value is GEOEnemyType {
     return ['BoxBox', 'Arrow', 'Grunt', 'Pinwheel', 'Weaver', 'Singularity', 'RANDOM'].includes(value);
 }
 
 export type SpawnSerialized = {
-    type: EnemyType;  
+    type: GameElementObjectType;  
     location?: [number, number] | 'RANDOM';
-    possibleSpawns?: EnemyType[];
+    possibleSpawns?: GameElementObjectType[];
     numberToGenerate?: number;
     angle?: number;
 }
@@ -20,7 +23,7 @@ export class Spawn {
     type: SpawnSerialized['type'];
     location: SpawnSerialized['location'];
     gameEngine: GameEngine;
-    possibleSpawns: EnemyType[];
+    possibleSpawns: GameElementObjectType[];
     numberToGenerate: number;
     angle: number;
     constructor(spawnData: SpawnSerialized, gameEngine: GameEngine) { // spawn: {type, location: [x,y]} 
@@ -85,7 +88,8 @@ export class Spawn {
             }
             // TODO: maybe get this to work without casting
             // but likely not worth the effort
-            (this.gameEngine.gameScript as GEOWarsScript).enemyCreatorMap[mobToSpawn](location);
+            if(this.gameEngine.gameScript instanceof GEOWarsScript) this.gameEngine.gameScript.gameObjectCreatorMap.get(mobToSpawn as GEOEnemyType)(location);
+            if(this.gameEngine.gameScript instanceof StrikeTimeScript) this.gameEngine.gameScript.gameObjectCreatorMap.get(mobToSpawn as StrikeTimeLevelGameObjectType)(location);
         }
     }
 

@@ -13,15 +13,18 @@ import {Bed} from "./game_objects/ClockworkGames/Bed";
 import {Plate} from "./game_objects/ClockworkGames/Plate";
 import { type GameObject } from "./game_engine/game_object";
 import { type LineSprite } from "./game_engine/line_sprite";
-import { type EnemyPlacer } from "./game_engine/Levels/LevelDesign/EnemyPlacer";
-import { type SpawnSerialized } from "./game_engine/Levels/DesignElements/Spawn";
+import { GameElementObjectType, type SpawnSerialized } from "./game_engine/Levels/DesignElements/Spawn";
 import { Transform } from "./game_engine/transform";
 import { Machinery } from "./game_objects/ClockworkGames/Machine";
 import { TreeGrip } from "./game_objects/ClockworkGames/SawMachine/TreeGrip";
 import { Camera } from "./game_engine/camera";
 import { Missile } from "./game_objects/StrikeTime/Enemies/Missile";
+import { Aurora, Building1, PatriotMissileSite, TargetBuilding } from "./game_objects/StrikeTime";
 
-
+interface ObjectToDisplay {
+    type: GameElementObjectType;
+    serializedSpawn: SpawnSerialized
+}
 export class AnimationView {
     ctx: CanvasRenderingContext2D;
     gameObjects: GameObject[];
@@ -104,7 +107,7 @@ export class AnimationView {
         // this.addEnemy("Grunt");
     }
 
-    enemyPlacerSelected(enemyPlacer: EnemyPlacer) {
+    enemyPlacerSelected(enemyPlacer: ObjectToDisplay) {
         this.clear();
         this.addEnemy(enemyPlacer.type);
         this.addOverlayText(enemyPlacer.serializedSpawn);
@@ -306,6 +309,10 @@ export class AnimationView {
             Machine: (pos: [number, number]) => new Machinery(this, pos),
             Grabber: (pos: [number, number]) => new TreeGrip(this, pos),
             Missile: (pos: [number, number]) => new Missile(this, pos, [0,0], new Transform()),
+            Aurora: (pos: [number, number]) => new Aurora(this, pos, 0),
+            PatriotSite: (pos: [number, number]) => new PatriotMissileSite(this, pos),
+            Building: (pos: [number, number]) => new Building1(this, pos),
+            TargetBuilding: (pos: [number, number]) => new TargetBuilding(this, pos),
         };
         enemyMap[type]([100 / this.zoomScale, 100 / this.zoomScale]);
     }
@@ -326,6 +333,10 @@ export type Types =
 "Plate" | 
 "Machine" |
 "Grabber" | 
-"Missile"
+"Missile" | 
+"Aurora" | 
+"PatriotSite" |
+"Building" |
+"TargetBuilding"
 
 

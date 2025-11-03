@@ -1,13 +1,50 @@
 import { UIElement } from "../../UI_Element";
 import { Transform } from "../../transform";
 
-import {EnemyPlacer, spriteMap} from "../LevelDesign/EnemyPlacer";
-import {EnemyType, Spawn, type SpawnSerialized} from "./Spawn";
+import {EnemyPlacer} from "../LevelDesign/EnemyPlacer";
+import {GEOEnemyType, GameElementObjectType, Spawn, StrikeTimeLevelGameObjectType, type SpawnSerialized} from "./Spawn";
 
 import {type UpdateAble, type Scene, type SceneObject } from "./Scene";
 import { type LevelDesigner } from "../LevelDesigner";
 import { type GameEngine } from "../../game_engine";
 import { LineSprite } from "../../line_sprite";
+
+import { BoxBoxSprite } from "../../../game_objects/enemies/BoxBox/boxbox_sprite";
+import { ArrowSprite } from "../../../game_objects/enemies/Arrow/arrow_sprite";
+import { GruntSprite } from "../../../game_objects/enemies/Grunt/grunt";
+import { PinwheelSprite } from "../../../game_objects/enemies/Pinwheel/pinwheel";
+import { WeaverSprite } from "../../../game_objects/enemies/Weaver/weaver";
+import { SingularitySprite } from "../../../game_objects/enemies/Singularity/singularity_sprite";
+import { RandomRandomSprite } from "../../../game_objects/enemies/RandomRandom";
+import {AlienShipSprite } from "../../../game_objects/enemies/Singularity/alien_ship";
+import { AuroraSprite } from "../../../game_objects/StrikeTime/Aurora/Aurora";
+import { Building1Sprite } from "../../../game_objects/StrikeTime/Buildings/Building1";
+import { TargetBuildingSprite } from "../../../game_objects/StrikeTime/Buildings/TargetBuilding";
+import { PatriotMissileSiteSprite } from "../../../game_objects/StrikeTime/Enemies/PatriotMissileSite";
+
+// should add Alien too
+export const spriteMap = {
+    BoxBox: (transform: Transform) => {
+        const _BoxBoxSprite = new BoxBoxSprite(transform);
+        _BoxBoxSprite.spawning = true;
+        return _BoxBoxSprite;
+    },
+    Arrow: (transform: Transform) => new ArrowSprite(transform),
+    Grunt: (transform: Transform) => new GruntSprite(transform),
+    Pinwheel: (transform: Transform) => new PinwheelSprite(transform),
+    Weaver: (transform: Transform) => new WeaverSprite(transform),
+    AlienShip: (transform: Transform) => new AlienShipSprite(transform),
+    Singularity: (transform: Transform) => new SingularitySprite(transform),
+
+    Aurora: (transform: Transform) => new AuroraSprite(transform),
+    Building: (transform: Transform) => new Building1Sprite(transform),
+    TargetBuilding: (transform: Transform) => new TargetBuildingSprite(transform),   
+    PatriotSite: (transform: Transform) => new PatriotMissileSiteSprite(transform),
+
+    RANDOM: (transform: Transform) => new RandomRandomSprite(transform),
+};
+
+
 
 // maybe this is what is created from the serialized version
 export class Event implements UpdateAble{
@@ -58,17 +95,18 @@ export type EventSerialized = {
 export class EventObject extends UIElement {
     spawns: Spawn[];
     selectedSpawns: Spawn[];
-    spawnSprites: {Pinwheel: number, BoxBox: number, Arrow: number, Grunt: number, Weaver: number, Singularity: number, AlienShip: number, RANDOM: number};
+    spawnSprites: SpawnSpriteMap;
     enemyPlacers: EnemyPlacer[];
     isShipRelative: boolean;
-    UILineSprite: EventObjectSprite;
-    draggingLineSprite: EventObjectSprite;
+    UILineSprite: GEOEventObjectSprite;
+    draggingLineSprite: GEOEventObjectSprite;
     constructor(levelDesigner: LevelDesigner, eventToLoad?: EventSerialized, position?: [number, number], parentScene?: SceneObject) {
         super(levelDesigner, position, parentScene);
         this.spawns = [];
         this.enemyPlacers = [];
         this.selectedSpawns = [];
-        this.spawnSprites = {Pinwheel: 0, BoxBox: 0, Arrow: 0, Grunt: 0, Weaver: 0, Singularity: 0, AlienShip: 0, RANDOM: 0};
+        // TODO: make this more automatically extendable
+        this.spawnSprites = new Map();
         this.widthHeight = [80, 40];
         this.clickRadius = 20;
         this.addMouseClickListener();
@@ -78,7 +116,7 @@ export class EventObject extends UIElement {
             eventToLoad.spawns.forEach((spawn) => this.addSpawn(spawn));
             this.isShipRelative = eventToLoad.isShipRelative;
         }
-        this.addUIElementSprite(new EventObjectSprite(this.transform, this.spawnSprites, this.widthHeight));
+        this.addUIElementSprite(new GEOEventObjectSprite(this.transform, this.spawnSprites, this.widthHeight));
         this.levelDesigner.eventLoadShipRelative(this.isShipRelative);
     }
 
@@ -105,7 +143,8 @@ export class EventObject extends UIElement {
 
     copyLineSpriteForDragging() {
         const draggingSpriteTransform = new Transform(null, [this.transform.pos[0], this.transform.pos[1]]);
-        return new EventObjectSprite(draggingSpriteTransform, this.spawnSprites, this.widthHeight);
+
+        return new GEOEventObjectSprite(draggingSpriteTransform, this.spawnSprites, this.widthHeight);
     }
 
     // this shit needs work
@@ -159,7 +198,8 @@ export class EventObject extends UIElement {
 
     addSpawn(spawnSerialized: SpawnSerialized) {
         this.spawns.push(new Spawn(spawnSerialized, this.levelDesigner.engine));
-        this.spawnSprites[spawnSerialized.type] += 1;
+        const currentNumber = this.spawnSprites.get(spawnSerialized.type)
+        currentNumber ? this.spawnSprites.set(spawnSerialized.type, 1) : this.spawnSprites.set(spawnSerialized.type,  currentNumber + 1);
     }
 
     enemyPlacerClicked(enemyPlacer: EnemyPlacer) {
@@ -191,7 +231,7 @@ export class EventObject extends UIElement {
         }
     }
 
-    createEnemyPlacer(type: EnemyType) {
+    createEnemyPlacer(type: GameElementObjectType) {
         return new EnemyPlacer(this.levelDesigner.engine, {type}, this);
     }
 
@@ -203,7 +243,8 @@ export class EventObject extends UIElement {
         const index = this.spawns.indexOf(spawn);
         if(index !== -1)  {
             this.spawns.splice(index, 1);
-            this.spawnSprites[spawn.type] -= 1;
+            const currentNumber = this.spawnSprites.get(spawn.type);
+            this.spawnSprites.set(spawn.type, currentNumber - 1);
         }
     }
 
@@ -235,21 +276,13 @@ export class EventObject extends UIElement {
     }
 }
 
-type SpawnSpriteMap = {
-    BoxBox: number;
-    Arrow: number;
-    Grunt: number;
-    Pinwheel: number;
-    Weaver: number;
-    Singularity: number;
-    RANDOM: number;
-}
+type SpawnSpriteMap = Map<GameElementObjectType, number>
 
 type SpawnSpriteKey = "BoxBox" | "Arrow" | "Grunt" | "Pinwheel" | "Weaver" | "Singularity" | "RANDOM";
 
 
 
-export class EventObjectSprite extends LineSprite {
+export class GEOEventObjectSprite extends LineSprite {
     selected: boolean;
     expanded: boolean;
     spawnSprites: SpawnSpriteMap;
@@ -266,14 +299,14 @@ export class EventObjectSprite extends LineSprite {
     static seventhPosition: [number, number] = [70,10];
 
     static spawnSpriteCreator = {
-        BoxBox: spriteMap['BoxBox'](new Transform(null, EventObjectSprite.firstPosition)),
-        Arrow: spriteMap['Arrow'](new Transform(null, EventObjectSprite.secondPosition)),
-        Grunt: spriteMap['Grunt'](new Transform(null, EventObjectSprite.thirdPosition)),
+        BoxBox: spriteMap['BoxBox'](new Transform(null, GEOEventObjectSprite.firstPosition)),
+        Arrow: spriteMap['Arrow'](new Transform(null, GEOEventObjectSprite.secondPosition)),
+        Grunt: spriteMap['Grunt'](new Transform(null, GEOEventObjectSprite.thirdPosition)),
 
-        Pinwheel: spriteMap['Pinwheel'](new Transform(null, EventObjectSprite.fourthPosition)),
-        Weaver: spriteMap['Weaver'](new Transform(null, EventObjectSprite.fifthPosition)),
-        Singularity: spriteMap['Singularity'](new Transform(null, EventObjectSprite.sixthPosition)),
-        RANDOM: spriteMap['RANDOM'](new Transform(null, EventObjectSprite.seventhPosition)),
+        Pinwheel: spriteMap['Pinwheel'](new Transform(null, GEOEventObjectSprite.fourthPosition)),
+        Weaver: spriteMap['Weaver'](new Transform(null, GEOEventObjectSprite.fifthPosition)),
+        Singularity: spriteMap['Singularity'](new Transform(null, GEOEventObjectSprite.sixthPosition)),
+        RANDOM: spriteMap['RANDOM'](new Transform(null, GEOEventObjectSprite.seventhPosition)),
     };
 
     constructor(transform: Transform, spawnSprites: SpawnSpriteMap, widthHeight: [number, number]) {
@@ -286,8 +319,8 @@ export class EventObjectSprite extends LineSprite {
         
 
         // change the sprites to have spawning scale be 0.5
-        Object.keys(EventObjectSprite.spawnSpriteCreator).forEach((key: SpawnSpriteKey) => {
-            EventObjectSprite.spawnSpriteCreator[key].spawningScale = 0.5;
+        Object.keys(GEOEventObjectSprite.spawnSpriteCreator).forEach((key: SpawnSpriteKey) => {
+            GEOEventObjectSprite.spawnSpriteCreator[key].spawningScale = 0.5;
         });
     }
 
@@ -324,24 +357,24 @@ export class EventObjectSprite extends LineSprite {
         // BoxBox location: 5,5
         // Grunt location: 10,5
         // Arrow location: 15,5
-        const BoxBoxSprite = EventObjectSprite.spawnSpriteCreator['BoxBox'];
-        const ArrowSprite = EventObjectSprite.spawnSpriteCreator['Arrow'];
-        const GruntSprite = EventObjectSprite.spawnSpriteCreator['Grunt'];
+        const BoxBoxSprite = GEOEventObjectSprite.spawnSpriteCreator['BoxBox'];
+        const ArrowSprite = GEOEventObjectSprite.spawnSpriteCreator['Arrow'];
+        const GruntSprite = GEOEventObjectSprite.spawnSpriteCreator['Grunt'];
 
-        const PinwheelSprite = EventObjectSprite.spawnSpriteCreator['Pinwheel'];
-        const WeaverSprite = EventObjectSprite.spawnSpriteCreator['Weaver'];
-        const SingularitySprite = EventObjectSprite.spawnSpriteCreator['Singularity'];
-        const RandomRandomSprite = EventObjectSprite.spawnSpriteCreator['RANDOM'];
+        const PinwheelSprite = GEOEventObjectSprite.spawnSpriteCreator['Pinwheel'];
+        const WeaverSprite = GEOEventObjectSprite.spawnSpriteCreator['Weaver'];
+        const SingularitySprite = GEOEventObjectSprite.spawnSpriteCreator['Singularity'];
+        const RandomRandomSprite = GEOEventObjectSprite.spawnSpriteCreator['RANDOM'];
 
-        this.spawnSprites.BoxBox > 0 ? BoxBoxSprite.makeVisible() : BoxBoxSprite.makeInvisible();
-        this.spawnSprites.Arrow > 0 ? ArrowSprite.makeVisible() : ArrowSprite.makeInvisible();
-        this.spawnSprites.Grunt > 0 ? GruntSprite.makeVisible() : GruntSprite.makeInvisible();
+        this.spawnSprites.get('BoxBox') > 0 ? BoxBoxSprite.makeVisible() : BoxBoxSprite.makeInvisible();
+       this.spawnSprites.get('Arrow') > 0 ? ArrowSprite.makeVisible() : ArrowSprite.makeInvisible();
+        this.spawnSprites.get('Grunt') > 0 ? GruntSprite.makeVisible() : GruntSprite.makeInvisible();
 
-        this.spawnSprites.Pinwheel > 0 ? PinwheelSprite.makeVisible() : PinwheelSprite.makeInvisible();
-        this.spawnSprites.Weaver > 0 ? WeaverSprite.makeVisible() : WeaverSprite.makeInvisible();
-        this.spawnSprites.Singularity > 0 ? SingularitySprite.makeVisible() : SingularitySprite.makeInvisible();
+        this.spawnSprites.get('Pinwheel') > 0 ? PinwheelSprite.makeVisible() : PinwheelSprite.makeInvisible();
+        this.spawnSprites.get('Weaver') > 0 ? WeaverSprite.makeVisible() : WeaverSprite.makeInvisible();
+        this.spawnSprites.get('Singularity') > 0 ? SingularitySprite.makeVisible() : SingularitySprite.makeInvisible();
 
-        this.spawnSprites.RANDOM > 0 ? RandomRandomSprite.makeVisible() : RandomRandomSprite.makeInvisible();
+        this.spawnSprites.get('RANDOM') > 0 ? RandomRandomSprite.makeVisible() : RandomRandomSprite.makeInvisible();
 
 
         BoxBoxSprite.draw(ctx);
@@ -355,4 +388,94 @@ export class EventObjectSprite extends LineSprite {
         RandomRandomSprite.draw(ctx);
     }
 }
+
+export class StrikeTimeEventObjectSprite extends LineSprite {
+    selected: boolean;
+    expanded: boolean;
+    spawnSprites: SpawnSpriteMap;
+    widthHeight: [number, number];
+
+    static firstPosition: [number, number] = [10,10];
+    static secondPosition: [number, number] = [30,10];
+    static thirdPosition: [number, number] = [50,10];
+
+    static fourthPosition: [number, number] = [10,30];
+    static fifthPosition: [number, number] = [30,30];
+    static sixthPosition: [number, number] = [50,30];
+
+    static seventhPosition: [number, number] = [70,10];
+
+    static spawnSpriteCreator = {
+        Aurora: spriteMap['Aurora'](new Transform(null, StrikeTimeEventObjectSprite.firstPosition)),
+        Building: spriteMap['Building'](new Transform(null, StrikeTimeEventObjectSprite.secondPosition)),
+        TargetBuilding: spriteMap['TargetBuilding'](new Transform(null, StrikeTimeEventObjectSprite.thirdPosition)),
+        PatriotSite: spriteMap['PatriotSite'](new Transform(null, StrikeTimeEventObjectSprite.fourthPosition)),
+        RANDOM: spriteMap['RANDOM'](new Transform(null, StrikeTimeEventObjectSprite.seventhPosition)),
+    };
+
+    constructor(transform: Transform, spawnSprites: SpawnSpriteMap, widthHeight: [number, number]) {
+        super(transform);
+        this.selected = true;
+        this.expanded = true;
+        this.spawnSprites = spawnSprites;
+        this.widthHeight = widthHeight;
+
+        
+
+        // change the sprites to have spawning scale be 0.5
+        Object.keys(GEOEventObjectSprite.spawnSpriteCreator).forEach((key: SpawnSpriteKey) => {
+            GEOEventObjectSprite.spawnSpriteCreator[key].spawningScale = 0.5;
+        });
+    }
+
+    draw(ctx: CanvasRenderingContext2D) {
+        const pos = this.transform.pos;
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+
+        this.drawFunction(ctx);
+        ctx.restore();
+    }
+
+    drawFunction(ctx: CanvasRenderingContext2D) {
+        const h = this.widthHeight[1];
+        const w = this.widthHeight[0];
+
+        ctx.fillStyle = "#000000";
+
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.lineWidth = this.selected ? 3 : 1;
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.lineTo(w,0);
+        ctx.lineTo(w,h);
+        ctx.lineTo(0,h);
+        ctx.closePath();
+        ctx.stroke();
+
+        const AuroraSprite = StrikeTimeEventObjectSprite.spawnSpriteCreator['Aurora'];
+        const BuildingSprite = StrikeTimeEventObjectSprite.spawnSpriteCreator['Building'];
+        const TargetBuildingSprite = StrikeTimeEventObjectSprite.spawnSpriteCreator['TargetBuilding'];
+        const PatriotSiteSprite = StrikeTimeEventObjectSprite.spawnSpriteCreator['PatriotSite'];
+        const RandomRandomSprite = StrikeTimeEventObjectSprite.spawnSpriteCreator['RANDOM'];
+
+        this.spawnSprites.get('Aurora') > 0 ? AuroraSprite.makeVisible() : AuroraSprite.makeInvisible();
+        this.spawnSprites.get('Building') > 0 ? BuildingSprite.makeVisible() : BuildingSprite.makeInvisible();
+        this.spawnSprites.get('TargetBuilding') > 0 ? TargetBuildingSprite.makeVisible() : TargetBuildingSprite.makeInvisible();
+
+        this.spawnSprites.get('PatriotSite') > 0 ? PatriotSiteSprite.makeVisible() : PatriotSiteSprite.makeInvisible();
+        this.spawnSprites.get('RANDOM') > 0 ? RandomRandomSprite.makeVisible() : RandomRandomSprite.makeInvisible();
+
+
+        AuroraSprite.draw(ctx);
+        BuildingSprite.draw(ctx);
+        TargetBuildingSprite.draw(ctx);
+        PatriotSiteSprite.draw(ctx);
+
+        RandomRandomSprite.draw(ctx);
+    }
+}
+
 

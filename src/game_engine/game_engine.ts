@@ -9,6 +9,8 @@ import { Transform } from "./transform";
 import { DrawingGridSprite } from "./SpriteEditor/DrawingGridSprite";
 import { PlacingPoint } from "./SpriteEditor/Point";
 import { Ship } from "../game_objects/Ship/ship";
+import { EnemyPlacer } from "./Levels/LevelDesign/EnemyPlacer";
+import { GameElementObjectType } from "./Levels/DesignElements/Spawn";
 
 declare global {
     interface Window {
@@ -837,6 +839,11 @@ export class GameEngine {
                 colliders[collider.objectType][collider.type].push(collider);
             }
         }
+    }
+
+    // ideally would be handled by level editor
+    clearLevelDesignElements() {
+        this.gameObjects.filter((object) => object instanceof EnemyPlacer).forEach((enemyPlacer) => enemyPlacer.remove());
     }
 
     // must be a way to only retrieve

@@ -1,13 +1,16 @@
-import { AnimationView } from "../../../AnimationView";
 import { type GameEngine } from "../../game_engine";
 import { GameObject } from "../../game_object";
-import { EnemyPlacer } from "./EnemyPlacer";
+import { type LineSprite } from "../../line_sprite";
 
+interface PlacerObject extends GameObject {
+    place: () => {}
+    lineSprite: LineSprite
+}
 export class PlacingAnimation extends GameObject {
     initialSpawningScale: number;
     cycleSpeed: number;
-    parentObject: EnemyPlacer;
-    constructor(engine: GameEngine | AnimationView) {
+    parentObject: PlacerObject;
+    constructor(engine: GameEngine) {
         super(engine);
         this.initialSpawningScale = 1.5;
         this.cycleSpeed = 0.1;

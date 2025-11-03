@@ -128,6 +128,7 @@ export class PatriotMissileSite extends GameObject {
     }
 
     animate(timeDelta: number) {
+        
         // I should stick to no animation for now
         // for my own sanity
     }

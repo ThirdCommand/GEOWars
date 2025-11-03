@@ -10,6 +10,7 @@ import { BombBasic } from "../Bombs/BombBasic";
 import { VectorMath } from "../../../game_engine/util";
 import { BombReticle } from "./BombReticle";
 import { StrikeTimeScript } from "../../../StrikeTimeScript";
+import { AnimationView } from "../../../AnimationView";
 
 export class Aurora extends GameObject {
     lineSprite: AuroraSprite;
@@ -38,7 +39,7 @@ export class Aurora extends GameObject {
    
 
     constructor(
-        engine: GameEngine,
+        engine: GameEngine | AnimationView,
         pos: [number, number],
         angle = Math.random() * Math.PI * 2
     ) {
@@ -68,8 +69,9 @@ export class Aurora extends GameObject {
 
         this.isTurning = false;
         this.isAccelerating = false;
-
-        this.camera = new Camera(engine, new Transform(null, [pos[0], pos[1]]), "Aurora Camera");
+        // add this stuff to Super some day
+        if(engine instanceof GameEngine) this.camera = new Camera(engine, new Transform(null, [pos[0], pos[1]]), "Aurora Camera");
+        
         this.setAsControllableGameObject();
         this.makeFocussedGameObject();
         this.addBKeyListener();

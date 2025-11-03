@@ -1,22 +1,13 @@
 import { Walls } from "../../game_objects/walls";
-import { Overlay } from "../../game_objects/Overlay/overlay";
 // import { Grid } from "../../game_objects/particles/Grid/grid";
 // import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
 
 import { Transform } from "../transform";
-import {SceneObject, SerializedGameElement, GameElementObject, SceneSerialized } from "./DesignElements/Scene";
-import { EnemyType, Spawn, SpawnSerialized, isEnemyType } from "./DesignElements/Spawn";
+import {SceneSerialized } from "./DesignElements/Scene";
+import { GEOEnemyType, SpawnSerialized, isEnemyType } from "./DesignElements/Spawn";
 
-import { EventObject, EventSerialized} from "./DesignElements/Event";
-import { TimeObject } from "./DesignElements/Time";
-import { LoopBeginningObject, LoopEndObject, LoopValues} from "./DesignElements/Loop";
-import { Operand, OperationObject } from "./DesignElements/Operation";
 import { GameEngine } from "../game_engine";
-import { type UIElement } from "../UI_Element";
-import { type LineSprite } from "../line_sprite";
 import { type AnimationView } from "../../AnimationView";
-import { GameObject } from "../game_object";
-import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
 import { DIM_X, DIM_Y, GEOWarsScript } from "../../GEOWarsScript";
 import { LevelDesigner } from "./LevelDesigner";
 
@@ -24,7 +15,7 @@ import { LevelDesigner } from "./LevelDesigner";
 
 
 // check if array of enemyType
-export function isEnemyTypeArray(value: string[]): value is EnemyType[] {
+export function isEnemyTypeArray(value: string[]): value is GEOEnemyType[] {
     return !value.some((type) => (!isEnemyType(type)));
 }
 
@@ -148,34 +139,33 @@ export class GEOLevelDesigner extends LevelDesigner {
         addGruntButton.onclick = (e) => {
             e.stopPropagation();
             const type = "Grunt";
-            this.addEnemyButton(type);
-            
+            this.addLevelGameObject(type);
         };
 
         addArrowButton.onclick = (e) => {
             e.stopPropagation();
             const type = "Arrow";
-            this.addEnemyButton(type);
+            this.addLevelGameObject(type);
         };
         addBoxBox.onclick = (e) => {
             e.stopPropagation();
             const type = "BoxBox";
-            this.addEnemyButton(type);
+            this.addLevelGameObject(type);
         };
         addPinwheel.onclick = (e) => {
             e.stopPropagation();
             const type = "Pinwheel";
-            this.addEnemyButton(type);
+            this.addLevelGameObject(type);
         };
         addWeaver.onclick = (e) => {
             e.stopPropagation();
             const type = "Weaver";
-            this.addEnemyButton(type);
+            this.addLevelGameObject(type);
         };
         addSingularity.onclick = (e) => {
             e.stopPropagation();
             const type = "Singularity";
-            this.addEnemyButton(type);
+            this.addLevelGameObject(type);
         };
         // makeGame.onclick = (e) => {
         //     e.stopPropagation();
@@ -277,10 +267,12 @@ export class GEOLevelDesigner extends LevelDesigner {
                 (element) => element.serialize() // set up proper return here
             ),
         };
+        this.engine.clearLevelDesignElements();
         const serializedGameString = JSON.stringify(this.serializedGame);
         // I should unselect whatever is selected.
         // events being the main issue since they have things
         // on the game 
+        this.clear();
         GEOWarsScript.startGame(serializedGameString);
         this.engine.isLevelDesignerOpened = false;
     }

@@ -10,36 +10,17 @@
 import { GameObject } from "../../game_object";
 
 import { PlacingAnimation } from "./PlacingAnimation";
-import { BoxBoxSprite } from "../../../game_objects/enemies/BoxBox/boxbox_sprite";
-import { ArrowSprite } from "../../../game_objects/enemies/Arrow/arrow_sprite";
-import { GruntSprite } from "../../../game_objects/enemies/Grunt/grunt";
-import { PinwheelSprite } from "../../../game_objects/enemies/Pinwheel/pinwheel";
-import { WeaverSprite } from "../../../game_objects/enemies/Weaver/weaver";
-import { SingularitySprite } from "../../../game_objects/enemies/Singularity/singularity_sprite";
-import { RandomRandomSprite } from "../../../game_objects/enemies/RandomRandom";
-import { VectorMath } from "../../util";
-import { type Transform } from "../../transform";
-import { type GameEngine } from "../../game_engine";
-import { type EventObject } from "../DesignElements/Event";
-import { EnemyType, type SpawnSerialized } from "../DesignElements/Spawn";
-import { DIM_X, DIM_Y } from "../../../GEOWarsScript";
-import {AlienShipSprite } from "../../../game_objects/enemies/Singularity/alien_ship";
 
-// should add Alien too
-export const spriteMap = {
-    BoxBox: (transform: Transform) => {
-        const _BoxBoxSprite = new BoxBoxSprite(transform);
-        _BoxBoxSprite.spawning = true;
-        return _BoxBoxSprite;
-    },
-    Arrow: (transform: Transform) => new ArrowSprite(transform),
-    Grunt: (transform: Transform) => new GruntSprite(transform),
-    Pinwheel: (transform: Transform) => new PinwheelSprite(transform),
-    Weaver: (transform: Transform) => new WeaverSprite(transform),
-    AlienShip: (transform: Transform) => new AlienShipSprite(transform),
-    Singularity: (transform: Transform) => new SingularitySprite(transform),
-    RANDOM: (transform: Transform) => new RandomRandomSprite(transform),
-};
+import { VectorMath } from "../../util";
+
+import { type GameEngine } from "../../game_engine";
+import { spriteMap, type EventObject } from "../DesignElements/Event";
+import { DIM_X, DIM_Y } from "../../../GEOWarsScript";
+
+import {GameElementObjectType, SpawnSerialized} from '../DesignElements/Spawn';
+
+
+
 
 // if trying to spawn multiple things on top of each other, I should only grab the first placer that is found in the click colission
 const getClickRadius = {
@@ -51,14 +32,21 @@ const getClickRadius = {
     Singularity: 10,
     RANDOM: 10,
     AlienShip: 10,
+    Aurora: 10,
+    Building: 20,
+    TargetBuilding: 20,
+    PatriotSite: 20
 };
+
+
+// I can make this generic and include the spawn serialized as the parameter
 
 export class EnemyPlacer extends GameObject {
     isPlaced: boolean;
     event: EventObject;
     serializedSpawn: SpawnSerialized;
     clickRadius: number;
-    type: EnemyType;
+    type: GameElementObjectType;
     constructor(engine: GameEngine, spawnData: SpawnSerialized, event: EventObject, isLoadingEvent: boolean = false) {
         super(engine);
         const {type, location, numberToGenerate, possibleSpawns, angle} = spawnData;
@@ -82,7 +70,7 @@ export class EnemyPlacer extends GameObject {
                 this.serializedSpawn = spawnData;
             }   
         } else {
-            this.addChildGameObject(new PlacingAnimation(this.gameEngine));
+            this.addChildGameObject(new PlacingAnimation(engine));
         }
     }
 

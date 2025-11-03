@@ -10,7 +10,7 @@ import { AnimationView } from "../../AnimationView";
 import { GameObject } from "../game_object";
 import { LoopBeginningObject, LoopEndObject, LoopValues } from "./DesignElements/Loop";
 import { Overlay } from "../../game_objects/Overlay/overlay";
-import { EnemyType, Spawn, SpawnSerialized } from "./DesignElements/Spawn";
+import { GameElementObjectType, Spawn, SpawnSerialized } from "./DesignElements/Spawn";
 import { type Sound } from "../sound";
 
 // export interface LevelDesigner extends GameScript {
@@ -52,9 +52,10 @@ import { type Sound } from "../sound";
 
 
 
+// I can make a new type that adds more fields as needed for genericizing
 export abstract class LevelDesigner implements GameScript{
     serializedGame: SceneSerialized;
-    
+
     UIElementMouseFollower: GameElementObject;
     UIElementSprites: LineSprite[];
     currentMousePos: [number, number];
@@ -511,7 +512,7 @@ export abstract class LevelDesigner implements GameScript{
         this.currentEnemyPlacer = undefined;
     }
 
-    addEnemyButton(type: EnemyType) {
+    addLevelGameObject(type: GameElementObjectType) {
         this.animationView.clear();
         this.animationView.addEnemy(type);
 

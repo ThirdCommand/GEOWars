@@ -18,6 +18,7 @@ import { Airport } from "./game_objects/StrikeTime/Airport/Airport";
 import { TargetBuilding } from "./game_objects/StrikeTime/Buildings/TargetBuilding";
 import { Level } from "./game_objects/StrikeTime/Levels/Level";
 import { LevelPrototype } from "./game_objects/StrikeTime/Levels/LevelPrototype";
+import { StrikeTimeLevelGameObjectType } from "./game_engine/Levels/DesignElements/Spawn";
 
 type EnemyCreator = (pos: [number, number, number] | [number, number], angle?: number) => GameObject;
 
@@ -26,9 +27,7 @@ type EnemyCreator = (pos: [number, number, number] | [number, number], angle?: n
 export const  DIM_X = 1000;
 export const  DIM_Y = 600;
 
-type EnemyCreatorMap = {
-    [key: string]: EnemyCreator
-};
+type EnemyCreatorMap = Map<StrikeTimeLevelGameObjectType, EnemyCreator>;
 
 export interface Scorable {
     points: number;
@@ -46,7 +45,7 @@ export class StrikeTimeScript {
     initialCameraZPos: number;
     currentLevel: Level | null;
     
-    enemyCreatorMap: EnemyCreatorMap;
+    gameObjectCreatorMap: EnemyCreatorMap;
 
     explosionColorWheel: number;
 
@@ -65,7 +64,7 @@ export class StrikeTimeScript {
 
         this.theme = new Sound("", 1);
         
-        this.enemyCreatorMap = this.createEnemyCreators();
+        this.gameObjectCreatorMap = this.createEnemyCreators();
 
 
         this.explosionColorWheel = 0;
@@ -323,15 +322,22 @@ export class StrikeTimeScript {
         return angles[Math.floor(Math.random() * angles.length) % angles.length];
     }
 
-    // TODO: The only content in GEOWars was enemies, so the name will need to change 
-    createEnemyCreators(): EnemyCreatorMap {
-        return {
-        };
+   createEnemyCreators(): EnemyCreatorMap { // might be able to make this static? you provide the game engine yourself?
+        const engine = this.engine;
+
+        const gameObjectCreatorMap: EnemyCreatorMap = new Map();
+
+        gameObjectCreatorMap.set('Aurora', (pos: [number, number]) => new Aurora(engine, pos))
+        gameObjectCreatorMap.set('Building', (pos: [number, number]) => new Building1(engine, pos))
+        gameObjectCreatorMap.set('TargetBuilding', (pos: [number, number]) => new TargetBuilding(engine, pos))
+        gameObjectCreatorMap.set('PatriotSite', (pos: [number, number], angle: number) => new PatriotMissileSite(engine, pos))
+        
+        return gameObjectCreatorMap;
     }
 
     randomSpawnEnemy() {
         const pos = this.randomPosition();
-        const enemyCreators = Object.values(this.enemyCreatorMap);
+        const enemyCreators = Array.from(this.gameObjectCreatorMap.values());
         enemyCreators[
             Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length
         ](pos);

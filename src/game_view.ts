@@ -14,7 +14,8 @@ export class GameView {
     engine: GameEngine;
     ctx: CanvasRenderingContext2D;
     lastTime: number;
-    animationView: AnimationView;
+    animationViewGEO: AnimationView;
+    animationViewStrikeTime: AnimationView;
     geoLevelDesigner: GEOLevelDesigner;
     strikeTimeLevelDesigner: StrikeTimeLevelDesigner;
 
@@ -41,7 +42,9 @@ export class GameView {
         canvasEl: HTMLCanvasElement, 
         geoLevelDesigner: GEOLevelDesigner,
         strikeTimeLevelDesigner: StrikeTimeLevelDesigner, 
-        animationView: AnimationView,
+        animationViewGEO: AnimationView,
+        animationViewStrikeTime: AnimationView,
+
     ) {
         this.ctx = ctx;
         this.engine = engine;
@@ -51,7 +54,8 @@ export class GameView {
         this.geoLevelDesigner = geoLevelDesigner;
         this.strikeTimeLevelDesigner = strikeTimeLevelDesigner;
 
-        this.animationView = animationView;
+        this.animationViewGEO = animationViewGEO;
+        this.animationViewStrikeTime = animationViewStrikeTime;
         this.bindKeyboardKeys = this.bindKeyboardKeys.bind(this);
         this.initialUnmute = true;
         this.gameStarted = false;
@@ -246,47 +250,21 @@ export class GameView {
         strikeTimeLevelCreator.style.display = 'none';
         levelEditorCanvas.style.display = 'none';
 
-        // Get the button that opens the modal
-        // var btn = document.getElementById("myBtn");
-
-        // Get the <span> element that closes the modal
-        // const xclose = document.getElementsByClassName("close")[0];
-
-        // When the user clicks on <span> (x), close the modal
-        // xclose.onclick = (e) => {
-        //     e.stopPropagation();
-        //     modal.style.display = "none";
-        //     this.modelClosed = true;
-        // };
-
-        // When the user clicks anywhere outside of the modal, close it
-        //  window.addEventListener('click', (e) => {
-        // window.onclick = (event) => {
-        //     if (this.modelClosed && !this.gameStarted) {
-        //         this.gameStarted = true;
-        //         this.bindKeyboardKeys();
-        //         requestAnimationFrame(this.animate);
-        //     }
-        //     if (event.target == modal) {
-        //         this.modelClosed = true;
-        //         modal.style.display = "none";
-        //     }
-        // };
-
-        // add listeners to buttons on the modal
-        // have them do the same things they do now.. 
-        // but without the strange order that's required 
-        // for starting the game after loading one, or starting the default one
+        // from the first modal menu:
         const startStrikeTimeModal = document.getElementById("startStrikeTime");
         const startGEOWarsButtonModal = document.getElementById("startGEOWars");
-        const startGEOWarsButtonLevelEditor = document.getElementById("startGEOWarsGameFromLevelEditor");
-        // open the level editor
         const levelEditorButton = document.getElementById("LevelEditorModal");
         const strikeTimeLevelEditor = document.getElementById("StrikeTimeEditorStart");
         const createSprite = document.getElementById("SpriteEditor");
-        
         // load a level either for level editor or for starting the game
+        // will have to put something in the input text to know which game it is
         const loadGameDesignButtonModal = document.getElementById("loadGameDesignModal");
+
+        // this is from the menu inside the game editor itself:
+        const startGEOWarsButtonLevelEditor = document.getElementById("startGEOWarsGameFromLevelEditor");
+        const startStrikeTimeButtonInLevelEditor = document.getElementById("startStrikeTimeGame");
+       
+        
         // get the text from element: loadGameDesignInputModal
 
         startGEOWarsButtonLevelEditor.onclick = (e) => {
@@ -296,6 +274,17 @@ export class GameView {
             this.engine.addGameScript(geoWarsScript);
             this.bindKeyboardKeys();
             this.geoLevelDesigner.startGame(geoWarsScript);
+            requestAnimationFrame(this.animate);
+            modal.style.display = "none";
+        };
+
+        startStrikeTimeButtonInLevelEditor.onclick = (e) => {
+            e.stopPropagation();
+            this.gameStarted = true;
+            const strikeTimeScript = new StrikeTimeScript(this.engine);
+            this.engine.addGameScript(strikeTimeScript);
+            this.bindKeyboardKeys();
+            this.strikeTimeLevelDesigner.startGame(strikeTimeScript);
             requestAnimationFrame(this.animate);
             modal.style.display = "none";
         };
@@ -399,7 +388,8 @@ export class GameView {
         const timeDelta = time - this.lastTime;
         this.engine.tick(timeDelta);
         this.openedLevelEditor?.animate(timeDelta);
-        this.animationView.animate(timeDelta);
+        this.animationViewGEO.animate(timeDelta);
+        this.animationViewStrikeTime.animate(timeDelta);
         this.lastTime = time;
         // every call to animate requests causes another call to animate
         requestAnimationFrame(this.animate);

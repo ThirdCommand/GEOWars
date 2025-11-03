@@ -26,6 +26,7 @@ import { type GameObject } from "./game_engine/game_object";
 import { Transform } from "./game_engine/transform";
 import { BulletWallExplosion } from "./game_objects/particles/bullet_wall_explosion";
 import { SingularityHitExplosion } from "./game_objects/particles/singularity_hit_explosion";
+import { GEOEnemyType } from "./game_engine/Levels/DesignElements/Spawn";
 
 type EnemyCreator = (pos: [number, number, number] | [number, number], angle?: number) => GameObject;
 
@@ -34,10 +35,7 @@ type EnemyCreator = (pos: [number, number, number] | [number, number], angle?: n
 export const DIM_X = 1000;
 export const DIM_Y = 600;
 
-type EnemyCreatorMap = {
-    [key: string]: EnemyCreator
-};
-
+type EnemyCreatorMap = Map<GEOEnemyType, EnemyCreator>;
 export interface Scorable {
     points: number;
 }
@@ -66,7 +64,7 @@ export class GEOWarsScript implements GameScript {
     walls: Walls;
     grid: Grid;
     overlay: Overlay;
-    enemyCreatorMap: EnemyCreatorMap;
+    gameObjectCreatorMap: EnemyCreatorMap;
     sequenceTypes: {[key: string]: () => void};
     deathPausedTime: number;
     deathPaused: boolean;
@@ -114,7 +112,7 @@ export class GEOWarsScript implements GameScript {
         this.grid = this.createGrid();
         this.overlay = this.createOverlay();
         
-        this.enemyCreatorMap = this.createEnemyCreators();
+        this.gameObjectCreatorMap = this.createEnemyCreators();
         this.engine.addXButtonListener(this);
         this.engine.addBButtonListener(this);
         this.sequenceTypes = this.addSequenceTypes();
@@ -423,21 +421,24 @@ export class GEOWarsScript implements GameScript {
 
     createEnemyCreators(): EnemyCreatorMap { // might be able to make this static? you provide the game engine yourself?
         const engine = this.engine;
-        return {
-            BoxBox: (pos: [number, number]) => new BoxBox(engine, pos),
-            Pinwheel: (pos: [number, number]) => new Pinwheel(engine, pos),
-            Arrow: (pos: [number, number], angle: number) => new Arrow(engine, pos, angle),
-            Grunt: (pos: [number, number]) => new Grunt(engine, pos, this.ship.transform),
-            Weaver: (pos: [number, number]) => new Weaver(engine, pos, this.ship.transform),
-            Singularity: (pos: [number, number]) => new Singularity(engine, pos),
-            AlienShip: (pos: [number, number]) =>
-                new AlienShip(engine, pos, [0, 0]),
-        };
+
+        const gameObjectCreatorMap: EnemyCreatorMap = new Map();
+
+        gameObjectCreatorMap.set('BoxBox', (pos: [number, number]) => new BoxBox(engine, pos))
+        gameObjectCreatorMap.set('BoxBox', (pos: [number, number]) => new BoxBox(engine, pos))
+        gameObjectCreatorMap.set('Pinwheel', (pos: [number, number]) => new Pinwheel(engine, pos))
+        gameObjectCreatorMap.set('Arrow', (pos: [number, number], angle: number) => new Arrow(engine, pos, angle))
+        gameObjectCreatorMap.set('Grunt', (pos: [number, number]) => new Grunt(engine, pos, this.ship.transform))
+        gameObjectCreatorMap.set('Weaver', (pos: [number, number]) => new Weaver(engine, pos, this.ship.transform))
+        gameObjectCreatorMap.set('Singularity', (pos: [number, number]) => new Singularity(engine, pos))
+        gameObjectCreatorMap.set('AlienShip', (pos: [number, number]) => new AlienShip(engine, pos, [0, 0]))
+        
+        return gameObjectCreatorMap;
     }
 
     randomSpawnEnemy() {
         const pos = this.randomPosition();
-        const enemyCreators = Object.values(this.enemyCreatorMap);
+        const enemyCreators = Array.from(this.gameObjectCreatorMap.values());
         enemyCreators[
             Math.floor(Math.random() * enemyCreators.length) % enemyCreators.length
         ](pos);
@@ -452,11 +453,11 @@ export class GEOWarsScript implements GameScript {
                     randomPositions.push(pos);
                 }
                 randomPositions.forEach((pos) => {
-                    this.enemyCreatorMap["BoxBox"](pos);
+                    this.gameObjectCreatorMap.get("BoxBox")(pos);
                 });
             },
             Singularity: () => {
-                this.enemyCreatorMap["Singularity"]([700, 300]);
+                this.gameObjectCreatorMap.get("Singularity")([700, 300]);
             },
             EasyGroups: () => {
                 const randomPositions = [];
@@ -465,13 +466,12 @@ export class GEOWarsScript implements GameScript {
                     randomPositions.push(pos);
                 }
                 randomPositions.forEach((pos) => {
-                    const possibleSpawns = ["BoxBox", "Pinwheel"]; //, "Singularity"]
-                    this.enemyCreatorMap[
+                    const possibleSpawns: GEOEnemyType[] = ["BoxBox", "Pinwheel"]; //, "Singularity"]
+                    this.gameObjectCreatorMap.get(
                         possibleSpawns[
-                            Math.floor(Math.random() * possibleSpawns.length) %
-                possibleSpawns.length
+                            Math.floor(Math.random() * possibleSpawns.length) % possibleSpawns.length
                         ]
-                    ](pos);
+                    )(pos);
                 });
             },
             EasyGroupsArrows: () => {
@@ -481,13 +481,12 @@ export class GEOWarsScript implements GameScript {
                     randomPositions.push(pos);
                 }
                 randomPositions.forEach((pos) => {
-                    const possibleSpawns = ["BoxBox", "Pinwheel", "Arrow", "Singularity"];
-                    this.enemyCreatorMap[
+                    const possibleSpawns: GEOEnemyType[] = ["BoxBox", "Pinwheel", "Arrow", "Singularity"];
+                    this.gameObjectCreatorMap.get(
                         possibleSpawns[
-                            Math.floor(Math.random() * possibleSpawns.length) %
-                possibleSpawns.length
+                            Math.floor(Math.random() * possibleSpawns.length) % possibleSpawns.length
                         ]
-                    ](pos);
+                    )(pos);
                 });
             },
             ArrowsAttack: () => {
@@ -503,14 +502,14 @@ export class GEOWarsScript implements GameScript {
                     ];
                 for (let i = 0; i < 5; i++) {
                     pos[1] += i * 80;
-                    this.enemyCreatorMap["Arrow"](pos);
+                    this.gameObjectCreatorMap.get("Arrow")(pos);
                 }
             },
             GruntGroups: () => {
                 const randomPos = this.randomPosition(50);
                 for (let i = 0; i < 3; i++) {
                     for (let j = 0; j < 3; j++) {
-                        this.enemyCreatorMap["Grunt"]([
+                        this.gameObjectCreatorMap.get("Grunt")([
                             i * 40 + randomPos[0],
                             j * 40 + randomPos[1],
                         ]);
@@ -521,7 +520,7 @@ export class GEOWarsScript implements GameScript {
                 const randomPos = this.randomPosition(50);
                 for (let i = 0; i < 3; i++) {
                     for (let j = 0; j < 3; j++) {
-                        this.enemyCreatorMap["Weaver"]([
+                        this.gameObjectCreatorMap.get("Weaver")([
                             i * 40 + randomPos[0],
                             j * 40 + randomPos[1] - 50,
                         ]);
@@ -556,7 +555,7 @@ export class GEOWarsScript implements GameScript {
         this.intervalTime += delta;
 
         if (this.sequenceCount === 1) {
-            this.enemyCreatorMap["Singularity"]([700, 300]);
+            this.gameObjectCreatorMap.get("Singularity")([700, 300]);
             this.sequenceCount += 1;
         }
 
@@ -609,7 +608,7 @@ export class GEOWarsScript implements GameScript {
         //   let randomPos = this.randomPosition();
         //   for (let i = 0; i < 2; i++) {
         //     for (let j = 0; j < 2; j++) {
-        //       this.enemyCreatorMap["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
+        //       this.gameObjectCreatorMap["Weaver"]([i * 40 + randomPos[0], j * 40 + randomPos[1]])
         //     }
         //   }
 
@@ -634,7 +633,7 @@ export class GEOWarsScript implements GameScript {
                 [DIM_X - 40, DIM_Y - 40],
             ];
             fourCorners.forEach((corner) => {
-                this.enemyCreatorMap["Grunt"](corner);
+                this.gameObjectCreatorMap.get("Grunt")(corner);
             });
         } else if (
             this.intervalTime > 375 &&
@@ -651,7 +650,7 @@ export class GEOWarsScript implements GameScript {
             }
 
             arrowWallPositions.forEach((position) => {
-                this.enemyCreatorMap["Arrow"](position, arrowDirection);
+                this.gameObjectCreatorMap.get("Arrow")(position, arrowDirection);
             });
         }
         // this is the spawner event.

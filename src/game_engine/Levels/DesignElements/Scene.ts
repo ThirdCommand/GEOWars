@@ -1,7 +1,7 @@
 import { UIElement, type SerializeAble } from "../../UI_Element";
 import { Transform } from "../../transform";
 
-import { EventObject, type Event, type EventSerialized, EventObjectSprite} from "./Event";
+import { EventObject, type Event, type EventSerialized, GEOEventObjectSprite} from "./Event";
 import {type LoopEnd, LoopBeginning, LoopEndObject, LoopBeginningObject, LoopBeginningSerialized, LoopEndSerialized, LoopBeginningObjectSprite, LoopEndingObjectSprite} from "./Loop";
 import {OperationObject, type Operation, Operand, OperationSerialized, OperationObjectSprite} from "./Operation";
 import { type LevelDesigner } from "../LevelDesigner";
@@ -12,7 +12,7 @@ export type GameElement = Event | Scene | LoopEnd | LoopBeginning | Operation | 
 
 export type GameElementObject = EventObject | SceneObject | LoopEndObject | LoopBeginningObject | OperationObject | TimeObject;
 
-export type GameElementObjectSprite = TimeObjectSprite | OperationObjectSprite | LoopBeginningObjectSprite | LoopEndingObjectSprite | EventObjectSprite | SceneSprite;
+export type GameElementObjectSprite = TimeObjectSprite | OperationObjectSprite | LoopBeginningObjectSprite | LoopEndingObjectSprite | GEOEventObjectSprite | SceneSprite;
 
 export type SerializedGameElement = SceneSerialized | EventSerialized | OperationSerialized | LoopBeginningSerialized | LoopEndSerialized | TimeSerialized
 

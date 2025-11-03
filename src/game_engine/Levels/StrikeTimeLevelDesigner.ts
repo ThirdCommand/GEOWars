@@ -1,25 +1,10 @@
-import { Walls } from "../../game_objects/walls";
-import { Overlay } from "../../game_objects/Overlay/overlay";
-// import { Grid } from "../../game_objects/particles/Grid/grid";
-// import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
-
 import { Transform } from "../transform";
-import {SceneObject, SerializedGameElement, GameElementObject, SceneSerialized } from "./DesignElements/Scene";
-import { EnemyType, Spawn, SpawnSerialized, isEnemyType } from "./DesignElements/Spawn";
+import {SceneSerialized } from "./DesignElements/Scene";
+import { GEOEnemyType, isEnemyType, StrikeTimeLevelGameObjectType } from "./DesignElements/Spawn";
 
-import { EventObject, EventSerialized} from "./DesignElements/Event";
-import { TimeObject } from "./DesignElements/Time";
-import { LoopBeginningObject, LoopEndObject, LoopValues} from "./DesignElements/Loop";
-import { Operand, OperationObject } from "./DesignElements/Operation";
-import { GameEngine, GameScript } from "../game_engine";
-import { type UIElement } from "../UI_Element";
-import { type LineSprite } from "../line_sprite";
+import { GameEngine } from "../game_engine";
 import { type AnimationView } from "../../AnimationView";
-import { GameObject } from "../game_object";
-import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
-import { DIM_X, DIM_Y, GEOWarsScript } from "../../GEOWarsScript";
-import { Arrow } from "../../game_objects/enemies/Arrow/arrow";
-import { BoxBox } from "../../game_objects/enemies/BoxBox/boxbox";
+import { DIM_X, DIM_Y } from "../../StrikeTimeScript";
 import { LevelDesigner } from "./LevelDesigner";
 import { StrikeTimeScript } from "../../StrikeTimeScript";
 
@@ -27,7 +12,7 @@ import { StrikeTimeScript } from "../../StrikeTimeScript";
 
 
 // check if array of enemyType
-export function isEnemyTypeArray(value: string[]): value is EnemyType[] {
+export function isEnemyTypeArray(value: string[]): value is GEOEnemyType[] {
     return !value.some((type) => (!isEnemyType(type)));
 }
 
@@ -57,28 +42,56 @@ export class StrikeTimeLevelDesigner extends LevelDesigner {
     }
 
     openLevelDesigner() {
+        this.engine.activeCamera.transform.pos[0] = DIM_X / 2;
+        this.engine.activeCamera.transform.pos[1] = DIM_Y / 2;
         this.addArrowListeners()
         this.engine.addMouseEventListener(this);
         this.isLevelDesignerOpened = true;
-
-        const makeEventObject = document.getElementById("MakeEvent");
+        
+        const makeEventObject = document.getElementById("MakeStrikeEvent");
         const addTime = document.getElementById("TimeSubmit");
         const addLoop = document.getElementById("LoopSubmit");
         const addOperation = document.getElementById("OperationSubmit");
         const sceneNameSubmit = document.getElementById("sceneNameSubmit");
         const shipRelative = document.getElementById("shipRelative") as HTMLInputElement;
         this.shipRelative = shipRelative;
-        const setCoordinate = document.getElementById("changeCoordinates");
-        const setRandomCoordinates = document.getElementById("setRandomCoordinates");
+        const setCoordinate = document.getElementById("changeStrikeTimeCoordinates");
 
-        const randomSpawnCoordinate = document.getElementById("randomSpawnCoordinate");
+        const addAuroraButton = document.getElementById("Aurora");
+        const addPatriotSite = document.getElementById("PatriotSite");
+        const addBuilding = document.getElementById("Building");
+        const addTargetBuilding = document.getElementById("TargetBuilding");
 
+        addAuroraButton.onclick = (e) => {
+            e.stopPropagation();
+            const type = "Aurora";
+            this.addLevelGameObject(type);
+        };
+
+        addPatriotSite.onclick = (e) => {
+            e.stopPropagation();
+            const type = "PatriotSite";
+            this.addLevelGameObject(type);
+        };
+
+        addBuilding.onclick = (e) => {
+            e.stopPropagation();
+            const type = "Building";
+            this.addLevelGameObject(type);
+        };
+
+        addTargetBuilding.onclick = (e) => {
+            e.stopPropagation();
+            const type = "TargetBuilding";
+            this.addLevelGameObject(type);
+        };
 
         const saveGameDesign = document.getElementById("saveGameDesign");
 
         // const loadGameDesign = document.getElementById("loadGameDesign");
 
-        const startGame = document.getElementById("startStrikeTimeGame");
+        // we deal with this in the GameView right now because this doesn't have access to the game script
+        // const startGame = document.getElementById("startStrikeTimeGame");
 
         shipRelative.onclick = (e) => {
             e.stopPropagation();
@@ -93,42 +106,15 @@ export class StrikeTimeLevelDesigner extends LevelDesigner {
             }
 
         };
-        new BoxBox(this.engine, [300,150]);
+        // new BoxBox(this.engine, [300,150]);
 
         setCoordinate.onclick = (e) => {
             e.stopPropagation();
-            const x = Number((document.getElementById("xCoordinate") as HTMLInputElement).value);
-            const y = Number((document.getElementById("yCoordinate") as HTMLInputElement).value);
-            const angle = Number((document.getElementById("angle") as HTMLInputElement).value);
+            const x = Number((document.getElementById("xCoordinateStrikeTime") as HTMLInputElement).value);
+            const y = Number((document.getElementById("yCoordinateStrikeTime") as HTMLInputElement).value);
+            const angle = Number((document.getElementById("angleStrikeTime") as HTMLInputElement).value);
             console.log({x, y, angle});
             this.currentEnemyPlacer?.setCoordinates(x, y, angle);
-        };
-
-        setRandomCoordinates.onclick = (e) => {
-            e.stopPropagation();
-            this.currentEnemyPlacer?.setRandomCoordinates();
-        };
-
-        randomSpawnCoordinate.onclick = (e) => {
-            // should make it so you can only make one
-            // this would allow me to find the spawn and change it's value here as well
-            e.stopPropagation();
-            this.currentEnemyPlacer?.type === "RANDOM";
-
-            const selectedEnemies = Array.from((document.getElementById('possibleSpawns') as HTMLSelectElement).selectedOptions).map(({ value }) => value);
-            if(isEnemyTypeArray(selectedEnemies)) {
-                const numberToGenerate = (document.getElementById('numberToGenerate') as HTMLInputElement).value;
-
-                const newSpawn: SpawnSerialized = {
-                    location: 'RANDOM',
-                    type: 'RANDOM',
-                    possibleSpawns: selectedEnemies,
-                    numberToGenerate: Number(numberToGenerate),
-                };
-            
-                this.addRandomRandomSpawnToEvent(newSpawn);
-            }
-            
         };
        
         // makeGame.onclick = (e) => {
@@ -137,6 +123,7 @@ export class StrikeTimeLevelDesigner extends LevelDesigner {
         //     this.isLevelDesignerOpened = !this.isLevelDesignerOpened;
         //     this.engine.isLevelDesignerOpened = this.isLevelDesignerOpened;
         // };
+        
         makeEventObject.onclick = (e) => {
             e.stopPropagation();
             this.UIActionsToRun.push(() => this.makeEventObject());
@@ -210,12 +197,6 @@ export class StrikeTimeLevelDesigner extends LevelDesigner {
             }
         });
 
-
-        startGame.onclick = (e) => {
-            e.stopPropagation();
-            // I'm not sure if this is correct
-            // this.startGame(true);
-        };
     }
 
     addArrowListeners() {
@@ -251,6 +232,7 @@ export class StrikeTimeLevelDesigner extends LevelDesigner {
                 (element) => element.serialize() 
             ),
         };
+        this.engine.clearLevelDesignElements();
         const serializedGameString = JSON.stringify(this.serializedGame);
         // I should unselect whatever is selected.
         // events being the main issue since they have things
