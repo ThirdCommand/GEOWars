@@ -2852,10 +2852,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   isEnemyTypeArray: () => (/* binding */ isEnemyTypeArray)
 /* harmony export */ });
 /* harmony import */ var _game_objects_walls__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_objects/walls */ "./src/game_objects/walls.ts");
-/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.ts");
-/* harmony import */ var _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./DesignElements/Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.ts");
-/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../GEOWarsScript */ "./src/GEOWarsScript.ts");
-/* harmony import */ var _LevelDesigner__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./LevelDesigner */ "./src/game_engine/Levels/LevelDesigner.ts");
+/* harmony import */ var _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./LevelDesign/EnemyPlacer */ "./src/game_engine/Levels/LevelDesign/EnemyPlacer.ts");
+/* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.ts");
+/* harmony import */ var _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./DesignElements/Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.ts");
+/* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../GEOWarsScript */ "./src/GEOWarsScript.ts");
+/* harmony import */ var _LevelDesigner__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./LevelDesigner */ "./src/game_engine/Levels/LevelDesigner.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -2873,7 +2874,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 })();
 
 // import { Grid } from "../../game_objects/particles/Grid/grid";
-// import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
+
 
 
 
@@ -2881,7 +2882,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 // I should collect placed enemies
 // check if array of enemyType
 function isEnemyTypeArray(value) {
-    return !value.some(function (type) { return (!(0,_DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_2__.isEnemyType)(type)); });
+    return !value.some(function (type) { return (!(0,_DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_3__.isEnemyType)(type)); });
 }
 // Perhaps level designer should be an extension of game script with connection to the
 // timeline UI and the animation window
@@ -2892,11 +2893,11 @@ var GEOLevelDesigner = /** @class */ (function (_super) {
     __extends(GEOLevelDesigner, _super);
     function GEOLevelDesigner(engine, animationView, levelDesignerCtx, serializedGame) {
         var _this = _super.call(this, engine, animationView, levelDesignerCtx, serializedGame) || this;
-        _this.transform = new _transform__WEBPACK_IMPORTED_MODULE_1__.Transform();
-        _this.transform = new _transform__WEBPACK_IMPORTED_MODULE_1__.Transform();
+        _this.transform = new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform();
+        _this.transform = new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform();
         // might not need the ship now that I'm using cameras
         _this.ship = {
-            transform: new _transform__WEBPACK_IMPORTED_MODULE_1__.Transform()
+            transform: new _transform__WEBPACK_IMPORTED_MODULE_2__.Transform()
         };
         _this.lastTime = 0;
         return _this;
@@ -2904,8 +2905,8 @@ var GEOLevelDesigner = /** @class */ (function (_super) {
     GEOLevelDesigner.prototype.openLevelDesigner = function () {
         var _this = this;
         this.engine.addMouseEventListener(this);
-        this.engine.activeCamera.transform.pos[0] = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.DIM_X / 2;
-        this.engine.activeCamera.transform.pos[1] = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.DIM_Y / 2;
+        this.engine.activeCamera.transform.pos[0] = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__.DIM_X / 2;
+        this.engine.activeCamera.transform.pos[1] = _GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__.DIM_Y / 2;
         var addArrowButton = document.getElementById("Arrow");
         var addGruntButton = document.getElementById("Grunt");
         var addBoxBox = document.getElementById("BoxBox");
@@ -3091,7 +3092,7 @@ var GEOLevelDesigner = /** @class */ (function (_super) {
             serializedGameElements: this.baseScene.gameElementObjects.map(function (element) { return element.serialize(); } // set up proper return here
             ),
         };
-        this.engine.clearLevelDesignElements();
+        this.clearLevelDesignElements();
         var serializedGameString = JSON.stringify(this.serializedGame);
         // I should unselect whatever is selected.
         // events being the main issue since they have things
@@ -3100,11 +3101,14 @@ var GEOLevelDesigner = /** @class */ (function (_super) {
         GEOWarsScript.startGame(serializedGameString);
         this.engine.isLevelDesignerOpened = false;
     };
+    GEOLevelDesigner.prototype.clearLevelDesignElements = function () {
+        this.engine.gameObjects.filter(function (object) { return object instanceof _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_1__.EnemyPlacer; }).forEach(function (enemyPlacer) { return enemyPlacer.remove(); });
+    };
     GEOLevelDesigner.prototype.queueSound = function () { };
     GEOLevelDesigner.prototype.addCollider = function () { };
     GEOLevelDesigner.prototype.addPhysicsComponent = function () { };
     GEOLevelDesigner.prototype.isOutOfBounds = function (pos, radius) {
-        var max = [_GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.DIM_X - radius, _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.DIM_Y - radius];
+        var max = [_GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__.DIM_X - radius, _GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__.DIM_Y - radius];
         if (radius) {
             return (pos[0] <= radius ||
                 pos[0] >= max[0] ||
@@ -3114,15 +3118,15 @@ var GEOLevelDesigner = /** @class */ (function (_super) {
         else {
             return (pos[0] < 0 ||
                 pos[1] < 0 ||
-                pos[0] > _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.DIM_X ||
-                pos[1] > _GEOWarsScript__WEBPACK_IMPORTED_MODULE_3__.DIM_Y);
+                pos[0] > _GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__.DIM_X ||
+                pos[1] > _GEOWarsScript__WEBPACK_IMPORTED_MODULE_4__.DIM_Y);
         }
     };
     GEOLevelDesigner.prototype.createWalls = function () {
         return new _game_objects_walls__WEBPACK_IMPORTED_MODULE_0__.Walls(this.engine);
     };
     return GEOLevelDesigner;
-}(_LevelDesigner__WEBPACK_IMPORTED_MODULE_4__.LevelDesigner));
+}(_LevelDesigner__WEBPACK_IMPORTED_MODULE_5__.LevelDesigner));
 
 
 
@@ -3978,8 +3982,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../transform */ "./src/game_engine/transform.ts");
 /* harmony import */ var _DesignElements_Spawn__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./DesignElements/Spawn */ "./src/game_engine/Levels/DesignElements/Spawn.ts");
-/* harmony import */ var _StrikeTimeScript__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../StrikeTimeScript */ "./src/StrikeTimeScript.ts");
-/* harmony import */ var _LevelDesigner__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./LevelDesigner */ "./src/game_engine/Levels/LevelDesigner.ts");
+/* harmony import */ var _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./LevelDesign/EnemyPlacer */ "./src/game_engine/Levels/LevelDesign/EnemyPlacer.ts");
+/* harmony import */ var _StrikeTimeScript__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../StrikeTimeScript */ "./src/StrikeTimeScript.ts");
+/* harmony import */ var _LevelDesigner__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./LevelDesigner */ "./src/game_engine/Levels/LevelDesigner.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -3995,6 +4000,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+
 
 
 
@@ -4018,8 +4024,8 @@ var StrikeTimeLevelDesigner = /** @class */ (function (_super) {
     }
     StrikeTimeLevelDesigner.prototype.openLevelDesigner = function () {
         var _this = this;
-        this.engine.activeCamera.transform.pos[0] = _StrikeTimeScript__WEBPACK_IMPORTED_MODULE_2__.DIM_X / 2;
-        this.engine.activeCamera.transform.pos[1] = _StrikeTimeScript__WEBPACK_IMPORTED_MODULE_2__.DIM_Y / 2;
+        this.engine.activeCamera.transform.pos[0] = _StrikeTimeScript__WEBPACK_IMPORTED_MODULE_3__.DIM_X / 2;
+        this.engine.activeCamera.transform.pos[1] = _StrikeTimeScript__WEBPACK_IMPORTED_MODULE_3__.DIM_Y / 2;
         this.addArrowListeners();
         this.engine.addMouseEventListener(this);
         this.isLevelDesignerOpened = true;
@@ -4182,7 +4188,7 @@ var StrikeTimeLevelDesigner = /** @class */ (function (_super) {
             name: "Game",
             serializedGameElements: this.baseScene.gameElementObjects.map(function (element) { return element.serialize(); }),
         };
-        this.engine.clearLevelDesignElements();
+        this.clearLevelDesignElements();
         var serializedGameString = JSON.stringify(this.serializedGame);
         // I should unselect whatever is selected.
         // events being the main issue since they have things
@@ -4196,8 +4202,11 @@ var StrikeTimeLevelDesigner = /** @class */ (function (_super) {
         strikeTimeLevelCreator.style.display = "none";
         levelEditorCanvas.style.display = "none";
     };
+    StrikeTimeLevelDesigner.prototype.clearLevelDesignElements = function () {
+        this.engine.gameObjects.filter(function (object) { return object instanceof _LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_2__.EnemyPlacer; }).forEach(function (enemyPlacer) { return enemyPlacer.remove(); });
+    };
     return StrikeTimeLevelDesigner;
-}(_LevelDesigner__WEBPACK_IMPORTED_MODULE_3__.LevelDesigner));
+}(_LevelDesigner__WEBPACK_IMPORTED_MODULE_4__.LevelDesigner));
 
 
 
@@ -5333,8 +5342,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _camera__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./camera */ "./src/game_engine/camera.ts");
 /* harmony import */ var _transform__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./transform */ "./src/game_engine/transform.ts");
 /* harmony import */ var _SpriteEditor_DrawingGridSprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./SpriteEditor/DrawingGridSprite */ "./src/game_engine/SpriteEditor/DrawingGridSprite.ts");
-/* harmony import */ var _Levels_LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Levels/LevelDesign/EnemyPlacer */ "./src/game_engine/Levels/LevelDesign/EnemyPlacer.ts");
-
 
 
 
@@ -5909,10 +5916,6 @@ var GameEngine = /** @class */ (function () {
                 colliders[collider.objectType][collider.type].push(collider);
             }
         }
-    };
-    // ideally would be handled by level editor
-    GameEngine.prototype.clearLevelDesignElements = function () {
-        this.gameObjects.filter(function (object) { return object instanceof _Levels_LevelDesign_EnemyPlacer__WEBPACK_IMPORTED_MODULE_3__.EnemyPlacer; }).forEach(function (enemyPlacer) { return enemyPlacer.remove(); });
     };
     // must be a way to only retrieve
     // the data for subscribed colliders once

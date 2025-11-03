@@ -841,11 +841,6 @@ export class GameEngine {
         }
     }
 
-    // ideally would be handled by level editor
-    clearLevelDesignElements() {
-        this.gameObjects.filter((object) => object instanceof EnemyPlacer).forEach((enemyPlacer) => enemyPlacer.remove());
-    }
-
     // must be a way to only retrieve
     // the data for subscribed colliders once
 

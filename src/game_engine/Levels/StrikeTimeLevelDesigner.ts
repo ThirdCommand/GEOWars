@@ -1,6 +1,7 @@
 import { Transform } from "../transform";
 import {SceneSerialized } from "./DesignElements/Scene";
 import { GEOEnemyType, isEnemyType, StrikeTimeLevelGameObjectType } from "./DesignElements/Spawn";
+import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
 
 import { GameEngine } from "../game_engine";
 import { type AnimationView } from "../../AnimationView";
@@ -232,7 +233,7 @@ export class StrikeTimeLevelDesigner extends LevelDesigner {
                 (element) => element.serialize() 
             ),
         };
-        this.engine.clearLevelDesignElements();
+        this.clearLevelDesignElements();
         const serializedGameString = JSON.stringify(this.serializedGame);
         // I should unselect whatever is selected.
         // events being the main issue since they have things
@@ -246,6 +247,10 @@ export class StrikeTimeLevelDesigner extends LevelDesigner {
         geoWarsLevelCreator.style.display = "none";
         strikeTimeLevelCreator.style.display = "none";
         levelEditorCanvas.style.display = "none";
+    }
+
+    clearLevelDesignElements() {
+        this.engine.gameObjects.filter((object) => object instanceof EnemyPlacer).forEach((enemyPlacer) => enemyPlacer.remove());
     }
 
 }

@@ -1,6 +1,6 @@
 import { Walls } from "../../game_objects/walls";
 // import { Grid } from "../../game_objects/particles/Grid/grid";
-// import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
+import { EnemyPlacer } from "./LevelDesign/EnemyPlacer";
 
 import { Transform } from "../transform";
 import {SceneSerialized } from "./DesignElements/Scene";
@@ -267,7 +267,7 @@ export class GEOLevelDesigner extends LevelDesigner {
                 (element) => element.serialize() // set up proper return here
             ),
         };
-        this.engine.clearLevelDesignElements();
+        this.clearLevelDesignElements();
         const serializedGameString = JSON.stringify(this.serializedGame);
         // I should unselect whatever is selected.
         // events being the main issue since they have things
@@ -275,6 +275,10 @@ export class GEOLevelDesigner extends LevelDesigner {
         this.clear();
         GEOWarsScript.startGame(serializedGameString);
         this.engine.isLevelDesignerOpened = false;
+    }
+
+    clearLevelDesignElements() {
+        this.engine.gameObjects.filter((object) => object instanceof EnemyPlacer).forEach((enemyPlacer) => enemyPlacer.remove());
     }
 
 
