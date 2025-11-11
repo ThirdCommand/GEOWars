@@ -9,3 +9,12 @@ export { Missile } from "./Enemies/Missile";
 export { PatriotMissileSite } from "./Enemies/PatriotMissileSite";
 export { LevelPrototype } from "./Levels/LevelPrototype";
 
+export type StrikeTimeObjectType = 
+    "Missile" | 
+    "Aurora" | 
+    "PatriotMissileSite" |
+    "Building1" |
+    "TargetBuilding" | 
+    "Airport" | 
+    "EndingLine"
+

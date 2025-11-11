@@ -430,7 +430,7 @@ export class ReplayablePhysicsComponent {
                 this.instructionsCompleted.push(`Turn Completed. Direction: ${this.turnInformation.rotationDirection > 0 ? 'Right' : 'Left'}`);
                 console.log(this.instructionsCompleted);
 
-                this.movementTangentAngle = endAngleFromRotationPointIfUninterrupted;
+                // this.movementTangentAngle = endAngleFromRotationPointIfUninterrupted;
                     
                 const endVelocityIfUninterrupted = [
                     tangentSpeed * Math.cos(endAngleFromRotationPointIfUninterrupted),

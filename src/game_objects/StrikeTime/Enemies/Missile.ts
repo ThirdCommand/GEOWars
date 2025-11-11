@@ -50,6 +50,7 @@ export class Missile extends GameObject {
             -this.lineSprite.w / 2, 
             1.1 * this.lineSprite.l
         ], this.lineSprite.w)
+        this.addChildGameObject(this.exhaust);
     }
 
     exist() {

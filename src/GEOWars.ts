@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     canvasEl.width = 1000; // this is the start canvas, can be changed later by a specific game
     canvasEl.height = 600; // though I'm not sure what happens when you resize a rendered canvas
 
-    const ctx = canvasEl.getContext("2d");
+    const ctx = canvasEl.getContext("2d", {alpha: false});
     const gameEngine = new GameEngine(ctx);
     const animationWindowGEO = document.getElementsByTagName("canvas")[1].getContext("2d");
     const animationWindowStrikeTime = document.getElementById("animationTestBoxStrikeTime").querySelector("canvas").getContext("2d");

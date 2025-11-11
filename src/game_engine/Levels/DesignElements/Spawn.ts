@@ -5,7 +5,7 @@ import { StrikeTimeScript } from "../../../StrikeTimeScript";
 
 export type GameElementObjectType = StrikeTimeLevelGameObjectType | GEOEnemyType
 export type GEOEnemyType = 'BoxBox' | 'Arrow' | 'Grunt' | 'Pinwheel' | 'Weaver' | 'Singularity' | 'AlienShip' | 'RANDOM';
-export type StrikeTimeLevelGameObjectType = 'Aurora' | 'PatriotSite' | 'Building' | 'TargetBuilding' | 'RANDOM';
+export type StrikeTimeLevelGameObjectType = 'Aurora' | 'PatriotMissileSite' | 'Building1' | 'TargetBuilding' | 'RANDOM' | 'Airport';
 
 export function isEnemyType(value: string): value is GEOEnemyType {
     return ['BoxBox', 'Arrow', 'Grunt', 'Pinwheel', 'Weaver', 'Singularity', 'RANDOM'].includes(value);

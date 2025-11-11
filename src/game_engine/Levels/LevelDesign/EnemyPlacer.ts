@@ -24,6 +24,7 @@ import {GameElementObjectType, SpawnSerialized} from '../DesignElements/Spawn';
 
 // if trying to spawn multiple things on top of each other, I should only grab the first placer that is found in the click colission
 const getClickRadius = {
+    Airport: 10,
     BoxBox: 10,
     Arrow: 10,
     Grunt: 10,
@@ -33,9 +34,9 @@ const getClickRadius = {
     RANDOM: 10,
     AlienShip: 10,
     Aurora: 10,
-    Building: 20,
+    Building1: 20,
     TargetBuilding: 20,
-    PatriotSite: 20
+    PatriotMissileSite: 20
 };
 
 

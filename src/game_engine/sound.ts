@@ -16,7 +16,13 @@ export class Sound {
     constructor(url: string, volume?: number){
         this.url = url;
         this.volume = volume || 1;
-        this.sound = new Audio(this.url);
+        // this.sound = ({
+        //     volume: 0,
+        //     play: () => {},
+
+        // }) as unknown as HTMLAudioElement;
+        this.sound = new Audio(this.url)
+        this.sound.volume = volume;
         this.isPlaying = false;
     }
 
@@ -26,9 +32,8 @@ export class Sound {
     // } else {
         // whoops, forgot to fix this part that's actually important
         
-        this.sound.volume = this.volume;
         // this needs to be fixed lol
-        if(!this.isPlaying || this.sound.ended) this.sound.play();
+        // if(!this.isPlaying || this.sound.ended) this.sound.play();
         this.sound.play();
         this.isPlaying = true;
     // }

@@ -32,6 +32,7 @@ export class Scene implements UpdateAble {
     name: string;
     gameElements: GameElement[];
     currentElementIndex: number;
+    isOnlySceneAndCompleted: boolean;
     maxLoopId: number;
     loopsToClose: number[];
 
@@ -51,7 +52,7 @@ export class Scene implements UpdateAble {
     }
 
     update(dT: number) {
-        this.gameElements[this.currentElementIndex]?.update(dT);
+        if(!this.isOnlySceneAndCompleted) this.gameElements[this.currentElementIndex]?.update(dT)
     }
     /*
     stack works I believe
@@ -79,8 +80,14 @@ export class Scene implements UpdateAble {
         if(this.currentElementIndex < this.gameElements.length - 1) {
             this.currentElementIndex++;
         } else {
-            this.currentElementIndex = 0;
-            if (this.parentScene) this.parentScene.nextElement();
+            // to get it to loop indefinitely, add a flag in the future.. 
+            // but I can't think of a case where I would want that since I can use loops instead
+            if (this.parentScene) {
+                this.currentElementIndex = 0;
+                this.parentScene.nextElement();
+            } else {
+                this.isOnlySceneAndCompleted = true
+            }
         }
     }
 

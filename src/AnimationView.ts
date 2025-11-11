@@ -19,7 +19,7 @@ import { Machinery } from "./game_objects/ClockworkGames/Machine";
 import { TreeGrip } from "./game_objects/ClockworkGames/SawMachine/TreeGrip";
 import { Camera } from "./game_engine/camera";
 import { Missile } from "./game_objects/StrikeTime/Enemies/Missile";
-import { Aurora, Building1, PatriotMissileSite, TargetBuilding } from "./game_objects/StrikeTime";
+import { Airport, Aurora, Building1, EndingLine, PatriotMissileSite, type StrikeTimeObjectType, TargetBuilding } from "./game_objects/StrikeTime";
 
 interface ObjectToDisplay {
     type: GameElementObjectType;
@@ -310,9 +310,11 @@ export class AnimationView {
             Grabber: (pos: [number, number]) => new TreeGrip(this, pos),
             Missile: (pos: [number, number]) => new Missile(this, pos, [0,0], new Transform()),
             Aurora: (pos: [number, number]) => new Aurora(this, pos, 0),
-            PatriotSite: (pos: [number, number]) => new PatriotMissileSite(this, pos),
-            Building: (pos: [number, number]) => new Building1(this, pos),
+            PatriotMissileSite: (pos: [number, number]) => new PatriotMissileSite(this, pos),
+            Building1: (pos: [number, number]) => new Building1(this, pos),
             TargetBuilding: (pos: [number, number]) => new TargetBuilding(this, pos),
+            Airport: (pos: [number, number]) => new Airport(this, pos),
+            EndingLine: (pos: [number, number]) => new EndingLine(this, pos[0])
         };
         enemyMap[type]([100 / this.zoomScale, 100 / this.zoomScale]);
     }
@@ -332,11 +334,6 @@ export type Types =
 "LeftSandwich" | 
 "Plate" | 
 "Machine" |
-"Grabber" | 
-"Missile" | 
-"Aurora" | 
-"PatriotSite" |
-"Building" |
-"TargetBuilding"
+StrikeTimeObjectType
 
 

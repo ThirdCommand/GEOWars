@@ -21,6 +21,7 @@ import { AuroraSprite } from "../../../game_objects/StrikeTime/Aurora/Aurora";
 import { Building1Sprite } from "../../../game_objects/StrikeTime/Buildings/Building1";
 import { TargetBuildingSprite } from "../../../game_objects/StrikeTime/Buildings/TargetBuilding";
 import { PatriotMissileSiteSprite } from "../../../game_objects/StrikeTime/Enemies/PatriotMissileSite";
+import { AirportSprite } from "../../../game_objects/StrikeTime/Airport/Airport";
 
 // should add Alien too
 export const spriteMap = {
@@ -37,9 +38,10 @@ export const spriteMap = {
     Singularity: (transform: Transform) => new SingularitySprite(transform),
 
     Aurora: (transform: Transform) => new AuroraSprite(transform),
-    Building: (transform: Transform) => new Building1Sprite(transform),
+    Building1: (transform: Transform) => new Building1Sprite(transform),
     TargetBuilding: (transform: Transform) => new TargetBuildingSprite(transform),   
-    PatriotSite: (transform: Transform) => new PatriotMissileSiteSprite(transform),
+    PatriotMissileSite: (transform: Transform) => new PatriotMissileSiteSprite(transform),
+    Airport: (transform: Transform) => new AirportSprite(transform),
 
     RANDOM: (transform: Transform) => new RandomRandomSprite(transform),
 };
@@ -407,9 +409,9 @@ export class StrikeTimeEventObjectSprite extends LineSprite {
 
     static spawnSpriteCreator = {
         Aurora: spriteMap['Aurora'](new Transform(null, StrikeTimeEventObjectSprite.firstPosition)),
-        Building: spriteMap['Building'](new Transform(null, StrikeTimeEventObjectSprite.secondPosition)),
+        Building: spriteMap['Building1'](new Transform(null, StrikeTimeEventObjectSprite.secondPosition)),
         TargetBuilding: spriteMap['TargetBuilding'](new Transform(null, StrikeTimeEventObjectSprite.thirdPosition)),
-        PatriotSite: spriteMap['PatriotSite'](new Transform(null, StrikeTimeEventObjectSprite.fourthPosition)),
+        PatriotSite: spriteMap['PatriotMissileSite'](new Transform(null, StrikeTimeEventObjectSprite.fourthPosition)),
         RANDOM: spriteMap['RANDOM'](new Transform(null, StrikeTimeEventObjectSprite.seventhPosition)),
     };
 
@@ -462,10 +464,10 @@ export class StrikeTimeEventObjectSprite extends LineSprite {
         const RandomRandomSprite = StrikeTimeEventObjectSprite.spawnSpriteCreator['RANDOM'];
 
         this.spawnSprites.get('Aurora') > 0 ? AuroraSprite.makeVisible() : AuroraSprite.makeInvisible();
-        this.spawnSprites.get('Building') > 0 ? BuildingSprite.makeVisible() : BuildingSprite.makeInvisible();
+        this.spawnSprites.get('Building1') > 0 ? BuildingSprite.makeVisible() : BuildingSprite.makeInvisible();
         this.spawnSprites.get('TargetBuilding') > 0 ? TargetBuildingSprite.makeVisible() : TargetBuildingSprite.makeInvisible();
 
-        this.spawnSprites.get('PatriotSite') > 0 ? PatriotSiteSprite.makeVisible() : PatriotSiteSprite.makeInvisible();
+        this.spawnSprites.get('PatriotMissileSite') > 0 ? PatriotSiteSprite.makeVisible() : PatriotSiteSprite.makeInvisible();
         this.spawnSprites.get('RANDOM') > 0 ? RandomRandomSprite.makeVisible() : RandomRandomSprite.makeInvisible();
 
 

@@ -28,8 +28,8 @@ export class Aurora extends GameObject {
     gameEditorHasBeenOpened: boolean;
     isTurning: boolean;
     isAccelerating: boolean;
-    leftExhaust: EngineExhaust
-    rightExhaust: EngineExhaust
+    leftExhaust: EngineExhaust;
+    rightExhaust: EngineExhaust;
     airDecelerationParticles: AirDecelerationParticles;
     bombReticle: BombReticle;
     bombTiming: {
@@ -84,6 +84,8 @@ export class Aurora extends GameObject {
             17/18* this.lineSprite.length
         ], 5);
 
+        
+
         this.rightExhaust = new EngineExhaust(engine, this.transform, [
             this.lineSprite.length/8,
             17/18* this.lineSprite.length
@@ -91,6 +93,11 @@ export class Aurora extends GameObject {
         this.airDecelerationParticles = new AirDecelerationParticles(engine, this.transform, this.lineSprite.length / 2, this.lineSprite.length);
         this.bombReticle = new BombReticle(engine, this.transform, [0, 0], 90);
         this.addCollider("General", this, this.radius);
+
+        this.addChildGameObject(this.leftExhaust);
+        this.addChildGameObject(this.rightExhaust);
+        this.addChildGameObject(this.bombReticle);
+
     }
 
     updateBButtonListener(pressed: boolean) {
@@ -125,6 +132,7 @@ export class Aurora extends GameObject {
     }
 
     animate(delta: number) {
+        // console.log('whats going on here');
         let movementDirection = 0;
         if(this.transform.vel[0] === 0 && this.transform.vel[1] === 0) {
             movementDirection = this.transform.angle;
@@ -137,6 +145,7 @@ export class Aurora extends GameObject {
         this.transform.angle = movementDirection;
     }
     update(delta: number) {
+        // console.log('updateCalled', `delta: ${delta}`);
         this.bombTiming.refreshTime += delta;
         this.bombTiming.refreshTime = this.bombTiming.refreshTime  > this.bombTiming.reloadTime ? this.bombTiming.reloadTime + 1 : this.bombTiming.refreshTime;
         (this.bombTiming.refreshTime > this.bombTiming.reloadTime) ? this.bombReticle.setVisibility(true) : this.bombReticle.setVisibility(false);

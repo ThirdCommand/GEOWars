@@ -74,7 +74,8 @@ export class StrikeTimeScript {
     }
 
     nextElement() {
-        this.rootScene.currentElementIndex = 0;
+       // add loops if you want it to repeat, but it seems kind of silly for this game
+       // this.rootScene.currentElementIndex = 0;
     }
 
     loadSounds() {
@@ -155,11 +156,10 @@ export class StrikeTimeScript {
     update(deltaTime: number) {
         // TODO: I think this will still be useful in the future
         // but I don't have my head wrapped around it yet
+        this.gameTime += deltaTime;
         if(this.playFromRootScene) {
             this.rootScene.update(deltaTime);
-        } else {
-            this.gameTime += deltaTime;
-        }
+        } 
         this.changeExplosionColor();
         if(this.currentLevel?.runWinCondition()) {
             this.winGame();
@@ -328,9 +328,10 @@ export class StrikeTimeScript {
         const gameObjectCreatorMap: EnemyCreatorMap = new Map();
 
         gameObjectCreatorMap.set('Aurora', (pos: [number, number]) => new Aurora(engine, pos))
-        gameObjectCreatorMap.set('Building', (pos: [number, number]) => new Building1(engine, pos))
+        gameObjectCreatorMap.set('Building1', (pos: [number, number]) => new Building1(engine, pos))
         gameObjectCreatorMap.set('TargetBuilding', (pos: [number, number]) => new TargetBuilding(engine, pos))
-        gameObjectCreatorMap.set('PatriotSite', (pos: [number, number], angle: number) => new PatriotMissileSite(engine, pos))
+        gameObjectCreatorMap.set('Airport', (pos: [number, number]) => new Airport(engine, pos))
+        gameObjectCreatorMap.set('PatriotMissileSite', (pos: [number, number], angle: number) => new PatriotMissileSite(engine, pos))
         
         return gameObjectCreatorMap;
     }

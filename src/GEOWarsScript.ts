@@ -149,7 +149,7 @@ export class GEOWarsScript implements GameScript {
         soundMagazineMap[ParticleExplosion.EXPLOSION_SOUND_URL] = this.loadSoundMagazine(ParticleExplosion.EXPLOSION_SOUND_URL, 0.1);
         soundMagazineMap[ShipExplosion.EXPLOSION_SOUND_URL] = this.loadSoundMagazine(ShipExplosion.EXPLOSION_SOUND_URL, 0.1);
         soundMagazineMap[SingularityParticleExplosion.EXPLOSION_SOUND_URL] = this.loadSoundMagazine(SingularityParticleExplosion.EXPLOSION_SOUND_URL, 0.1);
-        soundMagazineMap[SingularityHitExplosion.EXPLOSION_SOUND_URL] = this.loadSoundMagazine(SingularityHitExplosion.EXPLOSION_SOUND_URL, 0.1);
+        soundMagazineMap[SingularityHitExplosion.EXPLOSION_SOUND_URL] = this.loadSoundMagazine(SingularityHitExplosion.EXPLOSION_SOUND_URL, 0.01);
         soundMagazineMap[Ship.BULLET_SOUND_URL] = this.loadSoundMagazine(Ship.BULLET_SOUND_URL,0.2)
         soundMagazineMap[Ship.UPGRADE_BULLET_SOUND_URL] = this.loadSoundMagazine(Ship.UPGRADE_BULLET_SOUND_URL,1)
         soundMagazineMap[Singularity.DEATH_SOUND_URL] = this.loadSoundMagazine(Singularity.DEATH_SOUND_URL, 1);
@@ -163,7 +163,7 @@ export class GEOWarsScript implements GameScript {
 
     loadSoundMagazine(url: string, volume: number) {
         const sounds = [];
-        for(let i=0;i<20;i++) {
+        for(let i=0;i<50;i++) {
             sounds.push(new Sound(url, volume))
         }
         return sounds

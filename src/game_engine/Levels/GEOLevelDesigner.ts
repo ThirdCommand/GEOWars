@@ -97,7 +97,6 @@ export class GEOLevelDesigner extends LevelDesigner {
                 shipRelative.value = "on";
                 this.makeCoordinatesArenaRelative();
             }
-
         };
 
         setCoordinate.onclick = (e) => {
@@ -180,7 +179,7 @@ export class GEOLevelDesigner extends LevelDesigner {
 
         saveGameDesign.onclick = (e) => {  
             e.stopPropagation();
-            this.saveGameDesign();
+            this.saveGameDesign('GEOWars','01');
         };
 
         sceneNameSubmit.onclick = (e) => {

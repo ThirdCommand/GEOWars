@@ -25,17 +25,17 @@ export class LevelPrototype extends Level {
         this.controlledShip = new Aurora(this.engine, [this.startPosition[0], this.startPosition[1]]);
         // in a wide circle around the buildings
         // buildings coordinate center: [24 * 2.5 + 2000, 300 + 2.5 * 20]
-        const center_x = 24 * 2.5 + 2000;
-        const center_y = 300 + 2.5 * 20;
-        const radiusOfDefenses = 500;
-        for(let i = 0; i < 10; i++) {
-            const positionAngle = i * (2 * Math.PI)/10;
-            const position: [number, number] = [
-                center_x + radiusOfDefenses * Math.cos(positionAngle),
-                center_y + radiusOfDefenses * Math.sin(positionAngle)
-            ]
-            new PatriotMissileSite(this.engine, [position[0], position[1]]);
-        }
+        // const center_x = 24 * 2.5 + 2000;
+        // const center_y = 300 + 2.5 * 20;
+        // const radiusOfDefenses = 500;
+        // for(let i = 0; i < 10; i++) {
+        //     const positionAngle = i * (2 * Math.PI)/10;
+        //     const position: [number, number] = [
+        //         center_x + radiusOfDefenses * Math.cos(positionAngle),
+        //         center_y + radiusOfDefenses * Math.sin(positionAngle)
+        //     ]
+        //     new PatriotMissileSite(this.engine, [position[0], position[1]]);
+        // }
 
 
         // buildings
@@ -44,7 +44,7 @@ export class LevelPrototype extends Level {
                 if(xPosition === 3 && yPosition ===3) {
                     this.targetBuilding = new TargetBuilding(this.engine, [2000 + xPosition * 24, 300 + yPosition * 20]);
                 } else {
-                        new Building1(this.engine, [2000 + xPosition * 24, 300 + yPosition * 20]);
+                    new Building1(this.engine, [2000 + xPosition * 24, 300 + yPosition * 20]);
                 }
             }  
         }

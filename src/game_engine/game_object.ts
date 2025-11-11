@@ -237,14 +237,11 @@ export abstract class GameObject implements controllable{
         }
     }
 
-    // remove is the issue
-    // i need a remove queue!!!
-    // ... I think
-    remove() {
+    remove(singularRemove=true) {
         this.childObjects.forEach((obj) => {
-            obj.remove();
+            obj.remove(false);
         });
-        if (this.parentObject) {
+        if (singularRemove && this.parentObject) {
             const index = this.parentObject.childObjects.indexOf(this);
             if(index !== -1) this.parentObject.childObjects.splice(index, 1);
         }

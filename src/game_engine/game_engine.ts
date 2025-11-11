@@ -339,6 +339,8 @@ export class GameEngine {
             return;
         }
 
+        if(delta === 0) throw('delta is zero implying a second requestAnimation call. check gameView');
+
         if(!this.gameScriptAdded) return;
 
         if(this.isPerformanceCheckOn) {

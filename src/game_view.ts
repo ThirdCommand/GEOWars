@@ -261,20 +261,20 @@ export class GameView {
         const loadGameDesignButtonModal = document.getElementById("loadGameDesignModal");
 
         // this is from the menu inside the game editor itself:
-        const startGEOWarsButtonLevelEditor = document.getElementById("startGEOWarsGameFromLevelEditor");
+        const startGEOWarsButtonFromLevelEditor = document.getElementById("startGEOWarsGameFromLevelEditor");
         const startStrikeTimeButtonInLevelEditor = document.getElementById("startStrikeTimeGame");
        
         
         // get the text from element: loadGameDesignInputModal
 
-        startGEOWarsButtonLevelEditor.onclick = (e) => {
+        startGEOWarsButtonFromLevelEditor.onclick = (e) => {
             e.stopPropagation();
             this.gameStarted = true;
             const geoWarsScript = new GEOWarsScript(this.engine);
             this.engine.addGameScript(geoWarsScript);
             this.bindKeyboardKeys();
             this.geoLevelDesigner.startGame(geoWarsScript);
-            requestAnimationFrame(this.animate);
+            // requestAnimationFrame(this.animate);
             modal.style.display = "none";
         };
 
@@ -285,7 +285,7 @@ export class GameView {
             this.engine.addGameScript(strikeTimeScript);
             this.bindKeyboardKeys();
             this.strikeTimeLevelDesigner.startGame(strikeTimeScript);
-            requestAnimationFrame(this.animate);
+            // requestAnimationFrame(this.animate);
             modal.style.display = "none";
         };
 
@@ -306,9 +306,11 @@ export class GameView {
             e.stopPropagation();
             this.gameStarted = true;
             this.bindKeyboardKeys();
-            const gameScript = new StrikeTimeScript(this.engine);
-            gameScript.startGame("{}");
-            this.engine.addGameScript(gameScript);
+            const strikeTimeScript = new StrikeTimeScript(this.engine);
+            this.engine.addGameScript(strikeTimeScript);
+            if(this.levelDesignLoaded){
+                this.strikeTimeLevelDesigner.startGame(strikeTimeScript);
+            }
             requestAnimationFrame(this.animate);
             modal.style.display = "none";
         };
@@ -370,8 +372,10 @@ export class GameView {
         loadGameDesignButtonModal.onclick = (e) => {
             e.stopPropagation();
             const json = (document.getElementById("loadGameDesignInputModal") as HTMLInputElement).value;
-            // will need two different buttons I think for accepting a loading string
-            this.geoLevelDesigner.loadGameDesign(json);
+
+            if(json.includes('GEOWars')) this.geoLevelDesigner.loadGameDesign(json);
+            if(json.includes('StrikeTime')) this.strikeTimeLevelDesigner.loadGameDesign(json);
+            
             this.levelDesignLoaded = true;
 
         };
@@ -386,6 +390,7 @@ export class GameView {
 
     animate(time: number) {
         const timeDelta = time - this.lastTime;
+        // console.log(`animate time delta: ${timeDelta}`, `time: ${time}`, `lastTime: ${this.lastTime}`)
         this.engine.tick(timeDelta);
         this.openedLevelEditor?.animate(timeDelta);
         this.animationViewGEO.animate(timeDelta);

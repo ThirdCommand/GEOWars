@@ -252,9 +252,11 @@ var AnimationView = /** @class */ (function () {
             Grabber: function (pos) { return new _game_objects_ClockworkGames_SawMachine_TreeGrip__WEBPACK_IMPORTED_MODULE_14__.TreeGrip(_this, pos); },
             Missile: function (pos) { return new _game_objects_StrikeTime_Enemies_Missile__WEBPACK_IMPORTED_MODULE_15__.Missile(_this, pos, [0, 0], new _game_engine_transform__WEBPACK_IMPORTED_MODULE_12__.Transform()); },
             Aurora: function (pos) { return new _game_objects_StrikeTime__WEBPACK_IMPORTED_MODULE_16__.Aurora(_this, pos, 0); },
-            PatriotSite: function (pos) { return new _game_objects_StrikeTime__WEBPACK_IMPORTED_MODULE_16__.PatriotMissileSite(_this, pos); },
-            Building: function (pos) { return new _game_objects_StrikeTime__WEBPACK_IMPORTED_MODULE_16__.Building1(_this, pos); },
+            PatriotMissileSite: function (pos) { return new _game_objects_StrikeTime__WEBPACK_IMPORTED_MODULE_16__.PatriotMissileSite(_this, pos); },
+            Building1: function (pos) { return new _game_objects_StrikeTime__WEBPACK_IMPORTED_MODULE_16__.Building1(_this, pos); },
             TargetBuilding: function (pos) { return new _game_objects_StrikeTime__WEBPACK_IMPORTED_MODULE_16__.TargetBuilding(_this, pos); },
+            Airport: function (pos) { return new _game_objects_StrikeTime__WEBPACK_IMPORTED_MODULE_16__.Airport(_this, pos); },
+            EndingLine: function (pos) { return new _game_objects_StrikeTime__WEBPACK_IMPORTED_MODULE_16__.EndingLine(_this, pos[0]); }
         };
         enemyMap[type]([100 / this.zoomScale, 100 / this.zoomScale]);
     };
@@ -378,7 +380,7 @@ var GEOWarsScript = /** @class */ (function () {
         soundMagazineMap[_game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_12__.ParticleExplosion.EXPLOSION_SOUND_URL] = this.loadSoundMagazine(_game_objects_particles_particle_explosion__WEBPACK_IMPORTED_MODULE_12__.ParticleExplosion.EXPLOSION_SOUND_URL, 0.1);
         soundMagazineMap[_game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_14__.ShipExplosion.EXPLOSION_SOUND_URL] = this.loadSoundMagazine(_game_objects_particles_ship_explosion__WEBPACK_IMPORTED_MODULE_14__.ShipExplosion.EXPLOSION_SOUND_URL, 0.1);
         soundMagazineMap[_game_objects_particles_singularity_explosion__WEBPACK_IMPORTED_MODULE_13__.SingularityParticleExplosion.EXPLOSION_SOUND_URL] = this.loadSoundMagazine(_game_objects_particles_singularity_explosion__WEBPACK_IMPORTED_MODULE_13__.SingularityParticleExplosion.EXPLOSION_SOUND_URL, 0.1);
-        soundMagazineMap[_game_objects_particles_singularity_hit_explosion__WEBPACK_IMPORTED_MODULE_22__.SingularityHitExplosion.EXPLOSION_SOUND_URL] = this.loadSoundMagazine(_game_objects_particles_singularity_hit_explosion__WEBPACK_IMPORTED_MODULE_22__.SingularityHitExplosion.EXPLOSION_SOUND_URL, 0.1);
+        soundMagazineMap[_game_objects_particles_singularity_hit_explosion__WEBPACK_IMPORTED_MODULE_22__.SingularityHitExplosion.EXPLOSION_SOUND_URL] = this.loadSoundMagazine(_game_objects_particles_singularity_hit_explosion__WEBPACK_IMPORTED_MODULE_22__.SingularityHitExplosion.EXPLOSION_SOUND_URL, 0.01);
         soundMagazineMap[_game_objects_Ship_ship__WEBPACK_IMPORTED_MODULE_1__.Ship.BULLET_SOUND_URL] = this.loadSoundMagazine(_game_objects_Ship_ship__WEBPACK_IMPORTED_MODULE_1__.Ship.BULLET_SOUND_URL, 0.2);
         soundMagazineMap[_game_objects_Ship_ship__WEBPACK_IMPORTED_MODULE_1__.Ship.UPGRADE_BULLET_SOUND_URL] = this.loadSoundMagazine(_game_objects_Ship_ship__WEBPACK_IMPORTED_MODULE_1__.Ship.UPGRADE_BULLET_SOUND_URL, 1);
         soundMagazineMap[_game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__.Singularity.DEATH_SOUND_URL] = this.loadSoundMagazine(_game_objects_enemies_Singularity_singularity__WEBPACK_IMPORTED_MODULE_10__.Singularity.DEATH_SOUND_URL, 1);
@@ -388,7 +390,7 @@ var GEOWarsScript = /** @class */ (function () {
     };
     GEOWarsScript.prototype.loadSoundMagazine = function (url, volume) {
         var sounds = [];
-        for (var i = 0; i < 20; i++) {
+        for (var i = 0; i < 50; i++) {
             sounds.push(new _game_engine_sound__WEBPACK_IMPORTED_MODULE_0__.Sound(url, volume));
         }
         return sounds;
@@ -1048,8 +1050,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_objects_StrikeTime_Aurora_Aurora__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./game_objects/StrikeTime/Aurora/Aurora */ "./src/game_objects/StrikeTime/Aurora/Aurora.ts");
 /* harmony import */ var _game_objects_StrikeTime_Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./game_objects/StrikeTime/Enemies/PatriotMissileSite */ "./src/game_objects/StrikeTime/Enemies/PatriotMissileSite.ts");
 /* harmony import */ var _game_objects_StrikeTime_Buildings_Building1__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./game_objects/StrikeTime/Buildings/Building1 */ "./src/game_objects/StrikeTime/Buildings/Building1.ts");
-/* harmony import */ var _game_objects_StrikeTime_Buildings_TargetBuilding__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./game_objects/StrikeTime/Buildings/TargetBuilding */ "./src/game_objects/StrikeTime/Buildings/TargetBuilding.ts");
-/* harmony import */ var _game_objects_StrikeTime_Levels_LevelPrototype__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./game_objects/StrikeTime/Levels/LevelPrototype */ "./src/game_objects/StrikeTime/Levels/LevelPrototype.ts");
+/* harmony import */ var _game_objects_StrikeTime_Airport_Airport__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./game_objects/StrikeTime/Airport/Airport */ "./src/game_objects/StrikeTime/Airport/Airport.ts");
+/* harmony import */ var _game_objects_StrikeTime_Buildings_TargetBuilding__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./game_objects/StrikeTime/Buildings/TargetBuilding */ "./src/game_objects/StrikeTime/Buildings/TargetBuilding.ts");
+/* harmony import */ var _game_objects_StrikeTime_Levels_LevelPrototype__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./game_objects/StrikeTime/Levels/LevelPrototype */ "./src/game_objects/StrikeTime/Levels/LevelPrototype.ts");
+
 
 
 
@@ -1080,7 +1084,8 @@ var StrikeTimeScript = /** @class */ (function () {
         this.playFromRootScene = false;
     }
     StrikeTimeScript.prototype.nextElement = function () {
-        this.rootScene.currentElementIndex = 0;
+        // add loops if you want it to repeat, but it seems kind of silly for this game
+        // this.rootScene.currentElementIndex = 0;
     };
     StrikeTimeScript.prototype.loadSounds = function () {
         // const types = 'BoxBox' | 'Pinwheel' | 'Arrow' | 'Grunt' | 'Weaver' | 'Singularity' | 'AlienShip';
@@ -1102,7 +1107,7 @@ var StrikeTimeScript = /** @class */ (function () {
             this.rootScene.gameElements = this.loadGameElements(game.serializedGameElements, this.rootScene);
             this.playFromRootScene = true;
         }
-        this.currentLevel = new _game_objects_StrikeTime_Levels_LevelPrototype__WEBPACK_IMPORTED_MODULE_11__.LevelPrototype(this.engine, this);
+        this.currentLevel = new _game_objects_StrikeTime_Levels_LevelPrototype__WEBPACK_IMPORTED_MODULE_12__.LevelPrototype(this.engine, this);
         this.currentLevel.createLevel();
     };
     StrikeTimeScript.prototype.loadGameElements = function (serializedGameElements, parentScene) {
@@ -1161,11 +1166,9 @@ var StrikeTimeScript = /** @class */ (function () {
         var _a;
         // TODO: I think this will still be useful in the future
         // but I don't have my head wrapped around it yet
+        this.gameTime += deltaTime;
         if (this.playFromRootScene) {
             this.rootScene.update(deltaTime);
-        }
-        else {
-            this.gameTime += deltaTime;
         }
         this.changeExplosionColor();
         if ((_a = this.currentLevel) === null || _a === void 0 ? void 0 : _a.runWinCondition()) {
@@ -1317,9 +1320,10 @@ var StrikeTimeScript = /** @class */ (function () {
         var engine = this.engine;
         var gameObjectCreatorMap = new Map();
         gameObjectCreatorMap.set('Aurora', function (pos) { return new _game_objects_StrikeTime_Aurora_Aurora__WEBPACK_IMPORTED_MODULE_7__.Aurora(engine, pos); });
-        gameObjectCreatorMap.set('Building', function (pos) { return new _game_objects_StrikeTime_Buildings_Building1__WEBPACK_IMPORTED_MODULE_9__.Building1(engine, pos); });
-        gameObjectCreatorMap.set('TargetBuilding', function (pos) { return new _game_objects_StrikeTime_Buildings_TargetBuilding__WEBPACK_IMPORTED_MODULE_10__.TargetBuilding(engine, pos); });
-        gameObjectCreatorMap.set('PatriotSite', function (pos, angle) { return new _game_objects_StrikeTime_Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_8__.PatriotMissileSite(engine, pos); });
+        gameObjectCreatorMap.set('Building1', function (pos) { return new _game_objects_StrikeTime_Buildings_Building1__WEBPACK_IMPORTED_MODULE_9__.Building1(engine, pos); });
+        gameObjectCreatorMap.set('TargetBuilding', function (pos) { return new _game_objects_StrikeTime_Buildings_TargetBuilding__WEBPACK_IMPORTED_MODULE_11__.TargetBuilding(engine, pos); });
+        gameObjectCreatorMap.set('Airport', function (pos) { return new _game_objects_StrikeTime_Airport_Airport__WEBPACK_IMPORTED_MODULE_10__.Airport(engine, pos); });
+        gameObjectCreatorMap.set('PatriotMissileSite', function (pos, angle) { return new _game_objects_StrikeTime_Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_8__.PatriotMissileSite(engine, pos); });
         return gameObjectCreatorMap;
     };
     StrikeTimeScript.prototype.randomSpawnEnemy = function () {
@@ -1541,6 +1545,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_objects_StrikeTime_Buildings_Building1__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../../../game_objects/StrikeTime/Buildings/Building1 */ "./src/game_objects/StrikeTime/Buildings/Building1.ts");
 /* harmony import */ var _game_objects_StrikeTime_Buildings_TargetBuilding__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ../../../game_objects/StrikeTime/Buildings/TargetBuilding */ "./src/game_objects/StrikeTime/Buildings/TargetBuilding.ts");
 /* harmony import */ var _game_objects_StrikeTime_Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ../../../game_objects/StrikeTime/Enemies/PatriotMissileSite */ "./src/game_objects/StrikeTime/Enemies/PatriotMissileSite.ts");
+/* harmony import */ var _game_objects_StrikeTime_Airport_Airport__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ../../../game_objects/StrikeTime/Airport/Airport */ "./src/game_objects/StrikeTime/Airport/Airport.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -1573,6 +1578,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
+
 // should add Alien too
 var spriteMap = {
     BoxBox: function (transform) {
@@ -1587,9 +1593,10 @@ var spriteMap = {
     AlienShip: function (transform) { return new _game_objects_enemies_Singularity_alien_ship__WEBPACK_IMPORTED_MODULE_12__.AlienShipSprite(transform); },
     Singularity: function (transform) { return new _game_objects_enemies_Singularity_singularity_sprite__WEBPACK_IMPORTED_MODULE_10__.SingularitySprite(transform); },
     Aurora: function (transform) { return new _game_objects_StrikeTime_Aurora_Aurora__WEBPACK_IMPORTED_MODULE_13__.AuroraSprite(transform); },
-    Building: function (transform) { return new _game_objects_StrikeTime_Buildings_Building1__WEBPACK_IMPORTED_MODULE_14__.Building1Sprite(transform); },
+    Building1: function (transform) { return new _game_objects_StrikeTime_Buildings_Building1__WEBPACK_IMPORTED_MODULE_14__.Building1Sprite(transform); },
     TargetBuilding: function (transform) { return new _game_objects_StrikeTime_Buildings_TargetBuilding__WEBPACK_IMPORTED_MODULE_15__.TargetBuildingSprite(transform); },
-    PatriotSite: function (transform) { return new _game_objects_StrikeTime_Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_16__.PatriotMissileSiteSprite(transform); },
+    PatriotMissileSite: function (transform) { return new _game_objects_StrikeTime_Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_16__.PatriotMissileSiteSprite(transform); },
+    Airport: function (transform) { return new _game_objects_StrikeTime_Airport_Airport__WEBPACK_IMPORTED_MODULE_17__.AirportSprite(transform); },
     RANDOM: function (transform) { return new _game_objects_enemies_RandomRandom__WEBPACK_IMPORTED_MODULE_11__.RandomRandomSprite(transform); },
 };
 // maybe this is what is created from the serialized version
@@ -1898,9 +1905,9 @@ var StrikeTimeEventObjectSprite = /** @class */ (function (_super) {
         var PatriotSiteSprite = StrikeTimeEventObjectSprite.spawnSpriteCreator['PatriotSite'];
         var RandomRandomSprite = StrikeTimeEventObjectSprite.spawnSpriteCreator['RANDOM'];
         this.spawnSprites.get('Aurora') > 0 ? AuroraSprite.makeVisible() : AuroraSprite.makeInvisible();
-        this.spawnSprites.get('Building') > 0 ? BuildingSprite.makeVisible() : BuildingSprite.makeInvisible();
+        this.spawnSprites.get('Building1') > 0 ? BuildingSprite.makeVisible() : BuildingSprite.makeInvisible();
         this.spawnSprites.get('TargetBuilding') > 0 ? TargetBuildingSprite.makeVisible() : TargetBuildingSprite.makeInvisible();
-        this.spawnSprites.get('PatriotSite') > 0 ? PatriotSiteSprite.makeVisible() : PatriotSiteSprite.makeInvisible();
+        this.spawnSprites.get('PatriotMissileSite') > 0 ? PatriotSiteSprite.makeVisible() : PatriotSiteSprite.makeInvisible();
         this.spawnSprites.get('RANDOM') > 0 ? RandomRandomSprite.makeVisible() : RandomRandomSprite.makeInvisible();
         AuroraSprite.draw(ctx);
         BuildingSprite.draw(ctx);
@@ -1917,9 +1924,9 @@ var StrikeTimeEventObjectSprite = /** @class */ (function (_super) {
     StrikeTimeEventObjectSprite.seventhPosition = [70, 10];
     StrikeTimeEventObjectSprite.spawnSpriteCreator = {
         Aurora: spriteMap['Aurora'](new _transform__WEBPACK_IMPORTED_MODULE_1__.Transform(null, StrikeTimeEventObjectSprite.firstPosition)),
-        Building: spriteMap['Building'](new _transform__WEBPACK_IMPORTED_MODULE_1__.Transform(null, StrikeTimeEventObjectSprite.secondPosition)),
+        Building: spriteMap['Building1'](new _transform__WEBPACK_IMPORTED_MODULE_1__.Transform(null, StrikeTimeEventObjectSprite.secondPosition)),
         TargetBuilding: spriteMap['TargetBuilding'](new _transform__WEBPACK_IMPORTED_MODULE_1__.Transform(null, StrikeTimeEventObjectSprite.thirdPosition)),
-        PatriotSite: spriteMap['PatriotSite'](new _transform__WEBPACK_IMPORTED_MODULE_1__.Transform(null, StrikeTimeEventObjectSprite.fourthPosition)),
+        PatriotSite: spriteMap['PatriotMissileSite'](new _transform__WEBPACK_IMPORTED_MODULE_1__.Transform(null, StrikeTimeEventObjectSprite.fourthPosition)),
         RANDOM: spriteMap['RANDOM'](new _transform__WEBPACK_IMPORTED_MODULE_1__.Transform(null, StrikeTimeEventObjectSprite.seventhPosition)),
     };
     return StrikeTimeEventObjectSprite;
@@ -2437,7 +2444,8 @@ var Scene = /** @class */ (function () {
     }
     Scene.prototype.update = function (dT) {
         var _a;
-        (_a = this.gameElements[this.currentElementIndex]) === null || _a === void 0 ? void 0 : _a.update(dT);
+        if (!this.isOnlySceneAndCompleted)
+            (_a = this.gameElements[this.currentElementIndex]) === null || _a === void 0 ? void 0 : _a.update(dT);
     };
     /*
     stack works I believe
@@ -2465,9 +2473,15 @@ var Scene = /** @class */ (function () {
             this.currentElementIndex++;
         }
         else {
-            this.currentElementIndex = 0;
-            if (this.parentScene)
+            // to get it to loop indefinitely, add a flag in the future.. 
+            // but I can't think of a case where I would want that since I can use loops instead
+            if (this.parentScene) {
+                this.currentElementIndex = 0;
                 this.parentScene.nextElement();
+            }
+            else {
+                this.isOnlySceneAndCompleted = true;
+            }
         }
     };
     return Scene;
@@ -3016,7 +3030,7 @@ var GEOLevelDesigner = /** @class */ (function (_super) {
         };
         saveGameDesign.onclick = function (e) {
             e.stopPropagation();
-            _this.saveGameDesign();
+            _this.saveGameDesign('GEOWars', '01');
         };
         sceneNameSubmit.onclick = function (e) {
             e.stopPropagation();
@@ -3176,6 +3190,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 // if trying to spawn multiple things on top of each other, I should only grab the first placer that is found in the click colission
 var getClickRadius = {
+    Airport: 10,
     BoxBox: 10,
     Arrow: 10,
     Grunt: 10,
@@ -3185,9 +3200,9 @@ var getClickRadius = {
     RANDOM: 10,
     AlienShip: 10,
     Aurora: 10,
-    Building: 20,
+    Building1: 20,
     TargetBuilding: 20,
-    PatriotSite: 20
+    PatriotMissileSite: 20
 };
 // I can make this generic and include the spawn serialized as the parameter
 var EnemyPlacer = /** @class */ (function (_super) {
@@ -3631,14 +3646,14 @@ var LevelDesigner = /** @class */ (function () {
             }
         }
     };
-    LevelDesigner.prototype.saveGameDesign = function () {
+    LevelDesigner.prototype.saveGameDesign = function (game, levelName) {
         var serializedGameElements = this.baseScene.gameElementObjects.map(function (element) { return element.serialize(); });
         // TODO
         // I should name it after the game itself, that way both games can load this way
         // might as well add a level name too
         this.serializedGame = {
             type: "Scene",
-            name: "Game",
+            name: "".concat(game, ": ").concat(levelName),
             serializedGameElements: serializedGameElements,
         };
         console.log(JSON.stringify(this.serializedGame));
@@ -3924,6 +3939,7 @@ var LevelDesigner = /** @class */ (function () {
             this.baseScene.gameElementObjects.splice(index, 1);
     };
     LevelDesigner.prototype.addUIElementSprite = function (UILineSprite) {
+        console.log(UILineSprite);
         this.UIElementSprites.push(UILineSprite);
     };
     LevelDesigner.prototype.addUIElement = function (UIElement) {
@@ -4030,10 +4046,10 @@ var StrikeTimeLevelDesigner = /** @class */ (function (_super) {
         this.engine.addMouseEventListener(this);
         this.isLevelDesignerOpened = true;
         var makeEventObject = document.getElementById("MakeStrikeEvent");
-        var addTime = document.getElementById("TimeSubmit");
-        var addLoop = document.getElementById("LoopSubmit");
-        var addOperation = document.getElementById("OperationSubmit");
-        var sceneNameSubmit = document.getElementById("sceneNameSubmit");
+        var addTime = document.getElementById("TimeSubmitStrikeTime");
+        var addLoop = document.getElementById("LoopSubmitStrikeTime");
+        var addOperation = document.getElementById("OperationSubmitStrikeTime");
+        var sceneNameSubmit = document.getElementById("sceneNameSubmitStrikeTime");
         var shipRelative = document.getElementById("shipRelative");
         this.shipRelative = shipRelative;
         var setCoordinate = document.getElementById("changeStrikeTimeCoordinates");
@@ -4041,6 +4057,7 @@ var StrikeTimeLevelDesigner = /** @class */ (function (_super) {
         var addPatriotSite = document.getElementById("PatriotSite");
         var addBuilding = document.getElementById("Building");
         var addTargetBuilding = document.getElementById("TargetBuilding");
+        var addAirport = document.getElementById("Airport");
         addAuroraButton.onclick = function (e) {
             e.stopPropagation();
             var type = "Aurora";
@@ -4048,12 +4065,12 @@ var StrikeTimeLevelDesigner = /** @class */ (function (_super) {
         };
         addPatriotSite.onclick = function (e) {
             e.stopPropagation();
-            var type = "PatriotSite";
+            var type = "PatriotMissileSite";
             _this.addLevelGameObject(type);
         };
         addBuilding.onclick = function (e) {
             e.stopPropagation();
-            var type = "Building";
+            var type = "Building1";
             _this.addLevelGameObject(type);
         };
         addTargetBuilding.onclick = function (e) {
@@ -4061,7 +4078,12 @@ var StrikeTimeLevelDesigner = /** @class */ (function (_super) {
             var type = "TargetBuilding";
             _this.addLevelGameObject(type);
         };
-        var saveGameDesign = document.getElementById("saveGameDesign");
+        addAirport.onclick = function (e) {
+            e.stopPropagation();
+            var type = "Airport";
+            _this.addLevelGameObject(type);
+        };
+        var saveGameDesign = document.getElementById("saveGameDesignStrikeTime");
         // const loadGameDesign = document.getElementById("loadGameDesign");
         // we deal with this in the GameView right now because this doesn't have access to the game script
         // const startGame = document.getElementById("startStrikeTimeGame");
@@ -4100,7 +4122,8 @@ var StrikeTimeLevelDesigner = /** @class */ (function (_super) {
         };
         saveGameDesign.onclick = function (e) {
             e.stopPropagation();
-            _this.saveGameDesign();
+            // will need text box for this in the future
+            _this.saveGameDesign('StrikeTime', '01');
         };
         sceneNameSubmit.onclick = function (e) {
             e.stopPropagation();
@@ -4168,16 +4191,16 @@ var StrikeTimeLevelDesigner = /** @class */ (function (_super) {
         this.engine.addUpArrowListener(this);
     };
     StrikeTimeLevelDesigner.prototype.updateLeftArrowListener = function (pressed) {
-        this.engine.activeCamera.transform.pos[0] -= 5;
+        this.engine.activeCamera.transform.pos[0] -= 15;
     };
     StrikeTimeLevelDesigner.prototype.updateUpArrowListener = function (pressed) {
-        this.engine.activeCamera.transform.pos[1] -= 5;
+        this.engine.activeCamera.transform.pos[1] -= 15;
     };
     StrikeTimeLevelDesigner.prototype.updateRightArrowListener = function (pressed) {
-        this.engine.activeCamera.transform.pos[0] += 5;
+        this.engine.activeCamera.transform.pos[0] += 15;
     };
     StrikeTimeLevelDesigner.prototype.updateDownArrowListener = function (pressed) {
-        this.engine.activeCamera.transform.pos[1] += 5;
+        this.engine.activeCamera.transform.pos[1] += 15;
     };
     // there's two start buttons
     // one directly from the first modal
@@ -4190,6 +4213,7 @@ var StrikeTimeLevelDesigner = /** @class */ (function (_super) {
         };
         this.clearLevelDesignElements();
         var serializedGameString = JSON.stringify(this.serializedGame);
+        this.clear();
         // I should unselect whatever is selected.
         // events being the main issue since they have things
         // on the game 
@@ -5481,6 +5505,8 @@ var GameEngine = /** @class */ (function () {
             this.updateControlListeners();
             return;
         }
+        if (delta === 0)
+            throw ('delta is zero implying a second requestAnimation call. check gameView');
         if (!this.gameScriptAdded)
             return;
         if (this.isPerformanceCheckOn) {
@@ -6263,14 +6289,12 @@ var GameObject = /** @class */ (function () {
             this.gameEngine.removeDoubleClickListener(this);
         }
     };
-    // remove is the issue
-    // i need a remove queue!!!
-    // ... I think
-    GameObject.prototype.remove = function () {
+    GameObject.prototype.remove = function (singularRemove) {
+        if (singularRemove === void 0) { singularRemove = true; }
         this.childObjects.forEach(function (obj) {
-            obj.remove();
+            obj.remove(false);
         });
-        if (this.parentObject) {
+        if (singularRemove && this.parentObject) {
             var index = this.parentObject.childObjects.indexOf(this);
             if (index !== -1)
                 this.parentObject.childObjects.splice(index, 1);
@@ -6614,7 +6638,7 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
                 console.log('Turning ended');
                 this.instructionsCompleted.push("Turn Completed. Direction: ".concat(this.turnInformation.rotationDirection > 0 ? 'Right' : 'Left'));
                 console.log(this.instructionsCompleted);
-                this.movementTangentAngle = endAngleFromRotationPointIfUninterrupted;
+                // this.movementTangentAngle = endAngleFromRotationPointIfUninterrupted;
                 var endVelocityIfUninterrupted = [
                     tangentSpeed * Math.cos(endAngleFromRotationPointIfUninterrupted),
                     tangentSpeed * Math.sin(endAngleFromRotationPointIfUninterrupted)
@@ -6717,7 +6741,12 @@ var Sound = /** @class */ (function () {
     function Sound(url, volume) {
         this.url = url;
         this.volume = volume || 1;
+        // this.sound = ({
+        //     volume: 0,
+        //     play: () => {},
+        // }) as unknown as HTMLAudioElement;
         this.sound = new Audio(this.url);
+        this.sound.volume = volume;
         this.isPlaying = false;
     }
     Sound.prototype.play = function () {
@@ -6725,10 +6754,8 @@ var Sound = /** @class */ (function () {
         //   this.sound.play()
         // } else {
         // whoops, forgot to fix this part that's actually important
-        this.sound.volume = this.volume;
         // this needs to be fixed lol
-        if (!this.isPlaying || this.sound.ended)
-            this.sound.play();
+        // if(!this.isPlaying || this.sound.ended) this.sound.play();
         this.sound.play();
         this.isPlaying = true;
         // }
@@ -10300,6 +10327,9 @@ var Aurora = /** @class */ (function (_super) {
         _this.airDecelerationParticles = new _AirDecelerationParticles__WEBPACK_IMPORTED_MODULE_6__.AirDecelerationParticles(engine, _this.transform, _this.lineSprite.length / 2, _this.lineSprite.length);
         _this.bombReticle = new _BombReticle__WEBPACK_IMPORTED_MODULE_9__.BombReticle(engine, _this.transform, [0, 0], 90);
         _this.addCollider("General", _this, _this.radius);
+        _this.addChildGameObject(_this.leftExhaust);
+        _this.addChildGameObject(_this.rightExhaust);
+        _this.addChildGameObject(_this.bombReticle);
         return _this;
     }
     Aurora.prototype.updateBButtonListener = function (pressed) {
@@ -10331,6 +10361,7 @@ var Aurora = /** @class */ (function (_super) {
         }
     };
     Aurora.prototype.animate = function (delta) {
+        // console.log('whats going on here');
         var movementDirection = 0;
         if (this.transform.vel[0] === 0 && this.transform.vel[1] === 0) {
             movementDirection = this.transform.angle;
@@ -10341,6 +10372,7 @@ var Aurora = /** @class */ (function (_super) {
         this.transform.angle = movementDirection;
     };
     Aurora.prototype.update = function (delta) {
+        // console.log('updateCalled', `delta: ${delta}`);
         this.bombTiming.refreshTime += delta;
         this.bombTiming.refreshTime = this.bombTiming.refreshTime > this.bombTiming.reloadTime ? this.bombTiming.reloadTime + 1 : this.bombTiming.refreshTime;
         (this.bombTiming.refreshTime > this.bombTiming.reloadTime) ? this.bombReticle.setVisibility(true) : this.bombReticle.setVisibility(false);
@@ -11874,6 +11906,7 @@ var Missile = /** @class */ (function (_super) {
             -_this.lineSprite.w / 2,
             1.1 * _this.lineSprite.l
         ], _this.lineSprite.w);
+        _this.addChildGameObject(_this.exhaust);
         return _this;
     }
     Missile.prototype.exist = function () {
@@ -12188,6 +12221,7 @@ var PatriotMissileSite = /** @class */ (function (_super) {
                 missileSpeed * Math.sin(direction)
             ];
             var launchedMissile = new _Missile__WEBPACK_IMPORTED_MODULE_3__.Missile(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], vel, airplaneDetected.gameObject.transform);
+            this.addChildGameObject(launchedMissile);
         }
         console.log('launch missile sequencing');
         // create missiles at the fire rate while still in range
@@ -12347,8 +12381,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Aurora_Aurora__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../Aurora/Aurora */ "./src/game_objects/StrikeTime/Aurora/Aurora.ts");
 /* harmony import */ var _Buildings_Building1__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Buildings/Building1 */ "./src/game_objects/StrikeTime/Buildings/Building1.ts");
 /* harmony import */ var _Buildings_TargetBuilding__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../Buildings/TargetBuilding */ "./src/game_objects/StrikeTime/Buildings/TargetBuilding.ts");
-/* harmony import */ var _Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../Enemies/PatriotMissileSite */ "./src/game_objects/StrikeTime/Enemies/PatriotMissileSite.ts");
-/* harmony import */ var _Level__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./Level */ "./src/game_objects/StrikeTime/Levels/Level.ts");
+/* harmony import */ var _Level__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./Level */ "./src/game_objects/StrikeTime/Levels/Level.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -12370,7 +12403,6 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
-
 var LevelPrototype = /** @class */ (function (_super) {
     __extends(LevelPrototype, _super);
     function LevelPrototype(gameEngine, gameScript) {
@@ -12385,17 +12417,17 @@ var LevelPrototype = /** @class */ (function (_super) {
         this.controlledShip = new _Aurora_Aurora__WEBPACK_IMPORTED_MODULE_2__.Aurora(this.engine, [this.startPosition[0], this.startPosition[1]]);
         // in a wide circle around the buildings
         // buildings coordinate center: [24 * 2.5 + 2000, 300 + 2.5 * 20]
-        var center_x = 24 * 2.5 + 2000;
-        var center_y = 300 + 2.5 * 20;
-        var radiusOfDefenses = 500;
-        for (var i = 0; i < 10; i++) {
-            var positionAngle = i * (2 * Math.PI) / 10;
-            var position = [
-                center_x + radiusOfDefenses * Math.cos(positionAngle),
-                center_y + radiusOfDefenses * Math.sin(positionAngle)
-            ];
-            new _Enemies_PatriotMissileSite__WEBPACK_IMPORTED_MODULE_5__.PatriotMissileSite(this.engine, [position[0], position[1]]);
-        }
+        // const center_x = 24 * 2.5 + 2000;
+        // const center_y = 300 + 2.5 * 20;
+        // const radiusOfDefenses = 500;
+        // for(let i = 0; i < 10; i++) {
+        //     const positionAngle = i * (2 * Math.PI)/10;
+        //     const position: [number, number] = [
+        //         center_x + radiusOfDefenses * Math.cos(positionAngle),
+        //         center_y + radiusOfDefenses * Math.sin(positionAngle)
+        //     ]
+        //     new PatriotMissileSite(this.engine, [position[0], position[1]]);
+        // }
         // buildings
         for (var yPosition = 0; yPosition < 5; yPosition++) {
             for (var xPosition = 0; xPosition < 5; xPosition++) {
@@ -12416,7 +12448,7 @@ var LevelPrototype = /** @class */ (function (_super) {
         return false;
     };
     return LevelPrototype;
-}(_Level__WEBPACK_IMPORTED_MODULE_6__.Level));
+}(_Level__WEBPACK_IMPORTED_MODULE_5__.Level));
 
 
 
@@ -16658,17 +16690,17 @@ var GameView = /** @class */ (function () {
         // will have to put something in the input text to know which game it is
         var loadGameDesignButtonModal = document.getElementById("loadGameDesignModal");
         // this is from the menu inside the game editor itself:
-        var startGEOWarsButtonLevelEditor = document.getElementById("startGEOWarsGameFromLevelEditor");
+        var startGEOWarsButtonFromLevelEditor = document.getElementById("startGEOWarsGameFromLevelEditor");
         var startStrikeTimeButtonInLevelEditor = document.getElementById("startStrikeTimeGame");
         // get the text from element: loadGameDesignInputModal
-        startGEOWarsButtonLevelEditor.onclick = function (e) {
+        startGEOWarsButtonFromLevelEditor.onclick = function (e) {
             e.stopPropagation();
             _this.gameStarted = true;
             var geoWarsScript = new _GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__.GEOWarsScript(_this.engine);
             _this.engine.addGameScript(geoWarsScript);
             _this.bindKeyboardKeys();
             _this.geoLevelDesigner.startGame(geoWarsScript);
-            requestAnimationFrame(_this.animate);
+            // requestAnimationFrame(this.animate);
             modal.style.display = "none";
         };
         startStrikeTimeButtonInLevelEditor.onclick = function (e) {
@@ -16678,7 +16710,7 @@ var GameView = /** @class */ (function () {
             _this.engine.addGameScript(strikeTimeScript);
             _this.bindKeyboardKeys();
             _this.strikeTimeLevelDesigner.startGame(strikeTimeScript);
-            requestAnimationFrame(_this.animate);
+            // requestAnimationFrame(this.animate);
             modal.style.display = "none";
         };
         startGEOWarsButtonModal.onclick = function (e) {
@@ -16697,9 +16729,11 @@ var GameView = /** @class */ (function () {
             e.stopPropagation();
             _this.gameStarted = true;
             _this.bindKeyboardKeys();
-            var gameScript = new _StrikeTimeScript__WEBPACK_IMPORTED_MODULE_3__.StrikeTimeScript(_this.engine);
-            gameScript.startGame("{}");
-            _this.engine.addGameScript(gameScript);
+            var strikeTimeScript = new _StrikeTimeScript__WEBPACK_IMPORTED_MODULE_3__.StrikeTimeScript(_this.engine);
+            _this.engine.addGameScript(strikeTimeScript);
+            if (_this.levelDesignLoaded) {
+                _this.strikeTimeLevelDesigner.startGame(strikeTimeScript);
+            }
             requestAnimationFrame(_this.animate);
             modal.style.display = "none";
         };
@@ -16755,8 +16789,10 @@ var GameView = /** @class */ (function () {
         loadGameDesignButtonModal.onclick = function (e) {
             e.stopPropagation();
             var json = document.getElementById("loadGameDesignInputModal").value;
-            // will need two different buttons I think for accepting a loading string
-            _this.geoLevelDesigner.loadGameDesign(json);
+            if (json.includes('GEOWars'))
+                _this.geoLevelDesigner.loadGameDesign(json);
+            if (json.includes('StrikeTime'))
+                _this.strikeTimeLevelDesigner.loadGameDesign(json);
             _this.levelDesignLoaded = true;
         };
         // loadGameDesignButtonModal.onclick = (e) => {
@@ -16770,6 +16806,7 @@ var GameView = /** @class */ (function () {
     GameView.prototype.animate = function (time) {
         var _a;
         var timeDelta = time - this.lastTime;
+        // console.log(`animate time delta: ${timeDelta}`, `time: ${time}`, `lastTime: ${this.lastTime}`)
         this.engine.tick(timeDelta);
         (_a = this.openedLevelEditor) === null || _a === void 0 ? void 0 : _a.animate(timeDelta);
         this.animationViewGEO.animate(timeDelta);
@@ -16936,7 +16973,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var canvasEl = document.getElementsByTagName("canvas")[0];
     canvasEl.width = 1000; // this is the start canvas, can be changed later by a specific game
     canvasEl.height = 600; // though I'm not sure what happens when you resize a rendered canvas
-    var ctx = canvasEl.getContext("2d");
+    var ctx = canvasEl.getContext("2d", { alpha: false });
     var gameEngine = new _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_1__.GameEngine(ctx);
     var animationWindowGEO = document.getElementsByTagName("canvas")[1].getContext("2d");
     var animationWindowStrikeTime = document.getElementById("animationTestBoxStrikeTime").querySelector("canvas").getContext("2d");

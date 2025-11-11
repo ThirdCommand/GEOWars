@@ -358,7 +358,7 @@ export abstract class LevelDesigner implements GameScript{
         }
     }
 
-    saveGameDesign() {
+    saveGameDesign(game: string, levelName: string) {
 
         const serializedGameElements = this.baseScene.gameElementObjects.map(
             (element) => element.serialize() 
@@ -369,13 +369,11 @@ export abstract class LevelDesigner implements GameScript{
         // might as well add a level name too
         this.serializedGame = {
             type: "Scene",
-            name: "Game",
+            name: `${game}: ${levelName}`,
             serializedGameElements,
         };
         console.log(JSON.stringify(this.serializedGame));
     }
-
-    
 
     loadGameDesign(json: string) {
         const serializedGame = JSON.parse(json);
@@ -677,6 +675,7 @@ export abstract class LevelDesigner implements GameScript{
     }
 
     addUIElementSprite(UILineSprite: LineSprite) {
+        console.log(UILineSprite);
         this.UIElementSprites.push(UILineSprite);
     }
 

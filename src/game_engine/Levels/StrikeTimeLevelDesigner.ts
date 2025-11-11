@@ -50,10 +50,10 @@ export class StrikeTimeLevelDesigner extends LevelDesigner {
         this.isLevelDesignerOpened = true;
         
         const makeEventObject = document.getElementById("MakeStrikeEvent");
-        const addTime = document.getElementById("TimeSubmit");
-        const addLoop = document.getElementById("LoopSubmit");
-        const addOperation = document.getElementById("OperationSubmit");
-        const sceneNameSubmit = document.getElementById("sceneNameSubmit");
+        const addTime = document.getElementById("TimeSubmitStrikeTime");
+        const addLoop = document.getElementById("LoopSubmitStrikeTime");
+        const addOperation = document.getElementById("OperationSubmitStrikeTime");
+        const sceneNameSubmit = document.getElementById("sceneNameSubmitStrikeTime");
         const shipRelative = document.getElementById("shipRelative") as HTMLInputElement;
         this.shipRelative = shipRelative;
         const setCoordinate = document.getElementById("changeStrikeTimeCoordinates");
@@ -62,6 +62,7 @@ export class StrikeTimeLevelDesigner extends LevelDesigner {
         const addPatriotSite = document.getElementById("PatriotSite");
         const addBuilding = document.getElementById("Building");
         const addTargetBuilding = document.getElementById("TargetBuilding");
+        const addAirport = document.getElementById("Airport");
 
         addAuroraButton.onclick = (e) => {
             e.stopPropagation();
@@ -71,13 +72,13 @@ export class StrikeTimeLevelDesigner extends LevelDesigner {
 
         addPatriotSite.onclick = (e) => {
             e.stopPropagation();
-            const type = "PatriotSite";
+            const type = "PatriotMissileSite";
             this.addLevelGameObject(type);
         };
 
         addBuilding.onclick = (e) => {
             e.stopPropagation();
-            const type = "Building";
+            const type = "Building1";
             this.addLevelGameObject(type);
         };
 
@@ -87,7 +88,13 @@ export class StrikeTimeLevelDesigner extends LevelDesigner {
             this.addLevelGameObject(type);
         };
 
-        const saveGameDesign = document.getElementById("saveGameDesign");
+        addAirport.onclick = (e) => {
+            e.stopPropagation();
+            const type = "Airport";
+            this.addLevelGameObject(type);
+        };
+
+        const saveGameDesign = document.getElementById("saveGameDesignStrikeTime");
 
         // const loadGameDesign = document.getElementById("loadGameDesign");
 
@@ -132,7 +139,8 @@ export class StrikeTimeLevelDesigner extends LevelDesigner {
 
         saveGameDesign.onclick = (e) => {  
             e.stopPropagation();
-            this.saveGameDesign();
+            // will need text box for this in the future
+            this.saveGameDesign('StrikeTime', '01');
         };
 
         sceneNameSubmit.onclick = (e) => {
@@ -208,16 +216,16 @@ export class StrikeTimeLevelDesigner extends LevelDesigner {
     }
 
     updateLeftArrowListener(pressed: boolean) {
-        this.engine.activeCamera.transform.pos[0] -= 5;
+        this.engine.activeCamera.transform.pos[0] -= 15;
     }
     updateUpArrowListener(pressed: boolean) {
-        this.engine.activeCamera.transform.pos[1] -= 5;
+        this.engine.activeCamera.transform.pos[1] -= 15;
     }
     updateRightArrowListener(pressed: boolean) {
-        this.engine.activeCamera.transform.pos[0] += 5;
+        this.engine.activeCamera.transform.pos[0] += 15;
     }
     updateDownArrowListener(pressed: boolean) {
-        this.engine.activeCamera.transform.pos[1] += 5;
+        this.engine.activeCamera.transform.pos[1] += 15;
     }
 
     // there's two start buttons
@@ -235,12 +243,14 @@ export class StrikeTimeLevelDesigner extends LevelDesigner {
         };
         this.clearLevelDesignElements();
         const serializedGameString = JSON.stringify(this.serializedGame);
+        this.clear();
         // I should unselect whatever is selected.
         // events being the main issue since they have things
         // on the game 
         strikeTimeGameScript.startGame(serializedGameString);
 
         this.engine.isLevelDesignerOpened = false;
+        
         const strikeTimeLevelCreator = document.getElementById("StrikeTimeLevelEditor");
         const geoWarsLevelCreator = document.getElementById('GEOWarsLevelEditor')
         const levelEditorCanvas = document.getElementById('LevelEditorCanvas')

@@ -89,6 +89,7 @@ export class PatriotMissileSite extends GameObject {
                 missileSpeed * Math.sin(direction)
             ]
             const launchedMissile = new Missile(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], vel, airplaneDetected.gameObject.transform)
+            this.addChildGameObject(launchedMissile);
         }
         console.log('launch missile sequencing')
         // create missiles at the fire rate while still in range
