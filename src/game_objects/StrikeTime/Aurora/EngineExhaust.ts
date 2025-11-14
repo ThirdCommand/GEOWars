@@ -77,7 +77,7 @@ export class EngineExhaust extends GameObject {
         //     this.transform.pos[0] + (this.positionOnPlane[0] + linePosition) * Math.cos(angle - Math.PI),
         //     this.transform.pos[1] + -(this.positionOnPlane[1]) * Math.sin(angle)
         // ]
-        // TODO: why am I doing this calculation each time
+        // TODO: why am I doing this calculation each time: because it requires a random input along the length of the exhaust?
         const exhaustPositionAngle = Math.atan2(this.positionOnPlane[1], this.positionOnPlane[0] + linePosition) - Math.PI / 2;
         const exhaustPositionLength = Math.sqrt(this.positionOnPlane[0]**2 +  (this.positionOnPlane[1] + linePosition)**2);
         const position: [number, number] = [

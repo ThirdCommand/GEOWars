@@ -5,21 +5,27 @@ import { EndingLine } from "../Airport/EndingLine";
 import { Aurora } from "../Aurora/Aurora";
 import { Building1 } from "../Buildings/Building1";
 import { TargetBuilding } from "../Buildings/TargetBuilding";
-import { PatriotMissileSite } from "../Enemies/PatriotMissileSite";
 import { Level } from "./Level";
 
-export class LevelPrototype extends Level {
+export class LoadedLevel extends Level {
     startPosition: [number, number, number];
     targetBuilding: TargetBuilding | null;
     controlledShip: Aurora | null;
+    serializedGame: string;
     endXPosition: number;
     endingLine: EndingLine;
-    constructor(gameEngine: GameEngine, gameScript: StrikeTimeScript) {
+    constructor(gameEngine: GameEngine, gameScript: StrikeTimeScript, serializedGame: string) {
         super(gameEngine, gameScript);
+        this.serializedGame = serializedGame;
+
         this.startPosition = [500, 300, 0];
         this.endXPosition = 650;
+
     }
+    
     createLevel() {
+        this.gameScript.loadLevelContents(this.serializedGame)
+
         new Airport(this.engine, [this.startPosition[0], this.startPosition[1]]);
         this.endingLine = new EndingLine(this.engine, this.endXPosition);
         this.controlledShip = new Aurora(this.engine, [this.startPosition[0], this.startPosition[1]]);
@@ -61,7 +67,7 @@ export class LevelPrototype extends Level {
         return false;
     }
     
-    loseCondition() {
-
+    loseLevel() {
+        
     }
 }

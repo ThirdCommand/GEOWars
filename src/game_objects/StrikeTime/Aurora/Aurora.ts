@@ -115,7 +115,12 @@ export class Aurora extends GameObject {
     hit() {
         this.hits += 1;
         if(this.hits >= this.hitsWhenDead) {
+            // will need to tell gameScript about the death, which will then inform the current level
+            // the level will decide what to do about that
+            this.createDeathAnimationObjects();
             (this.gameEngine.gameScript as StrikeTimeScript).loseLevel();
+
+            // create three objects for the death animation
         }
     }
     updateBKeyListener(pressed: boolean) {
@@ -554,6 +559,119 @@ export class Aurora extends GameObject {
     //     if(!this.controllerInUse) return;
 
     // }
+
+    createDeathAnimationObjects() {
+        const l = this.lineSprite.length;
+        const w = this.lineSprite.length / 2;
+
+        // get the first line position and angle relative to Aurora's 0,0
+        /*
+            line 1
+            ctx.beginPath();
+            ctx.moveTo(0,0) // point 1
+            ctx.lineTo(-l, w/2) // point 2
+            ctx.stroke();
+        */
+
+        const line1Point1 = [0, 0];
+        const line1Point2 = [-l, -w/2];
+
+        const line1Length = Math.sqrt(
+            (line1Point2[0] - line1Point1[0])**2 + 
+            (line1Point2[1] - line1Point1[1])**2
+        )
+
+        // it's position is the average of these two
+        const line1PositionOnPlane = [
+            (0 + -l )/ 2,
+            (0 + w / 2) / 2
+        ]
+        const line1AngleRelativeToAurora =  Math.atan2(line1PositionOnPlane[1], line1PositionOnPlane[0]) - Math.PI;
+
+        const line1PositionAngleRelativeToAurora =  Math.atan2(line1PositionOnPlane[1], line1PositionOnPlane[0]) - Math.PI;
+        const planeOriginToLine1CenterDistance = Math.sqrt(line1PositionOnPlane[0]**2 + (line1PositionOnPlane[1])**2);
+
+        const line1MidpointPosition: [number, number] = [
+            this.transform.pos[0] - planeOriginToLine1CenterDistance * Math.cos(this.transform.angle + line1PositionAngleRelativeToAurora),
+            this.transform.pos[1] - planeOriginToLine1CenterDistance * Math.sin(this.transform.angle + line1PositionAngleRelativeToAurora)
+        ]
+
+        const line1Angle = line1AngleRelativeToAurora + this.transform.angle;
+
+        new AuroraDeathAnimationObject(this.gameEngine, line1MidpointPosition, line1Angle, line1Length);
+
+        /*
+            line 2
+            ctx.beginPath();
+            ctx.moveTo(-l, w/2); // point 1
+            ctx.lineTo(-l, -w/2); // point 2
+            ctx.stroke();
+        */
+
+        const line2Point1 = [-l, w/2];
+        const line2Point2 = [-l, -w/2];
+
+        const line2Length = Math.sqrt(
+            (line2Point2[0] - line2Point1[0])**2 + 
+            (line2Point2[1] - line2Point1[1])**2
+        )
+
+        const line2PositionOnPlane = [
+            -l,
+            0
+        ];
+
+        const line2AngleRelativeToAurora =  Math.atan2(line2Point2[1] - line2Point1[1], line2Point2[0] - line2Point1[0]) - Math.PI;
+
+        const line2PositionAngleRelativeToAurora =  Math.atan2(line2PositionOnPlane[1], line2PositionOnPlane[0]) - Math.PI;
+
+        const planeOriginToLine2CenterDistance = Math.sqrt(line2PositionOnPlane[0]**2 + (line2PositionOnPlane[1])**2);
+
+        const line2MidpointPosition: [number, number] = [
+            this.transform.pos[0] - planeOriginToLine2CenterDistance * Math.cos(this.transform.angle + line2PositionAngleRelativeToAurora),
+            this.transform.pos[1] - planeOriginToLine2CenterDistance * Math.sin(this.transform.angle + line2PositionAngleRelativeToAurora)
+        ]
+
+        const line2Angle = line2AngleRelativeToAurora + this.transform.angle;
+
+        new AuroraDeathAnimationObject(this.gameEngine, line2MidpointPosition, line2Angle, line2Length);
+
+       /*
+            line 3
+            ctx.beginPath();
+            ctx.lineTo(-l, -w/2);
+            ctx.lineTo(0, 0);
+            ctx.stroke();
+        */
+
+        const line3Point1 = [-l, -w/2];
+        const line3Point2 = [0,0];
+
+         const line3Length = Math.sqrt(
+            (line3Point2[0] - line3Point1[0])**2 + 
+            (line3Point2[1] - line3Point1[1])**2
+        )
+
+        // it's position is the average of these two
+        const line3PositionOnPlane = [
+            (0 + -l )/ 2,
+            (0 + -w / 2) / 2
+        ]
+        const line3AngleRelativeToAurora =  Math.atan2(line3PositionOnPlane[1], line3PositionOnPlane[0]) - Math.PI;
+
+        const line3PositionAngleRelativeToAurora =  Math.atan2(line3PositionOnPlane[1], line3PositionOnPlane[0]) - Math.PI;
+
+        const planeOriginToLine3CenterDistance = Math.sqrt(line3PositionOnPlane[0]**2 + (line3PositionOnPlane[1])**2);
+
+        const line3MidpointPosition: [number, number] = [
+            this.transform.pos[0] - planeOriginToLine3CenterDistance * Math.cos(this.transform.angle + line3PositionAngleRelativeToAurora),
+            this.transform.pos[1] - planeOriginToLine3CenterDistance * Math.sin(this.transform.angle + line3PositionAngleRelativeToAurora)
+        ]
+
+        const line3Angle = line3AngleRelativeToAurora + this.transform.angle;
+
+        new AuroraDeathAnimationObject(this.gameEngine, line3MidpointPosition, line3Angle, line3Length);
+    }
 }
 
 export class AuroraSprite extends LineSprite {
@@ -589,6 +707,8 @@ export class AuroraSprite extends LineSprite {
         
         ctx.strokeStyle = this.color;
         ctx.lineWidth = 2;
+
+        // hard coded to match in the death animation:
         const l = this.length;
         const w = this.length/2
 
@@ -597,6 +717,30 @@ export class AuroraSprite extends LineSprite {
         ctx.lineTo(0, 0);
         ctx.stroke();
 
+        // triangle should be split up in to three distinct parts
+        // grab the center point of the line
+        // create a function that draws the line by moving to center point, 
+        // rotating, and then drawing from the start to finish of the line
+        // then I can give the center point a random velocity
+        // and a random rotation speed
+
+        // the line points are relative to the transform of the parent object to start
+        // The new transform will be the parent transform location + the center point location relative to the parent transform
+        // also need the initial angle of the transform + the initial angle of the line
+
+        /*
+        ctx.beginPath();
+        ctx.moveTo(0,0) // line 1 point 1
+        ctx.lineTo(-l, w/2); // line 1 point 2
+        ctx.stroke();
+
+        line 2
+        ctx.beginPath();
+        ctx.moveTo(-l, w/2);
+        ctx.lineTo(-l, -w/2);
+        ctx.stroke();
+
+        */
         ctx.beginPath();
         ctx.arc(-13/18 * l, 0, 2/9 * w/2, -Math.PI/2, Math.PI/2);
         ctx.stroke();
@@ -617,4 +761,62 @@ export class AuroraSprite extends LineSprite {
 
     }
 
+}
+
+export class AuroraDeathAnimationObject extends GameObject {
+    constructor(
+        engine: GameEngine | AnimationView,
+        pos: [number, number], // absolute position for new transform
+        angle: number, // absolute angle for new transform
+        length: number
+    ) {
+        super(engine);
+        this.transform.pos = [pos[0], pos[1]];
+        this.transform.angle = angle;
+
+        // create a random velocity and random angular velocity
+        const randomVelocity = VectorMath.vectorCartesian(2 * Math.random() * Math.PI, (3 + 2 * Math.random()) * 0.25);
+        const randomAngularVelocity = (3 * 0.075 * Math.random()) * 0.25;
+
+        this.transform.vel[0] = randomVelocity[0];
+        this.transform.vel[1] = randomVelocity[1];
+
+        this.transform.aVel = randomAngularVelocity;
+        this.addLineSprite(new AuroraDeathAnimationSprite(this.transform, length));
+        this.addPhysicsComponent();
+    }
+
+    animate() {}
+
+    update(deltaTime: number) {}
+}
+
+export class AuroraDeathAnimationSprite extends LineSprite {
+    length: number;
+    color: string;
+    constructor(transform: Transform, length: number) {
+        // the color should be slightly less vibrant
+        // and chosen by the parent object.. but for the future
+        super(transform);
+        this.length = length;
+        this.color = "rgb(255, 255, 255)";
+    }
+    draw(ctx: CanvasRenderingContext2D) {
+        // I'm given a midpoint and a length
+
+        const pos = this.transform.absolutePosition();
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 1.5;
+
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+        ctx.rotate(this.transform.angle);
+        
+        ctx.beginPath();
+        ctx.moveTo(-this.length / 2, 0);
+        ctx.lineTo(this.length / 2, 0);
+        ctx.stroke();
+
+        ctx.restore();
+    }
 }

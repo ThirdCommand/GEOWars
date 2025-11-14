@@ -55,6 +55,7 @@ export class StrikeTimeLevelDesigner extends LevelDesigner {
         const addOperation = document.getElementById("OperationSubmitStrikeTime");
         const sceneNameSubmit = document.getElementById("sceneNameSubmitStrikeTime");
         const shipRelative = document.getElementById("shipRelative") as HTMLInputElement;
+        const targetBuildingSwitch = document.getElementById("targetBuildingSwitch") as HTMLInputElement;
         this.shipRelative = shipRelative;
         const setCoordinate = document.getElementById("changeStrikeTimeCoordinates");
 
@@ -112,7 +113,19 @@ export class StrikeTimeLevelDesigner extends LevelDesigner {
                 shipRelative.value = "on";
                 this.makeCoordinatesArenaRelative();
             }
+        };
 
+        targetBuildingSwitch.onclick = (e) => {
+            e.stopPropagation();
+            const value = shipRelative.value;
+            console.log(value);
+            if(value === "on") {
+                shipRelative.value = "off";
+                this.selectedGameElement;
+            } else {
+                shipRelative.value = "on";
+                this.makeCoordinatesArenaRelative();
+            }
         };
         // new BoxBox(this.engine, [300,150]);
 
@@ -250,7 +263,7 @@ export class StrikeTimeLevelDesigner extends LevelDesigner {
         strikeTimeGameScript.startGame(serializedGameString);
 
         this.engine.isLevelDesignerOpened = false;
-        
+
         const strikeTimeLevelCreator = document.getElementById("StrikeTimeLevelEditor");
         const geoWarsLevelCreator = document.getElementById('GEOWarsLevelEditor')
         const levelEditorCanvas = document.getElementById('LevelEditorCanvas')

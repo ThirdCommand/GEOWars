@@ -19,6 +19,7 @@ import { TargetBuilding } from "./game_objects/StrikeTime/Buildings/TargetBuildi
 import { Level } from "./game_objects/StrikeTime/Levels/Level";
 import { LevelPrototype } from "./game_objects/StrikeTime/Levels/LevelPrototype";
 import { StrikeTimeLevelGameObjectType } from "./game_engine/Levels/DesignElements/Spawn";
+import { LoadedLevel } from "./game_objects/StrikeTime/Levels/LoadedLevel";
 
 type EnemyCreator = (pos: [number, number, number] | [number, number], angle?: number) => GameObject;
 
@@ -91,15 +92,17 @@ export class StrikeTimeScript {
         return sounds
     }
 
-    startGame(serializedGame: string) {
-        this.serializedGame = serializedGame;
+    loadLevelContents(serializedGame: string) {
         const game = JSON.parse(serializedGame);
-        if(game?.serializedGameElements?.length > 0) {
-            this.rootScene = new Scene('root');
-            this.rootScene.gameElements = this.loadGameElements(game.serializedGameElements, this.rootScene);
-            this.playFromRootScene = true; 
-        }
-        this.currentLevel = new LevelPrototype(this.engine, this);
+        this.rootScene = new Scene('root');
+        this.rootScene.gameElements = this.loadGameElements(game.serializedGameElements, this.rootScene);
+        this.playFromRootScene = true; 
+    }
+
+    startGame(serializedGame: string) {
+        // this decides if we're loading a level or playing the hard coded one
+        this.serializedGame = serializedGame;
+        this.currentLevel = this.serializedGame ? new LoadedLevel(this.engine, this, this.serializedGame) : new LevelPrototype(this.engine, this);
         this.currentLevel.createLevel();
     }
 
@@ -160,6 +163,9 @@ export class StrikeTimeScript {
         if(this.playFromRootScene) {
             this.rootScene.update(deltaTime);
         } 
+        if(this.currentLevel) {
+            this.currentLevel.update(deltaTime);
+        }
         this.changeExplosionColor();
         if(this.currentLevel?.runWinCondition()) {
             this.winGame();
@@ -183,9 +189,10 @@ export class StrikeTimeScript {
     }
 
     loseLevel() {
-        this.engine.paused = true;
+        // should mostly be defined by the level
         const modal = document.getElementById("endOfStrikeTimeModalLost");
-        modal.style.display = "block";
+        this.explodeEverything();
+        setTimeout(() => (modal.style.display = "block"), 1800);
 
         // Get the button that opens the modal
         // var btn = document.getElementById("myBtn");
@@ -202,7 +209,6 @@ export class StrikeTimeScript {
             if (!this.engine.muted) {
                 this.theme?.play();
             }
-            this.explodeEverything();
             this.startLevelAgain();
         };
 
@@ -214,7 +220,7 @@ export class StrikeTimeScript {
                 }
                 modal.style.display = "none";
                 window.removeEventListener("click", closeModalWithClick, false);
-                this.explodeEverything();
+               
                 this.startLevelAgain();
             }
         };
