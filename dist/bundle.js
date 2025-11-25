@@ -4939,13 +4939,14 @@ var SpriteEditor = /** @class */ (function (_super) {
                     }
                     else if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.ArcData) {
                         newLine =
-                            "\t// Piece ".concat(idx + 1, ": \n\tctx.beginPath();\n\tctx.arc(").concat(point.centerPoint[0], " * s, ").concat(point.centerPoint[1], " * s, ").concat(point.radius, " * s, ").concat(point.startAngle, ", ").concat(point.endAngle, ", ").concat(point.counterClockwise, ");\n");
+                            "\tctx.arc(".concat(point.centerPoint[0], " * s, ").concat(point.centerPoint[1], " * s, ").concat(point.radius, " * s, ").concat(point.startAngle, ", ").concat(point.endAngle, ", ").concat(point.counterClockwise, ");\n");
                     }
                     return acc.concat(newLine);
                 }, '');
-                var stringEnd = "\tctx.stroke();\n}\n";
+                var stringEnd = "\tctx.stroke();\n";
                 stringToSave_1 += stringStart + lines + stringEnd;
             });
+            stringToSave_1 += '}';
             pointPairsForLines_1.forEach(function () {
             });
             console.log(stringToSave_1);

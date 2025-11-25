@@ -350,14 +350,15 @@ export class SpriteEditor extends GameObject{
                         `\tctx.bezierCurveto(\n\t\t${point.controlPoint1[0]} * s, ${point.controlPoint1[1]} * s,\n\t\t${point.controlPoint2[0]} * s, ${point.controlPoint2[1]} * s,\n\t\t${point.endPos[0]} * s, ${point.endPos[1]} * s\n\t);\n`; 
                     } else if (point instanceof ArcData) {
                         newLine=
-                        `\t// Piece ${idx + 1}: \n\tctx.beginPath();\n\tctx.arc(${point.centerPoint[0]} * s, ${point.centerPoint[1]} * s, ${point.radius} * s, ${point.startAngle}, ${point.endAngle}, ${point.counterClockwise});\n`;
+                        `\tctx.arc(${point.centerPoint[0]} * s, ${point.centerPoint[1]} * s, ${point.radius} * s, ${point.startAngle}, ${point.endAngle}, ${point.counterClockwise});\n`;
                     }
                     return acc.concat(newLine)
                 },'')
                 const stringEnd = 
-                    `\tctx.stroke();\n}\n`;
+                    `\tctx.stroke();\n`;
                 stringToSave += stringStart + lines + stringEnd;
             })
+            stringToSave +='}'
 
             pointPairsForLines.forEach(() => {
 
