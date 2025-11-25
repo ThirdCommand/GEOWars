@@ -255,7 +255,7 @@ export class SpriteEditor extends GameObject{
                 )
             } else if (point instanceof Circle) {
                 const centerPoint = this.pointTransformation(point.centerPoint);
-                const radius = Math.round((point.radius - DIM_X/2) / (DIM_X / 120));
+                const radius = Math.round((point.radius) / (DIM_X / 120));
                 return new CircleData(centerPoint, radius);
             } else if (point instanceof Arc) {
                 const {
@@ -263,17 +263,17 @@ export class SpriteEditor extends GameObject{
                     endAngle,
                     centerPoint,
                     counterClockwise,
-                    radius
+                    radius,
                 } = point.arcDrawData;
                 const {startPos, endPos} = point;
                 return new ArcData({
                     startPos: this.pointTransformation(startPos),
                     endPos: this.pointTransformation(endPos),
-                    startAngle,
-                    endAngle,
+                    startAngle: -startAngle,
+                    endAngle: -endAngle,
                     centerPoint: this.pointTransformation(centerPoint),
                     counterClockwise,
-                    radius,
+                    radius: Math.round((radius) / (DIM_X / 120)),
                 })
             }
         }))

@@ -4851,7 +4851,7 @@ var SpriteEditor = /** @class */ (function (_super) {
             }
             else if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Circle) {
                 var centerPoint = _this.pointTransformation(point.centerPoint);
-                var radius = Math.round((point.radius - _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X / 2) / (_SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X / 120));
+                var radius = Math.round((point.radius) / (_SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X / 120));
                 return new _Point__WEBPACK_IMPORTED_MODULE_4__.CircleData(centerPoint, radius);
             }
             else if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Arc) {
@@ -4860,11 +4860,11 @@ var SpriteEditor = /** @class */ (function (_super) {
                 return new _Point__WEBPACK_IMPORTED_MODULE_4__.ArcData({
                     startPos: _this.pointTransformation(startPos),
                     endPos: _this.pointTransformation(endPos),
-                    startAngle: startAngle,
-                    endAngle: endAngle,
+                    startAngle: -startAngle,
+                    endAngle: -endAngle,
                     centerPoint: _this.pointTransformation(centerPoint),
                     counterClockwise: counterClockwise,
-                    radius: radius,
+                    radius: Math.round((radius) / (_SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X / 120)),
                 });
             }
         }); });
@@ -11136,7 +11136,7 @@ var AuroraSprite = /** @class */ (function (_super) {
         this.drawAurora(ctx);
         ctx.restore();
     };
-    AuroraSprite.prototype.drawAurora = function (ctx) {
+    AuroraSprite.prototype.drawAuroraOriginal = function (ctx) {
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.strokeStyle = this.color;
@@ -11185,6 +11185,27 @@ var AuroraSprite = /** @class */ (function (_super) {
         ctx.stroke();
         ctx.beginPath();
         ctx.arc(-13 / 18 * l - 2 / 9 * w / 2 * 0.5, 0, 2 / 9 * w / 2, Math.PI / 2, 3 * Math.PI / 2);
+        ctx.stroke();
+    };
+    AuroraSprite.prototype.drawAurora = function (ctx) {
+        ctx.moveTo(0, 0);
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 2;
+        var s = 1.3;
+        // Piece 1: 
+        ctx.beginPath();
+        ctx.moveTo(0 * s, 0 * s);
+        ctx.lineTo(-48 * s, -12 * s);
+        ctx.lineTo(-48 * s, 12 * s);
+        ctx.lineTo(0 * s, 0 * s);
+        ctx.stroke();
+        // Piece 2: 
+        ctx.beginPath();
+        ctx.moveTo(-41 * s, 2 * s);
+        ctx.lineTo(-39 * s, 2 * s);
+        ctx.arc(-39 * s, 0 * s, 2 * s, 1.5707963267948966, -1.5707963267948966, true);
+        ctx.lineTo(-41 * s, -2 * s);
+        ctx.arc(-41 * s, 0 * s, 2 * s, -1.5707963267948966, 1.5707963267948966, true);
         ctx.stroke();
     };
     return AuroraSprite;

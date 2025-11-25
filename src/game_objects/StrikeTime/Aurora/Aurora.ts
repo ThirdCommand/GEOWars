@@ -639,7 +639,7 @@ export class AuroraSprite extends LineSprite {
         ctx.restore();
     }
 
-    drawAurora(ctx: CanvasRenderingContext2D) {
+    drawAuroraOriginal(ctx: CanvasRenderingContext2D) {
         ctx.beginPath();
         ctx.moveTo(0,0);
         
@@ -708,6 +708,29 @@ export class AuroraSprite extends LineSprite {
         ctx.arc(-13/18 * l -2/9 * w/2 * 0.5, 0, 2/9 * w/2, Math.PI/2, 3*Math.PI/2);
         ctx.stroke();
 
+    }
+
+    drawAurora(ctx: CanvasRenderingContext2D) { 
+        ctx.moveTo(0,0);
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 2;
+        const s = 1.3;
+
+        // Piece 1: 
+        ctx.beginPath();
+        ctx.moveTo(0 * s, 0 * s);
+        ctx.lineTo(-48 * s, -12 * s);
+        ctx.lineTo(-48 * s, 12 * s);
+        ctx.lineTo(0 * s, 0 * s);
+        ctx.stroke();
+        // Piece 2: 
+        ctx.beginPath();
+        ctx.moveTo(-41 * s, 2 * s);
+        ctx.lineTo(-39 * s, 2 * s);
+        ctx.arc(-39 * s, 0 * s, 2 * s, 1.5707963267948966, -1.5707963267948966, true);
+        ctx.lineTo(-41 * s, -2 * s);
+        ctx.arc(-41 * s, 0 * s, 2 * s, -1.5707963267948966, 1.5707963267948966, true);
+        ctx.stroke();
     }
 
 }
