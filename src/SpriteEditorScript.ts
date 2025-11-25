@@ -22,7 +22,7 @@ export class SpriteEditorScript implements GameScript {
         this.engine = engine;
 
         this.spriteCreatorOpened = true;
-        this.theme = new Sound('');
+        this.theme = new Sound("sounds/Geometry_OST.mp3", 0.1);
         engine.gameObjects = [];
         engine.lineSprites = [];
         engine.activeCamera.zoomScale = 1;

@@ -11,4 +11,5 @@ export abstract class Level {
     abstract runWinCondition(): boolean;
     abstract createLevel(): void;
     abstract update(deltaTime: number): void;
+    abstract loseLevel(): void;
 }

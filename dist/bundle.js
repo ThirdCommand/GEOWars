@@ -1003,7 +1003,7 @@ var SpriteEditorScript = /** @class */ (function () {
         this.gameTime = 0;
         this.engine = engine;
         this.spriteCreatorOpened = true;
-        this.theme = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound('');
+        this.theme = new _game_engine_sound__WEBPACK_IMPORTED_MODULE_2__.Sound("sounds/Geometry_OST.mp3", 0.1);
         engine.gameObjects = [];
         engine.lineSprites = [];
         engine.activeCamera.zoomScale = 1;
@@ -1197,7 +1197,8 @@ var StrikeTimeScript = /** @class */ (function () {
         var _this = this;
         // should mostly be defined by the level
         var modal = document.getElementById("endOfStrikeTimeModalLost");
-        this.explodeEverything();
+        this.currentLevel.loseLevel();
+        setTimeout(function () { return _this.explodeEverything(); }, 1000);
         setTimeout(function () { return (modal.style.display = "block"); }, 1800);
         // Get the button that opens the modal
         // var btn = document.getElementById("myBtn");
@@ -1241,6 +1242,8 @@ var StrikeTimeScript = /** @class */ (function () {
             "Building1",
             "TargetBuilding",
             "PatriotMissileSite",
+            "AuroraDeathAnimationObject",
+            "Missile"
         ];
         this.engine.gameObjects.forEach(function (object) {
             if (typesToRemove.includes(object.constructor.name)) {
@@ -4359,6 +4362,8 @@ var DrawingGridSprite = /** @class */ (function (_super) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Arc: () => (/* binding */ Arc),
+/* harmony export */   ArcData: () => (/* binding */ ArcData),
 /* harmony export */   BezierCurve: () => (/* binding */ BezierCurve),
 /* harmony export */   BezierCurveData: () => (/* binding */ BezierCurveData),
 /* harmony export */   Circle: () => (/* binding */ Circle),
@@ -4399,8 +4404,8 @@ var PlacingPoint = /** @class */ (function (_super) {
     }
     PlacingPoint.prototype.updateMousePos = function (mousePos) {
         var distancePerIncrement = _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_Y / 72;
-        var xPosIncremented = Math.round(mousePos[0] / distancePerIncrement) * distancePerIncrement;
-        var yPosIncremented = Math.round(mousePos[1] / distancePerIncrement) * distancePerIncrement;
+        var xPosIncremented = Math.round((mousePos[0] + _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X / 2) / distancePerIncrement) * distancePerIncrement;
+        var yPosIncremented = Math.round((mousePos[1] + _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_Y / 2) / distancePerIncrement) * distancePerIncrement;
         this.transform.pos[0] = xPosIncremented;
         this.transform.pos[1] = yPosIncremented;
     };
@@ -4473,6 +4478,66 @@ var BezierCurve = /** @class */ (function () {
     return BezierCurve;
 }());
 
+var Arc = /** @class */ (function () {
+    function Arc(pos) {
+        this.isBeingPlaced = true;
+        this.counterClockwise = true;
+        this.startPos = pos ? [pos[0], pos[1]] : null;
+        this.placingWhichPoint = pos ? 'end' : 'start';
+    }
+    Arc.prototype.flip = function () {
+        this.arcDrawData.counterClockwise = !this.arcDrawData.counterClockwise;
+    };
+    Arc.prototype.isDrawable = function () {
+        return Boolean(this.startPos && this.endPos && this.centerPoint);
+    };
+    Arc.prototype.placePoint = function (pos) {
+        switch (this.placingWhichPoint) {
+            case "start":
+                this.startPos = [pos[0], pos[1]];
+                this.placingWhichPoint = 'end';
+                break;
+            case "end": // start is entered on creation, so end is next
+                this.endPos = [pos[0], pos[1]];
+                this.placingWhichPoint = 'centerPoint';
+                break;
+            case "centerPoint":
+                var phantomPointPosition = [pos[0], pos[1]];
+                var startPos = this.startPos;
+                var endPos = this.endPos;
+                var midPoint = [
+                    (startPos[0] + endPos[0]) / 2, (startPos[1] + endPos[1]) / 2
+                ];
+                var inverseSlope = -(endPos[0] - startPos[0]) / (endPos[1] - startPos[1]);
+                var y_position = void 0;
+                var centerPoint = void 0;
+                if (inverseSlope === Number.NEGATIVE_INFINITY || inverseSlope === Number.POSITIVE_INFINITY) {
+                    centerPoint = [midPoint[0], phantomPointPosition[1]];
+                }
+                else {
+                    y_position = inverseSlope * (phantomPointPosition[0] - midPoint[0]) + midPoint[1];
+                    centerPoint = [phantomPointPosition[0], y_position];
+                }
+                // y = slope * (x - x1) + y1
+                // distance from start point to center point
+                // Ah right, I need the point along the line that goes through the center point
+                var radius = Math.sqrt(Math.pow((startPos[0] - centerPoint[0]), 2) + Math.pow((startPos[1] - centerPoint[1]), 2));
+                var startAngle = Math.atan2((startPos[1] - centerPoint[1]), startPos[0] - centerPoint[0]);
+                var endAngle = Math.atan2((endPos[1] - centerPoint[1]), endPos[0] - centerPoint[0]);
+                this.arcDrawData = {
+                    counterClockwise: this.counterClockwise,
+                    centerPoint: centerPoint,
+                    radius: radius,
+                    startAngle: startAngle,
+                    endAngle: endAngle,
+                };
+                this.placingWhichPoint = 'start';
+                break;
+        }
+    };
+    return Arc;
+}());
+
 var Circle = /** @class */ (function () {
     function Circle(centerPoint, radius) {
         this.isBeingPlaced = true;
@@ -4521,6 +4586,20 @@ var BezierCurveData = /** @class */ (function () {
         this.controlPoint2 = [controlPoint2[0], -controlPoint2[1]];
     }
     return BezierCurveData;
+}());
+
+var ArcData = /** @class */ (function () {
+    function ArcData(arcData) {
+        var startAngle = arcData.startAngle, endAngle = arcData.endAngle, centerPoint = arcData.centerPoint, counterClockwise = arcData.counterClockwise, radius = arcData.radius, startPos = arcData.startPos, endPos = arcData.endPos;
+        this.startPos = [startPos[0], -startPos[1]];
+        this.endPos = [endPos[0], -endPos[1]];
+        this.centerPoint = [centerPoint[0], -centerPoint[1]];
+        this.radius = radius;
+        this.counterClockwise = counterClockwise;
+        this.startAngle = startAngle;
+        this.endAngle = endAngle;
+    }
+    return ArcData;
 }());
 
 var PointData = /** @class */ (function () {
@@ -4583,9 +4662,11 @@ var SpriteEditor = /** @class */ (function (_super) {
         _this.addLKeyListener();
         _this.addKKeyListener();
         _this.addJKeyListener();
+        _this.addFKeyListener();
         _this.addSKeyListener();
         _this.addBKeyListener();
         _this.addMKeyListener();
+        _this.addCKeyListener();
         _this.addOKeyListener();
         _this.addClickListener();
         return _this;
@@ -4595,6 +4676,9 @@ var SpriteEditor = /** @class */ (function (_super) {
     // J to end point placing
     // M to choose the mirrored version of control point1 for control point2
     // O to start adding a circle. Ends the line currently being entered
+    // C to start placing or end placing an Arc.
+    // B to start placing or end placing Bezier curve. 
+    // L to start placing new line, will end current line and start new one
     SpriteEditor.prototype.updateLKeyListener = function (pressed) {
         if (pressed) {
             if (this.isPlacingPoint) {
@@ -4608,6 +4692,7 @@ var SpriteEditor = /** @class */ (function (_super) {
             this.pointGroupsForLines.push(this.currentLineGroup);
         }
     };
+    // O to start adding a circle. Ends the line currently being entered
     SpriteEditor.prototype.updateOKeyListener = function (pressed) {
         if (pressed) {
             if (this.isPlacingPoint)
@@ -4621,6 +4706,14 @@ var SpriteEditor = /** @class */ (function (_super) {
             this.currentLineGroup.push(this.circleBeingPlaced);
         }
     };
+    SpriteEditor.prototype.updateFKeyListener = function (pressed) {
+        if (pressed) {
+            if (this.isPlacingArc) {
+                this.arcBeingPlaced.counterClockwise = !this.arcBeingPlaced.counterClockwise;
+            }
+        }
+    };
+    // K to remove last added point. If last point in line, the line is removed and point placing is ended
     SpriteEditor.prototype.updateKKeyListener = function (pressed) {
         if (pressed) {
             this.isPlacingPoint = true;
@@ -4634,18 +4727,21 @@ var SpriteEditor = /** @class */ (function (_super) {
             }
         }
     };
+    // M to choose the mirrored version of control point1 for control point2
     SpriteEditor.prototype.updateMKeyListener = function (pressed) {
         if (pressed && this.isPlacingBezierCurve && this.bezierCurveBeingPlaced.placingWhichPoint === 'controlPoint2' && this.bezierCurveBeingPlaced.mirroredValue) {
             this.bezierCurveBeingPlaced.controlPoint2 = [this.bezierCurveBeingPlaced.mirroredValue[0], this.bezierCurveBeingPlaced.mirroredValue[1]];
             this.updateBKeyListener(pressed);
         }
     };
+    // B to start placing or end placing Bezier curve. 
     SpriteEditor.prototype.updateBKeyListener = function (pressed) {
         var _this = this;
         if (pressed && !this.isPlacingPoint) {
         }
         else if (pressed && !this.isPlacingBezierCurve) {
             if (!this.isPlacingPoint) {
+                // this should never happen... must be old code
                 this.placingPoint = new _Point__WEBPACK_IMPORTED_MODULE_4__.PlacingPoint(this.gameEngine);
                 this.currentLineGroup = [];
                 this.pointGroupsForLines.push(this.currentLineGroup);
@@ -4657,7 +4753,7 @@ var SpriteEditor = /** @class */ (function (_super) {
             if (lastEnteredPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point) {
                 startPosition = [lastEnteredPoint.pos[0], lastEnteredPoint.pos[1]];
             }
-            else if (lastEnteredPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve) {
+            else if (lastEnteredPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve || lastEnteredPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Arc) {
                 startPosition = [lastEnteredPoint.endPos[0], lastEnteredPoint.endPos[1]];
             }
             this.bezierCurveBeingPlaced = new _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve(startPosition);
@@ -4668,7 +4764,7 @@ var SpriteEditor = /** @class */ (function (_super) {
             this.bezierCurveBeingPlaced.isBeingPlaced = false;
             if (this.currentLineGroup.slice(0, this.currentLineGroup.length - 1).find(function (point) { return ((point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point &&
                 point.pos[0] === _this.bezierCurveBeingPlaced.endPos[0] &&
-                point.pos[1] === _this.bezierCurveBeingPlaced.endPos[1]) || point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve && ((point.startPos[0] === _this.bezierCurveBeingPlaced.endPos[0] &&
+                point.pos[1] === _this.bezierCurveBeingPlaced.endPos[1]) || (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve || point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Arc) && ((point.startPos[0] === _this.bezierCurveBeingPlaced.endPos[0] &&
                 point.startPos[1] === _this.bezierCurveBeingPlaced.endPos[1]) || (
             // on second thought, it should never be the end position.. but maybe that's fine
             point.endPos[0] === _this.bezierCurveBeingPlaced.endPos[0] &&
@@ -4678,6 +4774,47 @@ var SpriteEditor = /** @class */ (function (_super) {
             this.bezierCurveBeingPlaced = null;
         }
     };
+    // C to start placing or end placing an Arc.
+    SpriteEditor.prototype.updateCKeyListener = function (pressed) {
+        var _this = this;
+        if (pressed && !this.isPlacingPoint) {
+        }
+        else if (pressed && !this.isPlacingArc) {
+            if (!this.isPlacingPoint) {
+                // this should never happen... must be old code
+                this.placingPoint = new _Point__WEBPACK_IMPORTED_MODULE_4__.PlacingPoint(this.gameEngine);
+                this.currentLineGroup = [];
+                this.pointGroupsForLines.push(this.currentLineGroup);
+            }
+            this.isPlacingPoint = true;
+            this.isPlacingArc = true;
+            var lastEnteredPoint = this.currentLineGroup[this.currentLineGroup.length - 1];
+            var startPosition = void 0;
+            if (lastEnteredPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point) {
+                startPosition = [lastEnteredPoint.pos[0], lastEnteredPoint.pos[1]];
+            }
+            else if (lastEnteredPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve || lastEnteredPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Arc) {
+                startPosition = [lastEnteredPoint.endPos[0], lastEnteredPoint.endPos[1]];
+            }
+            this.arcBeingPlaced = new _Point__WEBPACK_IMPORTED_MODULE_4__.Arc(startPosition);
+            this.currentLineGroup.push(this.arcBeingPlaced);
+        }
+        else if (pressed && this.isPlacingArc && this.arcBeingPlaced.isDrawable()) {
+            this.isPlacingArc = false;
+            this.arcBeingPlaced.isBeingPlaced = false;
+            if (this.currentLineGroup.slice(0, this.currentLineGroup.length - 1).find(function (point) { return ((point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point &&
+                point.pos[0] === _this.arcBeingPlaced.endPos[0] &&
+                point.pos[1] === _this.arcBeingPlaced.endPos[1]) || (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve || point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Arc) && ((point.startPos[0] === _this.arcBeingPlaced.endPos[0] &&
+                point.startPos[1] === _this.arcBeingPlaced.endPos[1]) || (
+            // on second thought, it should never be the end position.. but maybe that's fine
+            point.endPos[0] === _this.arcBeingPlaced.endPos[0] &&
+                point.endPos[1] === _this.arcBeingPlaced.endPos[1]))); })) {
+                this.endPointPlacement();
+            }
+            this.arcBeingPlaced = null;
+        }
+    };
+    // J to end point placing
     SpriteEditor.prototype.updateJKeyListener = function (pressed) {
         if (pressed) {
             this.endPointPlacement();
@@ -4686,7 +4823,7 @@ var SpriteEditor = /** @class */ (function (_super) {
     SpriteEditor.prototype.pointTransformation = function (pos) {
         return [
             Math.round((pos[0] - _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X / 2) / (_SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X / 120)),
-            Math.round((pos[1] - _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_Y / 2) / (_SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_Y / 72)) * -1
+            Math.round((pos[1] - _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_Y / 2) / (_SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_Y / 72))
         ];
     };
     // left and right arrow to move between the line groups
@@ -4717,35 +4854,80 @@ var SpriteEditor = /** @class */ (function (_super) {
                 var radius = Math.round((point.radius - _SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X / 2) / (_SpriteEditorScript__WEBPACK_IMPORTED_MODULE_0__.DIM_X / 120));
                 return new _Point__WEBPACK_IMPORTED_MODULE_4__.CircleData(centerPoint, radius);
             }
+            else if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Arc) {
+                var _a = point.arcDrawData, startAngle = _a.startAngle, endAngle = _a.endAngle, centerPoint = _a.centerPoint, counterClockwise = _a.counterClockwise, radius = _a.radius;
+                var startPos = point.startPos, endPos = point.endPos;
+                return new _Point__WEBPACK_IMPORTED_MODULE_4__.ArcData({
+                    startPos: _this.pointTransformation(startPos),
+                    endPos: _this.pointTransformation(endPos),
+                    startAngle: startAngle,
+                    endAngle: endAngle,
+                    centerPoint: _this.pointTransformation(centerPoint),
+                    counterClockwise: counterClockwise,
+                    radius: radius,
+                });
+            }
         }); });
         if (pressed && this.pointGroupsForLines.length > 0) {
             // put save logic here
-            var stringToSave_1 = '(ctx: CanvasRenderingContext2D) { \nctx.strokeStyle = "";\nctx.lineWidth = 2;\nconst s = 1;\nconst pos = this.transform.absolutePosition();\nctx.translate(pos[0], pos[1]);\n\n';
+            var stringToSave_1 = '(ctx: CanvasRenderingContext2D) { \n\tctx.strokeStyle = "";\n\tctx.lineWidth = 2;\n\tconst s = 1;\n\tconst pos = this.transform.absolutePosition();\n\tctx.translate(pos[0], pos[1]);\n\n';
             // find biggest X value
             // find smallest X value
             // find difference to get width
             // same with height for Y
+            var pointPairsForLines_1 = [];
             mappedPoints.forEach(function (pointGroup, idx) {
                 var stringStart = "";
+                var firstPointInFirstLine;
                 var firstPoint = pointGroup[0];
                 if (firstPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.PointData) {
                     stringStart =
-                        "// Piece ".concat(idx + 1, ": \nctx.beginPath();\nctx.moveTo(").concat(firstPoint.point[0], " * s, ").concat(firstPoint.point[1], " * s);\n");
+                        "\t// Piece ".concat(idx + 1, ": \n\tctx.beginPath();\n\tctx.moveTo(").concat(firstPoint.point[0], " * s, ").concat(firstPoint.point[1], " * s);\n");
+                    firstPointInFirstLine = [firstPoint.point[0], firstPoint.point[1]];
                 }
                 else if (firstPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.CircleData) {
                     stringStart =
-                        "// Piece ".concat(idx + 1, ": \nctx.beginPath();\nctx.arc(").concat(firstPoint.centerPoint[0], " * s, ").concat(firstPoint.centerPoint[1], " * s, ").concat(firstPoint.radius, " * s, 0,2*Math.PI);\n");
+                        "\t// Piece ".concat(idx + 1, ": \n\tctx.beginPath();\n\tctx.arc(").concat(firstPoint.centerPoint[0], " * s, ").concat(firstPoint.centerPoint[1], " * s, ").concat(firstPoint.radius, " * s, 0,2*Math.PI);\n");
                 }
                 else if (firstPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurveData) {
                     stringStart =
-                        "// Piece ".concat(idx + 1, ": \nctx.beginPath();\nctx.moveTo(").concat(firstPoint.startPos[0], " * s, ").concat(firstPoint.startPos[1], " * s);\nctx.bezierCurveto(\n\t").concat(firstPoint.controlPoint1[0], " * s, ").concat(firstPoint.controlPoint1[1], " * s,\n\t").concat(firstPoint.controlPoint2[0], " * s, ").concat(firstPoint.controlPoint2[1], " * s,\n\t").concat(firstPoint.endPos[0], " * s, ").concat(firstPoint.endPos[1], " * s\n);\n");
+                        "\t// Piece ".concat(idx + 1, ": \n\tctx.beginPath();\n\tctx.moveTo(").concat(firstPoint.startPos[0], " * s, ").concat(firstPoint.startPos[1], " * s);\n\tctx.bezierCurveto(\n\t\t").concat(firstPoint.controlPoint1[0], " * s, ").concat(firstPoint.controlPoint1[1], " * s,\n\t\t").concat(firstPoint.controlPoint2[0], " * s, ").concat(firstPoint.controlPoint2[1], " * s,\n\t\t").concat(firstPoint.endPos[0], " * s, ").concat(firstPoint.endPos[1], " * s\n\t);\n");
+                    firstPointInFirstLine = [firstPoint.endPos[0], firstPoint.endPos[1]];
                 }
+                else if (firstPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.ArcData) {
+                    stringStart =
+                        "\t// Piece ".concat(idx + 1, ": \n\tctx.beginPath();\n\tctx.arc(").concat(firstPoint.centerPoint[0], " * s, ").concat(firstPoint.centerPoint[1], " * s, ").concat(firstPoint.radius, " * s, ").concat(firstPoint.startAngle, ", ").concat(firstPoint.endAngle, ", ").concat(firstPoint.counterClockwise, ");\n");
+                }
+                // I should create the point pairs here... assuming they are lines
+                // I should grab the start point of bezier curve and have that be the end
+                // point of a line if it is
+                // and I should grab the end point of a bezier curve if it is the start point
+                // of a new line 
                 var restOfPoints = pointGroup.slice(1);
+                var destructedLinesSection;
+                // this will be true when the first point is a point or a bezier curve
+                // i need to account for the case where there's two bezier curves... okay
+                // I think I should just handle bezier curves at this point lol
+                // it shouldn't be too ridiculous
+                if (firstPointInFirstLine) {
+                    destructedLinesSection = 'createDeathAnimationObjects() {\n\tconst color = "rgb(255, 255, 255)"\n\tconst lineWidth = 1.5;\n';
+                    destructedLinesSection += "\tnew DeathAnimationLineObject(\n\t\tthis.gameEngine,\n\t\t[this.transform.pos[0], this.transform.pos[1]],\n\t\tthis.transform.angle,\n\t\t[line1Point1,\n";
+                    "line1Point2], color, lineWidth);";
+                }
                 var lines = restOfPoints.reduce(function (acc, point) {
                     var newLine = '';
                     if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.PointData) {
                         newLine =
-                            "ctx.lineTo(".concat(point.point[0], " * s, ").concat(point.point[1], " * s);\n");
+                            "\tctx.lineTo(".concat(point.point[0], " * s, ").concat(point.point[1], " * s);\n");
+                        if (firstPointInFirstLine) {
+                            pointPairsForLines_1.push([
+                                [firstPointInFirstLine[0], firstPointInFirstLine[1]],
+                                [point.point[0], point.point[1]]
+                            ]);
+                            firstPointInFirstLine = null;
+                        }
+                        else if (true) {
+                        }
                     }
                     else if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.CircleData) {
                         console.error('there shouldnt be a circle here, since circles are their own part');
@@ -4753,12 +4935,18 @@ var SpriteEditor = /** @class */ (function (_super) {
                     else if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurveData) {
                         // start of the curve should be the last point
                         newLine =
-                            "ctx.bezierCurveto(\n\t".concat(point.controlPoint1[0], " * s, ").concat(point.controlPoint1[1], " * s,\n\t").concat(point.controlPoint2[0], " * s, ").concat(point.controlPoint2[1], " * s,\n\t").concat(point.endPos[0], " * s, ").concat(point.endPos[1], " * s\n);\n");
+                            "\tctx.bezierCurveto(\n\t\t".concat(point.controlPoint1[0], " * s, ").concat(point.controlPoint1[1], " * s,\n\t\t").concat(point.controlPoint2[0], " * s, ").concat(point.controlPoint2[1], " * s,\n\t\t").concat(point.endPos[0], " * s, ").concat(point.endPos[1], " * s\n\t);\n");
+                    }
+                    else if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.ArcData) {
+                        newLine =
+                            "\t// Piece ".concat(idx + 1, ": \n\tctx.beginPath();\n\tctx.arc(").concat(point.centerPoint[0], " * s, ").concat(point.centerPoint[1], " * s, ").concat(point.radius, " * s, ").concat(point.startAngle, ", ").concat(point.endAngle, ", ").concat(point.counterClockwise, ");\n");
                     }
                     return acc.concat(newLine);
                 }, '');
-                var stringEnd = "ctx.stroke();\n\n";
+                var stringEnd = "\tctx.stroke();\n}\n";
                 stringToSave_1 += stringStart + lines + stringEnd;
+            });
+            pointPairsForLines_1.forEach(function () {
             });
             console.log(stringToSave_1);
             // will have to transform all the points to the correct coordinates
@@ -4777,20 +4965,26 @@ var SpriteEditor = /** @class */ (function (_super) {
         this.placingPoint.remove();
         if (this.isPlacingBezierCurve)
             this.currentLineGroup.pop();
+        if (this.isPlacingArc)
+            this.currentLineGroup.pop();
         if (this.isPlacingCircle)
             this.currentLineGroup.pop();
         this.bezierCurveBeingPlaced = null;
         this.circleBeingPlaced = null;
+        this.arcBeingPlaced = null;
         this.placingPoint = null;
         this.isPlacingPoint = false;
         this.isPlacingCircle = false;
         this.isPlacingBezierCurve = false;
+        this.isPlacingArc = false;
         this.currentLineGroup = [];
     };
     SpriteEditor.prototype.placePoint = function (pointPosition) {
+        var _this = this;
         if (this.isPlacingCircle) {
             this.circleBeingPlaced.placingPoint(pointPosition);
             if (this.circleBeingPlaced.pointBeingPlaced === 'done') {
+                // this should move to where the bezier curve does the same thing?
                 this.isPlacingCircle = false;
                 this.endPointPlacement();
             }
@@ -4798,9 +4992,26 @@ var SpriteEditor = /** @class */ (function (_super) {
         else if (this.isPlacingBezierCurve) {
             this.bezierCurveBeingPlaced.placePoint(pointPosition);
         }
+        else if (this.isPlacingArc) {
+            this.arcBeingPlaced.placePoint(pointPosition);
+            if (this.arcBeingPlaced.placingWhichPoint === 'start') {
+                this.isPlacingArc = false;
+                this.arcBeingPlaced.isBeingPlaced = false;
+                if (this.currentLineGroup.slice(0, this.currentLineGroup.length - 1).find(function (point) { return ((point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point &&
+                    point.pos[0] === _this.arcBeingPlaced.endPos[0] &&
+                    point.pos[1] === _this.arcBeingPlaced.endPos[1]) || (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve || point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Arc) && ((point.startPos[0] === _this.arcBeingPlaced.endPos[0] &&
+                    point.startPos[1] === _this.arcBeingPlaced.endPos[1]) || (
+                // on second thought, it should never be the end position.. but maybe that's fine
+                point.endPos[0] === _this.arcBeingPlaced.endPos[0] &&
+                    point.endPos[1] === _this.arcBeingPlaced.endPos[1]))); })) {
+                    this.endPointPlacement();
+                }
+                this.arcBeingPlaced = null;
+            }
+        }
         else if (this.currentLineGroup.find(function (point) { return ((point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point &&
             point.pos[0] === pointPosition[0] &&
-            point.pos[1] === pointPosition[1]) || point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve && ((point.startPos[0] === pointPosition[0] &&
+            point.pos[1] === pointPosition[1]) || (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve || point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Arc) && ((point.startPos[0] === pointPosition[0] &&
             point.startPos[1] === pointPosition[1]) || (
         // on second thought, it should never be the end position.. but maybe that's fine
         point.endPos[0] === pointPosition[0] &&
@@ -4857,6 +5068,13 @@ var SpriteEditorSprite = /** @class */ (function (_super) {
                         ctx.bezierCurveTo(points[0].controlPoint1[0], points[0].controlPoint1[1], points[0].controlPoint2[0], points[0].controlPoint2[1], points[0].endPos[0], points[0].endPos[1]);
                     }
                 }
+                if (points[0] instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Arc) {
+                    if (!points[0].isBeingPlaced) {
+                        var _a = points[0].arcDrawData, centerPoint = _a.centerPoint, radius = _a.radius, startAngle = _a.startAngle, endAngle = _a.endAngle, counterClockwise = _a.counterClockwise;
+                        var counterClockwiseGaurenteed = counterClockwise || points[0].counterClockwise;
+                        ctx.arc(centerPoint[0], centerPoint[1], radius, startAngle, endAngle, counterClockwiseGaurenteed);
+                    }
+                }
                 if (points[0] instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Circle) {
                     var circle = points[0];
                     if (circle.centerPoint) {
@@ -4887,12 +5105,19 @@ var SpriteEditorSprite = /** @class */ (function (_super) {
                             ctx.bezierCurveTo(point.controlPoint1[0], point.controlPoint1[1], point.controlPoint2[0], point.controlPoint2[1], point.endPos[0], point.endPos[1]);
                         }
                     }
+                    else if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Arc) {
+                        if (!point.isBeingPlaced) {
+                            var _a = point.arcDrawData, centerPoint = _a.centerPoint, radius = _a.radius, startAngle = _a.startAngle, endAngle = _a.endAngle, counterClockwise = _a.counterClockwise;
+                            ctx.arc(centerPoint[0], centerPoint[1], radius, startAngle, endAngle, counterClockwise);
+                        }
+                    }
                 });
                 ctx.stroke();
             }
         });
         if (this.spriteEditor.isPlacingPoint &&
             !this.spriteEditor.isPlacingBezierCurve &&
+            !this.spriteEditor.isPlacingArc &&
             this.pointGroupsForLines.length >= 1 &&
             this.pointGroupsForLines[this.pointGroupsForLines.length - 1].length > 0) {
             var lastPlacedPointPosition = this.pointGroupsForLines[this.pointGroupsForLines.length - 1][this.pointGroupsForLines[this.pointGroupsForLines.length - 1].length - 1];
@@ -4903,7 +5128,7 @@ var SpriteEditorSprite = /** @class */ (function (_super) {
             if (lastPlacedPointPosition instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point) {
                 ctx.moveTo(lastPlacedPointPosition.pos[0], lastPlacedPointPosition.pos[1]);
             }
-            else if (lastPlacedPointPosition instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve) {
+            else if (lastPlacedPointPosition instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurve || lastPlacedPointPosition instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Arc) {
                 ctx.moveTo(lastPlacedPointPosition.endPos[0], lastPlacedPointPosition.endPos[1]);
             }
             ctx.lineTo(phantomPointPosition[0], phantomPointPosition[1]);
@@ -4924,6 +5149,7 @@ var SpriteEditorSprite = /** @class */ (function (_super) {
             ctx.beginPath();
             // this should never be true:
             if (lastPlacedPointPosition instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point) {
+                console.error('Last placed point should be BezierCurve if isPlacingBezierCurve is true. something went wrong');
                 ctx.moveTo(lastPlacedPointPosition.pos[0], lastPlacedPointPosition.pos[1]);
                 ctx.lineTo(phantomPointPosition[0], phantomPointPosition[1]);
                 ctx.stroke();
@@ -5043,6 +5269,91 @@ var SpriteEditorSprite = /** @class */ (function (_super) {
             }
             else {
                 // if last placed point is completed and a bezier curve, then it should already have been drawn
+            }
+        }
+        if (this.spriteEditor.isPlacingArc &&
+            this.pointGroupsForLines.length >= 1 &&
+            currentLineGroup.length > 0) {
+            // should be arc because isPlacingArc is true (as long as I'm managing that right)
+            var lastPlacedPointPosition = currentLineGroup[currentLineGroup.length - 1];
+            ctx.strokeStyle = '#a4fcfcff';
+            ctx.setLineDash([3, 8]);
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            // this should never be true:
+            if (lastPlacedPointPosition instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Point) {
+                console.error('Last placed point should be Arc if isPlacingArc is true. something went wrong');
+                ctx.moveTo(lastPlacedPointPosition.pos[0], lastPlacedPointPosition.pos[1]);
+                ctx.lineTo(phantomPointPosition[0], phantomPointPosition[1]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                // this should always be true:
+            }
+            else if (lastPlacedPointPosition instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.Arc && lastPlacedPointPosition.isBeingPlaced) {
+                if (lastPlacedPointPosition.placingWhichPoint === 'start') {
+                    console.log('placingStartPoint');
+                    // I think we don't draw anything since this must be the first point being added
+                }
+                else if (lastPlacedPointPosition.placingWhichPoint === 'end') {
+                    console.log('placingEndPoint');
+                    // only start has been placed.
+                    // display phantom position of end position
+                    // maybe display the arc assuming the center point is the midpoint of start and end
+                    var startPos = lastPlacedPointPosition.startPos;
+                    var midPoint = [
+                        (startPos[0] + phantomPointPosition[0]) / 2, (startPos[1] + phantomPointPosition[1]) / 2
+                    ];
+                    var radius = Math.sqrt(Math.pow((startPos[0] - midPoint[0]), 2) + Math.pow((startPos[1] - midPoint[1]), 2));
+                    var startAngle = Math.atan2((startPos[1] - midPoint[1]), startPos[0] - midPoint[0]);
+                    var endAngle = Math.atan2((phantomPointPosition[1] - midPoint[1]), phantomPointPosition[0] - midPoint[0]);
+                    console.log({
+                        startPos: startPos,
+                        phantomPointPosition: phantomPointPosition,
+                        midPoint: midPoint,
+                        radius: radius,
+                        startAngle: startAngle,
+                        endAngle: endAngle
+                    });
+                    // I might need another key listener to flip the rotation direction over for the arc
+                    // press F for respect
+                    // ctx.arc(midPoint[0], midPoint[1], 2, 0, 2*Math.PI);
+                    ctx.arc(midPoint[0], midPoint[1], radius, startAngle, endAngle, !!(lastPlacedPointPosition === null || lastPlacedPointPosition === void 0 ? void 0 : lastPlacedPointPosition.counterClockwise));
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+                else { // placing center point
+                    console.log('placing Center Point');
+                    var startPos = lastPlacedPointPosition.startPos, endPos = lastPlacedPointPosition.endPos;
+                    // center point is the phantom point. this determines the start and end angle
+                    // the point can only exist on the line perpendicular to the start end line and intersecting the midpoint
+                    // when the slope is infinite, just use the y value of the phantom point
+                    var midPoint = [
+                        (startPos[0] + endPos[0]) / 2, (startPos[1] + endPos[1]) / 2
+                    ];
+                    var inverseSlope = -(endPos[0] - startPos[0]) / (endPos[1] - startPos[1]);
+                    var y_position = void 0;
+                    var centerPoint = void 0;
+                    if (inverseSlope === Number.NEGATIVE_INFINITY || inverseSlope === Number.POSITIVE_INFINITY) {
+                        centerPoint = [midPoint[0], phantomPointPosition[1]];
+                    }
+                    else {
+                        y_position = inverseSlope * (phantomPointPosition[0] - midPoint[0]) + midPoint[1];
+                        centerPoint = [phantomPointPosition[0], y_position];
+                    }
+                    // y = slope * (x - x1) + y1
+                    // distance from start point to center point
+                    // Ah right, I need the point along the line that goes through the center point
+                    var radius = Math.sqrt(Math.pow((startPos[0] - centerPoint[0]), 2) + Math.pow((startPos[1] - centerPoint[1]), 2));
+                    var startAngle = Math.atan2((startPos[1] - centerPoint[1]), startPos[0] - centerPoint[0]);
+                    var endAngle = Math.atan2((endPos[1] - centerPoint[1]), endPos[0] - centerPoint[0]);
+                    // ctx.arc(endPos[0], endPos[1], 2, 0, 2* Math.PI);
+                    // ctx.stroke();
+                    // I need to make the point snap at the midpoint even though it's off grid
+                    ctx.arc(midPoint[0], midPoint[1], 2, 0, 2 * Math.PI);
+                    ctx.arc(centerPoint[0], centerPoint[1], radius, startAngle, endAngle, !!(lastPlacedPointPosition === null || lastPlacedPointPosition === void 0 ? void 0 : lastPlacedPointPosition.counterClockwise));
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
             }
         }
     };
@@ -5428,6 +5739,7 @@ var GameEngine = /** @class */ (function () {
         this.rightControlStickListeners = [];
         this.lKeyListeners = [];
         this.kKeyListeners = [];
+        this.fKeyListeners = [];
         this.bKeyListeners = [];
         this.mKeyListeners = [];
         this.jKeyListeners = [];
@@ -5616,6 +5928,9 @@ var GameEngine = /** @class */ (function () {
     };
     GameEngine.prototype.addJKeyListener = function (object) {
         this.jKeyListeners.push(object);
+    };
+    GameEngine.prototype.addFKeyListener = function (object) {
+        this.fKeyListeners.push(object);
     };
     GameEngine.prototype.addBKeyListener = function (object) {
         this.bKeyListeners.push(object);
@@ -5828,6 +6143,11 @@ var GameEngine = /** @class */ (function () {
             listener.updateCKeyListener(down);
         });
     };
+    GameEngine.prototype.updateFKeyListeners = function (down) {
+        this.fKeyListeners.forEach(function (listener) {
+            listener.updateFKeyListener(down);
+        });
+    };
     GameEngine.prototype.updateRightControlStickListeners = function (unitVector) {
         this.rightControlStickListeners.forEach(function (listener) {
             listener.updateRightControlStickInput(unitVector);
@@ -5849,7 +6169,7 @@ var GameEngine = /** @class */ (function () {
         this.aButtonListeners.forEach(function (listener) {
             listener.updateAButtonListener(aButton);
         });
-        this.updateFKeyListener(aButton); // TODO this is a hacky way to do this
+        // this.updateFKeyListener(aButton); // TODO this is a hacky way to do this
     };
     GameEngine.prototype.updateStartButtonListeners = function (pressed) {
         // console.log([startButton, down])
@@ -6247,6 +6567,10 @@ var GameObject = /** @class */ (function () {
         if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
             this.gameEngine.addJKeyListener(this);
     };
+    GameObject.prototype.addFKeyListener = function () {
+        if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
+            this.gameEngine.addFKeyListener(this);
+    };
     GameObject.prototype.addSKeyListener = function () {
         if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine)
             this.gameEngine.addSKeyListener(this);
@@ -6256,6 +6580,7 @@ var GameObject = /** @class */ (function () {
             this.gameEngine.addStartButtonListener(this);
     };
     GameObject.prototype.updateKKeyListener = function (pressed) { console.log('overwrite updateKKeyListener'); };
+    GameObject.prototype.updateFKeyListener = function (pressed) { console.log('overwrite updateFKeyListener'); };
     GameObject.prototype.updateCKeyListener = function (pressed) { console.log('overwrite updateCKeyListener'); };
     GameObject.prototype.updateOKeyListener = function (pressed) { console.log('overwrite updateOKeyListener'); };
     GameObject.prototype.updateJKeyListener = function (pressed) { console.log('overwrite updateJKeyListener'); };
@@ -10260,9 +10585,9 @@ var AirDecelerationParticle = /** @class */ (function (_super) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Aurora: () => (/* binding */ Aurora),
-/* harmony export */   AuroraDeathAnimationObject: () => (/* binding */ AuroraDeathAnimationObject),
-/* harmony export */   AuroraDeathAnimationSprite: () => (/* binding */ AuroraDeathAnimationSprite),
-/* harmony export */   AuroraSprite: () => (/* binding */ AuroraSprite)
+/* harmony export */   AuroraSprite: () => (/* binding */ AuroraSprite),
+/* harmony export */   DeathAnimationLineObject: () => (/* binding */ DeathAnimationLineObject),
+/* harmony export */   DeathAnimationSprite: () => (/* binding */ DeathAnimationSprite)
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
 /* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
@@ -10368,8 +10693,9 @@ var Aurora = /** @class */ (function (_super) {
         if (this.hits >= this.hitsWhenDead) {
             // will need to tell gameScript about the death, which will then inform the current level
             // the level will decide what to do about that
-            this.createDeathAnimationObjects();
-            this.gameEngine.gameScript.loseLevel();
+            this.createDeathAnimationLineObjects();
+            this.remove();
+            this.gameEngine.gameScript.loseLevel(); // controlled ship died()
             // create three objects for the death animation
         }
     };
@@ -10746,7 +11072,10 @@ var Aurora = /** @class */ (function (_super) {
     // updateMovement(deltaTime: number) {
     //     if(!this.controllerInUse) return;
     // }
-    Aurora.prototype.createDeathAnimationObjects = function () {
+    Aurora.prototype.createDeathAnimationLineObjects = function () {
+        // All I need is the point positions of the lines to create the death animation object
+        // I already have this when I use the sprite editor
+        // so I should be able to output this function as well when creating a sprite
         var l = this.lineSprite.length;
         var w = this.lineSprite.length / 2;
         // get the first line position and angle relative to Aurora's 0,0
@@ -10759,22 +11088,7 @@ var Aurora = /** @class */ (function (_super) {
         */
         var line1Point1 = [0, 0];
         var line1Point2 = [-l, -w / 2];
-        var line1Length = Math.sqrt(Math.pow((line1Point2[0] - line1Point1[0]), 2) +
-            Math.pow((line1Point2[1] - line1Point1[1]), 2));
-        // it's position is the average of these two
-        var line1PositionOnPlane = [
-            (0 + -l) / 2,
-            (0 + w / 2) / 2
-        ];
-        var line1AngleRelativeToAurora = Math.atan2(line1PositionOnPlane[1], line1PositionOnPlane[0]) - Math.PI;
-        var line1PositionAngleRelativeToAurora = Math.atan2(line1PositionOnPlane[1], line1PositionOnPlane[0]) - Math.PI;
-        var planeOriginToLine1CenterDistance = Math.sqrt(Math.pow(line1PositionOnPlane[0], 2) + Math.pow((line1PositionOnPlane[1]), 2));
-        var line1MidpointPosition = [
-            this.transform.pos[0] - planeOriginToLine1CenterDistance * Math.cos(this.transform.angle + line1PositionAngleRelativeToAurora),
-            this.transform.pos[1] - planeOriginToLine1CenterDistance * Math.sin(this.transform.angle + line1PositionAngleRelativeToAurora)
-        ];
-        var line1Angle = line1AngleRelativeToAurora + this.transform.angle;
-        new AuroraDeathAnimationObject(this.gameEngine, line1MidpointPosition, line1Angle, line1Length);
+        new DeathAnimationLineObject(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], this.transform.angle, [line1Point1, line1Point2], "rgb(255, 255, 255)", 1.5);
         /*
             line 2
             ctx.beginPath();
@@ -10784,21 +11098,7 @@ var Aurora = /** @class */ (function (_super) {
         */
         var line2Point1 = [-l, w / 2];
         var line2Point2 = [-l, -w / 2];
-        var line2Length = Math.sqrt(Math.pow((line2Point2[0] - line2Point1[0]), 2) +
-            Math.pow((line2Point2[1] - line2Point1[1]), 2));
-        var line2PositionOnPlane = [
-            -l,
-            0
-        ];
-        var line2AngleRelativeToAurora = Math.atan2(line2Point2[1] - line2Point1[1], line2Point2[0] - line2Point1[0]) - Math.PI;
-        var line2PositionAngleRelativeToAurora = Math.atan2(line2PositionOnPlane[1], line2PositionOnPlane[0]) - Math.PI;
-        var planeOriginToLine2CenterDistance = Math.sqrt(Math.pow(line2PositionOnPlane[0], 2) + Math.pow((line2PositionOnPlane[1]), 2));
-        var line2MidpointPosition = [
-            this.transform.pos[0] - planeOriginToLine2CenterDistance * Math.cos(this.transform.angle + line2PositionAngleRelativeToAurora),
-            this.transform.pos[1] - planeOriginToLine2CenterDistance * Math.sin(this.transform.angle + line2PositionAngleRelativeToAurora)
-        ];
-        var line2Angle = line2AngleRelativeToAurora + this.transform.angle;
-        new AuroraDeathAnimationObject(this.gameEngine, line2MidpointPosition, line2Angle, line2Length);
+        new DeathAnimationLineObject(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], this.transform.angle, [line2Point1, line2Point2], "rgb(255, 255, 255)", 1.5);
         /*
              line 3
              ctx.beginPath();
@@ -10808,22 +11108,7 @@ var Aurora = /** @class */ (function (_super) {
          */
         var line3Point1 = [-l, -w / 2];
         var line3Point2 = [0, 0];
-        var line3Length = Math.sqrt(Math.pow((line3Point2[0] - line3Point1[0]), 2) +
-            Math.pow((line3Point2[1] - line3Point1[1]), 2));
-        // it's position is the average of these two
-        var line3PositionOnPlane = [
-            (0 + -l) / 2,
-            (0 + -w / 2) / 2
-        ];
-        var line3AngleRelativeToAurora = Math.atan2(line3PositionOnPlane[1], line3PositionOnPlane[0]) - Math.PI;
-        var line3PositionAngleRelativeToAurora = Math.atan2(line3PositionOnPlane[1], line3PositionOnPlane[0]) - Math.PI;
-        var planeOriginToLine3CenterDistance = Math.sqrt(Math.pow(line3PositionOnPlane[0], 2) + Math.pow((line3PositionOnPlane[1]), 2));
-        var line3MidpointPosition = [
-            this.transform.pos[0] - planeOriginToLine3CenterDistance * Math.cos(this.transform.angle + line3PositionAngleRelativeToAurora),
-            this.transform.pos[1] - planeOriginToLine3CenterDistance * Math.sin(this.transform.angle + line3PositionAngleRelativeToAurora)
-        ];
-        var line3Angle = line3AngleRelativeToAurora + this.transform.angle;
-        new AuroraDeathAnimationObject(this.gameEngine, line3MidpointPosition, line3Angle, line3Length);
+        new DeathAnimationLineObject(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], this.transform.angle, [line3Point1, line3Point2], "rgb(255, 255, 255)", 1.5);
     };
     return Aurora;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
@@ -10884,6 +11169,8 @@ var AuroraSprite = /** @class */ (function (_super) {
         ctx.stroke();
 
         */
+        // I need a way to locate the start and end point
+        // for the next lines when creating an arc
         ctx.beginPath();
         ctx.arc(-13 / 18 * l, 0, 2 / 9 * w / 2, -Math.PI / 2, Math.PI / 2);
         ctx.stroke();
@@ -10902,44 +11189,160 @@ var AuroraSprite = /** @class */ (function (_super) {
     return AuroraSprite;
 }(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
 
-var AuroraDeathAnimationObject = /** @class */ (function (_super) {
-    __extends(AuroraDeathAnimationObject, _super);
-    function AuroraDeathAnimationObject(engine, pos, // absolute position for new transform
-    angle, // absolute angle for new transform
-    length) {
+var DeathAnimationLineObject = /** @class */ (function (_super) {
+    __extends(DeathAnimationLineObject, _super);
+    function DeathAnimationLineObject(engine, objectPos, // position of the parent object
+    objectAngle, // angle of the parent object
+    linePointPositions, // relative to parent object origin
+    color, width, speed) {
         var _this = _super.call(this, engine) || this;
-        _this.transform.pos = [pos[0], pos[1]];
-        _this.transform.angle = angle;
+        var linePoint1 = linePointPositions[0];
+        var linePoint2 = linePointPositions[1];
+        var length = Math.sqrt(Math.pow((linePoint2[0] - linePoint1[0]), 2) +
+            Math.pow((linePoint2[1] - linePoint1[1]), 2));
+        // its position is the average of these two
+        var line1PositionOnPlane = [
+            (linePoint1[0] + linePoint2[0]) / 2,
+            (linePoint1[1] + linePoint2[1]) / 2
+        ];
+        var linePositionAngleRelativeToAurora = Math.atan2(line1PositionOnPlane[1], line1PositionOnPlane[0]) - Math.PI;
+        var lineAngleRelativeToAurora = Math.atan2(linePoint2[1] - linePoint1[1], linePoint2[0] - linePoint1[0]) - Math.PI;
+        var planeOriginToLine1CenterDistance = Math.sqrt(Math.pow(line1PositionOnPlane[0], 2) + Math.pow((line1PositionOnPlane[1]), 2));
+        var lineMidpointPosition = [
+            objectPos[0] - planeOriginToLine1CenterDistance * Math.cos(objectAngle + linePositionAngleRelativeToAurora),
+            objectPos[1] - planeOriginToLine1CenterDistance * Math.sin(objectAngle + linePositionAngleRelativeToAurora)
+        ];
+        var lineAngle = lineAngleRelativeToAurora + objectAngle;
+        _this.transform.pos = [lineMidpointPosition[0], lineMidpointPosition[1]];
+        _this.transform.angle = lineAngle;
         // create a random velocity and random angular velocity
         var randomVelocity = _game_engine_util__WEBPACK_IMPORTED_MODULE_8__.VectorMath.vectorCartesian(2 * Math.random() * Math.PI, (3 + 2 * Math.random()) * 0.25);
         var randomAngularVelocity = (3 * 0.075 * Math.random()) * 0.25;
         _this.transform.vel[0] = randomVelocity[0];
         _this.transform.vel[1] = randomVelocity[1];
         _this.transform.aVel = randomAngularVelocity;
-        _this.addLineSprite(new AuroraDeathAnimationSprite(_this.transform, length));
+        _this.addLineSprite(new DeathAnimationSprite(_this.transform, length, width || 1.5, color));
         _this.addPhysicsComponent();
         return _this;
     }
-    AuroraDeathAnimationObject.prototype.animate = function () { };
-    AuroraDeathAnimationObject.prototype.update = function (deltaTime) { };
-    return AuroraDeathAnimationObject;
+    DeathAnimationLineObject.prototype.animate = function () { };
+    DeathAnimationLineObject.prototype.update = function (deltaTime) { };
+    return DeathAnimationLineObject;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
-var AuroraDeathAnimationSprite = /** @class */ (function (_super) {
-    __extends(AuroraDeathAnimationSprite, _super);
-    function AuroraDeathAnimationSprite(transform, length) {
+// export class DeathAnimationBezierObject extends GameObject {
+//     constructor(
+//         engine: GameEngine | AnimationView,
+//         objectPos: [number, number],// position of the parent object
+//         objectAngle: number, // angle of the parent object
+//         bezierCurvePoints: {
+//             startPos: [number, number],
+//             endPos: [number, number],
+//             controlPoint1: [number, number],
+//             controlPoint2: [number, number]
+//         }, // relative to parent object origin
+//         color?: string,
+//         width?: number,
+//         speed?: number,
+//     ) {
+//         super(engine);
+//         const linePoint1 = linePointPositions[0];
+//         const linePoint2 = linePointPositions[1];
+//         const length = Math.sqrt(
+//             (linePoint2[0] - linePoint1[0])**2 + 
+//             (linePoint2[1] - linePoint1[1])**2
+//         )
+//         // its position is the average of these two
+//         const line1PositionOnPlane = [
+//             (linePoint1[0] + linePoint2[0] )/ 2,
+//             (linePoint1[1] + linePoint2[1]) / 2
+//         ]
+//         const linePositionAngleRelativeToAurora =  Math.atan2(line1PositionOnPlane[1], line1PositionOnPlane[0]) - Math.PI;
+//         const lineAngleRelativeToAurora =  Math.atan2(linePoint2[1] - linePoint1[1], linePoint2[0] - linePoint1[0]) - Math.PI;
+//         const planeOriginToLine1CenterDistance = Math.sqrt(line1PositionOnPlane[0]**2 + (line1PositionOnPlane[1])**2);
+//         const lineMidpointPosition: [number, number] = [
+//             objectPos[0] - planeOriginToLine1CenterDistance * Math.cos(objectAngle + linePositionAngleRelativeToAurora),
+//             objectPos[1] - planeOriginToLine1CenterDistance * Math.sin(objectAngle + linePositionAngleRelativeToAurora)
+//         ]
+//         const lineAngle = lineAngleRelativeToAurora + objectAngle;
+//         this.transform.pos = [lineMidpointPosition[0], lineMidpointPosition[1]];
+//         this.transform.angle = lineAngle;
+//         // create a random velocity and random angular velocity
+//         const randomVelocity = VectorMath.vectorCartesian(2 * Math.random() * Math.PI, (3 + 2 * Math.random()) * 0.25);
+//         const randomAngularVelocity = (3 * 0.075 * Math.random()) * 0.25;
+//         this.transform.vel[0] = randomVelocity[0];
+//         this.transform.vel[1] = randomVelocity[1];
+//         this.transform.aVel = randomAngularVelocity;
+//         this.addLineSprite(new DeathAnimationSprite(this.transform, length, width || 1.5, color));
+//         this.addPhysicsComponent();
+//     }
+//     animate() {}
+//     update(deltaTime: number) {}
+// }
+// export class DeathAnimationArcObject extends GameObject {
+//     constructor(
+//         engine: GameEngine | AnimationView,
+//         objectPos: [number, number],// position of the parent object
+//         objectAngle: number, // angle of the parent object
+//         arcData: {
+//             startPos: [number, number],
+//             endPos: [number, number],
+//             radius: [number, number]
+//         }, // relative to parent object origin
+//         color?: string,
+//         width?: number,
+//         speed?: number,
+//     ) {
+//         super(engine);
+//         const linePoint1 = linePointPositions[0];
+//         const linePoint2 = linePointPositions[1];
+//         const length = Math.sqrt(
+//             (linePoint2[0] - linePoint1[0])**2 + 
+//             (linePoint2[1] - linePoint1[1])**2
+//         )
+//         // its position is the average of these two
+//         const line1PositionOnPlane = [
+//             (linePoint1[0] + linePoint2[0] )/ 2,
+//             (linePoint1[1] + linePoint2[1]) / 2
+//         ]
+//         const linePositionAngleRelativeToAurora =  Math.atan2(line1PositionOnPlane[1], line1PositionOnPlane[0]) - Math.PI;
+//         const lineAngleRelativeToAurora =  Math.atan2(linePoint2[1] - linePoint1[1], linePoint2[0] - linePoint1[0]) - Math.PI;
+//         const planeOriginToLine1CenterDistance = Math.sqrt(line1PositionOnPlane[0]**2 + (line1PositionOnPlane[1])**2);
+//         const lineMidpointPosition: [number, number] = [
+//             objectPos[0] - planeOriginToLine1CenterDistance * Math.cos(objectAngle + linePositionAngleRelativeToAurora),
+//             objectPos[1] - planeOriginToLine1CenterDistance * Math.sin(objectAngle + linePositionAngleRelativeToAurora)
+//         ]
+//         const lineAngle = lineAngleRelativeToAurora + objectAngle;
+//         this.transform.pos = [lineMidpointPosition[0], lineMidpointPosition[1]];
+//         this.transform.angle = lineAngle;
+//         // create a random velocity and random angular velocity
+//         const randomVelocity = VectorMath.vectorCartesian(2 * Math.random() * Math.PI, (3 + 2 * Math.random()) * 0.25);
+//         const randomAngularVelocity = (3 * 0.075 * Math.random()) * 0.25;
+//         this.transform.vel[0] = randomVelocity[0];
+//         this.transform.vel[1] = randomVelocity[1];
+//         this.transform.aVel = randomAngularVelocity;
+//         this.addLineSprite(new DeathAnimationSprite(this.transform, length, width || 1.5, color));
+//         this.addPhysicsComponent();
+//     }
+//     animate() {}
+//     update(deltaTime: number) {}
+// }
+var DeathAnimationSprite = /** @class */ (function (_super) {
+    __extends(DeathAnimationSprite, _super);
+    function DeathAnimationSprite(transform, length, lineWidth, color) {
         // the color should be slightly less vibrant
         // and chosen by the parent object.. but for the future
         var _this = _super.call(this, transform) || this;
         _this.length = length;
-        _this.color = "rgb(255, 255, 255)";
+        _this.color = color ? color : "rgb(255, 255, 255)";
+        _this.lineWidth = lineWidth ? lineWidth : 1.5;
         return _this;
     }
-    AuroraDeathAnimationSprite.prototype.draw = function (ctx) {
+    DeathAnimationSprite.prototype.draw = function (ctx) {
         // I'm given a midpoint and a length
         var pos = this.transform.absolutePosition();
         ctx.strokeStyle = this.color;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = this.lineWidth;
         ctx.save();
         ctx.translate(pos[0], pos[1]);
         ctx.rotate(this.transform.angle);
@@ -10949,7 +11352,7 @@ var AuroraDeathAnimationSprite = /** @class */ (function (_super) {
         ctx.stroke();
         ctx.restore();
     };
-    return AuroraDeathAnimationSprite;
+    return DeathAnimationSprite;
 }(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
 
 
@@ -12407,7 +12810,6 @@ var PatriotMissileSite = /** @class */ (function (_super) {
                 missileSpeed * Math.sin(direction)
             ];
             var launchedMissile = new _Missile__WEBPACK_IMPORTED_MODULE_3__.Missile(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], vel, airplaneDetected.gameObject.transform);
-            this.addChildGameObject(launchedMissile);
         }
         console.log('launch missile sequencing');
         // create missiles at the fire rate while still in range
@@ -12636,6 +13038,8 @@ var LevelPrototype = /** @class */ (function (_super) {
         return false;
     };
     LevelPrototype.prototype.loseCondition = function () {
+    };
+    LevelPrototype.prototype.loseLevel = function () {
     };
     return LevelPrototype;
 }(_Level__WEBPACK_IMPORTED_MODULE_5__.Level));
@@ -16847,7 +17251,10 @@ var GameView = /** @class */ (function () {
                 }
             }
             if (e.key === 'f') {
+                // TODO hacked in a way to change focus,
+                // will need to update 
                 _this.engine.updateFKeyListener(down);
+                _this.engine.updateFKeyListeners(down);
             }
             if (e.key === 'l') {
                 _this.engine.updateLKeyListeners(down);

@@ -120,7 +120,10 @@ export class GameView {
             }
 
             if(e.key === 'f') {
+                // TODO hacked in a way to change focus,
+                // will need to update 
                 this.engine.updateFKeyListener(down);
+                this.engine.updateFKeyListeners(down);
             }
             if(e.key === 'l') {
                 this.engine.updateLKeyListeners(down);

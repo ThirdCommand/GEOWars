@@ -51,7 +51,7 @@ export class LevelPrototype extends Level {
     }
 
     update(deltaTime: number) {
-        
+
     }
     runWinCondition() {
         if(!this.targetBuilding.isAlive && this.controlledShip.transform.pos[0] <= this.endingLine.endLineXPosition - this.controlledShip.lineSprite.length) {
@@ -63,5 +63,9 @@ export class LevelPrototype extends Level {
     
     loseCondition() {
 
+    }
+
+    loseLevel() {
+        
     }
 }

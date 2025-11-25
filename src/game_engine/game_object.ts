@@ -139,6 +139,10 @@ export abstract class GameObject implements controllable{
         if(this.gameEngine instanceof GameEngine)
             this.gameEngine.addJKeyListener(this)
     }
+    addFKeyListener() {
+        if(this.gameEngine instanceof GameEngine)
+            this.gameEngine.addFKeyListener(this)
+    }
     addSKeyListener() {
         if(this.gameEngine instanceof GameEngine)
             this.gameEngine.addSKeyListener(this)
@@ -151,6 +155,7 @@ export abstract class GameObject implements controllable{
             this.gameEngine.addStartButtonListener(this);
     }
     updateKKeyListener(pressed: boolean) { console.log('overwrite updateKKeyListener');}
+    updateFKeyListener(pressed: boolean) { console.log('overwrite updateFKeyListener');}
     updateCKeyListener(pressed: boolean) { console.log('overwrite updateCKeyListener');}
     updateOKeyListener(pressed: boolean) { console.log('overwrite updateOKeyListener');}
     updateJKeyListener(pressed: boolean) { console.log('overwrite updateJKeyListener');}

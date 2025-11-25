@@ -191,7 +191,8 @@ export class StrikeTimeScript {
     loseLevel() {
         // should mostly be defined by the level
         const modal = document.getElementById("endOfStrikeTimeModalLost");
-        this.explodeEverything();
+        this.currentLevel.loseLevel();
+        setTimeout(() => this.explodeEverything(), 1000);
         setTimeout(() => (modal.style.display = "block"), 1800);
 
         // Get the button that opens the modal
@@ -239,6 +240,8 @@ export class StrikeTimeScript {
             "Building1",
             "TargetBuilding",
             "PatriotMissileSite",
+            "AuroraDeathAnimationObject",
+            "Missile"
         ];
         this.engine.gameObjects.forEach((object) => {
             if (typesToRemove.includes(object.constructor.name)) {

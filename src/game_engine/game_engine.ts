@@ -73,6 +73,9 @@ interface MKeyListenable {
 interface JKeyListenable {
     updateJKeyListener(pressed: boolean): void
 }
+interface FKeyListenable {
+    updateFKeyListener(pressed: boolean): void
+}
 interface OKeyListenable {
     updateOKeyListener(pressed: boolean): void
 }
@@ -155,6 +158,7 @@ export class GameEngine {
     bKeyListeners: BKeyListenable[];
     mKeyListeners: MKeyListenable[];
     jKeyListeners: JKeyListenable[];
+    fKeyListeners: FKeyListenable[];
     oKeyListeners: OKeyListenable[];
     cKeyListeners: CKeyListenable[];
     sKeyListeners: SKeyListenable[];
@@ -232,6 +236,7 @@ export class GameEngine {
         this.rightControlStickListeners = [];
         this.lKeyListeners = [];
         this.kKeyListeners = [];
+        this.fKeyListeners = [];
         this.bKeyListeners = [];
         this.mKeyListeners = [];
         this.jKeyListeners = [];
@@ -463,6 +468,9 @@ export class GameEngine {
     addJKeyListener(object: JKeyListenable) {
         this.jKeyListeners.push(object)
     }
+    addFKeyListener(object: FKeyListenable) {
+        this.fKeyListeners.push(object)
+    }
     addBKeyListener(object: BKeyListenable) {
         this.bKeyListeners.push(object)
     }
@@ -691,6 +699,11 @@ export class GameEngine {
             listener.updateCKeyListener(down);
         })
     }
+    updateFKeyListeners(down: boolean) {
+        this.fKeyListeners.forEach((listener) => {
+            listener.updateFKeyListener(down);
+        })
+    }
 
     updateRightControlStickListeners(unitVector: [number, number]) {
         this.rightControlStickListeners.forEach((listener) => {
@@ -716,7 +729,7 @@ export class GameEngine {
         this.aButtonListeners.forEach((listener) => {
             listener.updateAButtonListener(aButton);
         });
-        this.updateFKeyListener(aButton); // TODO this is a hacky way to do this
+        // this.updateFKeyListener(aButton); // TODO this is a hacky way to do this
     }
 
 
