@@ -11,6 +11,7 @@ import { VectorMath } from "../../../game_engine/util";
 import { BombReticle } from "./BombReticle";
 import { StrikeTimeScript } from "../../../StrikeTimeScript";
 import { AnimationView } from "../../../AnimationView";
+import { ArcData } from "../../../game_engine/SpriteEditor/Point";
 
 export class Aurora extends GameObject {
     lineSprite: AuroraSprite;
@@ -36,6 +37,8 @@ export class Aurora extends GameObject {
         refreshTime: number;
         reloadTime: number;
     }
+    destructedColor: string;
+    destructionLineWidth: number;
    
 
     constructor(
@@ -49,6 +52,8 @@ export class Aurora extends GameObject {
         this.hitsWhenDead = 3;
         this.transform.angle = angle;
         this.transform.vel = [0, 0];
+        this.destructedColor = "rgb(255, 255, 255)";
+        this.destructionLineWidth = 1.5;
 
         this.radius = 30;
         this.turnRadius = 60;
@@ -561,54 +566,210 @@ export class Aurora extends GameObject {
 
     // }
 
+
+
+// testing BezierCurve
+    // createDeathAnimationLineObjectsWithBezier() {
+    //     const s = 1;
+    //     new DeathAnimationLineObject(
+    //         this.gameEngine,
+    //         this.transform,
+    //         this.transform.angle,
+    //         [
+    //             [-18 * s, 12 * s],
+    //             [12 * s, 12 * s]
+    //         ],
+    //         this.destructedColor,
+    //         this.destructionLineWidth
+    //     );
+    //     new DeathAnimationLineObject(
+    //         this.gameEngine,
+    //         this.transform,
+    //         this.transform.angle,
+    //         [
+    //             [26 * s, 4 * s],
+    //             [12 * s, -6 * s]
+    //         ],
+    //         this.destructedColor,
+    //         this.destructionLineWidth
+    //     );
+    //     new DeathAnimationLineObject(
+    //         this.gameEngine,
+    //         this.transform,
+    //         this.transform.angle,
+    //         [
+    //             [-11 * s, -6 * s],
+    //             [-18 * s, 12 * s]
+    //         ],
+    //         this.destructedColor,
+    //         this.destructionLineWidth
+    //     );
+    //     new DeathAnimationBezierCurveObject(
+    //         this.gameEngine,
+    //         this.transform,
+    //         this.transform.angle,
+    //         {
+    //             startPos: [12 * s, 12 * s],
+    //             endPos: [26 * s, 4 * s],
+    //             controlPoint1: [18 * s, 18 * s],
+    //             controlPoint2: [28 * s, 12 * s],
+    //         },
+    //         this.destructedColor,
+    //         this.destructionLineWidth
+    //     )
+    //     new DeathAnimationBezierCurveObject(
+    //         this.gameEngine,
+    //         this.transform,
+    //         this.transform.angle,
+    //         {
+    //             startPos: [12 * s, -6 * s],
+    //             endPos: [-11 * s, -6 * s],
+    //             controlPoint1: [-8 * s, 2 * s],
+    //             controlPoint2: [-2 * s, 3 * s],
+    //         },
+    //         this.destructedColor,
+    //         this.destructionLineWidth
+    //     )
+    // }
+
+    // createDeathAnimationLineObjectsOriginal() {
+    //     // All I need is the point positions of the lines to create the death animation object
+    //     // I already have this when I use the sprite editor
+    //     // so I should be able to output this function as well when creating a sprite
+
+    //     const l = this.lineSprite.length;
+    //     const w = this.lineSprite.length / 2;
+
+    //     // get the first line position and angle relative to Aurora's 0,0
+    //     /*
+    //         line 1
+    //         ctx.beginPath();
+    //         ctx.moveTo(0,0) // point 1
+    //         ctx.lineTo(-l, w/2) // point 2
+    //         ctx.stroke();
+    //     */
+
+    //     const line1Point1: [number, number] = [0, 0];
+    //     const line1Point2: [number, number] = [-l, -w/2];
+
+    //     new DeathAnimationLineObject(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], this.transform.angle, [line1Point1, line1Point2], "rgb(255, 255, 255)", 1.5);
+
+    //     /*
+    //         line 2
+    //         ctx.beginPath();
+    //         ctx.moveTo(-l, w/2); // point 1
+    //         ctx.lineTo(-l, -w/2); // point 2
+    //         ctx.stroke();
+    //     */
+
+    //     const line2Point1: [number, number] = [-l, w/2];
+    //     const line2Point2: [number, number] = [-l, -w/2];
+
+    //     new DeathAnimationLineObject(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], this.transform.angle, [line2Point1, line2Point2], "rgb(255, 255, 255)", 1.5);
+
+    //    /*
+    //         line 3
+    //         ctx.beginPath();
+    //         ctx.lineTo(-l, -w/2);
+    //         ctx.lineTo(0, 0);
+    //         ctx.stroke();
+    //     */
+
+    //     const line3Point1: [number, number] = [-l, -w/2];
+    //     const line3Point2: [number, number] = [0,0];
+
+    //     new DeathAnimationLineObject(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], this.transform.angle, [line3Point1, line3Point2], "rgb(255, 255, 255)", 1.5);
+
+    // }
     createDeathAnimationLineObjects() {
-        // All I need is the point positions of the lines to create the death animation object
-        // I already have this when I use the sprite editor
-        // so I should be able to output this function as well when creating a sprite
-
-        const l = this.lineSprite.length;
-        const w = this.lineSprite.length / 2;
-
-        // get the first line position and angle relative to Aurora's 0,0
-        /*
-            line 1
-            ctx.beginPath();
-            ctx.moveTo(0,0) // point 1
-            ctx.lineTo(-l, w/2) // point 2
-            ctx.stroke();
-        */
-
-        const line1Point1: [number, number] = [0, 0];
-        const line1Point2: [number, number] = [-l, -w/2];
-
-        new DeathAnimationLineObject(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], this.transform.angle, [line1Point1, line1Point2], "rgb(255, 255, 255)", 1.5);
-
-        /*
-            line 2
-            ctx.beginPath();
-            ctx.moveTo(-l, w/2); // point 1
-            ctx.lineTo(-l, -w/2); // point 2
-            ctx.stroke();
-        */
-
-        const line2Point1: [number, number] = [-l, w/2];
-        const line2Point2: [number, number] = [-l, -w/2];
-
-        new DeathAnimationLineObject(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], this.transform.angle, [line2Point1, line2Point2], "rgb(255, 255, 255)", 1.5);
-
-       /*
-            line 3
-            ctx.beginPath();
-            ctx.lineTo(-l, -w/2);
-            ctx.lineTo(0, 0);
-            ctx.stroke();
-        */
-
-        const line3Point1: [number, number] = [-l, -w/2];
-        const line3Point2: [number, number] = [0,0];
-
-         new DeathAnimationLineObject(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], this.transform.angle, [line3Point1, line3Point2], "rgb(255, 255, 255)", 1.5);
-
+        const s = 1.3;
+        new DeathAnimationLineObject(
+            this.gameEngine,
+            this.transform,
+            this.transform.angle,
+            [
+                [0 * s, 0 * s],
+                [-48 * s, -12 * s]
+            ],
+            this.destructedColor,
+            this.destructionLineWidth
+        );
+        new DeathAnimationLineObject(
+            this.gameEngine,
+            this.transform,
+            this.transform.angle,
+            [
+                [-48 * s, -12 * s],
+                [-48 * s, 12 * s]
+            ],
+            this.destructedColor,
+            this.destructionLineWidth
+        );
+        new DeathAnimationLineObject(
+            this.gameEngine,
+            this.transform,
+            this.transform.angle,
+            [
+                [-48 * s, 12 * s],
+                [0 * s, 0 * s]
+            ],
+            this.destructedColor,
+            this.destructionLineWidth
+        );
+        new DeathAnimationLineObject(
+            this.gameEngine,
+            this.transform,
+            this.transform.angle,
+            [
+                [-41 * s, 2 * s],
+                [-39 * s, 2 * s]
+            ],
+            this.destructedColor,
+            this.destructionLineWidth
+        );
+        new DeathAnimationLineObject(
+            this.gameEngine,
+            this.transform,
+            this.transform.angle,
+            [
+                [-39 * s, -2 * s],
+                [-41 * s, -2 * s]
+            ],
+            this.destructedColor,
+            this.destructionLineWidth
+        );
+        new DeathAnimationArcObject(
+            this.gameEngine,
+            this.transform,
+            this.transform.angle,
+            {
+                startAngle: 1.5707963267948966,
+                endAngle: -1.5707963267948966,
+                startPos: [-39 * s, 2 * s],
+                endPos: [-39 * s, -2 * s],
+                centerPosition: [-39 * s, 0 * s],
+                radius: 2 * s,
+                counterClockwise: false
+            },
+            this.destructedColor,
+            this.destructionLineWidth
+        )
+        new DeathAnimationArcObject(
+            this.gameEngine,
+            this.transform,
+            this.transform.angle,
+            {
+                startAngle: -1.5707963267948966,
+                endAngle: 1.5707963267948966,
+                startPos: [-41 * s, -2 * s],
+                endPos: [-41 * s, 2 * s],
+                centerPosition: [-41 * s, 0 * s],
+                radius: 2 * s,
+                counterClockwise: false
+            },
+            this.destructedColor,
+            this.destructionLineWidth
+        )
     }
 }
 
@@ -635,6 +796,7 @@ export class AuroraSprite extends LineSprite {
         ctx.save();
         ctx.translate(pos[0], pos[1]);
         ctx.rotate(this.transform.angle);
+        // this.drawPlane(ctx);
         this.drawAurora(ctx);
         ctx.restore();
     }
@@ -732,13 +894,39 @@ export class AuroraSprite extends LineSprite {
         ctx.arc(-41 * s, 0 * s, 2 * s, -1.5707963267948966, 1.5707963267948966, true);
         ctx.stroke();
     }
+    // remember to remove the transform stuff, and add the color to see it lol
+    drawPlane(ctx: CanvasRenderingContext2D) { 
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 2;
+        const s = 1;
+
+        // Piece 1: 
+        ctx.beginPath();
+        ctx.moveTo(-18 * s, 12 * s);
+        ctx.lineTo(12 * s, 12 * s);
+        ctx.bezierCurveTo(
+            18 * s, 18 * s,
+            28 * s, 12 * s,
+            26 * s, 4 * s
+        );
+        ctx.lineTo(12 * s, -6 * s);
+        ctx.bezierCurveTo(
+            -8 * s, 2 * s,
+            -2 * s, 3 * s,
+            -11 * s, -6 * s
+        );
+        ctx.lineTo(-18 * s, 12 * s);
+        ctx.stroke();
+    }
 
 }
 
 export class DeathAnimationLineObject extends GameObject {
+    removeTime: number;
+    timeAround: number;
     constructor(
         engine: GameEngine | AnimationView,
-        objectPos: [number, number],// position of the parent object
+        objectTransform: Transform,// position of the parent object
         objectAngle: number, // angle of the parent object
         linePointPositions: [[number, number], [number, number]], // relative to parent object origin
         color?: string,
@@ -746,6 +934,9 @@ export class DeathAnimationLineObject extends GameObject {
         speed?: number,
     ) {
         super(engine);
+        this.removeTime = 3000;
+        this.timeAround = 0;
+        const objectPos = [objectTransform.pos[0], objectTransform.pos[1]]
 
         const linePoint1 = linePointPositions[0];
         const linePoint2 = linePointPositions[1];
@@ -779,13 +970,22 @@ export class DeathAnimationLineObject extends GameObject {
 
         this.transform.pos = [lineMidpointPosition[0], lineMidpointPosition[1]];
         this.transform.angle = lineAngle;
+        const velocityVariancePercentage = 0.1; // 10%
+        const velocity = 0.05;
+        const angularVelocityVariance = 0.1; // 10%
+        const angularVelocity = 0.075 * 0.15
 
         // create a random velocity and random angular velocity
-        const randomVelocity = VectorMath.vectorCartesian(2 * Math.random() * Math.PI, (3 + 2 * Math.random()) * 0.25);
-        const randomAngularVelocity = (3 * 0.075 * Math.random()) * 0.25;
+        const randomVelocity = VectorMath.vectorCartesian(
+            2 * Math.random() * Math.PI, 
+            velocity + (velocity * velocityVariancePercentage) * Math.random()
+        );
+        
+        const newVelocity = [randomVelocity[0] + objectTransform.vel[0] * 8, randomVelocity[1] + objectTransform.vel[1] * 8];
+        const randomAngularVelocity = (angularVelocity + (angularVelocity * angularVelocityVariance)) * Math.random();
 
-        this.transform.vel[0] = randomVelocity[0];
-        this.transform.vel[1] = randomVelocity[1];
+        this.transform.vel[0] = newVelocity[0];
+        this.transform.vel[1] = newVelocity[1];
 
         this.transform.aVel = randomAngularVelocity;
         this.addLineSprite(new DeathAnimationSprite(this.transform, length, width || 1.5, color));
@@ -794,144 +994,210 @@ export class DeathAnimationLineObject extends GameObject {
 
     animate() {}
 
-    update(deltaTime: number) {}
+    update(deltaTime: number) {
+        this.timeAround += deltaTime;
+        if(this.timeAround > this.removeTime) {
+            this.remove();
+        }
+
+    }
 }
-// export class DeathAnimationBezierObject extends GameObject {
-//     constructor(
-//         engine: GameEngine | AnimationView,
-//         objectPos: [number, number],// position of the parent object
-//         objectAngle: number, // angle of the parent object
-//         bezierCurvePoints: {
-//             startPos: [number, number],
-//             endPos: [number, number],
-//             controlPoint1: [number, number],
-//             controlPoint2: [number, number]
-//         }, // relative to parent object origin
-//         color?: string,
-//         width?: number,
-//         speed?: number,
-//     ) {
-//         super(engine);
+export class DeathAnimationArcObject extends GameObject {
+    timeAround: number;
+    removeTime: number;
+    constructor(
+        engine: GameEngine | AnimationView,
+        objectTransform: Transform,// position of the parent object
+        objectAngle: number, // angle of the parent object
+        arcData: {
+            startPos: [number, number],
+            endPos: [number, number],
+            centerPosition: [number, number],
+            radius: number,
+            startAngle: number,
+            endAngle: number,
+            counterClockwise: boolean,
+        }, // relative to parent object origin
+        color?: string,
+        width?: number,
+        speed?: number,
+    ) {
+        super(engine);
+        this.removeTime = 3000;
+        this.timeAround = 0;
+        const objectPos = [objectTransform.pos[0], objectTransform.pos[1]]
+        const {centerPosition, radius, startAngle, endAngle, counterClockwise} = arcData;
 
-//         const linePoint1 = linePointPositions[0];
-//         const linePoint2 = linePointPositions[1];
+        const arcCenterPositionAngleRelativeToObject =  Math.atan2(centerPosition[1], centerPosition[0]) - Math.PI;
+        const startAngleRelativeToObject = startAngle;
+        const endAngleRelativeToObject = endAngle;
 
-//         const length = Math.sqrt(
-//             (linePoint2[0] - linePoint1[0])**2 + 
-//             (linePoint2[1] - linePoint1[1])**2
-//         )
+        const objectOriginToCenterDistance = Math.sqrt(centerPosition[0]**2 + (centerPosition[1])**2);
 
-//         // its position is the average of these two
-//         const line1PositionOnPlane = [
-//             (linePoint1[0] + linePoint2[0] )/ 2,
-//             (linePoint1[1] + linePoint2[1]) / 2
-//         ]
+        const newCenterPosition: [number, number] = [
+            objectPos[0] - objectOriginToCenterDistance * Math.cos(objectAngle + arcCenterPositionAngleRelativeToObject),
+            objectPos[1] - objectOriginToCenterDistance * Math.sin(objectAngle + arcCenterPositionAngleRelativeToObject)
+        ]
 
-//         const linePositionAngleRelativeToAurora =  Math.atan2(line1PositionOnPlane[1], line1PositionOnPlane[0]) - Math.PI;
-//         const lineAngleRelativeToAurora =  Math.atan2(linePoint2[1] - linePoint1[1], linePoint2[0] - linePoint1[0]) - Math.PI;
-
-//         const planeOriginToLine1CenterDistance = Math.sqrt(line1PositionOnPlane[0]**2 + (line1PositionOnPlane[1])**2);
-
-//         const lineMidpointPosition: [number, number] = [
-//             objectPos[0] - planeOriginToLine1CenterDistance * Math.cos(objectAngle + linePositionAngleRelativeToAurora),
-//             objectPos[1] - planeOriginToLine1CenterDistance * Math.sin(objectAngle + linePositionAngleRelativeToAurora)
-//         ]
-
-//         const lineAngle = lineAngleRelativeToAurora + objectAngle;
+        const newStartAngle = startAngleRelativeToObject + objectAngle;
+        const newEndAngle = endAngleRelativeToObject + objectAngle;
 
 
+        this.transform.pos = [newCenterPosition[0], newCenterPosition[1]];
+        this.transform.angle = 0;
+
+        // create a random velocity and random angular velocity
+        const velocityVariancePercentage = 0.1; // 10%
+        const velocity = 0.05;
+        const angularVelocityVariance = 0.1; // 10%
+        const angularVelocity = 0.075 * 0.15
+
+        // create a random velocity and random angular velocity
+        const randomVelocity = VectorMath.vectorCartesian(
+            2 * Math.random() * Math.PI, 
+            velocity + (velocity * velocityVariancePercentage) * Math.random()
+        );
+        
+        const newVelocity = [randomVelocity[0] + objectTransform.vel[0] * 8, randomVelocity[1] + objectTransform.vel[1] * 8];
+        const randomAngularVelocity = (angularVelocity + (angularVelocity * angularVelocityVariance)) * Math.random();
+
+        this.transform.vel[0] = newVelocity[0];
+        this.transform.vel[1] = newVelocity[1];
+
+        this.transform.aVel = randomAngularVelocity;
+        this.addLineSprite(new DeathAnimationArcSprite(
+            this.transform, 
+            {
+                startAngle: newStartAngle, 
+                endAngle: newEndAngle, 
+                radius, 
+                counterClockwise, 
+                centerPosition: 
+                    [0, 0]
+                }, 
+            width || 1.5, color
+        ));
+        this.addPhysicsComponent();
+    }
+
+    animate() {}
+
+    update(deltaTime: number) {
+        this.timeAround += deltaTime;
+        if(this.timeAround > this.removeTime) {
+            this.remove();
+        }
+
+    }
+}
+export class DeathAnimationBezierCurveObject extends GameObject {
+    timeAround: number;
+    removeTime: number;
+    constructor(
+        engine: GameEngine | AnimationView,
+        objectTransform: Transform,// position of the parent object
+        objectAngle: number, // angle of the parent object
+        bezierCurveData: {
+            startPos: [number, number],
+            endPos: [number, number],
+            controlPoint1: [number, number],
+            controlPoint2: [number, number],
+        }, // relative to parent object origin
+        color?: string,
+        width?: number,
+        speed?: number,
+    ) {
+        super(engine);
+        this.timeAround = 0;
+        this.removeTime = 3000;
+        const objectPos = [objectTransform.pos[0], objectTransform.pos[1]]
+        const {
+            startPos, 
+            endPos, 
+            controlPoint1, 
+            controlPoint2
+        } = bezierCurveData;
+
+        const midPoint = [(startPos[0] + endPos[0]) / 2, (startPos[1] + endPos[1])/ 2];
+
+        const [
+            startPosNewO,
+            endPosNewO,
+            controlPoint1NewO,
+            controlPoint2NewO
+        ] = [
+            startPos,endPos,controlPoint1,controlPoint2
+        ].map<[number, number]>((point) => [point[0] - midPoint[0], point[1] - midPoint[1]]);
+
+        const midPointAngleRelativeToObject =  Math.atan2(midPoint[1], midPoint[0]) - Math.PI;
+
+        // const startPosAngleRelativeToNewOrigin =  Math.atan2(startPosNewO[1], startPosNewO[0]) - Math.PI;
+        // const endPosAngleRelativeToObject =  Math.atan2(endPosNewO[1], endPosNewO[0]) - Math.PI;
+        // const controlPoint1AngleRelativeToObject =  Math.atan2(controlPoint1NewO[1], controlPoint1NewO[0]) - Math.PI;
+        // const controlPoint2AngleRelativeToObject =  Math.atan2(controlPoint2NewO[1], controlPoint2NewO[0]) - Math.PI;
+
+        const midPointToNewOriginDistance = Math.sqrt(midPoint[0]**2 + (midPoint[1])**2);
+
+        // const startPosToNewOriginDistance = Math.sqrt(startPosNewO[0]**2 + (startPosNewO[1])**2);
+        // const endPosNewOriginDistance = Math.sqrt(endPosNewO[0]**2 + (endPosNewO[1])**2);
+        // const controlPoint1NewOriginDistance = Math.sqrt(controlPoint1NewO[0]**2 + (controlPoint1NewO[1])**2);
+        // const controlPoint2NewOriginDistance = Math.sqrt(controlPoint2NewO[0]**2 + (controlPoint2NewO[1])**2);
+
+        const newOriginPosition: [number, number] = [
+            objectPos[0] - midPointToNewOriginDistance * Math.cos(objectAngle + midPointAngleRelativeToObject),
+            objectPos[1] - midPointToNewOriginDistance * Math.sin(objectAngle + midPointAngleRelativeToObject)
+        ]
 
 
+        this.transform.pos = [newOriginPosition[0], newOriginPosition[1]];
+        this.transform.angle = 0;
 
-//         this.transform.pos = [lineMidpointPosition[0], lineMidpointPosition[1]];
-//         this.transform.angle = lineAngle;
+        const velocityVariancePercentage = 0.1; // 10%
+        const velocity = 0.05;
+        const angularVelocityVariance = 0.1; // 10%
+        const angularVelocity = 0.075 * 0.15
 
-//         // create a random velocity and random angular velocity
-//         const randomVelocity = VectorMath.vectorCartesian(2 * Math.random() * Math.PI, (3 + 2 * Math.random()) * 0.25);
-//         const randomAngularVelocity = (3 * 0.075 * Math.random()) * 0.25;
+        // create a random velocity and random angular velocity
+        const randomVelocity = VectorMath.vectorCartesian(
+            2 * Math.random() * Math.PI, 
+            velocity + (velocity * velocityVariancePercentage) * Math.random()
+        );
+        
+        const newVelocity = [randomVelocity[0] + objectTransform.vel[0] * 8, randomVelocity[1] + objectTransform.vel[1] * 8];
+        const randomAngularVelocity = (angularVelocity + (angularVelocity * angularVelocityVariance)) * Math.random();
 
-//         this.transform.vel[0] = randomVelocity[0];
-//         this.transform.vel[1] = randomVelocity[1];
+        this.transform.vel[0] = newVelocity[0];
+        this.transform.vel[1] = newVelocity[1];
 
-//         this.transform.aVel = randomAngularVelocity;
-//         this.addLineSprite(new DeathAnimationSprite(this.transform, length, width || 1.5, color));
-//         this.addPhysicsComponent();
-//     }
+        this.transform.aVel = randomAngularVelocity;
+        this.addLineSprite(new DeathAnimationBezierCurveSprite(
+            this.transform, 
+            {
+                startPos: startPosNewO,
+                endPos: endPosNewO,
+                controlPoint1: controlPoint1NewO,
+                controlPoint2: controlPoint2NewO,
+                
+            }, 
+            width || 1.5, color
+        ));
+        this.addPhysicsComponent();
+    }
+    animate(dT: number): void {}
 
-//     animate() {}
+    update(deltaTime: number) {
+        this.timeAround += deltaTime;
+        if(this.timeAround > this.removeTime) {
+            this.remove();
+        }
 
-//     update(deltaTime: number) {}
-// }
-// export class DeathAnimationArcObject extends GameObject {
-//     constructor(
-//         engine: GameEngine | AnimationView,
-//         objectPos: [number, number],// position of the parent object
-//         objectAngle: number, // angle of the parent object
-//         arcData: {
-//             startPos: [number, number],
-//             endPos: [number, number],
-//             radius: [number, number]
-//         }, // relative to parent object origin
-//         color?: string,
-//         width?: number,
-//         speed?: number,
-//     ) {
-//         super(engine);
-
-//         const linePoint1 = linePointPositions[0];
-//         const linePoint2 = linePointPositions[1];
-
-//         const length = Math.sqrt(
-//             (linePoint2[0] - linePoint1[0])**2 + 
-//             (linePoint2[1] - linePoint1[1])**2
-//         )
-
-//         // its position is the average of these two
-//         const line1PositionOnPlane = [
-//             (linePoint1[0] + linePoint2[0] )/ 2,
-//             (linePoint1[1] + linePoint2[1]) / 2
-//         ]
-
-//         const linePositionAngleRelativeToAurora =  Math.atan2(line1PositionOnPlane[1], line1PositionOnPlane[0]) - Math.PI;
-//         const lineAngleRelativeToAurora =  Math.atan2(linePoint2[1] - linePoint1[1], linePoint2[0] - linePoint1[0]) - Math.PI;
-
-//         const planeOriginToLine1CenterDistance = Math.sqrt(line1PositionOnPlane[0]**2 + (line1PositionOnPlane[1])**2);
-
-//         const lineMidpointPosition: [number, number] = [
-//             objectPos[0] - planeOriginToLine1CenterDistance * Math.cos(objectAngle + linePositionAngleRelativeToAurora),
-//             objectPos[1] - planeOriginToLine1CenterDistance * Math.sin(objectAngle + linePositionAngleRelativeToAurora)
-//         ]
-
-//         const lineAngle = lineAngleRelativeToAurora + objectAngle;
-
-
-
-
-
-//         this.transform.pos = [lineMidpointPosition[0], lineMidpointPosition[1]];
-//         this.transform.angle = lineAngle;
-
-//         // create a random velocity and random angular velocity
-//         const randomVelocity = VectorMath.vectorCartesian(2 * Math.random() * Math.PI, (3 + 2 * Math.random()) * 0.25);
-//         const randomAngularVelocity = (3 * 0.075 * Math.random()) * 0.25;
-
-//         this.transform.vel[0] = randomVelocity[0];
-//         this.transform.vel[1] = randomVelocity[1];
-
-//         this.transform.aVel = randomAngularVelocity;
-//         this.addLineSprite(new DeathAnimationSprite(this.transform, length, width || 1.5, color));
-//         this.addPhysicsComponent();
-//     }
-
-//     animate() {}
-
-//     update(deltaTime: number) {}
-// }
-
+    }
+}
 export class DeathAnimationSprite extends LineSprite {
     length: number;
     color: string;
     lineWidth: number;
+    
     constructor(transform: Transform, length: number, lineWidth?: number, color?: string) {
         // the color should be slightly less vibrant
         // and chosen by the parent object.. but for the future
@@ -954,6 +1220,116 @@ export class DeathAnimationSprite extends LineSprite {
         ctx.beginPath();
         ctx.moveTo(-this.length / 2, 0);
         ctx.lineTo(this.length / 2, 0);
+        ctx.stroke();
+
+        ctx.restore();
+    }
+}
+export class DeathAnimationArcSprite extends LineSprite {
+    length: number;
+    color: string;
+    lineWidth: number;
+    arcData: {
+        centerPosition: [number, number],
+        radius: number,
+        startAngle: number,
+        endAngle: number,
+        counterClockwise: boolean,
+    };
+    constructor(
+        transform: Transform, 
+        arcData: {
+            centerPosition: [number, number],
+            radius: number,
+            startAngle: number,
+            endAngle: number,
+            counterClockwise: boolean,
+        }, 
+        lineWidth?: number, 
+        color?: string
+    ) {
+        // the color should be slightly less vibrant
+        // and chosen by the parent object.. but for the future
+        super(transform);
+        this.arcData = arcData;
+        this.color = color ? color : "rgb(255, 255, 255)";
+        this.lineWidth = lineWidth ? lineWidth : 1.5;
+    }
+
+    draw(ctx: CanvasRenderingContext2D) {
+        const {centerPosition, radius, startAngle, endAngle, counterClockwise} = this.arcData;
+
+        const pos = this.transform.absolutePosition();
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = this.lineWidth;
+
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+        ctx.rotate(this.transform.angle);
+        
+        ctx.beginPath();
+        ctx.arc(centerPosition[0], centerPosition[1], radius, startAngle, endAngle, counterClockwise);
+        ctx.lineTo(this.length / 2, 0);
+        ctx.stroke();
+
+        ctx.restore();
+    }
+}
+export class DeathAnimationBezierCurveSprite extends LineSprite {
+    length: number;
+    color: string;
+    lineWidth: number;
+    bezierCurveData: {
+        startPos: [number, number],
+        endPos: [number, number],
+        controlPoint1: [number, number],
+        controlPoint2: [number, number],
+    };
+    constructor(
+        transform: Transform, 
+        bezierCurveData: {
+            startPos: [number, number],
+            endPos: [number, number],
+            controlPoint1: [number, number],
+            controlPoint2: [number, number],
+        }, 
+        lineWidth?: number, 
+        color?: string
+    ) {
+        // the color should be slightly less vibrant
+        // and chosen by the parent object.. but for the future
+        super(transform);
+        this.bezierCurveData = bezierCurveData;
+        this.color = color ? color : "rgb(255, 255, 255)";
+        this.lineWidth = lineWidth ? lineWidth : 1.5;
+    }
+
+    draw(ctx: CanvasRenderingContext2D) {
+        const {
+            startPos,
+            endPos,
+            controlPoint1,
+            controlPoint2
+        } = this.bezierCurveData;
+
+        const pos = this.transform.absolutePosition();
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = this.lineWidth;
+
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+        ctx.rotate(this.transform.angle);
+        
+        ctx.beginPath();
+        ctx.moveTo(startPos[0], startPos[1]);
+        ctx.bezierCurveTo(
+            controlPoint1[0], 
+            controlPoint1[1], 
+            controlPoint2[0], 
+            controlPoint2[1], 
+            endPos[0], 
+            endPos[0]
+        );
         ctx.stroke();
 
         ctx.restore();

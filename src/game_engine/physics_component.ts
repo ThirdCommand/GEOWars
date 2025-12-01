@@ -115,11 +115,11 @@ export class ReplayablePhysicsComponent {
         } = turnParams;
 
         if (this.isAccelerating) {
-            console.log('interrupting Acceleration to Turn');
+            // console.log('interrupting Acceleration to Turn');
         }
 
         if(this.isTurning) {
-            console.log('interrupting Turn to change Turn')
+            // console.log('interrupting Turn to change Turn')
         }
 
         if(this.isTurning) {
@@ -136,13 +136,13 @@ export class ReplayablePhysicsComponent {
         }
         // will have a precise time and location when the arch started while playing back controls
         // in that case we'll have to piece wise connect the arch and previous section
-        console.log('input for startArchRotation', {
-            rotationPoint,
-            tangentSpeed,
-            endAngle,
-            gameTimeArchStarted,
-            pointWhereArchStarted,
-        })
+        // console.log('input for startArchRotation', {
+        //     rotationPoint,
+        //     tangentSpeed,
+        //     endAngle,
+        //     gameTimeArchStarted,
+        //     pointWhereArchStarted,
+        // })
 
          // isRotating should have been made false by the interruption of the rotation
         this.isAccelerating = false;
@@ -184,7 +184,7 @@ export class ReplayablePhysicsComponent {
             // or would that even matter if it was just for replaying commands? 
             this.move(currentGameTime - gameTimeArchStarted, currentGameTime);
         }
-        console.log('colected turn information',this.turnInformation);
+        // console.log('colected turn information',this.turnInformation);
     }
 
     interruptTurn(interruptTurnParams: {
@@ -225,14 +225,14 @@ export class ReplayablePhysicsComponent {
             onStartDirection,
             nextInstruction,
         } = accelerationParams;
-        console.log('startAccelerationInstruction', accelerationParams)
+        // console.log('startAccelerationInstruction', accelerationParams)
 
         if (this.isAccelerating) {
-            console.log('interrupting Acceleration to change Acceleration');
+            // console.log('interrupting Acceleration to change Acceleration');
         }
 
         if(this.isTurning) {
-            console.log('interrupting Turn to Accelerate instead')
+            // console.log('interrupting Turn to Accelerate instead')
         }
 
         // isRotating should have been made false by the interruption of the rotation
@@ -327,7 +327,7 @@ export class ReplayablePhysicsComponent {
             endVelocityIfUninterrupted,
             endSpeedIfUninterrupted
         }
-        console.log({accelerationInformationCollected: this.accelerationInformation, isAccelerating: this.isAccelerating, currentGameTime})
+        // console.log({accelerationInformationCollected: this.accelerationInformation, isAccelerating: this.isAccelerating, currentGameTime})
         if(currentGameTime) {
             this.move(currentGameTime - gameTimeAccelerationStarted, currentGameTime);
         }
@@ -367,14 +367,14 @@ export class ReplayablePhysicsComponent {
             // if the game time is after the acceleration should have finished
             if (gameTime >= gameTimeWhenAccelerationEnds) {
                 // if the game time is after the acceleration should have finished
-                console.log('Acceleration ended', {
-                    currentPosition: this.transform.pos, 
-                    settingPosition: this.accelerationInformation.accelerationEndPositionIfUninterrupted, 
-                    gameTimeWhenAccelerationEnds: this.accelerationInformation.gameTimeWhenAccelerationEnds, 
-                    gameTime: gameTime}
-                );
+                // console.log('Acceleration ended', {
+                //     currentPosition: this.transform.pos, 
+                //     settingPosition: this.accelerationInformation.accelerationEndPositionIfUninterrupted, 
+                //     gameTimeWhenAccelerationEnds: this.accelerationInformation.gameTimeWhenAccelerationEnds, 
+                //     gameTime: gameTime}
+                // );
                 this.instructionsCompleted.push(`${this.accelerationInformation.isDecelerating ? 'negative' : 'positive'} acceleration completed`)
-                console.log(this.instructionsCompleted);
+                // console.log(this.instructionsCompleted);
                 const timeSinceAccelerationEnded = gameTime - gameTimeWhenAccelerationEnds;
                 this.restSpeed = endSpeedIfUninterrupted;
                 if(nextInstruction) {
@@ -425,10 +425,10 @@ export class ReplayablePhysicsComponent {
                 this.transform.pos[0] = endPoint[0];
                 this.transform.pos[1] = endPoint[1];
                 const timeSinceTurnEnded = gameTime - gameTimeWhenTurnEnds;
-                console.log('Turning ended');
+                // console.log('Turning ended');
 
                 this.instructionsCompleted.push(`Turn Completed. Direction: ${this.turnInformation.rotationDirection > 0 ? 'Right' : 'Left'}`);
-                console.log(this.instructionsCompleted);
+                // console.log(this.instructionsCompleted);
 
                 // this.movementTangentAngle = endAngleFromRotationPointIfUninterrupted;
                     

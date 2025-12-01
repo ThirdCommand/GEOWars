@@ -286,26 +286,34 @@ export class SpriteEditor extends GameObject{
             // find difference to get width
             // same with height for Y
             
-            let pointPairsForLines: Array<PointPair> = [];
+            let pointPairsForDestructionLines: PointPair[] = [];
+            let arcsForDestructionLines: ArcData[] = [];
+            let bezierCurvesForDestructionLines: BezierCurveData[] = [];
+
+            let potentialStartPointForNextLine: [number, number];
+
             mappedPoints.forEach((pointGroup, idx) => {
                 let stringStart = ``
-                let firstPointInFirstLine: [number, number];
                 
                 const firstPoint = pointGroup[0];
                 if(firstPoint instanceof PointData) {
                     stringStart = 
                     `\t// Piece ${idx + 1}: \n\tctx.beginPath();\n\tctx.moveTo(${firstPoint.point[0]} * s, ${firstPoint.point[1]} * s);\n`;
-                    firstPointInFirstLine = [firstPoint.point[0], firstPoint.point[1]];
+                    potentialStartPointForNextLine = [firstPoint.point[0], firstPoint.point[1]];
                 } else if (firstPoint instanceof CircleData) {
                     stringStart = 
                     `\t// Piece ${idx + 1}: \n\tctx.beginPath();\n\tctx.arc(${firstPoint.centerPoint[0]} * s, ${firstPoint.centerPoint[1]} * s, ${firstPoint.radius} * s, 0,2*Math.PI);\n`;
                 } else if (firstPoint instanceof BezierCurveData) {
-                    stringStart=
-                    `\t// Piece ${idx + 1}: \n\tctx.beginPath();\n\tctx.moveTo(${firstPoint.startPos[0]} * s, ${firstPoint.startPos[1]} * s);\n\tctx.bezierCurveto(\n\t\t${firstPoint.controlPoint1[0]} * s, ${firstPoint.controlPoint1[1]} * s,\n\t\t${firstPoint.controlPoint2[0]} * s, ${firstPoint.controlPoint2[1]} * s,\n\t\t${firstPoint.endPos[0]} * s, ${firstPoint.endPos[1]} * s\n\t);\n`; 
-                    firstPointInFirstLine = [firstPoint.endPos[0], firstPoint.endPos[1]];
+                    stringStart =
+                    `\t// Piece ${idx + 1}: \n\tctx.beginPath();\n\tctx.moveTo(${firstPoint.startPos[0]} * s, ${firstPoint.startPos[1]} * s);\n\tctx.bezierCurveTo(\n\t\t${firstPoint.controlPoint1[0]} * s, ${firstPoint.controlPoint1[1]} * s,\n\t\t${firstPoint.controlPoint2[0]} * s, ${firstPoint.controlPoint2[1]} * s,\n\t\t${firstPoint.endPos[0]} * s, ${firstPoint.endPos[1]} * s\n\t);\n`; 
+                    potentialStartPointForNextLine = [firstPoint.endPos[0], firstPoint.endPos[1]];
+                    // I don't think I need to duplicate the objects but if I do here it is
+                    bezierCurvesForDestructionLines.push(firstPoint);
                 } else if (firstPoint instanceof ArcData) {
-                    stringStart=
+                    stringStart =
                     `\t// Piece ${idx + 1}: \n\tctx.beginPath();\n\tctx.arc(${firstPoint.centerPoint[0]} * s, ${firstPoint.centerPoint[1]} * s, ${firstPoint.radius} * s, ${firstPoint.startAngle}, ${firstPoint.endAngle}, ${firstPoint.counterClockwise});\n`;
+                    potentialStartPointForNextLine = [firstPoint.endPos[0], firstPoint.endPos[1]];
+                    arcsForDestructionLines.push(firstPoint)
                 }
 
                 // I should create the point pairs here... assuming they are lines
@@ -315,42 +323,30 @@ export class SpriteEditor extends GameObject{
                 // of a new line 
                
                 const restOfPoints = pointGroup.slice(1);
-                let destructedLinesSection: string;
-                // this will be true when the first point is a point or a bezier curve
-                // i need to account for the case where there's two bezier curves... okay
-                // I think I should just handle bezier curves at this point lol
-                // it shouldn't be too ridiculous
-                if (firstPointInFirstLine) {
-                    destructedLinesSection = 'createDeathAnimationObjects() {\n\tconst color = "rgb(255, 255, 255)"\n\tconst lineWidth = 1.5;\n'
-                    destructedLinesSection += `\tnew DeathAnimationLineObject(\n\t\tthis.gameEngine,\n\t\t[this.transform.pos[0], this.transform.pos[1]],\n\t\tthis.transform.angle,\n\t\t[line1Point1,\n`;
-                    `line1Point2], color, lineWidth);`
-                }
 
                 const lines = restOfPoints.reduce<string>((acc, point) => {
                     let newLine = '';
                     if(point instanceof PointData) {
                         newLine = 
                         `\tctx.lineTo(${point.point[0]} * s, ${point.point[1]} * s);\n`;
-                        if(firstPointInFirstLine) {
-                            pointPairsForLines.push(
-                                [
-                                    [firstPointInFirstLine[0], firstPointInFirstLine[1]], 
-                                    [point.point[0], point.point[1]]
-                                ]
-                            )
-                            firstPointInFirstLine = null;
-                        } else if (true) {
-
-                        }
+                        pointPairsForDestructionLines.push([
+                            [potentialStartPointForNextLine[0], potentialStartPointForNextLine[1]],
+                            [point.point[0], point.point[1]]
+                        ])
+                        potentialStartPointForNextLine = [point.point[0], point.point[1]];
                     } else if (point instanceof CircleData) {
                         console.error('there shouldnt be a circle here, since circles are their own part');
                     } else if (point instanceof BezierCurveData) {
                         // start of the curve should be the last point
                         newLine=
-                        `\tctx.bezierCurveto(\n\t\t${point.controlPoint1[0]} * s, ${point.controlPoint1[1]} * s,\n\t\t${point.controlPoint2[0]} * s, ${point.controlPoint2[1]} * s,\n\t\t${point.endPos[0]} * s, ${point.endPos[1]} * s\n\t);\n`; 
+                        `\tctx.bezierCurveTo(\n\t\t${point.controlPoint1[0]} * s, ${point.controlPoint1[1]} * s,\n\t\t${point.controlPoint2[0]} * s, ${point.controlPoint2[1]} * s,\n\t\t${point.endPos[0]} * s, ${point.endPos[1]} * s\n\t);\n`; 
+                        bezierCurvesForDestructionLines.push(point);
+                        potentialStartPointForNextLine = [point.endPos[0], point.endPos[1]];
                     } else if (point instanceof ArcData) {
                         newLine=
                         `\tctx.arc(${point.centerPoint[0]} * s, ${point.centerPoint[1]} * s, ${point.radius} * s, ${point.startAngle}, ${point.endAngle}, ${point.counterClockwise});\n`;
+                        arcsForDestructionLines.push(point);
+                        potentialStartPointForNextLine = [point.endPos[0], point.endPos[1]];
                     }
                     return acc.concat(newLine)
                 },'')
@@ -360,10 +356,53 @@ export class SpriteEditor extends GameObject{
             })
             stringToSave +='}'
 
-            pointPairsForLines.forEach(() => {
+            stringToSave += '\n\n\ncreateDestructionObjects() {\n\tconst s = 1;\n'
 
+            pointPairsForDestructionLines.forEach((pointPair) => {
+                const [point1, point2] = pointPair;
+                stringToSave += `\tnew DeathAnimationLineObject(\n\t\tthis.gameEngine,\n\t\t[this.transform.pos[0], this.transform.pos[1]],\n\t\tthis.transform.angle,\n\t\t[\n\t\t\t[${point1[0]} * s, ${point1[1]} * s],\n\t\t\t[${point2[0]} * s, ${point2[1]} * s]\n\t\t],\n\t\tthis.destructedColor,\n\t\tthis.destructionLineWidth\n\t);\n`
             })
 
+            arcsForDestructionLines.forEach((arc) => {
+                const {
+                    startAngle,
+                    endAngle,
+                    startPos,
+                    endPos,
+                    centerPoint: centerPosition,
+                    radius,
+                    counterClockwise
+                } = arc;
+                const newArcData = {
+                    startAngle,
+                    endAngle,
+                    startPos: [startPos[0], startPos[1]],
+                    endPos: [endPos[0], endPos[1]],
+                    centerPosition: [centerPosition[0], centerPosition[1]],
+                    radius,
+                    counterClockwise
+                }
+                stringToSave += 
+                `\tnew DeathAnimationArcObject(\n\t\tthis.gameEngine,\n\t\t[this.transform.pos[0], this.transform.pos[1]],\n\t\tthis.transform.angle,\n\t\t{\n\t\t\tstartAngle: ${newArcData.startAngle},\n\t\t\tendAngle: ${newArcData.endAngle},\n\t\t\tstartPos: [${newArcData.startPos[0]} * s, ${newArcData.startPos[1]} * s],\n\t\t\tendPos: [${newArcData.endPos[0]} * s, ${newArcData.endPos[1]} * s],\n\t\t\tcenterPosition: [${newArcData.centerPosition[0]} * s, ${newArcData.centerPosition[1]} * s],\n\t\t\tradius: ${newArcData.radius} * s,\n\t\t\tcounterClockwise: ${newArcData.counterClockwise}\n\t\t},\n\t\tthis.destructedColor,\n\t\tthis.destructionLineWidth\n\t)\n`;
+            });
+            bezierCurvesForDestructionLines.forEach((arc) => {
+                const {
+                    startPos,
+                    endPos,
+                    controlPoint1,
+                    controlPoint2
+                } = arc;
+                const newCurveData = {
+                    startPos: [startPos[0], startPos[1]],
+                    endPos: [endPos[0], endPos[1]],
+                    controlPoint1: [controlPoint1[0], controlPoint1[1]],
+                    controlPoint2: [controlPoint2[0], controlPoint2[1]],
+                }
+                stringToSave += 
+                `\tnew DeathAnimationBezierCurveObject(\n\t\tthis.gameEngine,\n\t\t[this.transform.pos[0], this.transform.pos[1]],\n\t\tthis.transform.angle,\n\t\t{\n\t\t\tstartPos: [${newCurveData.startPos[0]} * s, ${newCurveData.startPos[1]} * s],\n\t\t\tendPos: [${newCurveData.endPos[0]} * s, ${newCurveData.endPos[1]} * s],\n\t\t\tcontrolPoint1: [${newCurveData.controlPoint1[0]} * s, ${newCurveData.controlPoint1[1]} * s],\n\t\t\tcontrolPoint2: [${newCurveData.controlPoint2[0]} * s, ${newCurveData.controlPoint2[1]} * s],\n\t\t},\n\t\tthis.destructedColor,\n\t\tthis.destructionLineWidth\n\t)\n`;
+            });
+
+            stringToSave += '}'
             console.log(stringToSave);
 
             // will have to transform all the points to the correct coordinates
@@ -526,7 +565,7 @@ class SpriteEditorSprite extends LineSprite {
                         const counterClockwiseGaurenteed = counterClockwise ||  points[0].counterClockwise
                         ctx.arc(
                             centerPoint[0], centerPoint[1], radius, startAngle, endAngle, counterClockwiseGaurenteed
-                        )
+                        );
                     }
                 }
                 if(points[0] instanceof Circle) {
@@ -549,7 +588,6 @@ class SpriteEditorSprite extends LineSprite {
                             ctx.beginPath();
                             ctx.setLineDash([]);
                             ctx.strokeStyle = '#00FFFF';
-                            
                         }
                     }
                 }

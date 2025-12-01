@@ -4875,15 +4875,17 @@ var SpriteEditor = /** @class */ (function (_super) {
             // find smallest X value
             // find difference to get width
             // same with height for Y
-            var pointPairsForLines_1 = [];
+            var pointPairsForDestructionLines_1 = [];
+            var arcsForDestructionLines_1 = [];
+            var bezierCurvesForDestructionLines_1 = [];
+            var potentialStartPointForNextLine_1;
             mappedPoints.forEach(function (pointGroup, idx) {
                 var stringStart = "";
-                var firstPointInFirstLine;
                 var firstPoint = pointGroup[0];
                 if (firstPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.PointData) {
                     stringStart =
                         "\t// Piece ".concat(idx + 1, ": \n\tctx.beginPath();\n\tctx.moveTo(").concat(firstPoint.point[0], " * s, ").concat(firstPoint.point[1], " * s);\n");
-                    firstPointInFirstLine = [firstPoint.point[0], firstPoint.point[1]];
+                    potentialStartPointForNextLine_1 = [firstPoint.point[0], firstPoint.point[1]];
                 }
                 else if (firstPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.CircleData) {
                     stringStart =
@@ -4891,12 +4893,16 @@ var SpriteEditor = /** @class */ (function (_super) {
                 }
                 else if (firstPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurveData) {
                     stringStart =
-                        "\t// Piece ".concat(idx + 1, ": \n\tctx.beginPath();\n\tctx.moveTo(").concat(firstPoint.startPos[0], " * s, ").concat(firstPoint.startPos[1], " * s);\n\tctx.bezierCurveto(\n\t\t").concat(firstPoint.controlPoint1[0], " * s, ").concat(firstPoint.controlPoint1[1], " * s,\n\t\t").concat(firstPoint.controlPoint2[0], " * s, ").concat(firstPoint.controlPoint2[1], " * s,\n\t\t").concat(firstPoint.endPos[0], " * s, ").concat(firstPoint.endPos[1], " * s\n\t);\n");
-                    firstPointInFirstLine = [firstPoint.endPos[0], firstPoint.endPos[1]];
+                        "\t// Piece ".concat(idx + 1, ": \n\tctx.beginPath();\n\tctx.moveTo(").concat(firstPoint.startPos[0], " * s, ").concat(firstPoint.startPos[1], " * s);\n\tctx.bezierCurveTo(\n\t\t").concat(firstPoint.controlPoint1[0], " * s, ").concat(firstPoint.controlPoint1[1], " * s,\n\t\t").concat(firstPoint.controlPoint2[0], " * s, ").concat(firstPoint.controlPoint2[1], " * s,\n\t\t").concat(firstPoint.endPos[0], " * s, ").concat(firstPoint.endPos[1], " * s\n\t);\n");
+                    potentialStartPointForNextLine_1 = [firstPoint.endPos[0], firstPoint.endPos[1]];
+                    // I don't think I need to duplicate the objects but if I do here it is
+                    bezierCurvesForDestructionLines_1.push(firstPoint);
                 }
                 else if (firstPoint instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.ArcData) {
                     stringStart =
                         "\t// Piece ".concat(idx + 1, ": \n\tctx.beginPath();\n\tctx.arc(").concat(firstPoint.centerPoint[0], " * s, ").concat(firstPoint.centerPoint[1], " * s, ").concat(firstPoint.radius, " * s, ").concat(firstPoint.startAngle, ", ").concat(firstPoint.endAngle, ", ").concat(firstPoint.counterClockwise, ");\n");
+                    potentialStartPointForNextLine_1 = [firstPoint.endPos[0], firstPoint.endPos[1]];
+                    arcsForDestructionLines_1.push(firstPoint);
                 }
                 // I should create the point pairs here... assuming they are lines
                 // I should grab the start point of bezier curve and have that be the end
@@ -4904,30 +4910,16 @@ var SpriteEditor = /** @class */ (function (_super) {
                 // and I should grab the end point of a bezier curve if it is the start point
                 // of a new line 
                 var restOfPoints = pointGroup.slice(1);
-                var destructedLinesSection;
-                // this will be true when the first point is a point or a bezier curve
-                // i need to account for the case where there's two bezier curves... okay
-                // I think I should just handle bezier curves at this point lol
-                // it shouldn't be too ridiculous
-                if (firstPointInFirstLine) {
-                    destructedLinesSection = 'createDeathAnimationObjects() {\n\tconst color = "rgb(255, 255, 255)"\n\tconst lineWidth = 1.5;\n';
-                    destructedLinesSection += "\tnew DeathAnimationLineObject(\n\t\tthis.gameEngine,\n\t\t[this.transform.pos[0], this.transform.pos[1]],\n\t\tthis.transform.angle,\n\t\t[line1Point1,\n";
-                    "line1Point2], color, lineWidth);";
-                }
                 var lines = restOfPoints.reduce(function (acc, point) {
                     var newLine = '';
                     if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.PointData) {
                         newLine =
                             "\tctx.lineTo(".concat(point.point[0], " * s, ").concat(point.point[1], " * s);\n");
-                        if (firstPointInFirstLine) {
-                            pointPairsForLines_1.push([
-                                [firstPointInFirstLine[0], firstPointInFirstLine[1]],
-                                [point.point[0], point.point[1]]
-                            ]);
-                            firstPointInFirstLine = null;
-                        }
-                        else if (true) {
-                        }
+                        pointPairsForDestructionLines_1.push([
+                            [potentialStartPointForNextLine_1[0], potentialStartPointForNextLine_1[1]],
+                            [point.point[0], point.point[1]]
+                        ]);
+                        potentialStartPointForNextLine_1 = [point.point[0], point.point[1]];
                     }
                     else if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.CircleData) {
                         console.error('there shouldnt be a circle here, since circles are their own part');
@@ -4935,11 +4927,15 @@ var SpriteEditor = /** @class */ (function (_super) {
                     else if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.BezierCurveData) {
                         // start of the curve should be the last point
                         newLine =
-                            "\tctx.bezierCurveto(\n\t\t".concat(point.controlPoint1[0], " * s, ").concat(point.controlPoint1[1], " * s,\n\t\t").concat(point.controlPoint2[0], " * s, ").concat(point.controlPoint2[1], " * s,\n\t\t").concat(point.endPos[0], " * s, ").concat(point.endPos[1], " * s\n\t);\n");
+                            "\tctx.bezierCurveTo(\n\t\t".concat(point.controlPoint1[0], " * s, ").concat(point.controlPoint1[1], " * s,\n\t\t").concat(point.controlPoint2[0], " * s, ").concat(point.controlPoint2[1], " * s,\n\t\t").concat(point.endPos[0], " * s, ").concat(point.endPos[1], " * s\n\t);\n");
+                        bezierCurvesForDestructionLines_1.push(point);
+                        potentialStartPointForNextLine_1 = [point.endPos[0], point.endPos[1]];
                     }
                     else if (point instanceof _Point__WEBPACK_IMPORTED_MODULE_4__.ArcData) {
                         newLine =
                             "\tctx.arc(".concat(point.centerPoint[0], " * s, ").concat(point.centerPoint[1], " * s, ").concat(point.radius, " * s, ").concat(point.startAngle, ", ").concat(point.endAngle, ", ").concat(point.counterClockwise, ");\n");
+                        arcsForDestructionLines_1.push(point);
+                        potentialStartPointForNextLine_1 = [point.endPos[0], point.endPos[1]];
                     }
                     return acc.concat(newLine);
                 }, '');
@@ -4947,8 +4943,37 @@ var SpriteEditor = /** @class */ (function (_super) {
                 stringToSave_1 += stringStart + lines + stringEnd;
             });
             stringToSave_1 += '}';
-            pointPairsForLines_1.forEach(function () {
+            stringToSave_1 += '\n\n\ncreateDestructionObjects() {\n\tconst s = 1;\n';
+            pointPairsForDestructionLines_1.forEach(function (pointPair) {
+                var point1 = pointPair[0], point2 = pointPair[1];
+                stringToSave_1 += "\tnew DeathAnimationLineObject(\n\t\tthis.gameEngine,\n\t\t[this.transform.pos[0], this.transform.pos[1]],\n\t\tthis.transform.angle,\n\t\t[\n\t\t\t[".concat(point1[0], " * s, ").concat(point1[1], " * s],\n\t\t\t[").concat(point2[0], " * s, ").concat(point2[1], " * s]\n\t\t],\n\t\tthis.destructedColor,\n\t\tthis.destructionLineWidth\n\t);\n");
             });
+            arcsForDestructionLines_1.forEach(function (arc) {
+                var startAngle = arc.startAngle, endAngle = arc.endAngle, startPos = arc.startPos, endPos = arc.endPos, centerPosition = arc.centerPoint, radius = arc.radius, counterClockwise = arc.counterClockwise;
+                var newArcData = {
+                    startAngle: startAngle,
+                    endAngle: endAngle,
+                    startPos: [startPos[0], startPos[1]],
+                    endPos: [endPos[0], endPos[1]],
+                    centerPosition: [centerPosition[0], centerPosition[1]],
+                    radius: radius,
+                    counterClockwise: counterClockwise
+                };
+                stringToSave_1 +=
+                    "\tnew DeathAnimationArcObject(\n\t\tthis.gameEngine,\n\t\t[this.transform.pos[0], this.transform.pos[1]],\n\t\tthis.transform.angle,\n\t\t{\n\t\t\tstartAngle: ".concat(newArcData.startAngle, ",\n\t\t\tendAngle: ").concat(newArcData.endAngle, ",\n\t\t\tstartPos: [").concat(newArcData.startPos[0], " * s, ").concat(newArcData.startPos[1], " * s],\n\t\t\tendPos: [").concat(newArcData.endPos[0], " * s, ").concat(newArcData.endPos[1], " * s],\n\t\t\tcenterPosition: [").concat(newArcData.centerPosition[0], " * s, ").concat(newArcData.centerPosition[1], " * s],\n\t\t\tradius: ").concat(newArcData.radius, " * s,\n\t\t\tcounterClockwise: ").concat(newArcData.counterClockwise, "\n\t\t},\n\t\tthis.destructedColor,\n\t\tthis.destructionLineWidth\n\t)\n");
+            });
+            bezierCurvesForDestructionLines_1.forEach(function (arc) {
+                var startPos = arc.startPos, endPos = arc.endPos, controlPoint1 = arc.controlPoint1, controlPoint2 = arc.controlPoint2;
+                var newCurveData = {
+                    startPos: [startPos[0], startPos[1]],
+                    endPos: [endPos[0], endPos[1]],
+                    controlPoint1: [controlPoint1[0], controlPoint1[1]],
+                    controlPoint2: [controlPoint2[0], controlPoint2[1]],
+                };
+                stringToSave_1 +=
+                    "\tnew DeathAnimationBezierCurveObject(\n\t\tthis.gameEngine,\n\t\t[this.transform.pos[0], this.transform.pos[1]],\n\t\tthis.transform.angle,\n\t\t{\n\t\t\tstartPos: [".concat(newCurveData.startPos[0], " * s, ").concat(newCurveData.startPos[1], " * s],\n\t\t\tendPos: [").concat(newCurveData.endPos[0], " * s, ").concat(newCurveData.endPos[1], " * s],\n\t\t\tcontrolPoint1: [").concat(newCurveData.controlPoint1[0], " * s, ").concat(newCurveData.controlPoint1[1], " * s],\n\t\t\tcontrolPoint2: [").concat(newCurveData.controlPoint2[0], " * s, ").concat(newCurveData.controlPoint2[1], " * s],\n\t\t},\n\t\tthis.destructedColor,\n\t\tthis.destructionLineWidth\n\t)\n");
+            });
+            stringToSave_1 += '}';
             console.log(stringToSave_1);
             // will have to transform all the points to the correct coordinates
             // add all the instructions
@@ -6739,10 +6764,10 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
     ReplayablePhysicsComponent.prototype.startArchRotation = function (turnParams) {
         var rotationPoint = turnParams.rotationPoint, turnRadius = turnParams.turnRadius, isTurningRight = turnParams.isTurningRight, tangentSpeed = turnParams.tangentSpeed, startAngle = turnParams.startAngle, endAngle = turnParams.endAngle, gameTimeArchStarted = turnParams.gameTimeArchStarted, pointWhereArchStarted = turnParams.pointWhereArchStarted, nextInstruction = turnParams.nextInstruction, currentGameTime = turnParams.currentGameTime;
         if (this.isAccelerating) {
-            console.log('interrupting Acceleration to Turn');
+            // console.log('interrupting Acceleration to Turn');
         }
         if (this.isTurning) {
-            console.log('interrupting Turn to change Turn');
+            // console.log('interrupting Turn to change Turn')
         }
         if (this.isTurning) {
             return this.interruptTurn({
@@ -6758,13 +6783,13 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
         }
         // will have a precise time and location when the arch started while playing back controls
         // in that case we'll have to piece wise connect the arch and previous section
-        console.log('input for startArchRotation', {
-            rotationPoint: rotationPoint,
-            tangentSpeed: tangentSpeed,
-            endAngle: endAngle,
-            gameTimeArchStarted: gameTimeArchStarted,
-            pointWhereArchStarted: pointWhereArchStarted,
-        });
+        // console.log('input for startArchRotation', {
+        //     rotationPoint,
+        //     tangentSpeed,
+        //     endAngle,
+        //     gameTimeArchStarted,
+        //     pointWhereArchStarted,
+        // })
         // isRotating should have been made false by the interruption of the rotation
         this.isAccelerating = false;
         this.isTurning = true;
@@ -6800,19 +6825,19 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
             // or would that even matter if it was just for replaying commands? 
             this.move(currentGameTime - gameTimeArchStarted, currentGameTime);
         }
-        console.log('colected turn information', this.turnInformation);
+        // console.log('colected turn information',this.turnInformation);
     };
     ReplayablePhysicsComponent.prototype.interruptTurn = function (interruptTurnParams) {
         var rotationPoint = interruptTurnParams.rotationPoint, turnRadius = interruptTurnParams.turnRadius, isTurningRight = interruptTurnParams.isTurningRight, tangentSpeed = interruptTurnParams.tangentSpeed, startAngle = interruptTurnParams.startAngle, endAngle = interruptTurnParams.endAngle, gameTimeArchStarted = interruptTurnParams.gameTimeArchStarted, pointWhereArchStarted = interruptTurnParams.pointWhereArchStarted;
     };
     ReplayablePhysicsComponent.prototype.startAcceleration = function (accelerationParams) {
         var acceleration = accelerationParams.acceleration, endSpeed = accelerationParams.endSpeed, gameTimeAccelerationStarted = accelerationParams.gameTimeAccelerationStarted, currentGameTime = accelerationParams.currentGameTime, onStartDirection = accelerationParams.onStartDirection, nextInstruction = accelerationParams.nextInstruction;
-        console.log('startAccelerationInstruction', accelerationParams);
+        // console.log('startAccelerationInstruction', accelerationParams)
         if (this.isAccelerating) {
-            console.log('interrupting Acceleration to change Acceleration');
+            // console.log('interrupting Acceleration to change Acceleration');
         }
         if (this.isTurning) {
-            console.log('interrupting Turn to Accelerate instead');
+            // console.log('interrupting Turn to Accelerate instead')
         }
         // isRotating should have been made false by the interruption of the rotation
         this.isTurning = false;
@@ -6889,7 +6914,7 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
             endVelocityIfUninterrupted: endVelocityIfUninterrupted,
             endSpeedIfUninterrupted: endSpeedIfUninterrupted
         };
-        console.log({ accelerationInformationCollected: this.accelerationInformation, isAccelerating: this.isAccelerating, currentGameTime: currentGameTime });
+        // console.log({accelerationInformationCollected: this.accelerationInformation, isAccelerating: this.isAccelerating, currentGameTime})
         if (currentGameTime) {
             this.move(currentGameTime - gameTimeAccelerationStarted, currentGameTime);
         }
@@ -6921,14 +6946,14 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
             // if the game time is after the acceleration should have finished
             if (gameTime >= gameTimeWhenAccelerationEnds) {
                 // if the game time is after the acceleration should have finished
-                console.log('Acceleration ended', {
-                    currentPosition: this.transform.pos,
-                    settingPosition: this.accelerationInformation.accelerationEndPositionIfUninterrupted,
-                    gameTimeWhenAccelerationEnds: this.accelerationInformation.gameTimeWhenAccelerationEnds,
-                    gameTime: gameTime
-                });
+                // console.log('Acceleration ended', {
+                //     currentPosition: this.transform.pos, 
+                //     settingPosition: this.accelerationInformation.accelerationEndPositionIfUninterrupted, 
+                //     gameTimeWhenAccelerationEnds: this.accelerationInformation.gameTimeWhenAccelerationEnds, 
+                //     gameTime: gameTime}
+                // );
                 this.instructionsCompleted.push("".concat(this.accelerationInformation.isDecelerating ? 'negative' : 'positive', " acceleration completed"));
-                console.log(this.instructionsCompleted);
+                // console.log(this.instructionsCompleted);
                 var timeSinceAccelerationEnded = gameTime - gameTimeWhenAccelerationEnds;
                 this.restSpeed = endSpeedIfUninterrupted;
                 if (nextInstruction) {
@@ -6979,9 +7004,9 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
                 this.transform.pos[0] = endPoint[0];
                 this.transform.pos[1] = endPoint[1];
                 var timeSinceTurnEnded = gameTime - gameTimeWhenTurnEnds;
-                console.log('Turning ended');
+                // console.log('Turning ended');
                 this.instructionsCompleted.push("Turn Completed. Direction: ".concat(this.turnInformation.rotationDirection > 0 ? 'Right' : 'Left'));
-                console.log(this.instructionsCompleted);
+                // console.log(this.instructionsCompleted);
                 // this.movementTangentAngle = endAngleFromRotationPointIfUninterrupted;
                 var endVelocityIfUninterrupted = [
                     tangentSpeed * Math.cos(endAngleFromRotationPointIfUninterrupted),
@@ -10587,6 +10612,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Aurora: () => (/* binding */ Aurora),
 /* harmony export */   AuroraSprite: () => (/* binding */ AuroraSprite),
+/* harmony export */   DeathAnimationArcObject: () => (/* binding */ DeathAnimationArcObject),
+/* harmony export */   DeathAnimationArcSprite: () => (/* binding */ DeathAnimationArcSprite),
+/* harmony export */   DeathAnimationBezierCurveObject: () => (/* binding */ DeathAnimationBezierCurveObject),
+/* harmony export */   DeathAnimationBezierCurveSprite: () => (/* binding */ DeathAnimationBezierCurveSprite),
 /* harmony export */   DeathAnimationLineObject: () => (/* binding */ DeathAnimationLineObject),
 /* harmony export */   DeathAnimationSprite: () => (/* binding */ DeathAnimationSprite)
 /* harmony export */ });
@@ -10637,6 +10666,8 @@ var Aurora = /** @class */ (function (_super) {
         _this.hitsWhenDead = 3;
         _this.transform.angle = angle;
         _this.transform.vel = [0, 0];
+        _this.destructedColor = "rgb(255, 255, 255)";
+        _this.destructionLineWidth = 1.5;
         _this.radius = 30;
         _this.turnRadius = 60;
         _this.minSpeed = 1;
@@ -11073,43 +11104,147 @@ var Aurora = /** @class */ (function (_super) {
     // updateMovement(deltaTime: number) {
     //     if(!this.controllerInUse) return;
     // }
+    // testing BezierCurve
+    // createDeathAnimationLineObjectsWithBezier() {
+    //     const s = 1;
+    //     new DeathAnimationLineObject(
+    //         this.gameEngine,
+    //         this.transform,
+    //         this.transform.angle,
+    //         [
+    //             [-18 * s, 12 * s],
+    //             [12 * s, 12 * s]
+    //         ],
+    //         this.destructedColor,
+    //         this.destructionLineWidth
+    //     );
+    //     new DeathAnimationLineObject(
+    //         this.gameEngine,
+    //         this.transform,
+    //         this.transform.angle,
+    //         [
+    //             [26 * s, 4 * s],
+    //             [12 * s, -6 * s]
+    //         ],
+    //         this.destructedColor,
+    //         this.destructionLineWidth
+    //     );
+    //     new DeathAnimationLineObject(
+    //         this.gameEngine,
+    //         this.transform,
+    //         this.transform.angle,
+    //         [
+    //             [-11 * s, -6 * s],
+    //             [-18 * s, 12 * s]
+    //         ],
+    //         this.destructedColor,
+    //         this.destructionLineWidth
+    //     );
+    //     new DeathAnimationBezierCurveObject(
+    //         this.gameEngine,
+    //         this.transform,
+    //         this.transform.angle,
+    //         {
+    //             startPos: [12 * s, 12 * s],
+    //             endPos: [26 * s, 4 * s],
+    //             controlPoint1: [18 * s, 18 * s],
+    //             controlPoint2: [28 * s, 12 * s],
+    //         },
+    //         this.destructedColor,
+    //         this.destructionLineWidth
+    //     )
+    //     new DeathAnimationBezierCurveObject(
+    //         this.gameEngine,
+    //         this.transform,
+    //         this.transform.angle,
+    //         {
+    //             startPos: [12 * s, -6 * s],
+    //             endPos: [-11 * s, -6 * s],
+    //             controlPoint1: [-8 * s, 2 * s],
+    //             controlPoint2: [-2 * s, 3 * s],
+    //         },
+    //         this.destructedColor,
+    //         this.destructionLineWidth
+    //     )
+    // }
+    // createDeathAnimationLineObjectsOriginal() {
+    //     // All I need is the point positions of the lines to create the death animation object
+    //     // I already have this when I use the sprite editor
+    //     // so I should be able to output this function as well when creating a sprite
+    //     const l = this.lineSprite.length;
+    //     const w = this.lineSprite.length / 2;
+    //     // get the first line position and angle relative to Aurora's 0,0
+    //     /*
+    //         line 1
+    //         ctx.beginPath();
+    //         ctx.moveTo(0,0) // point 1
+    //         ctx.lineTo(-l, w/2) // point 2
+    //         ctx.stroke();
+    //     */
+    //     const line1Point1: [number, number] = [0, 0];
+    //     const line1Point2: [number, number] = [-l, -w/2];
+    //     new DeathAnimationLineObject(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], this.transform.angle, [line1Point1, line1Point2], "rgb(255, 255, 255)", 1.5);
+    //     /*
+    //         line 2
+    //         ctx.beginPath();
+    //         ctx.moveTo(-l, w/2); // point 1
+    //         ctx.lineTo(-l, -w/2); // point 2
+    //         ctx.stroke();
+    //     */
+    //     const line2Point1: [number, number] = [-l, w/2];
+    //     const line2Point2: [number, number] = [-l, -w/2];
+    //     new DeathAnimationLineObject(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], this.transform.angle, [line2Point1, line2Point2], "rgb(255, 255, 255)", 1.5);
+    //    /*
+    //         line 3
+    //         ctx.beginPath();
+    //         ctx.lineTo(-l, -w/2);
+    //         ctx.lineTo(0, 0);
+    //         ctx.stroke();
+    //     */
+    //     const line3Point1: [number, number] = [-l, -w/2];
+    //     const line3Point2: [number, number] = [0,0];
+    //     new DeathAnimationLineObject(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], this.transform.angle, [line3Point1, line3Point2], "rgb(255, 255, 255)", 1.5);
+    // }
     Aurora.prototype.createDeathAnimationLineObjects = function () {
-        // All I need is the point positions of the lines to create the death animation object
-        // I already have this when I use the sprite editor
-        // so I should be able to output this function as well when creating a sprite
-        var l = this.lineSprite.length;
-        var w = this.lineSprite.length / 2;
-        // get the first line position and angle relative to Aurora's 0,0
-        /*
-            line 1
-            ctx.beginPath();
-            ctx.moveTo(0,0) // point 1
-            ctx.lineTo(-l, w/2) // point 2
-            ctx.stroke();
-        */
-        var line1Point1 = [0, 0];
-        var line1Point2 = [-l, -w / 2];
-        new DeathAnimationLineObject(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], this.transform.angle, [line1Point1, line1Point2], "rgb(255, 255, 255)", 1.5);
-        /*
-            line 2
-            ctx.beginPath();
-            ctx.moveTo(-l, w/2); // point 1
-            ctx.lineTo(-l, -w/2); // point 2
-            ctx.stroke();
-        */
-        var line2Point1 = [-l, w / 2];
-        var line2Point2 = [-l, -w / 2];
-        new DeathAnimationLineObject(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], this.transform.angle, [line2Point1, line2Point2], "rgb(255, 255, 255)", 1.5);
-        /*
-             line 3
-             ctx.beginPath();
-             ctx.lineTo(-l, -w/2);
-             ctx.lineTo(0, 0);
-             ctx.stroke();
-         */
-        var line3Point1 = [-l, -w / 2];
-        var line3Point2 = [0, 0];
-        new DeathAnimationLineObject(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], this.transform.angle, [line3Point1, line3Point2], "rgb(255, 255, 255)", 1.5);
+        var s = 1.3;
+        new DeathAnimationLineObject(this.gameEngine, this.transform, this.transform.angle, [
+            [0 * s, 0 * s],
+            [-48 * s, -12 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        new DeathAnimationLineObject(this.gameEngine, this.transform, this.transform.angle, [
+            [-48 * s, -12 * s],
+            [-48 * s, 12 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        new DeathAnimationLineObject(this.gameEngine, this.transform, this.transform.angle, [
+            [-48 * s, 12 * s],
+            [0 * s, 0 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        new DeathAnimationLineObject(this.gameEngine, this.transform, this.transform.angle, [
+            [-41 * s, 2 * s],
+            [-39 * s, 2 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        new DeathAnimationLineObject(this.gameEngine, this.transform, this.transform.angle, [
+            [-39 * s, -2 * s],
+            [-41 * s, -2 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        new DeathAnimationArcObject(this.gameEngine, this.transform, this.transform.angle, {
+            startAngle: 1.5707963267948966,
+            endAngle: -1.5707963267948966,
+            startPos: [-39 * s, 2 * s],
+            endPos: [-39 * s, -2 * s],
+            centerPosition: [-39 * s, 0 * s],
+            radius: 2 * s,
+            counterClockwise: false
+        }, this.destructedColor, this.destructionLineWidth);
+        new DeathAnimationArcObject(this.gameEngine, this.transform, this.transform.angle, {
+            startAngle: -1.5707963267948966,
+            endAngle: 1.5707963267948966,
+            startPos: [-41 * s, -2 * s],
+            endPos: [-41 * s, 2 * s],
+            centerPosition: [-41 * s, 0 * s],
+            radius: 2 * s,
+            counterClockwise: false
+        }, this.destructedColor, this.destructionLineWidth);
     };
     return Aurora;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
@@ -11133,6 +11268,7 @@ var AuroraSprite = /** @class */ (function (_super) {
         ctx.save();
         ctx.translate(pos[0], pos[1]);
         ctx.rotate(this.transform.angle);
+        // this.drawPlane(ctx);
         this.drawAurora(ctx);
         ctx.restore();
     };
@@ -11208,16 +11344,34 @@ var AuroraSprite = /** @class */ (function (_super) {
         ctx.arc(-41 * s, 0 * s, 2 * s, -1.5707963267948966, 1.5707963267948966, true);
         ctx.stroke();
     };
+    // remember to remove the transform stuff, and add the color to see it lol
+    AuroraSprite.prototype.drawPlane = function (ctx) {
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 2;
+        var s = 1;
+        // Piece 1: 
+        ctx.beginPath();
+        ctx.moveTo(-18 * s, 12 * s);
+        ctx.lineTo(12 * s, 12 * s);
+        ctx.bezierCurveTo(18 * s, 18 * s, 28 * s, 12 * s, 26 * s, 4 * s);
+        ctx.lineTo(12 * s, -6 * s);
+        ctx.bezierCurveTo(-8 * s, 2 * s, -2 * s, 3 * s, -11 * s, -6 * s);
+        ctx.lineTo(-18 * s, 12 * s);
+        ctx.stroke();
+    };
     return AuroraSprite;
 }(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
 
 var DeathAnimationLineObject = /** @class */ (function (_super) {
     __extends(DeathAnimationLineObject, _super);
-    function DeathAnimationLineObject(engine, objectPos, // position of the parent object
+    function DeathAnimationLineObject(engine, objectTransform, // position of the parent object
     objectAngle, // angle of the parent object
     linePointPositions, // relative to parent object origin
     color, width, speed) {
         var _this = _super.call(this, engine) || this;
+        _this.removeTime = 3000;
+        _this.timeAround = 0;
+        var objectPos = [objectTransform.pos[0], objectTransform.pos[1]];
         var linePoint1 = linePointPositions[0];
         var linePoint2 = linePointPositions[1];
         var length = Math.sqrt(Math.pow((linePoint2[0] - linePoint1[0]), 2) +
@@ -11237,118 +11391,147 @@ var DeathAnimationLineObject = /** @class */ (function (_super) {
         var lineAngle = lineAngleRelativeToAurora + objectAngle;
         _this.transform.pos = [lineMidpointPosition[0], lineMidpointPosition[1]];
         _this.transform.angle = lineAngle;
+        var velocityVariancePercentage = 0.1; // 10%
+        var velocity = 0.05;
+        var angularVelocityVariance = 0.1; // 10%
+        var angularVelocity = 0.075 * 0.15;
         // create a random velocity and random angular velocity
-        var randomVelocity = _game_engine_util__WEBPACK_IMPORTED_MODULE_8__.VectorMath.vectorCartesian(2 * Math.random() * Math.PI, (3 + 2 * Math.random()) * 0.25);
-        var randomAngularVelocity = (3 * 0.075 * Math.random()) * 0.25;
-        _this.transform.vel[0] = randomVelocity[0];
-        _this.transform.vel[1] = randomVelocity[1];
+        var randomVelocity = _game_engine_util__WEBPACK_IMPORTED_MODULE_8__.VectorMath.vectorCartesian(2 * Math.random() * Math.PI, velocity + (velocity * velocityVariancePercentage) * Math.random());
+        var newVelocity = [randomVelocity[0] + objectTransform.vel[0] * 8, randomVelocity[1] + objectTransform.vel[1] * 8];
+        var randomAngularVelocity = (angularVelocity + (angularVelocity * angularVelocityVariance)) * Math.random();
+        _this.transform.vel[0] = newVelocity[0];
+        _this.transform.vel[1] = newVelocity[1];
         _this.transform.aVel = randomAngularVelocity;
         _this.addLineSprite(new DeathAnimationSprite(_this.transform, length, width || 1.5, color));
         _this.addPhysicsComponent();
         return _this;
     }
     DeathAnimationLineObject.prototype.animate = function () { };
-    DeathAnimationLineObject.prototype.update = function (deltaTime) { };
+    DeathAnimationLineObject.prototype.update = function (deltaTime) {
+        this.timeAround += deltaTime;
+        if (this.timeAround > this.removeTime) {
+            this.remove();
+        }
+    };
     return DeathAnimationLineObject;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
-// export class DeathAnimationBezierObject extends GameObject {
-//     constructor(
-//         engine: GameEngine | AnimationView,
-//         objectPos: [number, number],// position of the parent object
-//         objectAngle: number, // angle of the parent object
-//         bezierCurvePoints: {
-//             startPos: [number, number],
-//             endPos: [number, number],
-//             controlPoint1: [number, number],
-//             controlPoint2: [number, number]
-//         }, // relative to parent object origin
-//         color?: string,
-//         width?: number,
-//         speed?: number,
-//     ) {
-//         super(engine);
-//         const linePoint1 = linePointPositions[0];
-//         const linePoint2 = linePointPositions[1];
-//         const length = Math.sqrt(
-//             (linePoint2[0] - linePoint1[0])**2 + 
-//             (linePoint2[1] - linePoint1[1])**2
-//         )
-//         // its position is the average of these two
-//         const line1PositionOnPlane = [
-//             (linePoint1[0] + linePoint2[0] )/ 2,
-//             (linePoint1[1] + linePoint2[1]) / 2
-//         ]
-//         const linePositionAngleRelativeToAurora =  Math.atan2(line1PositionOnPlane[1], line1PositionOnPlane[0]) - Math.PI;
-//         const lineAngleRelativeToAurora =  Math.atan2(linePoint2[1] - linePoint1[1], linePoint2[0] - linePoint1[0]) - Math.PI;
-//         const planeOriginToLine1CenterDistance = Math.sqrt(line1PositionOnPlane[0]**2 + (line1PositionOnPlane[1])**2);
-//         const lineMidpointPosition: [number, number] = [
-//             objectPos[0] - planeOriginToLine1CenterDistance * Math.cos(objectAngle + linePositionAngleRelativeToAurora),
-//             objectPos[1] - planeOriginToLine1CenterDistance * Math.sin(objectAngle + linePositionAngleRelativeToAurora)
-//         ]
-//         const lineAngle = lineAngleRelativeToAurora + objectAngle;
-//         this.transform.pos = [lineMidpointPosition[0], lineMidpointPosition[1]];
-//         this.transform.angle = lineAngle;
-//         // create a random velocity and random angular velocity
-//         const randomVelocity = VectorMath.vectorCartesian(2 * Math.random() * Math.PI, (3 + 2 * Math.random()) * 0.25);
-//         const randomAngularVelocity = (3 * 0.075 * Math.random()) * 0.25;
-//         this.transform.vel[0] = randomVelocity[0];
-//         this.transform.vel[1] = randomVelocity[1];
-//         this.transform.aVel = randomAngularVelocity;
-//         this.addLineSprite(new DeathAnimationSprite(this.transform, length, width || 1.5, color));
-//         this.addPhysicsComponent();
-//     }
-//     animate() {}
-//     update(deltaTime: number) {}
-// }
-// export class DeathAnimationArcObject extends GameObject {
-//     constructor(
-//         engine: GameEngine | AnimationView,
-//         objectPos: [number, number],// position of the parent object
-//         objectAngle: number, // angle of the parent object
-//         arcData: {
-//             startPos: [number, number],
-//             endPos: [number, number],
-//             radius: [number, number]
-//         }, // relative to parent object origin
-//         color?: string,
-//         width?: number,
-//         speed?: number,
-//     ) {
-//         super(engine);
-//         const linePoint1 = linePointPositions[0];
-//         const linePoint2 = linePointPositions[1];
-//         const length = Math.sqrt(
-//             (linePoint2[0] - linePoint1[0])**2 + 
-//             (linePoint2[1] - linePoint1[1])**2
-//         )
-//         // its position is the average of these two
-//         const line1PositionOnPlane = [
-//             (linePoint1[0] + linePoint2[0] )/ 2,
-//             (linePoint1[1] + linePoint2[1]) / 2
-//         ]
-//         const linePositionAngleRelativeToAurora =  Math.atan2(line1PositionOnPlane[1], line1PositionOnPlane[0]) - Math.PI;
-//         const lineAngleRelativeToAurora =  Math.atan2(linePoint2[1] - linePoint1[1], linePoint2[0] - linePoint1[0]) - Math.PI;
-//         const planeOriginToLine1CenterDistance = Math.sqrt(line1PositionOnPlane[0]**2 + (line1PositionOnPlane[1])**2);
-//         const lineMidpointPosition: [number, number] = [
-//             objectPos[0] - planeOriginToLine1CenterDistance * Math.cos(objectAngle + linePositionAngleRelativeToAurora),
-//             objectPos[1] - planeOriginToLine1CenterDistance * Math.sin(objectAngle + linePositionAngleRelativeToAurora)
-//         ]
-//         const lineAngle = lineAngleRelativeToAurora + objectAngle;
-//         this.transform.pos = [lineMidpointPosition[0], lineMidpointPosition[1]];
-//         this.transform.angle = lineAngle;
-//         // create a random velocity and random angular velocity
-//         const randomVelocity = VectorMath.vectorCartesian(2 * Math.random() * Math.PI, (3 + 2 * Math.random()) * 0.25);
-//         const randomAngularVelocity = (3 * 0.075 * Math.random()) * 0.25;
-//         this.transform.vel[0] = randomVelocity[0];
-//         this.transform.vel[1] = randomVelocity[1];
-//         this.transform.aVel = randomAngularVelocity;
-//         this.addLineSprite(new DeathAnimationSprite(this.transform, length, width || 1.5, color));
-//         this.addPhysicsComponent();
-//     }
-//     animate() {}
-//     update(deltaTime: number) {}
-// }
+var DeathAnimationArcObject = /** @class */ (function (_super) {
+    __extends(DeathAnimationArcObject, _super);
+    function DeathAnimationArcObject(engine, objectTransform, // position of the parent object
+    objectAngle, // angle of the parent object
+    arcData, // relative to parent object origin
+    color, width, speed) {
+        var _this = _super.call(this, engine) || this;
+        _this.removeTime = 3000;
+        _this.timeAround = 0;
+        var objectPos = [objectTransform.pos[0], objectTransform.pos[1]];
+        var centerPosition = arcData.centerPosition, radius = arcData.radius, startAngle = arcData.startAngle, endAngle = arcData.endAngle, counterClockwise = arcData.counterClockwise;
+        var arcCenterPositionAngleRelativeToObject = Math.atan2(centerPosition[1], centerPosition[0]) - Math.PI;
+        var startAngleRelativeToObject = startAngle;
+        var endAngleRelativeToObject = endAngle;
+        var objectOriginToCenterDistance = Math.sqrt(Math.pow(centerPosition[0], 2) + Math.pow((centerPosition[1]), 2));
+        var newCenterPosition = [
+            objectPos[0] - objectOriginToCenterDistance * Math.cos(objectAngle + arcCenterPositionAngleRelativeToObject),
+            objectPos[1] - objectOriginToCenterDistance * Math.sin(objectAngle + arcCenterPositionAngleRelativeToObject)
+        ];
+        var newStartAngle = startAngleRelativeToObject + objectAngle;
+        var newEndAngle = endAngleRelativeToObject + objectAngle;
+        _this.transform.pos = [newCenterPosition[0], newCenterPosition[1]];
+        _this.transform.angle = 0;
+        // create a random velocity and random angular velocity
+        var velocityVariancePercentage = 0.1; // 10%
+        var velocity = 0.05;
+        var angularVelocityVariance = 0.1; // 10%
+        var angularVelocity = 0.075 * 0.15;
+        // create a random velocity and random angular velocity
+        var randomVelocity = _game_engine_util__WEBPACK_IMPORTED_MODULE_8__.VectorMath.vectorCartesian(2 * Math.random() * Math.PI, velocity + (velocity * velocityVariancePercentage) * Math.random());
+        var newVelocity = [randomVelocity[0] + objectTransform.vel[0] * 8, randomVelocity[1] + objectTransform.vel[1] * 8];
+        var randomAngularVelocity = (angularVelocity + (angularVelocity * angularVelocityVariance)) * Math.random();
+        _this.transform.vel[0] = newVelocity[0];
+        _this.transform.vel[1] = newVelocity[1];
+        _this.transform.aVel = randomAngularVelocity;
+        _this.addLineSprite(new DeathAnimationArcSprite(_this.transform, {
+            startAngle: newStartAngle,
+            endAngle: newEndAngle,
+            radius: radius,
+            counterClockwise: counterClockwise,
+            centerPosition: [0, 0]
+        }, width || 1.5, color));
+        _this.addPhysicsComponent();
+        return _this;
+    }
+    DeathAnimationArcObject.prototype.animate = function () { };
+    DeathAnimationArcObject.prototype.update = function (deltaTime) {
+        this.timeAround += deltaTime;
+        if (this.timeAround > this.removeTime) {
+            this.remove();
+        }
+    };
+    return DeathAnimationArcObject;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
+
+var DeathAnimationBezierCurveObject = /** @class */ (function (_super) {
+    __extends(DeathAnimationBezierCurveObject, _super);
+    function DeathAnimationBezierCurveObject(engine, objectTransform, // position of the parent object
+    objectAngle, // angle of the parent object
+    bezierCurveData, // relative to parent object origin
+    color, width, speed) {
+        var _this = _super.call(this, engine) || this;
+        _this.timeAround = 0;
+        _this.removeTime = 3000;
+        var objectPos = [objectTransform.pos[0], objectTransform.pos[1]];
+        var startPos = bezierCurveData.startPos, endPos = bezierCurveData.endPos, controlPoint1 = bezierCurveData.controlPoint1, controlPoint2 = bezierCurveData.controlPoint2;
+        var midPoint = [(startPos[0] + endPos[0]) / 2, (startPos[1] + endPos[1]) / 2];
+        var _a = [
+            startPos, endPos, controlPoint1, controlPoint2
+        ].map(function (point) { return [point[0] - midPoint[0], point[1] - midPoint[1]]; }), startPosNewO = _a[0], endPosNewO = _a[1], controlPoint1NewO = _a[2], controlPoint2NewO = _a[3];
+        var midPointAngleRelativeToObject = Math.atan2(midPoint[1], midPoint[0]) - Math.PI;
+        // const startPosAngleRelativeToNewOrigin =  Math.atan2(startPosNewO[1], startPosNewO[0]) - Math.PI;
+        // const endPosAngleRelativeToObject =  Math.atan2(endPosNewO[1], endPosNewO[0]) - Math.PI;
+        // const controlPoint1AngleRelativeToObject =  Math.atan2(controlPoint1NewO[1], controlPoint1NewO[0]) - Math.PI;
+        // const controlPoint2AngleRelativeToObject =  Math.atan2(controlPoint2NewO[1], controlPoint2NewO[0]) - Math.PI;
+        var midPointToNewOriginDistance = Math.sqrt(Math.pow(midPoint[0], 2) + Math.pow((midPoint[1]), 2));
+        // const startPosToNewOriginDistance = Math.sqrt(startPosNewO[0]**2 + (startPosNewO[1])**2);
+        // const endPosNewOriginDistance = Math.sqrt(endPosNewO[0]**2 + (endPosNewO[1])**2);
+        // const controlPoint1NewOriginDistance = Math.sqrt(controlPoint1NewO[0]**2 + (controlPoint1NewO[1])**2);
+        // const controlPoint2NewOriginDistance = Math.sqrt(controlPoint2NewO[0]**2 + (controlPoint2NewO[1])**2);
+        var newOriginPosition = [
+            objectPos[0] - midPointToNewOriginDistance * Math.cos(objectAngle + midPointAngleRelativeToObject),
+            objectPos[1] - midPointToNewOriginDistance * Math.sin(objectAngle + midPointAngleRelativeToObject)
+        ];
+        _this.transform.pos = [newOriginPosition[0], newOriginPosition[1]];
+        _this.transform.angle = 0;
+        var velocityVariancePercentage = 0.1; // 10%
+        var velocity = 0.05;
+        var angularVelocityVariance = 0.1; // 10%
+        var angularVelocity = 0.075 * 0.15;
+        // create a random velocity and random angular velocity
+        var randomVelocity = _game_engine_util__WEBPACK_IMPORTED_MODULE_8__.VectorMath.vectorCartesian(2 * Math.random() * Math.PI, velocity + (velocity * velocityVariancePercentage) * Math.random());
+        var newVelocity = [randomVelocity[0] + objectTransform.vel[0] * 8, randomVelocity[1] + objectTransform.vel[1] * 8];
+        var randomAngularVelocity = (angularVelocity + (angularVelocity * angularVelocityVariance)) * Math.random();
+        _this.transform.vel[0] = newVelocity[0];
+        _this.transform.vel[1] = newVelocity[1];
+        _this.transform.aVel = randomAngularVelocity;
+        _this.addLineSprite(new DeathAnimationBezierCurveSprite(_this.transform, {
+            startPos: startPosNewO,
+            endPos: endPosNewO,
+            controlPoint1: controlPoint1NewO,
+            controlPoint2: controlPoint2NewO,
+        }, width || 1.5, color));
+        _this.addPhysicsComponent();
+        return _this;
+    }
+    DeathAnimationBezierCurveObject.prototype.animate = function (dT) { };
+    DeathAnimationBezierCurveObject.prototype.update = function (deltaTime) {
+        this.timeAround += deltaTime;
+        if (this.timeAround > this.removeTime) {
+            this.remove();
+        }
+    };
+    return DeathAnimationBezierCurveObject;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
+
 var DeathAnimationSprite = /** @class */ (function (_super) {
     __extends(DeathAnimationSprite, _super);
     function DeathAnimationSprite(transform, length, lineWidth, color) {
@@ -11375,6 +11558,62 @@ var DeathAnimationSprite = /** @class */ (function (_super) {
         ctx.restore();
     };
     return DeathAnimationSprite;
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
+
+var DeathAnimationArcSprite = /** @class */ (function (_super) {
+    __extends(DeathAnimationArcSprite, _super);
+    function DeathAnimationArcSprite(transform, arcData, lineWidth, color) {
+        // the color should be slightly less vibrant
+        // and chosen by the parent object.. but for the future
+        var _this = _super.call(this, transform) || this;
+        _this.arcData = arcData;
+        _this.color = color ? color : "rgb(255, 255, 255)";
+        _this.lineWidth = lineWidth ? lineWidth : 1.5;
+        return _this;
+    }
+    DeathAnimationArcSprite.prototype.draw = function (ctx) {
+        var _a = this.arcData, centerPosition = _a.centerPosition, radius = _a.radius, startAngle = _a.startAngle, endAngle = _a.endAngle, counterClockwise = _a.counterClockwise;
+        var pos = this.transform.absolutePosition();
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = this.lineWidth;
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+        ctx.rotate(this.transform.angle);
+        ctx.beginPath();
+        ctx.arc(centerPosition[0], centerPosition[1], radius, startAngle, endAngle, counterClockwise);
+        ctx.lineTo(this.length / 2, 0);
+        ctx.stroke();
+        ctx.restore();
+    };
+    return DeathAnimationArcSprite;
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
+
+var DeathAnimationBezierCurveSprite = /** @class */ (function (_super) {
+    __extends(DeathAnimationBezierCurveSprite, _super);
+    function DeathAnimationBezierCurveSprite(transform, bezierCurveData, lineWidth, color) {
+        // the color should be slightly less vibrant
+        // and chosen by the parent object.. but for the future
+        var _this = _super.call(this, transform) || this;
+        _this.bezierCurveData = bezierCurveData;
+        _this.color = color ? color : "rgb(255, 255, 255)";
+        _this.lineWidth = lineWidth ? lineWidth : 1.5;
+        return _this;
+    }
+    DeathAnimationBezierCurveSprite.prototype.draw = function (ctx) {
+        var _a = this.bezierCurveData, startPos = _a.startPos, endPos = _a.endPos, controlPoint1 = _a.controlPoint1, controlPoint2 = _a.controlPoint2;
+        var pos = this.transform.absolutePosition();
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = this.lineWidth;
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+        ctx.rotate(this.transform.angle);
+        ctx.beginPath();
+        ctx.moveTo(startPos[0], startPos[1]);
+        ctx.bezierCurveTo(controlPoint1[0], controlPoint1[1], controlPoint2[0], controlPoint2[1], endPos[0], endPos[0]);
+        ctx.stroke();
+        ctx.restore();
+    };
+    return DeathAnimationBezierCurveSprite;
 }(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
 
 
@@ -12461,6 +12700,302 @@ var TargetBuildingSprite = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "./src/game_objects/StrikeTime/DeathAnimation/DeathAnimation.ts":
+/*!**********************************************************************!*\
+  !*** ./src/game_objects/StrikeTime/DeathAnimation/DeathAnimation.ts ***!
+  \**********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   DeathAnimationArcObject: () => (/* binding */ DeathAnimationArcObject),
+/* harmony export */   DeathAnimationArcSprite: () => (/* binding */ DeathAnimationArcSprite),
+/* harmony export */   DeathAnimationBezierCurveObject: () => (/* binding */ DeathAnimationBezierCurveObject),
+/* harmony export */   DeathAnimationBezierCurveSprite: () => (/* binding */ DeathAnimationBezierCurveSprite),
+/* harmony export */   DeathAnimationLineObject: () => (/* binding */ DeathAnimationLineObject),
+/* harmony export */   DeathAnimationSprite: () => (/* binding */ DeathAnimationSprite)
+/* harmony export */ });
+/* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+var DeathAnimationLineObject = /** @class */ (function (_super) {
+    __extends(DeathAnimationLineObject, _super);
+    function DeathAnimationLineObject(engine, objectTransform, // position of the parent object
+    objectAngle, // angle of the parent object
+    linePointPositions, // relative to parent object origin
+    color, width, speedParam) {
+        var _this = _super.call(this, engine) || this;
+        _this.removeTime = 3000;
+        _this.timeAround = 0;
+        var objectPos = [objectTransform.pos[0], objectTransform.pos[1]];
+        var speed = speedParam || 1;
+        var linePoint1 = linePointPositions[0];
+        var linePoint2 = linePointPositions[1];
+        var length = Math.sqrt(Math.pow((linePoint2[0] - linePoint1[0]), 2) +
+            Math.pow((linePoint2[1] - linePoint1[1]), 2));
+        // its position is the average of these two
+        var line1PositionOnPlane = [
+            (linePoint1[0] + linePoint2[0]) / 2,
+            (linePoint1[1] + linePoint2[1]) / 2
+        ];
+        var linePositionAngleRelativeToAurora = Math.atan2(line1PositionOnPlane[1], line1PositionOnPlane[0]) - Math.PI;
+        var lineAngleRelativeToAurora = Math.atan2(linePoint2[1] - linePoint1[1], linePoint2[0] - linePoint1[0]) - Math.PI;
+        var planeOriginToLine1CenterDistance = Math.sqrt(Math.pow(line1PositionOnPlane[0], 2) + Math.pow((line1PositionOnPlane[1]), 2));
+        var lineMidpointPosition = [
+            objectPos[0] - planeOriginToLine1CenterDistance * Math.cos(objectAngle + linePositionAngleRelativeToAurora),
+            objectPos[1] - planeOriginToLine1CenterDistance * Math.sin(objectAngle + linePositionAngleRelativeToAurora)
+        ];
+        var lineAngle = lineAngleRelativeToAurora + objectAngle;
+        _this.transform.pos = [lineMidpointPosition[0], lineMidpointPosition[1]];
+        _this.transform.angle = lineAngle;
+        var velocityVariancePercentage = 0.1; // 10%
+        var velocity = 0.05 * speed;
+        var angularVelocityVariance = 0.1; // 10%
+        var angularVelocity = 0.075 * 0.15 * speed;
+        // create a random velocity and random angular velocity
+        var randomVelocity = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.vectorCartesian(2 * Math.random() * Math.PI, velocity + (velocity * velocityVariancePercentage) * Math.random());
+        var newVelocity = [randomVelocity[0] + objectTransform.vel[0] * 8, randomVelocity[1] + objectTransform.vel[1] * 8];
+        var randomAngularVelocity = (angularVelocity + (angularVelocity * angularVelocityVariance)) * Math.random();
+        _this.transform.vel[0] = newVelocity[0];
+        _this.transform.vel[1] = newVelocity[1];
+        _this.transform.aVel = randomAngularVelocity;
+        _this.addLineSprite(new DeathAnimationSprite(_this.transform, length, width || 1.5, color));
+        _this.addPhysicsComponent();
+        return _this;
+    }
+    DeathAnimationLineObject.prototype.animate = function () { };
+    DeathAnimationLineObject.prototype.update = function (deltaTime) {
+        this.timeAround += deltaTime;
+        if (this.timeAround > this.removeTime) {
+            this.remove();
+        }
+    };
+    return DeathAnimationLineObject;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
+
+var DeathAnimationArcObject = /** @class */ (function (_super) {
+    __extends(DeathAnimationArcObject, _super);
+    function DeathAnimationArcObject(engine, objectTransform, // position of the parent object
+    objectAngle, // angle of the parent object
+    arcData, // relative to parent object origin
+    color, width, speedParam) {
+        var _this = _super.call(this, engine) || this;
+        _this.removeTime = 3000;
+        _this.timeAround = 0;
+        var speed = speedParam || 1;
+        var objectPos = [objectTransform.pos[0], objectTransform.pos[1]];
+        var centerPosition = arcData.centerPosition, radius = arcData.radius, startAngle = arcData.startAngle, endAngle = arcData.endAngle, counterClockwise = arcData.counterClockwise;
+        var arcCenterPositionAngleRelativeToObject = Math.atan2(centerPosition[1], centerPosition[0]) - Math.PI;
+        var startAngleRelativeToObject = startAngle;
+        var endAngleRelativeToObject = endAngle;
+        var objectOriginToCenterDistance = Math.sqrt(Math.pow(centerPosition[0], 2) + Math.pow((centerPosition[1]), 2));
+        var newCenterPosition = [
+            objectPos[0] - objectOriginToCenterDistance * Math.cos(objectAngle + arcCenterPositionAngleRelativeToObject),
+            objectPos[1] - objectOriginToCenterDistance * Math.sin(objectAngle + arcCenterPositionAngleRelativeToObject)
+        ];
+        var newStartAngle = startAngleRelativeToObject + objectAngle;
+        var newEndAngle = endAngleRelativeToObject + objectAngle;
+        _this.transform.pos = [newCenterPosition[0], newCenterPosition[1]];
+        _this.transform.angle = 0;
+        // create a random velocity and random angular velocity
+        var velocityVariancePercentage = 0.1; // 10%
+        var velocity = 0.05 * speed;
+        var angularVelocityVariance = 0.1; // 10%
+        var angularVelocity = 0.075 * 0.15 * speed;
+        // create a random velocity and random angular velocity
+        var randomVelocity = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.vectorCartesian(2 * Math.random() * Math.PI, velocity + (velocity * velocityVariancePercentage) * Math.random());
+        var newVelocity = [randomVelocity[0] + objectTransform.vel[0] * 8, randomVelocity[1] + objectTransform.vel[1] * 8];
+        var randomAngularVelocity = (angularVelocity + (angularVelocity * angularVelocityVariance)) * Math.random();
+        _this.transform.vel[0] = newVelocity[0];
+        _this.transform.vel[1] = newVelocity[1];
+        _this.transform.aVel = randomAngularVelocity;
+        _this.addLineSprite(new DeathAnimationArcSprite(_this.transform, {
+            startAngle: newStartAngle,
+            endAngle: newEndAngle,
+            radius: radius,
+            counterClockwise: counterClockwise,
+            centerPosition: [0, 0]
+        }, width || 1.5, color));
+        _this.addPhysicsComponent();
+        return _this;
+    }
+    DeathAnimationArcObject.prototype.animate = function () { };
+    DeathAnimationArcObject.prototype.update = function (deltaTime) {
+        this.timeAround += deltaTime;
+        if (this.timeAround > this.removeTime) {
+            this.remove();
+        }
+    };
+    return DeathAnimationArcObject;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
+
+var DeathAnimationBezierCurveObject = /** @class */ (function (_super) {
+    __extends(DeathAnimationBezierCurveObject, _super);
+    function DeathAnimationBezierCurveObject(engine, objectTransform, // position of the parent object
+    objectAngle, // angle of the parent object
+    bezierCurveData, // relative to parent object origin
+    color, width, speed) {
+        var _this = _super.call(this, engine) || this;
+        _this.timeAround = 0;
+        _this.removeTime = 3000;
+        var objectPos = [objectTransform.pos[0], objectTransform.pos[1]];
+        var startPos = bezierCurveData.startPos, endPos = bezierCurveData.endPos, controlPoint1 = bezierCurveData.controlPoint1, controlPoint2 = bezierCurveData.controlPoint2;
+        var midPoint = [(startPos[0] + endPos[0]) / 2, (startPos[1] + endPos[1]) / 2];
+        var _a = [
+            startPos, endPos, controlPoint1, controlPoint2
+        ].map(function (point) { return [point[0] - midPoint[0], point[1] - midPoint[1]]; }), startPosNewO = _a[0], endPosNewO = _a[1], controlPoint1NewO = _a[2], controlPoint2NewO = _a[3];
+        var midPointAngleRelativeToObject = Math.atan2(midPoint[1], midPoint[0]) - Math.PI;
+        // const startPosAngleRelativeToNewOrigin =  Math.atan2(startPosNewO[1], startPosNewO[0]) - Math.PI;
+        // const endPosAngleRelativeToObject =  Math.atan2(endPosNewO[1], endPosNewO[0]) - Math.PI;
+        // const controlPoint1AngleRelativeToObject =  Math.atan2(controlPoint1NewO[1], controlPoint1NewO[0]) - Math.PI;
+        // const controlPoint2AngleRelativeToObject =  Math.atan2(controlPoint2NewO[1], controlPoint2NewO[0]) - Math.PI;
+        var midPointToNewOriginDistance = Math.sqrt(Math.pow(midPoint[0], 2) + Math.pow((midPoint[1]), 2));
+        // const startPosToNewOriginDistance = Math.sqrt(startPosNewO[0]**2 + (startPosNewO[1])**2);
+        // const endPosNewOriginDistance = Math.sqrt(endPosNewO[0]**2 + (endPosNewO[1])**2);
+        // const controlPoint1NewOriginDistance = Math.sqrt(controlPoint1NewO[0]**2 + (controlPoint1NewO[1])**2);
+        // const controlPoint2NewOriginDistance = Math.sqrt(controlPoint2NewO[0]**2 + (controlPoint2NewO[1])**2);
+        var newOriginPosition = [
+            objectPos[0] - midPointToNewOriginDistance * Math.cos(objectAngle + midPointAngleRelativeToObject),
+            objectPos[1] - midPointToNewOriginDistance * Math.sin(objectAngle + midPointAngleRelativeToObject)
+        ];
+        _this.transform.pos = [newOriginPosition[0], newOriginPosition[1]];
+        _this.transform.angle = 0;
+        var velocityVariancePercentage = 0.1; // 10%
+        var velocity = 0.05;
+        var angularVelocityVariance = 0.1; // 10%
+        var angularVelocity = 0.075 * 0.15;
+        // create a random velocity and random angular velocity
+        var randomVelocity = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.vectorCartesian(2 * Math.random() * Math.PI, velocity + (velocity * velocityVariancePercentage) * Math.random());
+        var newVelocity = [randomVelocity[0] + objectTransform.vel[0] * 8, randomVelocity[1] + objectTransform.vel[1] * 8];
+        var randomAngularVelocity = (angularVelocity + (angularVelocity * angularVelocityVariance)) * Math.random();
+        _this.transform.vel[0] = newVelocity[0];
+        _this.transform.vel[1] = newVelocity[1];
+        _this.transform.aVel = randomAngularVelocity;
+        _this.addLineSprite(new DeathAnimationBezierCurveSprite(_this.transform, {
+            startPos: startPosNewO,
+            endPos: endPosNewO,
+            controlPoint1: controlPoint1NewO,
+            controlPoint2: controlPoint2NewO,
+        }, width || 1.5, color));
+        _this.addPhysicsComponent();
+        return _this;
+    }
+    DeathAnimationBezierCurveObject.prototype.animate = function (dT) { };
+    DeathAnimationBezierCurveObject.prototype.update = function (deltaTime) {
+        this.timeAround += deltaTime;
+        if (this.timeAround > this.removeTime) {
+            this.remove();
+        }
+    };
+    return DeathAnimationBezierCurveObject;
+}(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
+
+var DeathAnimationSprite = /** @class */ (function (_super) {
+    __extends(DeathAnimationSprite, _super);
+    function DeathAnimationSprite(transform, length, lineWidth, color) {
+        // the color should be slightly less vibrant
+        // and chosen by the parent object.. but for the future
+        var _this = _super.call(this, transform) || this;
+        _this.length = length;
+        _this.color = color ? color : "rgb(255, 255, 255)";
+        _this.lineWidth = lineWidth ? lineWidth : 1.5;
+        return _this;
+    }
+    DeathAnimationSprite.prototype.draw = function (ctx) {
+        // I'm given a midpoint and a length
+        var pos = this.transform.absolutePosition();
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = this.lineWidth;
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+        ctx.rotate(this.transform.angle);
+        ctx.beginPath();
+        ctx.moveTo(-this.length / 2, 0);
+        ctx.lineTo(this.length / 2, 0);
+        ctx.stroke();
+        ctx.restore();
+    };
+    return DeathAnimationSprite;
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
+
+var DeathAnimationArcSprite = /** @class */ (function (_super) {
+    __extends(DeathAnimationArcSprite, _super);
+    function DeathAnimationArcSprite(transform, arcData, lineWidth, color) {
+        // the color should be slightly less vibrant
+        // and chosen by the parent object.. but for the future
+        var _this = _super.call(this, transform) || this;
+        _this.arcData = arcData;
+        _this.color = color ? color : "rgb(255, 255, 255)";
+        _this.lineWidth = lineWidth ? lineWidth : 1.5;
+        return _this;
+    }
+    DeathAnimationArcSprite.prototype.draw = function (ctx) {
+        var _a = this.arcData, centerPosition = _a.centerPosition, radius = _a.radius, startAngle = _a.startAngle, endAngle = _a.endAngle, counterClockwise = _a.counterClockwise;
+        var pos = this.transform.absolutePosition();
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = this.lineWidth;
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+        ctx.rotate(this.transform.angle);
+        ctx.beginPath();
+        ctx.arc(centerPosition[0], centerPosition[1], radius, startAngle, endAngle, counterClockwise);
+        ctx.lineTo(this.length / 2, 0);
+        ctx.stroke();
+        ctx.restore();
+    };
+    return DeathAnimationArcSprite;
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
+
+var DeathAnimationBezierCurveSprite = /** @class */ (function (_super) {
+    __extends(DeathAnimationBezierCurveSprite, _super);
+    function DeathAnimationBezierCurveSprite(transform, bezierCurveData, lineWidth, color) {
+        // the color should be slightly less vibrant
+        // and chosen by the parent object.. but for the future
+        var _this = _super.call(this, transform) || this;
+        _this.bezierCurveData = bezierCurveData;
+        _this.color = color ? color : "rgb(255, 255, 255)";
+        _this.lineWidth = lineWidth ? lineWidth : 1.5;
+        return _this;
+    }
+    DeathAnimationBezierCurveSprite.prototype.draw = function (ctx) {
+        var _a = this.bezierCurveData, startPos = _a.startPos, endPos = _a.endPos, controlPoint1 = _a.controlPoint1, controlPoint2 = _a.controlPoint2;
+        var pos = this.transform.absolutePosition();
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = this.lineWidth;
+        ctx.save();
+        ctx.translate(pos[0], pos[1]);
+        ctx.rotate(this.transform.angle);
+        ctx.beginPath();
+        ctx.moveTo(startPos[0], startPos[1]);
+        ctx.bezierCurveTo(controlPoint1[0], controlPoint1[1], controlPoint2[0], controlPoint2[1], endPos[0], endPos[0]);
+        ctx.stroke();
+        ctx.restore();
+    };
+    return DeathAnimationBezierCurveSprite;
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__.LineSprite));
+
+
+
+/***/ }),
+
 /***/ "./src/game_objects/StrikeTime/Enemies/Missile.ts":
 /*!********************************************************!*\
   !*** ./src/game_objects/StrikeTime/Enemies/Missile.ts ***!
@@ -12763,6 +13298,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../particles/StrikeTimeParticleExplosion */ "./src/game_objects/particles/StrikeTimeParticleExplosion.ts");
 /* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 /* harmony import */ var _Missile__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Missile */ "./src/game_objects/StrikeTime/Enemies/Missile.ts");
+/* harmony import */ var _DeathAnimation_DeathAnimation__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../DeathAnimation/DeathAnimation */ "./src/game_objects/StrikeTime/DeathAnimation/DeathAnimation.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -12782,6 +13318,11 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
+
+var DeathAnimationLineBaseObjectWithSpeed = function (engine, objectTransform, // position of the parent object
+objectAngle, // angle of the parent object
+linePointPositions, // relative to parent object origin
+color, width) { return new _DeathAnimation_DeathAnimation__WEBPACK_IMPORTED_MODULE_4__.DeathAnimationLineObject(engine, objectTransform, objectAngle, linePointPositions, color, width, 2); };
 var PatriotMissileSite = /** @class */ (function (_super) {
     __extends(PatriotMissileSite, _super);
     function PatriotMissileSite(engine, pos) {
@@ -12790,11 +13331,13 @@ var PatriotMissileSite = /** @class */ (function (_super) {
         _this.launchRange = 180; // I could have it detect earlier and turn to face before within actual range. but this is a prototype so not now
         _this.radius = 15;
         _this.lives = 1;
+        _this.destructedColor = "#67997fff";
+        _this.destructionLineWidth = 1.5;
         _this.missilesPerGroup = 3;
         _this.numberOfMissilesLaunched = 0;
         _this.isMissileLaunched = false;
         _this.isGroupLaunched = false;
-        _this.reloadTime = 300;
+        _this.reloadTime = 350;
         _this.groupReloadTime = 3000;
         _this.timeSinceLaunch = 0;
         _this.timeSinceGroupLaunch = 0;
@@ -12842,6 +13385,7 @@ var PatriotMissileSite = /** @class */ (function (_super) {
         var pos = this.transform.absolutePosition();
         if (this.lives <= 0) {
             new _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, pos);
+            this.createDestructionObjects();
             this.remove();
         }
         // if not dead, I can have a different type of explosion
@@ -12870,6 +13414,117 @@ var PatriotMissileSite = /** @class */ (function (_super) {
         // I should stick to no animation for now
         // for my own sanity
     };
+    PatriotMissileSite.prototype.createDestructionObjects = function () {
+        var s = 1;
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [0 * s, 0 * s],
+            [-6 * s, 24 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [-6 * s, 24 * s],
+            [18 * s, 30 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [18 * s, 30 * s],
+            [24 * s, 6 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [24 * s, 6 * s],
+            [0 * s, 0 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [6 * s, 27 * s],
+            [12 * s, 3 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [-3 * s, 12 * s],
+            [21 * s, 18 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [5 * s, 25 * s],
+            [-4 * s, 23 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [-4 * s, 23 * s],
+            [-2 * s, 14 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [-2 * s, 14 * s],
+            [7 * s, 16 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [7 * s, 16 * s],
+            [5 * s, 25 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [17 * s, 28 * s],
+            [8 * s, 26 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [8 * s, 26 * s],
+            [10 * s, 17 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [10 * s, 17 * s],
+            [19 * s, 19 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [19 * s, 19 * s],
+            [17 * s, 28 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [-1 * s, 11 * s],
+            [8 * s, 13 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [8 * s, 13 * s],
+            [10 * s, 4 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [10 * s, 4 * s],
+            [1 * s, 2 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [1 * s, 2 * s],
+            [-1 * s, 11 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [11 * s, 14 * s],
+            [20 * s, 16 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [20 * s, 16 * s],
+            [22 * s, 7 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [22 * s, 7 * s],
+            [13 * s, 5 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [13 * s, 5 * s],
+            [11 * s, 14 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [-6 * s, 24 * s],
+            [-12 * s, 0 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [-12 * s, 0 * s],
+            [-6 * s, -18 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [-6 * s, -18 * s],
+            [12 * s, -12 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [12 * s, -12 * s],
+            [24 * s, 6 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+        DeathAnimationLineBaseObjectWithSpeed(this.gameEngine, this.transform, this.transform.angle, [
+            [0 * s, 0 * s],
+            [-6 * s, -18 * s]
+        ], this.destructedColor, this.destructionLineWidth);
+    };
     return PatriotMissileSite;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
 
@@ -12885,6 +13540,84 @@ var PatriotMissileSiteSprite = /** @class */ (function (_super) {
         ctx.restore();
     };
     PatriotMissileSiteSprite.prototype.drawPatriotMissileSite = function (ctx) {
+        ctx.strokeStyle = "#339966";
+        ctx.lineWidth = 1.5;
+        var s = 1;
+        var pos = this.transform.absolutePosition();
+        ctx.translate(pos[0], pos[1]);
+        // Piece 1: 
+        ctx.beginPath();
+        ctx.moveTo(0 * s, 0 * s);
+        ctx.lineTo(-6 * s, 24 * s);
+        ctx.lineTo(18 * s, 30 * s);
+        ctx.lineTo(24 * s, 6 * s);
+        ctx.lineTo(0 * s, 0 * s);
+        ctx.stroke();
+        // Piece 2: 
+        ctx.beginPath();
+        ctx.moveTo(6 * s, 27 * s);
+        ctx.lineTo(12 * s, 3 * s);
+        ctx.stroke();
+        // Piece 4: 
+        ctx.beginPath();
+        ctx.moveTo(-3 * s, 10 * s);
+        ctx.stroke();
+        // Piece 6: 
+        ctx.beginPath();
+        ctx.moveTo(-2 * s, 10 * s);
+        ctx.stroke();
+        // Piece 8: 
+        ctx.beginPath();
+        ctx.moveTo(-3 * s, 12 * s);
+        ctx.lineTo(21 * s, 18 * s);
+        ctx.stroke();
+        // Piece 10: 
+        ctx.beginPath();
+        ctx.moveTo(5 * s, 25 * s);
+        ctx.lineTo(-4 * s, 23 * s);
+        ctx.lineTo(-2 * s, 14 * s);
+        ctx.lineTo(7 * s, 16 * s);
+        ctx.lineTo(5 * s, 25 * s);
+        ctx.stroke();
+        // Piece 11: 
+        ctx.beginPath();
+        ctx.moveTo(17 * s, 28 * s);
+        ctx.lineTo(8 * s, 26 * s);
+        ctx.lineTo(10 * s, 17 * s);
+        ctx.lineTo(19 * s, 19 * s);
+        ctx.lineTo(17 * s, 28 * s);
+        ctx.stroke();
+        // Piece 12: 
+        ctx.beginPath();
+        ctx.moveTo(-1 * s, 11 * s);
+        ctx.lineTo(8 * s, 13 * s);
+        ctx.lineTo(10 * s, 4 * s);
+        ctx.lineTo(1 * s, 2 * s);
+        ctx.lineTo(-1 * s, 11 * s);
+        ctx.stroke();
+        // Piece 13: 
+        ctx.beginPath();
+        ctx.moveTo(11 * s, 14 * s);
+        ctx.lineTo(20 * s, 16 * s);
+        ctx.lineTo(22 * s, 7 * s);
+        ctx.lineTo(13 * s, 5 * s);
+        ctx.lineTo(11 * s, 14 * s);
+        ctx.stroke();
+        // Piece 14: 
+        ctx.beginPath();
+        ctx.moveTo(-6 * s, 24 * s);
+        ctx.lineTo(-12 * s, 0 * s);
+        ctx.lineTo(-6 * s, -18 * s);
+        ctx.lineTo(12 * s, -12 * s);
+        ctx.lineTo(24 * s, 6 * s);
+        ctx.stroke();
+        // Piece 16: 
+        ctx.beginPath();
+        ctx.moveTo(0 * s, 0 * s);
+        ctx.lineTo(-6 * s, -18 * s);
+        ctx.stroke();
+    };
+    PatriotMissileSiteSprite.prototype.drawPatriotMissileSiteOriginal = function (ctx) {
         ctx.strokeStyle = "#339966";
         ctx.lineWidth = 1.5;
         var w = 5;
