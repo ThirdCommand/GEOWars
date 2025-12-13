@@ -118,7 +118,9 @@ export class GameView {
                     this.updateMovementDirection(e.key, down);
                 }
             }
-
+            if(e.key === 'e') {
+                this.engine.updateEKeyListeners(down);
+            }
             if(e.key === 'f') {
                 // TODO hacked in a way to change focus,
                 // will need to update 
@@ -398,6 +400,8 @@ export class GameView {
         this.openedLevelEditor?.animate(timeDelta);
         this.animationViewGEO.animate(timeDelta);
         this.animationViewStrikeTime.animate(timeDelta);
+        this.animationViewStrikeTime.update(timeDelta);
+        // this.animationViewStrikeTime.updatePhysics(timeDelta);
         this.lastTime = time;
         // every call to animate requests causes another call to animate
         requestAnimationFrame(this.animate);

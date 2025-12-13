@@ -29,6 +29,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_objects_ClockworkGames_SawMachine_TreeGrip__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./game_objects/ClockworkGames/SawMachine/TreeGrip */ "./src/game_objects/ClockworkGames/SawMachine/TreeGrip.ts");
 /* harmony import */ var _game_objects_StrikeTime_Enemies_Missile__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./game_objects/StrikeTime/Enemies/Missile */ "./src/game_objects/StrikeTime/Enemies/Missile.ts");
 /* harmony import */ var _game_objects_StrikeTime__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./game_objects/StrikeTime */ "./src/game_objects/StrikeTime/index.ts");
+/* harmony import */ var _game_objects_particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./game_objects/particles/StrikeTimeParticleExplosion */ "./src/game_objects/particles/StrikeTimeParticleExplosion.ts");
+/* harmony import */ var _game_objects_particles_particle__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./game_objects/particles/particle */ "./src/game_objects/particles/particle.ts");
 var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from, pack) {
     if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
         if (ar || !(i in from)) {
@@ -50,6 +52,8 @@ var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from
 
 
 // import {LeftSandwich, RightSandwich} from "./game_objects/ClockworkGames/Sandwich";
+
+
 
 
 
@@ -127,6 +131,16 @@ var AnimationView = /** @class */ (function () {
         this.clearCanvas();
         this.renderLineSprites(this.ctx);
         this.renderOverlayText();
+    };
+    AnimationView.prototype.update = function (timeDelta) {
+        if (this.paused || this.focusPaused) {
+            return;
+        }
+        this.gameObjects.forEach(function (object) {
+            if (object instanceof _game_objects_particles_particle__WEBPACK_IMPORTED_MODULE_18__.Particle) {
+                object.update(timeDelta);
+            }
+        });
     };
     AnimationView.prototype.renderOverlayText = function () {
         if (this.overlayTextCleared)
@@ -222,6 +236,9 @@ var AnimationView = /** @class */ (function () {
     };
     AnimationView.prototype.addLineSprite = function (lineSprite) {
         this.lineSprites.push(lineSprite);
+    };
+    AnimationView.prototype.addParticleExplosionStrikeTime = function () {
+        new _game_objects_particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_17__.ParticleExplosion(this, [100 / this.zoomScale, 100 / this.zoomScale]);
     };
     AnimationView.prototype.addEnemy = function (type) {
         var _this = this;
@@ -4210,6 +4227,7 @@ var StrikeTimeLevelDesigner = /** @class */ (function (_super) {
         this.engine.addRightArrowListener(this);
         this.engine.addDownArrowListener(this);
         this.engine.addUpArrowListener(this);
+        this.engine.addEKeyListener(this);
     };
     StrikeTimeLevelDesigner.prototype.updateLeftArrowListener = function (pressed) {
         this.engine.activeCamera.transform.pos[0] -= 15;
@@ -4222,6 +4240,9 @@ var StrikeTimeLevelDesigner = /** @class */ (function (_super) {
     };
     StrikeTimeLevelDesigner.prototype.updateDownArrowListener = function (pressed) {
         this.engine.activeCamera.transform.pos[1] += 15;
+    };
+    StrikeTimeLevelDesigner.prototype.updateEKeyListener = function (pressed) {
+        this.animationView.addParticleExplosionStrikeTime();
     };
     // there's two start buttons
     // one directly from the first modal
@@ -5764,6 +5785,7 @@ var GameEngine = /** @class */ (function () {
         this.leftControlStickListeners = [];
         this.rightControlStickListeners = [];
         this.lKeyListeners = [];
+        this.eKeyListeners = [];
         this.kKeyListeners = [];
         this.fKeyListeners = [];
         this.bKeyListeners = [];
@@ -5942,6 +5964,9 @@ var GameEngine = /** @class */ (function () {
     };
     GameEngine.prototype.addLKeyListener = function (object) {
         this.lKeyListeners.push(object);
+    };
+    GameEngine.prototype.addEKeyListener = function (object) {
+        this.eKeyListeners.push(object);
     };
     GameEngine.prototype.addKKeyListener = function (object) {
         this.kKeyListeners.push(object);
@@ -6132,6 +6157,11 @@ var GameEngine = /** @class */ (function () {
     GameEngine.prototype.updateLKeyListeners = function (down) {
         this.lKeyListeners.forEach(function (listener) {
             listener.updateLKeyListener(down);
+        });
+    };
+    GameEngine.prototype.updateEKeyListeners = function (down) {
+        this.eKeyListeners.forEach(function (listener) {
+            listener.updateEKeyListener(down);
         });
     };
     GameEngine.prototype.updateKKeyListeners = function (down) {
@@ -6612,6 +6642,7 @@ var GameObject = /** @class */ (function () {
     GameObject.prototype.updateJKeyListener = function (pressed) { console.log('overwrite updateJKeyListener'); };
     GameObject.prototype.updateSKeyListener = function (pressed) { console.log('overwrite updateSKeyListener'); };
     GameObject.prototype.updateLKeyListener = function (pressed) { console.log('overwrite updateLKeyListener'); };
+    GameObject.prototype.updateEKeyListener = function (pressed) { console.log('overwrite updateEKeyListener'); };
     GameObject.prototype.updateBKeyListener = function (pressed) { console.log('overwrite updateBKeyListener'); };
     GameObject.prototype.updateMKeyListener = function (pressed) { console.log('overwrite updateMKeyListener'); };
     GameObject.prototype.updateBButtonListener = function (pressed) { console.log('overwrite updateBButtonListener for functionality'); };
@@ -18005,6 +18036,9 @@ var GameView = /** @class */ (function () {
                     _this.updateMovementDirection(e.key, down);
                 }
             }
+            if (e.key === 'e') {
+                _this.engine.updateEKeyListeners(down);
+            }
             if (e.key === 'f') {
                 // TODO hacked in a way to change focus,
                 // will need to update 
@@ -18257,6 +18291,8 @@ var GameView = /** @class */ (function () {
         (_a = this.openedLevelEditor) === null || _a === void 0 ? void 0 : _a.animate(timeDelta);
         this.animationViewGEO.animate(timeDelta);
         this.animationViewStrikeTime.animate(timeDelta);
+        this.animationViewStrikeTime.update(timeDelta);
+        // this.animationViewStrikeTime.updatePhysics(timeDelta);
         this.lastTime = time;
         // every call to animate requests causes another call to animate
         requestAnimationFrame(this.animate);

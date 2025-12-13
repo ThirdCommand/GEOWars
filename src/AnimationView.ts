@@ -20,6 +20,8 @@ import { TreeGrip } from "./game_objects/ClockworkGames/SawMachine/TreeGrip";
 import { Camera } from "./game_engine/camera";
 import { Missile } from "./game_objects/StrikeTime/Enemies/Missile";
 import { Airport, Aurora, Building1, EndingLine, PatriotMissileSite, type StrikeTimeObjectType, TargetBuilding } from "./game_objects/StrikeTime";
+import { ParticleExplosion } from "./game_objects/particles/StrikeTimeParticleExplosion";
+import { Particle } from "./game_objects/particles/particle";
 
 interface ObjectToDisplay {
     type: GameElementObjectType;
@@ -142,6 +144,18 @@ export class AnimationView {
         this.renderLineSprites(this.ctx);
         this.renderOverlayText();
     }
+
+    update(timeDelta: number) {
+        if(this.paused || this.focusPaused) {
+           return;
+        }
+        this.gameObjects.forEach((object) => {
+            if(object instanceof Particle) {
+                object.update(timeDelta);
+            }
+        });
+    }
+    
 
     renderOverlayText() {
         if(this.overlayTextCleared) return;
@@ -280,6 +294,10 @@ export class AnimationView {
 
     addLineSprite(lineSprite: LineSprite) {
         this.lineSprites.push(lineSprite);
+    }
+
+    addParticleExplosionStrikeTime() {
+        new ParticleExplosion(this,[100 / this.zoomScale, 100 / this.zoomScale])
     }
 
     addEnemy(type: Types) {

@@ -226,6 +226,7 @@ export class StrikeTimeLevelDesigner extends LevelDesigner {
         this.engine.addRightArrowListener(this);
         this.engine.addDownArrowListener(this);
         this.engine.addUpArrowListener(this);
+        this.engine.addEKeyListener(this);
     }
 
     updateLeftArrowListener(pressed: boolean) {
@@ -239,6 +240,9 @@ export class StrikeTimeLevelDesigner extends LevelDesigner {
     }
     updateDownArrowListener(pressed: boolean) {
         this.engine.activeCamera.transform.pos[1] += 15;
+    }
+    updateEKeyListener(pressed: boolean) {
+        this.animationView.addParticleExplosionStrikeTime()
     }
 
     // there's two start buttons

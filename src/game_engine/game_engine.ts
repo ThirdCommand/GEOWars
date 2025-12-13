@@ -61,6 +61,9 @@ interface XButtonListenable {
 interface LKeyListenable {
     updateLKeyListener(pressed: boolean): void
 }
+interface EKeyListenable {
+    updateEKeyListener(pressed: boolean): void
+}
 interface KKeyListenable {
     updateKKeyListener(pressed: boolean): void
 }
@@ -154,6 +157,7 @@ export class GameEngine {
     leftControlStickFocussedListeners: LeftControlStickListenable[]; 
     rightControlStickListeners: RightControlStickListenable[]; 
     lKeyListeners: LKeyListenable[];
+    eKeyListeners: EKeyListenable[];
     kKeyListeners: KKeyListenable[];
     bKeyListeners: BKeyListenable[];
     mKeyListeners: MKeyListenable[];
@@ -235,6 +239,7 @@ export class GameEngine {
         this.leftControlStickListeners = [];
         this.rightControlStickListeners = [];
         this.lKeyListeners = [];
+        this.eKeyListeners = [];
         this.kKeyListeners = [];
         this.fKeyListeners = [];
         this.bKeyListeners = [];
@@ -454,6 +459,9 @@ export class GameEngine {
     addLKeyListener(object: LKeyListenable) {
         this.lKeyListeners.push(object);
     }
+    addEKeyListener(object: EKeyListenable) {
+        this.eKeyListeners.push(object);
+    }
 
     addKKeyListener(object: KKeyListenable) {
         this.kKeyListeners.push(object)
@@ -659,6 +667,12 @@ export class GameEngine {
     updateLKeyListeners(down: boolean) {
         this.lKeyListeners.forEach((listener) => {
             listener.updateLKeyListener(down);
+        })
+    }
+
+    updateEKeyListeners(down: boolean) {
+        this.eKeyListeners.forEach((listener) => {
+            listener.updateEKeyListener(down);
         })
     }
 

@@ -161,6 +161,7 @@ export abstract class GameObject implements controllable{
     updateJKeyListener(pressed: boolean) { console.log('overwrite updateJKeyListener');}
     updateSKeyListener(pressed: boolean) { console.log('overwrite updateSKeyListener');}
     updateLKeyListener(pressed: boolean) { console.log('overwrite updateLKeyListener');}
+    updateEKeyListener(pressed: boolean) { console.log('overwrite updateEKeyListener');}
     updateBKeyListener(pressed: boolean) { console.log('overwrite updateBKeyListener');}
     updateMKeyListener(pressed: boolean) { console.log('overwrite updateMKeyListener');}
     
