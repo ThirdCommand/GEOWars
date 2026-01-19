@@ -51,6 +51,7 @@ export class AnimationView {
             play(): void;
         }
         death(): void;
+        gameTime?: number;
     };
     focusPaused: boolean;
     

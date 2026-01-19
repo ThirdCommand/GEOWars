@@ -5747,6 +5747,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var GameEngine = /** @class */ (function () {
     function GameEngine(ctx) {
+        this.isTimeReversing = false;
         this.isControllerConnected = false;
         this.replayablePhysicsComponents = [];
         this.isPerformanceCheckOn = false;
@@ -5758,7 +5759,9 @@ var GameEngine = /** @class */ (function () {
             bButtonPressed: false,
             startButtonPressed: false,
         };
+        this.isTimeReversing = false;
         this.gameScriptAdded = false;
+        this.carryOverDelta = 0;
         this.lineSprites = [];
         this.cameras = [];
         this.controllableGameObjects = [];
@@ -5896,7 +5899,7 @@ var GameEngine = /** @class */ (function () {
             this.moveReplayablePhysicsComponents(delta, this.gameScript.gameTime);
             var beforeUpdate = performance.now();
             var physicsCalcTime = beforeUpdate - beforePhysicsCalcs;
-            this.updateGameObjects(delta);
+            this.updateGameObjects(delta); // anything
             var beforeRender = performance.now();
             var updateTime = beforeRender - beforeUpdate;
             this.renderLineSprites(this.ctx);
@@ -5922,6 +5925,90 @@ var GameEngine = /** @class */ (function () {
         this.addDoubleClickListenersAfterTick();
         this.removeClickListenersAfterTick();
         this.removeDoubleClickListenerAfterTick();
+    };
+    // TODO: add performance checks
+    GameEngine.prototype.reversibleTick = function (delta) {
+        this.updateGraphicSetting(delta);
+        if (delta === 0)
+            throw ('delta is zero implying a second requestAnimation call. check gameView');
+        if (!this.gameScriptAdded)
+            return;
+        if (this.paused || this.focusPaused) {
+            this.updateControlListeners();
+            return;
+        }
+        if (!this.isTimeReversing) {
+            this.forwardTick(delta);
+            this.renderLineSprites(this.ctx);
+            // this.updateControlListeners();
+            this.playSounds();
+            this.addClickListenersAfterTick();
+            this.addDoubleClickListenersAfterTick();
+            this.removeClickListenersAfterTick();
+            this.removeDoubleClickListenerAfterTick();
+        }
+        else {
+            this.addClickListenersAfterTick();
+            this.addDoubleClickListenersAfterTick();
+            this.removeClickListenersAfterTick();
+            this.removeDoubleClickListenerAfterTick();
+            this.renderLineSprites(this.ctx);
+            this.playSounds();
+            this.backwardTick(-delta);
+        }
+    };
+    GameEngine.prototype.forwardTick = function (delta) {
+        var fixedDelta = 20; // 20 ms per tick = 50 fps
+        var accumulator = this.carryOverDelta || 0;
+        accumulator += delta;
+        while (accumulator >= fixedDelta) {
+            this.checkCollisions();
+            this.updateControlListeners();
+            this.movePhysicsComponents(fixedDelta);
+            this.moveReplayablePhysicsComponents(fixedDelta, this.gameScript.gameTime);
+            this.updateGameObjects(fixedDelta);
+            this.updateGameScript(fixedDelta);
+            accumulator -= fixedDelta;
+        }
+        this.carryOverDelta = accumulator;
+    };
+    GameEngine.prototype.backwardTick = function (delta) {
+        var fixedDelta = 20; // 20 ms per tick = 50 fps
+        var accumulator = this.carryOverDelta || 0;
+        accumulator += delta;
+        while (accumulator <= -fixedDelta) {
+            this.updateGameScript(-fixedDelta);
+            this.updateGameObjects(-fixedDelta);
+            // I think this function will be for objects that took user input and are replaying it
+            this.moveReplayablePhysicsComponents(-fixedDelta, this.gameScript.gameTime);
+            this.movePhysicsComponents(-fixedDelta);
+            this.updateControlListeners();
+            this.checkCollisions();
+            accumulator += fixedDelta;
+        }
+        this.carryOverDelta = accumulator;
+    };
+    GameEngine.prototype.reverseTime = function () {
+        this.isTimeReversing = !this.isTimeReversing;
+        this.carryOverDelta = 0;
+        // every vector related to time must reverse
+        // any updateGameObject code also needs to account for this
+        // but I can do that there instead
+        // also, the state of reversing should be kept track of
+        // by the game engine so that game objects can behave differently with that info
+        // and maybe they can subscribe to it in case it's important that things
+        // change in that moment exactly?
+        this.physicsComponents.forEach(function (physicsComponent) {
+            // any applied forces will now have to be done in the opposite direction
+            // so any applied force will have to consider which direction time 
+            // is going
+            // except for things that are bouncing... that should work the same
+            // This means the same for collider function calls I guess
+            physicsComponent.reverseTime();
+        });
+        this.gameObjects.forEach(function (gameObject) {
+            gameObject.reverseTime();
+        });
     };
     GameEngine.prototype.collectPerformanceData = function (delta, collisionTime, physicsCalcTime, updateTime, renderTime, scriptTime) {
         this.frameCountForPerformance += 1;
@@ -6306,6 +6393,7 @@ var GameEngine = /** @class */ (function () {
         }
     };
     GameEngine.prototype.movePhysicsComponents = function (delta) {
+        console.log(delta);
         this.physicsComponents.forEach(function (component) {
             component.move(delta);
         });
@@ -6402,6 +6490,7 @@ var GameEngine = /** @class */ (function () {
     };
     GameEngine.prototype.renderLineSprites = function (ctx) {
         // ctx.scale = gameEngine.currentCamera.zoomScale
+        this.activeCamera.update(ctx);
         this.activeCamera.clearView(ctx);
         this.ctx.save();
         this.activeCamera.setZoomScale(ctx);
@@ -6410,7 +6499,19 @@ var GameEngine = /** @class */ (function () {
             sprite.draw(ctx);
         });
         this.ctx.restore();
+        // ctx.scale(1,1)
+    };
+    GameEngine.prototype.reverseRenderLineSprites = function (ctx) {
+        // ctx.scale = gameEngine.currentCamera.zoomScale
         this.activeCamera.update(ctx);
+        this.activeCamera.clearView(ctx);
+        this.ctx.save();
+        this.activeCamera.setZoomScale(ctx);
+        // this belongs in the camera #camera
+        this.lineSprites.forEach(function (sprite) {
+            sprite.draw(ctx);
+        });
+        this.ctx.restore();
         // ctx.scale(1,1)
     };
     GameEngine.prototype.addMouseListener = function (object) {
@@ -6529,8 +6630,10 @@ __webpack_require__.r(__webpack_exports__);
 
 var GameObject = /** @class */ (function () {
     function GameObject(engine) {
+        var _a;
         this.isControllable = false;
         this.isFocussedGameObject = false;
+        this.isTimeReversed = false;
         this.replayablePhysicsComponent = null;
         this.gameEngine = engine;
         this.gameEngine.addGameObject(this);
@@ -6540,7 +6643,13 @@ var GameObject = /** @class */ (function () {
         this.lineSprite = null;
         this.parentObject = null;
         this.colliders = [];
+        this.gameTimeCreated = (_a = this.gameEngine.gameScript) === null || _a === void 0 ? void 0 : _a.gameTime;
     }
+    GameObject.prototype.reverseTime = function () {
+        var _a;
+        this.isTimeReversed = !this.isTimeReversed;
+        (_a = this.physicsComponent) === null || _a === void 0 ? void 0 : _a.reverseTime();
+    };
     GameObject.prototype.addPhysicsComponent = function () {
         this.physicsComponent = new _physics_component__WEBPACK_IMPORTED_MODULE_1__.PhysicsComponent(this.transform);
         this.gameEngine.addPhysicsComponent(this.physicsComponent);
@@ -6751,7 +6860,16 @@ __webpack_require__.r(__webpack_exports__);
 var PhysicsComponent = /** @class */ (function () {
     function PhysicsComponent(transform) {
         this.transform = transform;
+        this.isTimeReversing = false;
     }
+    PhysicsComponent.prototype.reverseTime = function () {
+        this.isTimeReversing = !this.isTimeReversing;
+        var transform = this.transform;
+        transform.aAcc = -transform.aAcc;
+        transform.aVel = -transform.aVel;
+        transform.vel = [-transform.vel[0], -transform.vel[1], -transform.vel[2]];
+        transform.acc = [-transform.acc[0], -transform.acc[1], -transform.acc[2]];
+    };
     PhysicsComponent.prototype.move = function (timeDelta) {
         // timeDelta is number of milliseconds since last move
         // if the computer is busy the time delta will be larger
@@ -10722,6 +10840,7 @@ var Aurora = /** @class */ (function (_super) {
         _this.makeFocussedGameObject();
         _this.addBKeyListener();
         _this.addBButtonListener();
+        _this.addJKeyListener();
         _this.addReplayablePhysicsComponent();
         _this.addLineSprite(new AuroraSprite(_this.transform));
         _this.leftExhaust = new _EngineExhaust__WEBPACK_IMPORTED_MODULE_5__.EngineExhaust(engine, _this.transform, [
@@ -13400,7 +13519,7 @@ var PatriotMissileSite = /** @class */ (function (_super) {
             var dy = airplanePosition[1] - ourPosition[1];
             var dx = airplanePosition[0] - ourPosition[0];
             var direction = Math.atan2(dy, dx);
-            var missileSpeed = 0.1;
+            var missileSpeed = 0.09;
             var vel = [
                 missileSpeed * Math.cos(direction),
                 missileSpeed * Math.sin(direction)
@@ -18283,11 +18402,13 @@ var GameView = /** @class */ (function () {
         //     this.levelDesignLoaded = true;
         // };
     };
+    // game loop tick
     GameView.prototype.animate = function (time) {
         var _a;
         var timeDelta = time - this.lastTime;
         // console.log(`animate time delta: ${timeDelta}`, `time: ${time}`, `lastTime: ${this.lastTime}`)
-        this.engine.tick(timeDelta);
+        // this.engine.tick(timeDelta);
+        this.engine.reversibleTick(timeDelta);
         (_a = this.openedLevelEditor) === null || _a === void 0 ? void 0 : _a.animate(timeDelta);
         this.animationViewGEO.animate(timeDelta);
         this.animationViewStrikeTime.animate(timeDelta);

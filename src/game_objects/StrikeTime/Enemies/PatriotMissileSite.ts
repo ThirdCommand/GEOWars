@@ -96,7 +96,7 @@ export class PatriotMissileSite extends GameObject {
             const dx = airplanePosition[0] - ourPosition[0];
             const direction = Math.atan2(dy, dx);
 
-            const missileSpeed = 0.1;
+            const missileSpeed = 0.09;
 
             const vel: [number, number] = [
                 missileSpeed * Math.cos(direction),

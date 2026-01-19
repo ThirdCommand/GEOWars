@@ -30,6 +30,8 @@ export abstract class GameObject implements controllable{
     colliders: Array<Collider>;
     isControllable: boolean = false;
     isFocussedGameObject: boolean = false;
+    isTimeReversed: boolean = false;
+    gameTimeCreated: number | undefined;
 
     replayablePhysicsComponent: ReplayablePhysicsComponent | null = null;
 
@@ -42,6 +44,12 @@ export abstract class GameObject implements controllable{
         this.lineSprite = null;
         this.parentObject = null;
         this.colliders = [];
+        this.gameTimeCreated = this.gameEngine.gameScript?.gameTime;
+    }
+
+    reverseTime() {
+        this.isTimeReversed = !this.isTimeReversed;
+        this.physicsComponent?.reverseTime();
     }
 
     abstract animate(dT: number): void 

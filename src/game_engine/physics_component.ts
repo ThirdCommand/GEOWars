@@ -1,9 +1,22 @@
 import { type Transform } from "./transform";
 export class PhysicsComponent {
     transform: Transform;
+    isTimeReversing: boolean;
 
     constructor(transform: Transform) {
         this.transform = transform;
+        this.isTimeReversing = false;
+    }
+
+    reverseTime() {
+        this.isTimeReversing = !this.isTimeReversing;
+        const transform = this.transform;
+        
+        transform.aAcc = -transform.aAcc;
+        transform.aVel = -transform.aVel;
+        
+        transform.vel = [-transform.vel[0], -transform.vel[1], -transform.vel[2]];
+        transform.acc = [-transform.acc[0], -transform.acc[1], -transform.acc[2]];
     }
 
 

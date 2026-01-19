@@ -81,6 +81,7 @@ export class Aurora extends GameObject {
         this.makeFocussedGameObject();
         this.addBKeyListener();
         this.addBButtonListener();
+        this.addJKeyListener();
         this.addReplayablePhysicsComponent();
         this.addLineSprite(new AuroraSprite(this.transform));
 

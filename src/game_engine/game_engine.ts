@@ -113,12 +113,14 @@ interface DownArrowListenable {
 export class GameEngine {
     placingPoint: PlacingPoint;
     ctx: CanvasRenderingContext2D;
+    isTimeReversing: boolean = false;
     buttonState: {
         aButtonPressed: boolean;
         xButtonPressed: boolean;
         startButtonPressed: boolean;
         bButtonPressed: boolean;
     }
+    carryOverDelta: number;
     isPerformanceCheckOn: boolean;
     isControllerConnected: boolean = false;
     cameras: Camera[];
@@ -208,7 +210,9 @@ export class GameEngine {
             bButtonPressed: false,
             startButtonPressed: false,
         };
+        this.isTimeReversing = false;
         this.gameScriptAdded = false;
+        this.carryOverDelta = 0;
         this.lineSprites = [];
         this.cameras = [];
         this.controllableGameObjects = [];
@@ -316,7 +320,6 @@ export class GameEngine {
     }
 
     setupController() {
-        
         window.addEventListener("gamepadconnected", function (e) {
             window.controller = e.gamepad;
             window.engine.isControllerConnected = true;
@@ -362,7 +365,7 @@ export class GameEngine {
             this.moveReplayablePhysicsComponents(delta, this.gameScript.gameTime);
             const beforeUpdate = performance.now();
             const physicsCalcTime = beforeUpdate - beforePhysicsCalcs;
-            this.updateGameObjects(delta);
+            this.updateGameObjects(delta); // anything
             const beforeRender = performance.now();
             const updateTime = beforeRender - beforeUpdate;
             this.renderLineSprites(this.ctx);
@@ -400,6 +403,100 @@ export class GameEngine {
         this.addDoubleClickListenersAfterTick();
         this.removeClickListenersAfterTick();
         this.removeDoubleClickListenerAfterTick();
+    }
+
+    // TODO: add performance checks
+    reversibleTick(delta: number) {
+        this.updateGraphicSetting(delta);
+        if(delta === 0) throw('delta is zero implying a second requestAnimation call. check gameView');
+        if(!this.gameScriptAdded) return;
+        if (this.paused || this.focusPaused) {
+            this.updateControlListeners();
+            return;
+        }       
+
+        if(!this.isTimeReversing) {
+            this.forwardTick(delta);
+
+            this.renderLineSprites(this.ctx);
+            // this.updateControlListeners();
+            this.playSounds();
+
+            this.addClickListenersAfterTick();
+            this.addDoubleClickListenersAfterTick();
+            this.removeClickListenersAfterTick();
+            this.removeDoubleClickListenerAfterTick();
+        } else {
+            this.addClickListenersAfterTick();
+            this.addDoubleClickListenersAfterTick();
+            this.removeClickListenersAfterTick();
+            this.removeDoubleClickListenerAfterTick();
+
+            this.renderLineSprites(this.ctx);
+            this.playSounds();
+
+            this.backwardTick(-delta);
+        }
+
+    }
+
+    forwardTick(delta: number) {
+        const fixedDelta = 20 // 20 ms per tick = 50 fps
+        let accumulator = this.carryOverDelta || 0;
+        accumulator += delta;
+        while (accumulator >= fixedDelta) {
+            this.checkCollisions();
+            this.updateControlListeners();
+            this.movePhysicsComponents(fixedDelta);
+            this.moveReplayablePhysicsComponents(fixedDelta, this.gameScript.gameTime);
+            this.updateGameObjects(fixedDelta);
+            this.updateGameScript(fixedDelta);
+            accumulator -= fixedDelta;
+        }
+        this.carryOverDelta = accumulator;
+    }
+
+    backwardTick(delta: number) {
+        const fixedDelta = 20 // 20 ms per tick = 50 fps
+        let accumulator = this.carryOverDelta || 0;
+        accumulator += delta;
+        while (accumulator <= -fixedDelta) {
+            this.updateGameScript(-fixedDelta);
+            this.updateGameObjects(-fixedDelta);
+            // I think this function will be for objects that took user input and are replaying it
+            this.moveReplayablePhysicsComponents(-fixedDelta, this.gameScript.gameTime);
+            this.movePhysicsComponents(-fixedDelta);
+            this.updateControlListeners();
+            this.checkCollisions();
+            accumulator += fixedDelta;
+        }
+        this.carryOverDelta = accumulator;
+    }
+
+    reverseTime() {
+        this.isTimeReversing = !this.isTimeReversing;
+        this.carryOverDelta = 0;
+        // every vector related to time must reverse
+        // any updateGameObject code also needs to account for this
+        // but I can do that there instead
+
+        // also, the state of reversing should be kept track of
+        // by the game engine so that game objects can behave differently with that info
+        // and maybe they can subscribe to it in case it's important that things
+        // change in that moment exactly?
+
+        this.physicsComponents.forEach((physicsComponent) => {
+            // any applied forces will now have to be done in the opposite direction
+            // so any applied force will have to consider which direction time 
+            // is going
+            // except for things that are bouncing... that should work the same
+
+            // This means the same for collider function calls I guess
+            physicsComponent.reverseTime();
+        })
+        this.gameObjects.forEach((gameObject) => {
+            gameObject.reverseTime();
+        })
     }
 
     collectPerformanceData(
@@ -836,6 +933,7 @@ export class GameEngine {
     }
 
     movePhysicsComponents(delta: number) {
+        console.log(delta);
         this.physicsComponents.forEach((component) => {
             component.move(delta);
         });
@@ -943,6 +1041,7 @@ export class GameEngine {
 
     renderLineSprites(ctx: CanvasRenderingContext2D) {
         // ctx.scale = gameEngine.currentCamera.zoomScale
+        this.activeCamera.update(ctx);
         this.activeCamera.clearView(ctx);
         this.ctx.save();
         this.activeCamera.setZoomScale(ctx);
@@ -951,8 +1050,20 @@ export class GameEngine {
             sprite.draw(ctx);
         });
         this.ctx.restore();
+        // ctx.scale(1,1)
+    }
+    reverseRenderLineSprites(ctx: CanvasRenderingContext2D) {
+        // ctx.scale = gameEngine.currentCamera.zoomScale
         this.activeCamera.update(ctx);
-    // ctx.scale(1,1)
+        this.activeCamera.clearView(ctx);
+        this.ctx.save();
+        this.activeCamera.setZoomScale(ctx);
+        // this belongs in the camera #camera
+        this.lineSprites.forEach((sprite) => {
+            sprite.draw(ctx);
+        });
+        this.ctx.restore();
+        // ctx.scale(1,1)
     }
 
     addMouseListener(object: MousePositionListenable) {

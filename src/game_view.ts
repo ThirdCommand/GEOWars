@@ -393,10 +393,12 @@ export class GameView {
         // };
     }
 
+    // game loop tick
     animate(time: number) {
         const timeDelta = time - this.lastTime;
         // console.log(`animate time delta: ${timeDelta}`, `time: ${time}`, `lastTime: ${this.lastTime}`)
-        this.engine.tick(timeDelta);
+        // this.engine.tick(timeDelta);
+        this.engine.reversibleTick(timeDelta);
         this.openedLevelEditor?.animate(timeDelta);
         this.animationViewGEO.animate(timeDelta);
         this.animationViewStrikeTime.animate(timeDelta);
