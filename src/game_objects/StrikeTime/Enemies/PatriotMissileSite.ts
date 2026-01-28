@@ -115,12 +115,37 @@ export class PatriotMissileSite extends GameObject {
         if (this.lives <= 0) {
             new ParticleExplosion(this.gameEngine, pos);
             this.createDestructionObjects()
-            this.remove();
+            this.reversibleRemove();
         } 
         // if not dead, I can have a different type of explosion
     }
 
-    update(deltaTime: number) {
+    reversibleRemove() {
+        const oldTimeSinceLaunched = this.timeSinceLaunch = 0;
+        const oldTimeSinceGroupLaunched = this.timeSinceGroupLaunch = 0;
+        const oldPosition = this.transform.clonePosition();
+        const oldGameTimeCreated = this.gameTimeCreated;
+        const reCreate = (engine: GameEngine) => {
+            const newPatriotMissileSite = new PatriotMissileSite(
+                engine, 
+                [oldPosition[0], oldPosition[1]]
+            )
+            newPatriotMissileSite.gameTimeCreated = oldGameTimeCreated;
+            newPatriotMissileSite.timeSinceLaunch = oldTimeSinceLaunched;
+            newPatriotMissileSite.timeSinceGroupLaunch = oldTimeSinceGroupLaunched;
+            return newPatriotMissileSite;
+        }
+        this.engineReversibleRemove(reCreate);
+
+    }
+
+    update(deltaTime: number, gameTime: number) {
+        // if(this.gameTimeCreated > gameTime) {
+            // no need to track when it was created
+            // since it will be created by the real events when going forward in time
+            // oh and these only get created once at the beginning
+        //     this.remove();
+        // }
         this.animate(deltaTime);
         if(this.isMissileLaunched && !this.isGroupLaunched) {
             this.timeSinceLaunch += deltaTime

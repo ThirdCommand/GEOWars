@@ -45,7 +45,15 @@ export class BombBasic extends GameObject {
 
     explode() {
         new ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], 0.05)
-        this.remove();
+        const position: [number, number] = [this.transform.pos[0], this.transform.pos[1]]
+        const vel: [number, number] = [this.transform.vel[0], this.transform.vel[1]]
+        const gameTimeCreated = this.gameTimeCreated;
+        const bombFuseTime = this.bombFuseTime;
+        this.engineReversibleRemove((gameEngine: GameEngine) => {
+            const newBomb = new BombBasic(gameEngine, position, vel)
+            newBomb.gameTimeCreated = gameTimeCreated
+            newBomb.bombTime = bombFuseTime
+        })
     }
 
     onCollision(collider: Collider, type: string): void {
@@ -54,10 +62,16 @@ export class BombBasic extends GameObject {
         }
     }
 
-    update(deltaTime: number) {
+    update(deltaTime: number, gameTime: number) {
+         if(this.gameTimeCreated > gameTime) {
+            // no need to track when it was created
+            // since it will be created by the real events when going forward in time
+            this.remove();
+        }
+
         this.animate(deltaTime);
         this.bombTime += deltaTime;
-        if(this.bombTime >= this.bombFuseTime) {
+        if(this.bombTime >= this.bombFuseTime && !this.isTimeReversed) {
             this.gameElementsInExplosionRange.forEach((gameElement) => {
                 gameElement?.hit(); // should check for destruction animation to start
             })

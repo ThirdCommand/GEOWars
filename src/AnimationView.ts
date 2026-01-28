@@ -110,6 +110,14 @@ export class AnimationView {
         // this.addEnemy("Grunt");
     }
 
+    reverseTime(){
+
+    }
+
+    reversibleRemove(){
+
+    }
+
     enemyPlacerSelected(enemyPlacer: ObjectToDisplay) {
         this.clear();
         this.addEnemy(enemyPlacer.type);
@@ -152,7 +160,7 @@ export class AnimationView {
         }
         this.gameObjects.forEach((object) => {
             if(object instanceof Particle) {
-                object.update(timeDelta);
+                object.update(timeDelta, this.gameScript.gameTime);
             }
         });
     }

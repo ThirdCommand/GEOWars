@@ -110,6 +110,8 @@ interface DownArrowListenable {
     updateDownArrowListener(pressed: boolean): void
 }
 
+type ReCreateFunction = (gameEngine: GameEngine) => {}
+
 export class GameEngine {
     placingPoint: PlacingPoint;
     ctx: CanvasRenderingContext2D;
@@ -119,6 +121,9 @@ export class GameEngine {
         xButtonPressed: boolean;
         startButtonPressed: boolean;
         bButtonPressed: boolean;
+    }
+    removedObjectsTimeHash: {
+        [time: number]: ReCreateFunction[]
     }
     carryOverDelta: number;
     isPerformanceCheckOn: boolean;
@@ -228,6 +233,8 @@ export class GameEngine {
         this.mouseFocussedListeners = [];
         this.backgroundSounds = [];
         this.overlappingSoundMap = {};
+
+        this.removedObjectsTimeHash = {};
 
         this.gameClickListeners = [];
         this.gameClickListenersToAdd = [];
@@ -365,7 +372,7 @@ export class GameEngine {
             this.moveReplayablePhysicsComponents(delta, this.gameScript.gameTime);
             const beforeUpdate = performance.now();
             const physicsCalcTime = beforeUpdate - beforePhysicsCalcs;
-            this.updateGameObjects(delta); // anything
+            this.updateGameObjects(delta, this.gameScript.gameTime);
             const beforeRender = performance.now();
             const updateTime = beforeRender - beforeUpdate;
             this.renderLineSprites(this.ctx);
@@ -389,7 +396,7 @@ export class GameEngine {
             this.checkCollisions();
             this.movePhysicsComponents(delta);
             this.moveReplayablePhysicsComponents(delta, this.gameScript.gameTime);
-            this.updateGameObjects(delta);
+            this.updateGameObjects(delta, this.gameScript.gameTime);
             this.renderLineSprites(this.ctx);
             this.updateControlListeners();
 
@@ -449,7 +456,7 @@ export class GameEngine {
             this.updateControlListeners();
             this.movePhysicsComponents(fixedDelta);
             this.moveReplayablePhysicsComponents(fixedDelta, this.gameScript.gameTime);
-            this.updateGameObjects(fixedDelta);
+            this.updateGameObjects(fixedDelta, this.gameScript.gameTime);
             this.updateGameScript(fixedDelta);
             accumulator -= fixedDelta;
         }
@@ -462,7 +469,10 @@ export class GameEngine {
         accumulator += delta;
         while (accumulator <= -fixedDelta) {
             this.updateGameScript(-fixedDelta);
-            this.updateGameObjects(-fixedDelta);
+
+            this.reCreateRemovedObjects(this.gameScript.gameTime);
+
+            this.updateGameObjects(-fixedDelta, this.gameScript.gameTime);
             // I think this function will be for objects that took user input and are replaying it
             this.moveReplayablePhysicsComponents(-fixedDelta, this.gameScript.gameTime);
             this.movePhysicsComponents(-fixedDelta);
@@ -473,30 +483,45 @@ export class GameEngine {
         this.carryOverDelta = accumulator;
     }
 
+    reCreateRemovedObjects(gameTime: number) {
+        const removedObjects = this.removedObjectsTimeHash[this.gameScript.gameTime]
+        // const anyLeft = Object.values(this.removedObjectsTimeHash);
+        // console.log(anyLeft);
+        if(removedObjects) {
+            removedObjects.forEach((reCreate) => reCreate(this))
+            this.removedObjectsTimeHash[this.gameScript.gameTime] = undefined;
+        }
+        
+    }
+
+    
+
     reverseTime() {
-        this.isTimeReversing = !this.isTimeReversing;
-        this.carryOverDelta = 0;
-        // every vector related to time must reverse
-        // any updateGameObject code also needs to account for this
-        // but I can do that there instead
+        if(!this.isTimeReversing){
+            this.isTimeReversing = !this.isTimeReversing;
+            // this.carryOverDelta = 0;
+            // every vector related to time must reverse
+            // any updateGameObject code also needs to account for this
+            // but I can do that there instead
 
-        // also, the state of reversing should be kept track of
-        // by the game engine so that game objects can behave differently with that info
-        // and maybe they can subscribe to it in case it's important that things
-        // change in that moment exactly?
+            // also, the state of reversing should be kept track of
+            // by the game engine so that game objects can behave differently with that info
+            // and maybe they can subscribe to it in case it's important that things
+            // change in that moment exactly?
 
-        this.physicsComponents.forEach((physicsComponent) => {
-            // any applied forces will now have to be done in the opposite direction
-            // so any applied force will have to consider which direction time 
-            // is going
-            // except for things that are bouncing... that should work the same
+            this.physicsComponents.forEach((physicsComponent) => {
+                // any applied forces will now have to be done in the opposite direction
+                // so any applied force will have to consider which direction time 
+                // is going
+                // except for things that are bouncing... that should work the same
 
-            // This means the same for collider function calls I guess
-            physicsComponent.reverseTime();
-        })
-        this.gameObjects.forEach((gameObject) => {
-            gameObject.reverseTime();
-        })
+                // This means the same for collider function calls I guess
+                physicsComponent.reverseTime();
+            })
+            this.gameObjects.forEach((gameObject) => {
+                gameObject.reverseTime();
+            })
+        }
     }
 
     collectPerformanceData(
@@ -1000,9 +1025,9 @@ export class GameEngine {
         });
     }
 
-    updateGameObjects(delta: number) {
+    updateGameObjects(delta: number, gameTime: number) {
         this.gameObjects.forEach((object) => {
-            object.update(delta);
+            object.update(delta, gameTime);
         });
     }
 
@@ -1132,6 +1157,14 @@ export class GameEngine {
         this.removeColliders(gameObject.colliders);
         const gameObjectIndex = this.gameObjects.indexOf(gameObject);
         if (gameObjectIndex !== -1) this.gameObjects.splice(gameObjectIndex, 1);
+    }
+
+    reversibleRemove(gameObject: GameObject, reCreate: (gameEngine: GameEngine) => {}) {
+        this.remove(gameObject);
+        const time = this.gameScript.gameTime;
+        this.removedObjectsTimeHash[time] ? 
+            this.removedObjectsTimeHash[time].push(reCreate) :
+            this.removedObjectsTimeHash[time] = [reCreate];
     }
 
     removeMouseListeners(gameObject: GameObject) {

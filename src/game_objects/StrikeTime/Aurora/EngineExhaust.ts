@@ -59,6 +59,7 @@ export class EngineExhaust extends GameObject {
     // every so often, make more particles
     animate() {}
     update(deltaTime: number) {
+        if(this.isTimeReversed) return;
         this.currentTime += deltaTime;
         if(this.currentTime > this.exhaustRate) {
             this.currentTime = 0;

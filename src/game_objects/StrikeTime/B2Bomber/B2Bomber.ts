@@ -197,7 +197,7 @@ export class B2Bomber extends GameObject {
         const controlsAngleRounded =  this.roundAngleTo16thsDegrees(this.controlsAngle);
 
         // might be needed later
-        // const endAngle = this.replayablePhysicsComponent.turnInformation.endAngleFromRotationPointIfUninterrupted;
+        // const endAngle = this.replayablePhysicsComponent.turnInformation.endAngle;
 
         // this determines if we are inputting an acceleration
         // I don't think it will ever happen though since every turn will result in a straight acceleration automatically
@@ -311,8 +311,8 @@ export class B2Bomber extends GameObject {
         if(this.replayablePhysicsComponent.turnInformation?.rotationDirection !== undefined && 
             this.replayablePhysicsComponent.turnInformation?.rotationDirection !== null &&
             isTurningRight === (this.replayablePhysicsComponent.turnInformation?.rotationDirection > 1) && 
-            this.replayablePhysicsComponent.turnInformation?.endAngleFromRotationPointIfUninterrupted && 
-            controlsAngleRounded !== this.replayablePhysicsComponent.turnInformation.endAngleFromRotationPointIfUninterrupted
+            this.replayablePhysicsComponent.turnInformation?.endAngle && 
+            controlsAngleRounded !== this.replayablePhysicsComponent.turnInformation.endAngle
         ) {
             // if it is turning, then start interrupting and change the end direction
             // if the controls direction is different from the end direction of the current turn
@@ -348,8 +348,8 @@ export class B2Bomber extends GameObject {
             });
         } else if (
             isTurningRight !== (this.replayablePhysicsComponent.turnInformation?.rotationDirection > 1) && 
-            this.replayablePhysicsComponent.turnInformation?.endAngleFromRotationPointIfUninterrupted &&
-            controlsAngleRounded !== this.replayablePhysicsComponent.turnInformation?.endAngleFromRotationPointIfUninterrupted
+            this.replayablePhysicsComponent.turnInformation?.endAngle &&
+            controlsAngleRounded !== this.replayablePhysicsComponent.turnInformation?.endAngle
         ) {
             // we want to update the final angle, the final location, and the next instruction
             // OH it's the same as before! except I need to determine the final angle
@@ -400,7 +400,7 @@ export class B2Bomber extends GameObject {
         // const angleDifference = controlsAngleRounded - currentDirectionRounded;
         // const turningRight = !(angleDifference > 180 || (angleDifference < 0 && angleDifference > -180));
         // const tangentAngle = this.replayablePhysicsComponent.movementTangentAngle / (2 * Math.PI) * 360;
-        // const endAngleFromRotationPointIfUninterrupted = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 360;
+        // const endAngle = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 360;
         // const normalAngle = turningRight ? tangentAngle/360 * Math.PI * 2 + Math.PI / 2 : tangentAngle/ 360 * Math.PI * 2 - Math.PI / 2 
         // const pointWhereArchStarted = [this.transform.pos[0], this.transform.pos[1]];
         // const turnRadius = 300;

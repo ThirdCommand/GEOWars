@@ -99,6 +99,10 @@ var AnimationView = /** @class */ (function () {
         this.overlayTextCleared = true;
         // this.addEnemy("Grunt");
     }
+    AnimationView.prototype.reverseTime = function () {
+    };
+    AnimationView.prototype.reversibleRemove = function () {
+    };
     AnimationView.prototype.enemyPlacerSelected = function (enemyPlacer) {
         this.clear();
         this.addEnemy(enemyPlacer.type);
@@ -133,12 +137,13 @@ var AnimationView = /** @class */ (function () {
         this.renderOverlayText();
     };
     AnimationView.prototype.update = function (timeDelta) {
+        var _this = this;
         if (this.paused || this.focusPaused) {
             return;
         }
         this.gameObjects.forEach(function (object) {
             if (object instanceof _game_objects_particles_particle__WEBPACK_IMPORTED_MODULE_18__.Particle) {
-                object.update(timeDelta);
+                object.update(timeDelta, _this.gameScript.gameTime);
             }
         });
     };
@@ -1183,9 +1188,10 @@ var StrikeTimeScript = /** @class */ (function () {
     // }
     StrikeTimeScript.prototype.update = function (deltaTime) {
         var _a;
-        // TODO: I think this will still be useful in the future
-        // but I don't have my head wrapped around it yet
+        // when game time hits zero, no more reversing
         this.gameTime += deltaTime;
+        if (this.gameTime < 0)
+            this.gameTime = 0;
         if (this.playFromRootScene) {
             this.rootScene.update(deltaTime);
         }
@@ -5683,6 +5689,23 @@ var Color = /** @class */ (function () {
         var newColor = new Color(dupColorType, dupColors);
         return newColor;
     };
+    Color.prototype.serializeColor = function () {
+        var dupColors;
+        var dupColorType = this.colorType;
+        if (this.colorType === "rgb") {
+            dupColors = [this.r, this.g, this.b];
+        }
+        else if (this.colorType === "rgba") {
+            dupColors = [this.r, this.g, this.b, this.a];
+        }
+        else if (this.colorType === "hsl") {
+            dupColors = [this.h, this.s, this.l];
+        }
+        else if (this.colorType === "hsla") {
+            dupColors = [this.h, this.s, this.l, this.a];
+        }
+        return [dupColorType, dupColors];
+    };
     Color.prototype.extractColorInfo = function (colorType, colorNumbers) {
         if (this.colorType === "rgb") {
             this.r = colorNumbers[0];
@@ -5777,6 +5800,7 @@ var GameEngine = /** @class */ (function () {
         this.mouseFocussedListeners = [];
         this.backgroundSounds = [];
         this.overlappingSoundMap = {};
+        this.removedObjectsTimeHash = {};
         this.gameClickListeners = [];
         this.gameClickListenersToAdd = [];
         this.gameClickListenersToRemove = [];
@@ -5899,7 +5923,7 @@ var GameEngine = /** @class */ (function () {
             this.moveReplayablePhysicsComponents(delta, this.gameScript.gameTime);
             var beforeUpdate = performance.now();
             var physicsCalcTime = beforeUpdate - beforePhysicsCalcs;
-            this.updateGameObjects(delta); // anything
+            this.updateGameObjects(delta, this.gameScript.gameTime);
             var beforeRender = performance.now();
             var updateTime = beforeRender - beforeUpdate;
             this.renderLineSprites(this.ctx);
@@ -5915,7 +5939,7 @@ var GameEngine = /** @class */ (function () {
             this.checkCollisions();
             this.movePhysicsComponents(delta);
             this.moveReplayablePhysicsComponents(delta, this.gameScript.gameTime);
-            this.updateGameObjects(delta);
+            this.updateGameObjects(delta, this.gameScript.gameTime);
             this.renderLineSprites(this.ctx);
             this.updateControlListeners();
             this.updateGameScript(delta);
@@ -5966,7 +5990,7 @@ var GameEngine = /** @class */ (function () {
             this.updateControlListeners();
             this.movePhysicsComponents(fixedDelta);
             this.moveReplayablePhysicsComponents(fixedDelta, this.gameScript.gameTime);
-            this.updateGameObjects(fixedDelta);
+            this.updateGameObjects(fixedDelta, this.gameScript.gameTime);
             this.updateGameScript(fixedDelta);
             accumulator -= fixedDelta;
         }
@@ -5978,7 +6002,8 @@ var GameEngine = /** @class */ (function () {
         accumulator += delta;
         while (accumulator <= -fixedDelta) {
             this.updateGameScript(-fixedDelta);
-            this.updateGameObjects(-fixedDelta);
+            this.reCreateRemovedObjects(this.gameScript.gameTime);
+            this.updateGameObjects(-fixedDelta, this.gameScript.gameTime);
             // I think this function will be for objects that took user input and are replaying it
             this.moveReplayablePhysicsComponents(-fixedDelta, this.gameScript.gameTime);
             this.movePhysicsComponents(-fixedDelta);
@@ -5988,27 +6013,39 @@ var GameEngine = /** @class */ (function () {
         }
         this.carryOverDelta = accumulator;
     };
+    GameEngine.prototype.reCreateRemovedObjects = function (gameTime) {
+        var _this = this;
+        var removedObjects = this.removedObjectsTimeHash[this.gameScript.gameTime];
+        // const anyLeft = Object.values(this.removedObjectsTimeHash);
+        // console.log(anyLeft);
+        if (removedObjects) {
+            removedObjects.forEach(function (reCreate) { return reCreate(_this); });
+            this.removedObjectsTimeHash[this.gameScript.gameTime] = undefined;
+        }
+    };
     GameEngine.prototype.reverseTime = function () {
-        this.isTimeReversing = !this.isTimeReversing;
-        this.carryOverDelta = 0;
-        // every vector related to time must reverse
-        // any updateGameObject code also needs to account for this
-        // but I can do that there instead
-        // also, the state of reversing should be kept track of
-        // by the game engine so that game objects can behave differently with that info
-        // and maybe they can subscribe to it in case it's important that things
-        // change in that moment exactly?
-        this.physicsComponents.forEach(function (physicsComponent) {
-            // any applied forces will now have to be done in the opposite direction
-            // so any applied force will have to consider which direction time 
-            // is going
-            // except for things that are bouncing... that should work the same
-            // This means the same for collider function calls I guess
-            physicsComponent.reverseTime();
-        });
-        this.gameObjects.forEach(function (gameObject) {
-            gameObject.reverseTime();
-        });
+        if (!this.isTimeReversing) {
+            this.isTimeReversing = !this.isTimeReversing;
+            // this.carryOverDelta = 0;
+            // every vector related to time must reverse
+            // any updateGameObject code also needs to account for this
+            // but I can do that there instead
+            // also, the state of reversing should be kept track of
+            // by the game engine so that game objects can behave differently with that info
+            // and maybe they can subscribe to it in case it's important that things
+            // change in that moment exactly?
+            this.physicsComponents.forEach(function (physicsComponent) {
+                // any applied forces will now have to be done in the opposite direction
+                // so any applied force will have to consider which direction time 
+                // is going
+                // except for things that are bouncing... that should work the same
+                // This means the same for collider function calls I guess
+                physicsComponent.reverseTime();
+            });
+            this.gameObjects.forEach(function (gameObject) {
+                gameObject.reverseTime();
+            });
+        }
     };
     GameEngine.prototype.collectPerformanceData = function (delta, collisionTime, physicsCalcTime, updateTime, renderTime, scriptTime) {
         this.frameCountForPerformance += 1;
@@ -6453,9 +6490,9 @@ var GameEngine = /** @class */ (function () {
             });
         });
     };
-    GameEngine.prototype.updateGameObjects = function (delta) {
+    GameEngine.prototype.updateGameObjects = function (delta, gameTime) {
         this.gameObjects.forEach(function (object) {
-            object.update(delta);
+            object.update(delta, gameTime);
         });
     };
     GameEngine.prototype.toggleMute = function () {
@@ -6574,6 +6611,13 @@ var GameEngine = /** @class */ (function () {
         if (gameObjectIndex !== -1)
             this.gameObjects.splice(gameObjectIndex, 1);
     };
+    GameEngine.prototype.reversibleRemove = function (gameObject, reCreate) {
+        this.remove(gameObject);
+        var time = this.gameScript.gameTime;
+        this.removedObjectsTimeHash[time] ?
+            this.removedObjectsTimeHash[time].push(reCreate) :
+            this.removedObjectsTimeHash[time] = [reCreate];
+    };
     GameEngine.prototype.removeMouseListeners = function (gameObject) {
         this.removeMouseListener(gameObject);
         this.removeClickListener(gameObject);
@@ -6663,6 +6707,9 @@ var GameObject = /** @class */ (function () {
             this.isControllable = true;
             this.gameEngine.addControllableGameObject(this);
         }
+    };
+    GameObject.prototype.engineReversibleRemove = function (reCreate) {
+        this.gameEngine.reversibleRemove(this, reCreate);
     };
     GameObject.prototype.makeFocussedGameObject = function () {
         if (this.gameEngine instanceof _game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine) {
@@ -6864,24 +6911,22 @@ var PhysicsComponent = /** @class */ (function () {
     }
     PhysicsComponent.prototype.reverseTime = function () {
         this.isTimeReversing = !this.isTimeReversing;
-        var transform = this.transform;
-        transform.aAcc = -transform.aAcc;
-        transform.aVel = -transform.aVel;
-        transform.vel = [-transform.vel[0], -transform.vel[1], -transform.vel[2]];
-        transform.acc = [-transform.acc[0], -transform.acc[1], -transform.acc[2]];
     };
     PhysicsComponent.prototype.move = function (timeDelta) {
         // timeDelta is number of milliseconds since last move
         // if the computer is busy the time delta will be larger
         // in this case the PhysicsObject should move farther in this frame
+        // Floating point error bar results in differences between replaying forward, backward, and forward again.
+        // This might be okay
         var timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-        this.transform.pos[0] += this.transform.vel[0] * timeScale + (this.transform.acc[0] * (Math.pow(timeScale, 2))) / 2;
-        this.transform.pos[1] += this.transform.vel[1] * timeScale + (this.transform.acc[1] * (Math.pow(timeScale, 2))) / 2;
-        this.transform.pos[2] += this.transform.vel[2] * timeScale + (this.transform.acc[2] * (Math.pow(timeScale, 2))) / 2;
+        var accelerationSign = timeDelta > 0 ? 1 : -1;
+        this.transform.pos[0] += this.transform.vel[0] * timeScale + accelerationSign * (this.transform.acc[0] * (Math.pow(timeScale, 2))) / 2;
+        this.transform.pos[1] += this.transform.vel[1] * timeScale + accelerationSign * (this.transform.acc[1] * (Math.pow(timeScale, 2))) / 2;
+        this.transform.pos[2] += this.transform.vel[2] * timeScale + accelerationSign * (this.transform.acc[2] * (Math.pow(timeScale, 2))) / 2;
         this.transform.vel[0] += this.transform.acc[0] * timeScale;
         this.transform.vel[1] += this.transform.acc[1] * timeScale;
         this.transform.vel[2] += this.transform.acc[2] * timeScale;
-        this.transform.angle += this.transform.aVel * timeScale + this.transform.aAcc * (Math.pow(timeScale, 2)) / 2;
+        this.transform.angle += this.transform.aVel * timeScale + accelerationSign * this.transform.aAcc * (Math.pow(timeScale, 2)) / 2;
         this.transform.aVel += this.transform.aAcc * timeScale;
         this.transform.acc = [0, 0, 0];
         this.transform.aAcc = 0;
@@ -6918,18 +6963,18 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
         if (this.isTurning) {
             // console.log('interrupting Turn to change Turn')
         }
-        if (this.isTurning) {
-            return this.interruptTurn({
-                rotationPoint: rotationPoint,
-                turnRadius: turnRadius,
-                isTurningRight: isTurningRight,
-                tangentSpeed: tangentSpeed,
-                startAngle: startAngle,
-                endAngle: endAngle,
-                gameTimeArchStarted: gameTimeArchStarted,
-                pointWhereArchStarted: pointWhereArchStarted,
-            });
-        }
+        // if(this.isTurning) {
+        //     return this.interruptTurn({
+        //         rotationPoint,
+        //         turnRadius,
+        //         isTurningRight,
+        //         tangentSpeed,
+        //         startAngle,
+        //         endAngle,
+        //         gameTimeArchStarted,
+        //         pointWhereArchStarted,
+        //     });
+        // }
         // will have a precise time and location when the arch started while playing back controls
         // in that case we'll have to piece wise connect the arch and previous section
         // console.log('input for startArchRotation', {
@@ -6959,7 +7004,7 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
         this.transform.archAngleVelocity = tangentSpeed / this.turnInformation.turnRadius * rotationDirection;
         this.turnInformation.tangentSpeed = tangentSpeed;
         this.turnInformation.rotationPoint = [rotationPoint[0], rotationPoint[1]];
-        this.turnInformation.endAngleFromRotationPointIfUninterrupted = endAngle;
+        this.turnInformation.endAngle = endAngle;
         this.turnInformation.gameTimeWhenTurnEnds = gameTimeArchStarted + Math.abs((angleDifference) / this.transform.archAngleVelocity);
         this.turnInformation.gameTimeWhenTurnStarted = gameTimeArchStarted;
         this.turnInformation.startAngle = startAngle;
@@ -6968,13 +7013,8 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
             rotationPoint[0] + this.turnInformation.turnRadius * Math.cos(endAngle - Math.PI / 2) * rotationDirection,
             rotationPoint[1] + this.turnInformation.turnRadius * Math.sin(endAngle - Math.PI / 2) * rotationDirection
         ];
-        if (currentGameTime) {
-            // is this necessary? does it mean we're moving twice in the same frame?
-            // or is this just for replaying commands?
-            // or would that even matter if it was just for replaying commands? 
-            this.move(currentGameTime - gameTimeArchStarted, currentGameTime);
-        }
-        // console.log('colected turn information',this.turnInformation);
+        return this.turnInformation.gameTimeWhenTurnEnds;
+        // console.log('collected turn information',this.turnInformation);
     };
     ReplayablePhysicsComponent.prototype.interruptTurn = function (interruptTurnParams) {
         var rotationPoint = interruptTurnParams.rotationPoint, turnRadius = interruptTurnParams.turnRadius, isTurningRight = interruptTurnParams.isTurningRight, tangentSpeed = interruptTurnParams.tangentSpeed, startAngle = interruptTurnParams.startAngle, endAngle = interruptTurnParams.endAngle, gameTimeArchStarted = interruptTurnParams.gameTimeArchStarted, pointWhereArchStarted = interruptTurnParams.pointWhereArchStarted;
@@ -7141,7 +7181,7 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
             }
         }
         else if (this.isTurning) {
-            var _b = this.turnInformation, endAngleFromRotationPointIfUninterrupted = _b.endAngleFromRotationPointIfUninterrupted, tangentSpeed = _b.tangentSpeed, rotationPoint = _b.rotationPoint, turnRadius = _b.turnRadius, endPoint = _b.endPoint, gameTimeWhenTurnEnds = _b.gameTimeWhenTurnEnds, nextInstruction = _b.nextInstruction;
+            var _b = this.turnInformation, endAngle = _b.endAngle, tangentSpeed = _b.tangentSpeed, rotationPoint = _b.rotationPoint, turnRadius = _b.turnRadius, endPoint = _b.endPoint, gameTimeWhenTurnEnds = _b.gameTimeWhenTurnEnds, nextInstruction = _b.nextInstruction;
             // great... at the end of the rotation it accelerates to max speed
             // so when I piece together the rotation + straight I have to account for that
             // I just need to find the time that the rotation ended vs the current time
@@ -7156,10 +7196,10 @@ var ReplayablePhysicsComponent = /** @class */ (function () {
                 // console.log('Turning ended');
                 this.instructionsCompleted.push("Turn Completed. Direction: ".concat(this.turnInformation.rotationDirection > 0 ? 'Right' : 'Left'));
                 // console.log(this.instructionsCompleted);
-                // this.movementTangentAngle = endAngleFromRotationPointIfUninterrupted;
+                // this.movementTangentAngle = endAngle;
                 var endVelocityIfUninterrupted = [
-                    tangentSpeed * Math.cos(endAngleFromRotationPointIfUninterrupted),
-                    tangentSpeed * Math.sin(endAngleFromRotationPointIfUninterrupted)
+                    tangentSpeed * Math.cos(endAngle),
+                    tangentSpeed * Math.sin(endAngle)
                 ];
                 this.isTurning = false;
                 this.transform.vel[0] = endVelocityIfUninterrupted[0];
@@ -7348,6 +7388,12 @@ var Transform = /** @class */ (function () {
         // returns the render position (position projected on to the field)
         //Yp = -Zc(Ys - Yc)/(-Zc + Zs)
         //Xp = -Zc(Xs - Xc)/(-Zc + Zs)
+    };
+    Transform.prototype.cloneVelocity = function () {
+        return [this.vel[0], this.vel[1], this.vel[2]];
+    };
+    Transform.prototype.clonePosition = function () {
+        return [this.pos[0], this.pos[1], this.pos[2]];
     };
     // call up the tree of parent transforms until null
     // performing the transformation each step for the absolute
@@ -10812,7 +10858,7 @@ var Aurora = /** @class */ (function (_super) {
         _this.controlsAngle = null;
         _this.transform.pos = pos;
         _this.hits = 0;
-        _this.hitsWhenDead = 3;
+        _this.hitsWhenDead = 1000;
         _this.transform.angle = angle;
         _this.transform.vel = [0, 0];
         _this.destructedColor = "rgb(255, 255, 255)";
@@ -10893,7 +10939,6 @@ var Aurora = /** @class */ (function (_super) {
         }
     };
     Aurora.prototype.animate = function (delta) {
-        // console.log('whats going on here');
         var movementDirection = 0;
         if (this.transform.vel[0] === 0 && this.transform.vel[1] === 0) {
             movementDirection = this.transform.angle;
@@ -10903,20 +10948,20 @@ var Aurora = /** @class */ (function (_super) {
         }
         this.transform.angle = movementDirection;
     };
+    Aurora.prototype.updateJKeyListener = function (pressed) {
+        this.gameEngine.reverseTime();
+    };
     Aurora.prototype.update = function (delta) {
         // console.log('updateCalled', `delta: ${delta}`);
         this.bombTiming.refreshTime += delta;
         this.bombTiming.refreshTime = this.bombTiming.refreshTime > this.bombTiming.reloadTime ? this.bombTiming.reloadTime + 1 : this.bombTiming.refreshTime;
-        (this.bombTiming.refreshTime > this.bombTiming.reloadTime) ? this.bombReticle.setVisibility(true) : this.bombReticle.setVisibility(false);
-        if (this.controlsAngle !== null) {
-            // compare angle with controls angle
-            // if angle is greater than 
-            this.transform.angle;
-        }
+        (this.bombTiming.refreshTime > this.bombTiming.reloadTime || this.bombTiming.refreshTime < 0) ? this.bombReticle.setVisibility(true) : this.bombReticle.setVisibility(false);
         if (this.replayablePhysicsComponent.movementTangentAngle !== null) {
             this.transform.angle = this.replayablePhysicsComponent.movementTangentAngle;
+            if (this.isTimeReversed)
+                this.transform.angle += Math.PI;
         }
-        if (this.isFocussedGameObject) {
+        if (this.isFocussedGameObject && !this.isTimeReversed) {
             this.movementMechanics();
         }
         var shipXPos = this.transform.pos[0];
@@ -10963,33 +11008,12 @@ var Aurora = /** @class */ (function (_super) {
         return ((Math.round(radians / (2 * Math.PI) * 16) % 16) / 16) * 360;
     };
     Aurora.prototype.movementMechanics = function () {
-        var _a, _b, _c, _d, _e, _f, _g;
-        // It's taking too long to get this stuff right
-        // so I'm going to simplify it and expand on it later
-        // so, the new requirements for movement are:
-        // 1: no grid system yet
-        // 2. no reversible movements yet
-        // 3: one turn radius at same speed as straight
-        // 4. 1/16 * 2PI angles allowed
-        // 5. only initiate turn when relative direction passes a small threshold (1/8th PI lets say)
+        // 1: one turn radius at same speed as straight
+        // 2. 1/16 * 2PI angles allowed
+        // 3. only initiate turn when relative direction passes a small threshold (1/8th PI lets say)
         var turnThreshold = Math.PI / 8;
-        // there might be a way to make it feel a little better if 
-        // I allow changing the direction constantly
-        // of if I don't immediately accelerate to max speed
-        // to allow constant direction change, I'll need an "interupt" state where
-        // the plane is still turning until it's facing one of the 16 directions. 
-        // so it would be an interrupt instruction
-        // but it's going to be a lot easier to make it feel nice if I have complete control
-        // a crap... how would it work on mobile though
-        // okay... maybe this would work for mobile, but it doesn't feel great with a controller
-        // maybe with some added visuals I can get it to feel better
-        // visuals like, a path showing you result of the current instruction
-        // and the arrow of the direction you're pointing maybe
-        // worth checking out.... but only after I get time reversal going and other stuff
         if (!(this.gameEngine instanceof _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_3__.GameEngine))
             return;
-        // eventually we can go past this 
-        // once we're able to interrupt turns
         if (this.replayablePhysicsComponent.isTurning)
             return;
         if (this.controlsAngle === null)
@@ -11001,36 +11025,12 @@ var Aurora = /** @class */ (function (_super) {
             this.replayablePhysicsComponent.startAcceleration({ acceleration: this.jetAcceleration, endSpeed: this.maxSpeed, gameTimeAccelerationStarted: gameTime, onStartDirection: controlsAngleRoundedRadians });
             return;
         }
-        // get the controls angle and compare it to the current direction
-        // get the absolute velocity and compare it to the max
-        // that could be memoized
-        // when it's not rotating, we can use transform.vel. Thankfully we always have to speed up or slow down before adjusting the turn angle
-        // so this should be valid, but it might not work for other units
         var currentDirection = (Math.atan2(this.transform.vel[1], this.transform.vel[0]) + Math.PI * 2) % (Math.PI * 2);
         var currentDirectionRounded = this.roundAngleTo16thsDegrees(currentDirection);
         var controlsAngleRounded = this.roundAngleTo16thsDegrees(this.controlsAngle);
-        // might be needed later
-        // const endAngle = this.replayablePhysicsComponent.turnInformation.endAngleFromRotationPointIfUninterrupted;
-        // this determines if we are inputting an acceleration
-        // I don't think it will ever happen though since every turn will result in a straight acceleration automatically
-        // oh! it could be slowing down, and we could be interrupting it!
-        // on second thought, 
         if (currentDirectionRounded === controlsAngleRounded) {
-            // check that we didn't already speed up to this speed
-            // check that we are slowing down (before a turn) and want to interrupt it by going straight
-            // to test: lower acceleration to make it easier to see, Have plane at max speed, tell it to turn tightly, 
-            // then tell it to continue straight instead while it's slowing down
-            // I need to update restSpeed more often... it's not going great at the moment
-            // if(this.maxSpeed !== this.replayablePhysicsComponent.restSpeed && this.replayablePhysicsComponent.accelerationInformation.isDecelerating) {
-            //     console.log('helloo')
-            //     this.replayablePhysicsComponent.startAcceleration({acceleration: this.jetAcceleration, endSpeed: this.maxSpeed, gameTimeAccelerationStarted: gameTime})
-            // }
             return;
         }
-        // plane is still jumping when the turn angle changes while changing the deceleration to end at a different speed for a different turn
-        //         || (endAngle > 2 * Math.PI && this.roundAngleTo16thsDegrees(endAngle - 2 * Math.PI) !== controlsAngleRounded) || 
-        //         (this.roundAngleTo16thsDegrees(endAngle) !== controlsAngleRounded))
-        // on second thought, I need to get the straight acceleration interrupt working first
         var angleDifference = controlsAngleRounded - currentDirectionRounded;
         var isTurningRight = !(angleDifference > 180 || (angleDifference < 0 && angleDifference > -180));
         // turning right means that the rotation point is to the right relative to the movement direction
@@ -11038,173 +11038,33 @@ var Aurora = /** @class */ (function (_super) {
         var tangentAngle = this.replayablePhysicsComponent.movementTangentAngle;
         var turnRadius = this.turnRadius;
         var tangentSpeed = this.maxSpeed;
-        // we'll want to use this later:
-        // const {turnRadius, tangentSpeed} = this.getTurnRadiusAndSpeed(Math.abs(angleDifference));
-        // check tangent speed with current speed,
-        // then decelerate/accelerate
-        // TODO can use controlsAngleRounded and convert to radians later... I think
-        // const endAngle = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 2 * Math.PI;
         var endAngle = controlsAngleRounded / 360 * 2 * Math.PI;
-        // after a turn we want to accelerate to the max straight speed
-        // for now we don't want the plane to slow down for turns
-        // to keep things simple at first
-        // const nextInstruction: NextInstructionAccelerate = { 
-        //     type: 'accelerate',
-        //     endSpeed: this.maxSpeed,
-        //     acceleration: this.jetAcceleration
-        // }
-        // this was restSpeed before.. rest speed needs to die, I'm not sure what it's for exactly
-        // I think it's to verify that the speed has been changed to a specific thing at some point in the past
-        // 
-        // if(this.replayablePhysicsComponent.restSpeed !== tangentSpeed) {
-        // if we're already decelerating for a shallow turn, and the new angle is sharper requiring a slower speed,
-        // then update the end speed of the deceleration, and the turn angle of the next instruction
-        // if we're already accelerating for a less sharp turn, and the turn angle changes requiring a different speed, then update
-        // the acceleration and the turn angle of the next instruction
-        // if(
-        //     this.replayablePhysicsComponent.accelerationInformation?.endSpeedIfUninterrupted && 
-        //     this.replayablePhysicsComponent.accelerationInformation.endSpeedIfUninterrupted !== tangentSpeed
-        // ) {
-        //     console.log('speed change needed', {previousEndSpeed: this.replayablePhysicsComponent.accelerationInformation?.endSpeedIfUninterrupted, newEndSpeed: tangentSpeed})
-        //     const acceleration = this.replayablePhysicsComponent.restSpeed > tangentSpeed ? this.jetDeceleration : this.jetAcceleration;
-        //     const endSpeed = tangentSpeed;
-        //     const followupInstruction: NextInstructionTurn  = {
-        //         type: 'turn',
-        //         tangentSpeed,
-        //         turnRadius,
-        //         isTurningRight,
-        //         endAngle: endAngle,
-        //         startAngle: tangentAngle,
-        //         nextInstruction
-        //     };
-        //     // still need to apply what happens when interrupting
-        //     this.replayablePhysicsComponent.startAcceleration({
-        //         acceleration,
-        //         endSpeed,
-        //         gameTimeAccelerationStarted: gameTime, 
-        //         nextInstruction: followupInstruction
-        //     });
-        // } 
-        // if(this.replayablePhysicsComponent.isAccelerating) return;
-        if (!this.replayablePhysicsComponent.isTurning) {
-            // the tangent speed is the same so we should be waiting for the acceleration to finish
-            // TODO: this presents a problem when a turn is possible at max speed because we could be accelerating to the max speed and we'd want 
-            // to update the acceleration to include the next turn instruction if that's the case
-            // needed for playback 
-            var pointWhereArchStarted = [this.transform.pos[0], this.transform.pos[1]];
-            var normalAngle = isTurningRight ? tangentAngle + Math.PI / 2 : tangentAngle - Math.PI / 2;
-            var rotationPoint = [
-                pointWhereArchStarted[0] + turnRadius * Math.cos(normalAngle),
-                pointWhereArchStarted[1] + turnRadius * Math.sin(normalAngle)
-            ];
-            this.replayablePhysicsComponent.startArchRotation({
-                turnRadius: turnRadius,
-                isTurningRight: isTurningRight,
-                tangentSpeed: tangentSpeed,
-                startAngle: tangentAngle,
-                endAngle: endAngle,
-                pointWhereArchStarted: pointWhereArchStarted, // try to create this later
-                rotationPoint: rotationPoint, // try to create this later
-                gameTimeArchStarted: gameTime, // try to create this later
-                // nextInstruction
-            });
-            return;
-        }
-        if (((_a = this.replayablePhysicsComponent.turnInformation) === null || _a === void 0 ? void 0 : _a.rotationDirection) !== undefined &&
-            ((_b = this.replayablePhysicsComponent.turnInformation) === null || _b === void 0 ? void 0 : _b.rotationDirection) !== null &&
-            isTurningRight === (((_c = this.replayablePhysicsComponent.turnInformation) === null || _c === void 0 ? void 0 : _c.rotationDirection) > 1) &&
-            ((_d = this.replayablePhysicsComponent.turnInformation) === null || _d === void 0 ? void 0 : _d.endAngleFromRotationPointIfUninterrupted) &&
-            controlsAngleRounded !== this.replayablePhysicsComponent.turnInformation.endAngleFromRotationPointIfUninterrupted) {
-            // if it is turning, then start interrupting and change the end direction
-            // if the controls direction is different from the end direction of the current turn
-            // interrupt by altering the current turn to end at a different direction
-            // let's try to ignore the fact that we want larger angled turns to be 
-            // done at a slower speed
-            // this should result in a shallow turn's angle being interrupted to what would normally 
-            // call for a slowdown and then a tighter slower turn
-            // but instead, the plane will continue at the shallow angle turn rate and complete it all the 
-            // way to the new angle....
-            // let's just see how that feels first before getting more complicated... though I think I'll have to
-            // get more complicated and figure out how big of an angle discrepancy warrants slowing down to the tighter
-            // turn speed
-            // maybe it's just a matter of applying the same logic of turn direction. But the complicated bit will still be
-            // ending the current turn at a new direction that is the next 1/16th of 2PI
-            // Then accelerating to the right speed, and then finally, turning to the location
-            // to change the end angle, I also need to change the end game time, and the end location of the turn.. which kinda sucks
-            this.replayablePhysicsComponent.startArchRotation({
-                turnRadius: this.replayablePhysicsComponent.turnInformation.turnRadius,
-                isTurningRight: isTurningRight,
-                tangentSpeed: this.replayablePhysicsComponent.turnInformation.tangentSpeed,
-                startAngle: this.replayablePhysicsComponent.turnInformation.startAngle,
-                endAngle: endAngle,
-                pointWhereArchStarted: this.replayablePhysicsComponent.turnInformation.startingPoint,
-                rotationPoint: this.replayablePhysicsComponent.turnInformation.rotationPoint,
-                gameTimeArchStarted: this.replayablePhysicsComponent.turnInformation.gameTimeWhenTurnStarted,
-                nextInstruction: this.replayablePhysicsComponent.turnInformation.nextInstruction
-            });
-        }
-        else if (isTurningRight !== (((_e = this.replayablePhysicsComponent.turnInformation) === null || _e === void 0 ? void 0 : _e.rotationDirection) > 1) &&
-            ((_f = this.replayablePhysicsComponent.turnInformation) === null || _f === void 0 ? void 0 : _f.endAngleFromRotationPointIfUninterrupted) &&
-            controlsAngleRounded !== ((_g = this.replayablePhysicsComponent.turnInformation) === null || _g === void 0 ? void 0 : _g.endAngleFromRotationPointIfUninterrupted)) {
-            // we want to update the final angle, the final location, and the next instruction
-            // OH it's the same as before! except I need to determine the final angle
-            // based on the next closest 16th of 2PI, and then I'm adding a new next instruction
-            // not sure what happens with edge cases here. I might need a mod 16 too 
-            console.log('WE SHOULD BE ENDING THE TURN SOON NOW FOR ANOTHER TURN');
-            var currentDirectionRoundedToNext16th = ((Math.floor(currentDirection / (Math.PI * 2) * 16) % 16) / 16) * (Math.PI * 2);
-            var accelerateToMaxSpeed = {
-                type: 'accelerate',
-                endSpeed: this.maxSpeed,
-                acceleration: this.jetAcceleration
-            };
-            var followupInstruction = {
-                type: 'turn',
-                tangentSpeed: tangentSpeed,
-                turnRadius: turnRadius,
-                isTurningRight: isTurningRight,
-                endAngle: endAngle,
-                startAngle: tangentAngle,
-                nextInstruction: accelerateToMaxSpeed
-            };
-            // this is where I would have the plane animation happen over time where it banks from one side to the other
-            // instead this should execute instantly without changing anything 
-            var nextInstruction = {
-                type: 'accelerate',
-                endSpeed: tangentSpeed,
-                acceleration: this.jetAcceleration,
-                nextInstruction: followupInstruction
-            };
-            this.replayablePhysicsComponent.startArchRotation({
-                turnRadius: this.replayablePhysicsComponent.turnInformation.turnRadius,
-                isTurningRight: isTurningRight,
-                tangentSpeed: this.replayablePhysicsComponent.turnInformation.tangentSpeed,
-                startAngle: this.replayablePhysicsComponent.turnInformation.startAngle,
-                endAngle: currentDirectionRoundedToNext16th,
-                pointWhereArchStarted: this.replayablePhysicsComponent.turnInformation.startingPoint,
-                rotationPoint: this.replayablePhysicsComponent.turnInformation.rotationPoint,
-                gameTimeArchStarted: this.replayablePhysicsComponent.turnInformation.gameTimeWhenTurnStarted,
-                nextInstruction: nextInstruction
-            });
-        }
-        // const angleDifference = controlsAngleRounded - currentDirectionRounded;
-        // const turningRight = !(angleDifference > 180 || (angleDifference < 0 && angleDifference > -180));
-        // const tangentAngle = this.replayablePhysicsComponent.movementTangentAngle / (2 * Math.PI) * 360;
-        // const endAngleFromRotationPointIfUninterrupted = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 360;
-        // const normalAngle = turningRight ? tangentAngle/360 * Math.PI * 2 + Math.PI / 2 : tangentAngle/ 360 * Math.PI * 2 - Math.PI / 2 
-        // const pointWhereArchStarted = [this.transform.pos[0], this.transform.pos[1]];
-        // const turnRadius = 300;
-        // const rotationPoint: [number, number] = [
-        //     pointWhereArchStarted[0] + turnRadius * Math.cos(normalAngle),
-        //     pointWhereArchStarted[1] + turnRadius * Math.sin(normalAngle) 
-        // ]
-        // console.log("Angles", {
-        //     startX: pointWhereArchStarted[0],
-        //     startY: pointWhereArchStarted[1],
-        //     turnRadius,
-        //     rotX: rotationPoint[0],
-        //     rotY: rotationPoint[1]
-        // });
-        // if the rounded difference
+        // needed for playback 
+        var pointWhereArchStarted = [this.transform.pos[0], this.transform.pos[1]];
+        var normalAngle = isTurningRight ? tangentAngle + Math.PI / 2 : tangentAngle - Math.PI / 2;
+        var rotationPoint = [
+            pointWhereArchStarted[0] + turnRadius * Math.cos(normalAngle),
+            pointWhereArchStarted[1] + turnRadius * Math.sin(normalAngle)
+        ];
+        // when this turn ends, the next instruction is straight in the direction of the end angle
+        var endTime = this.replayablePhysicsComponent.startArchRotation({
+            turnRadius: turnRadius,
+            isTurningRight: isTurningRight,
+            tangentSpeed: tangentSpeed,
+            startAngle: tangentAngle,
+            endAngle: endAngle,
+            pointWhereArchStarted: pointWhereArchStarted, // try to create this later
+            rotationPoint: rotationPoint, // try to create this later
+            gameTimeArchStarted: gameTime, // try to create this later
+            // nextInstruction
+        });
+        var instructionData = {
+            controlDirection: endAngle,
+            endTime: endTime,
+            reversedDirection: Math.PI + tangentAngle,
+            startTime: gameTime
+        };
+        return;
     };
     Aurora.prototype.getTurnRadiusAndSpeed = function (angleChangeDegrees) {
         var tightestRadius = 100;
@@ -11973,6 +11833,8 @@ var EngineExhaust = /** @class */ (function (_super) {
     // every so often, make more particles
     EngineExhaust.prototype.animate = function () { };
     EngineExhaust.prototype.update = function (deltaTime) {
+        if (this.isTimeReversed)
+            return;
         this.currentTime += deltaTime;
         if (this.currentTime > this.exhaustRate) {
             this.currentTime = 0;
@@ -12204,7 +12066,7 @@ var B2Bomber = /** @class */ (function (_super) {
         var currentDirectionRounded = this.roundAngleTo16thsDegrees(currentDirection);
         var controlsAngleRounded = this.roundAngleTo16thsDegrees(this.controlsAngle);
         // might be needed later
-        // const endAngle = this.replayablePhysicsComponent.turnInformation.endAngleFromRotationPointIfUninterrupted;
+        // const endAngle = this.replayablePhysicsComponent.turnInformation.endAngle;
         // this determines if we are inputting an acceleration
         // I don't think it will ever happen though since every turn will result in a straight acceleration automatically
         // oh! it could be slowing down, and we could be interrupting it!
@@ -12299,8 +12161,8 @@ var B2Bomber = /** @class */ (function (_super) {
         if (((_c = this.replayablePhysicsComponent.turnInformation) === null || _c === void 0 ? void 0 : _c.rotationDirection) !== undefined &&
             ((_d = this.replayablePhysicsComponent.turnInformation) === null || _d === void 0 ? void 0 : _d.rotationDirection) !== null &&
             isTurningRight === (((_e = this.replayablePhysicsComponent.turnInformation) === null || _e === void 0 ? void 0 : _e.rotationDirection) > 1) &&
-            ((_f = this.replayablePhysicsComponent.turnInformation) === null || _f === void 0 ? void 0 : _f.endAngleFromRotationPointIfUninterrupted) &&
-            controlsAngleRounded !== this.replayablePhysicsComponent.turnInformation.endAngleFromRotationPointIfUninterrupted) {
+            ((_f = this.replayablePhysicsComponent.turnInformation) === null || _f === void 0 ? void 0 : _f.endAngle) &&
+            controlsAngleRounded !== this.replayablePhysicsComponent.turnInformation.endAngle) {
             // if it is turning, then start interrupting and change the end direction
             // if the controls direction is different from the end direction of the current turn
             // interrupt by altering the current turn to end at a different direction
@@ -12330,8 +12192,8 @@ var B2Bomber = /** @class */ (function (_super) {
             });
         }
         else if (isTurningRight !== (((_g = this.replayablePhysicsComponent.turnInformation) === null || _g === void 0 ? void 0 : _g.rotationDirection) > 1) &&
-            ((_h = this.replayablePhysicsComponent.turnInformation) === null || _h === void 0 ? void 0 : _h.endAngleFromRotationPointIfUninterrupted) &&
-            controlsAngleRounded !== ((_j = this.replayablePhysicsComponent.turnInformation) === null || _j === void 0 ? void 0 : _j.endAngleFromRotationPointIfUninterrupted)) {
+            ((_h = this.replayablePhysicsComponent.turnInformation) === null || _h === void 0 ? void 0 : _h.endAngle) &&
+            controlsAngleRounded !== ((_j = this.replayablePhysicsComponent.turnInformation) === null || _j === void 0 ? void 0 : _j.endAngle)) {
             // we want to update the final angle, the final location, and the next instruction
             // OH it's the same as before! except I need to determine the final angle
             // based on the next closest 16th of 2PI, and then I'm adding a new next instruction
@@ -12375,7 +12237,7 @@ var B2Bomber = /** @class */ (function (_super) {
         // const angleDifference = controlsAngleRounded - currentDirectionRounded;
         // const turningRight = !(angleDifference > 180 || (angleDifference < 0 && angleDifference > -180));
         // const tangentAngle = this.replayablePhysicsComponent.movementTangentAngle / (2 * Math.PI) * 360;
-        // const endAngleFromRotationPointIfUninterrupted = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 360;
+        // const endAngle = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 360;
         // const normalAngle = turningRight ? tangentAngle/360 * Math.PI * 2 + Math.PI / 2 : tangentAngle/ 360 * Math.PI * 2 - Math.PI / 2 
         // const pointWhereArchStarted = [this.transform.pos[0], this.transform.pos[1]];
         // const turnRadius = 300;
@@ -12542,17 +12404,30 @@ var BombBasic = /** @class */ (function (_super) {
     };
     BombBasic.prototype.explode = function () {
         new _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], 0.05);
-        this.remove();
+        var position = [this.transform.pos[0], this.transform.pos[1]];
+        var vel = [this.transform.vel[0], this.transform.vel[1]];
+        var gameTimeCreated = this.gameTimeCreated;
+        var bombFuseTime = this.bombFuseTime;
+        this.engineReversibleRemove(function (gameEngine) {
+            var newBomb = new BombBasic(gameEngine, position, vel);
+            newBomb.gameTimeCreated = gameTimeCreated;
+            newBomb.bombTime = bombFuseTime;
+        });
     };
     BombBasic.prototype.onCollision = function (collider, type) {
         if (type === "BombBasicExplosion") {
             this.gameElementsInExplosionRange.push(collider.gameObject);
         }
     };
-    BombBasic.prototype.update = function (deltaTime) {
+    BombBasic.prototype.update = function (deltaTime, gameTime) {
+        if (this.gameTimeCreated > gameTime) {
+            // no need to track when it was created
+            // since it will be created by the real events when going forward in time
+            this.remove();
+        }
         this.animate(deltaTime);
         this.bombTime += deltaTime;
-        if (this.bombTime >= this.bombFuseTime) {
+        if (this.bombTime >= this.bombFuseTime && !this.isTimeReversed) {
             this.gameElementsInExplosionRange.forEach(function (gameElement) {
                 gameElement === null || gameElement === void 0 ? void 0 : gameElement.hit(); // should check for destruction animation to start
             });
@@ -12867,7 +12742,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../game_engine/game_object */ "./src/game_engine/game_object.ts");
 /* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
-/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
+/* harmony import */ var _game_engine_transform__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../game_engine/transform */ "./src/game_engine/transform.ts");
+/* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../game_engine/util */ "./src/game_engine/util.ts");
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -12883,6 +12759,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+
 
 
 
@@ -12921,7 +12798,7 @@ var DeathAnimationLineObject = /** @class */ (function (_super) {
         var angularVelocityVariance = 0.1; // 10%
         var angularVelocity = 0.075 * 0.15 * speed;
         // create a random velocity and random angular velocity
-        var randomVelocity = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.vectorCartesian(2 * Math.random() * Math.PI, velocity + (velocity * velocityVariancePercentage) * Math.random());
+        var randomVelocity = _game_engine_util__WEBPACK_IMPORTED_MODULE_3__.VectorMath.vectorCartesian(2 * Math.random() * Math.PI, velocity + (velocity * velocityVariancePercentage) * Math.random());
         var newVelocity = [randomVelocity[0] + objectTransform.vel[0] * 8, randomVelocity[1] + objectTransform.vel[1] * 8];
         var randomAngularVelocity = (angularVelocity + (angularVelocity * angularVelocityVariance)) * Math.random();
         _this.transform.vel[0] = newVelocity[0];
@@ -12932,11 +12809,40 @@ var DeathAnimationLineObject = /** @class */ (function (_super) {
         return _this;
     }
     DeathAnimationLineObject.prototype.animate = function () { };
-    DeathAnimationLineObject.prototype.update = function (deltaTime) {
-        this.timeAround += deltaTime;
-        if (this.timeAround > this.removeTime) {
+    DeathAnimationLineObject.prototype.update = function (deltaTime, gameTime) {
+        if (this.gameTimeCreated > gameTime) {
+            // no need to track when it was created
+            // since it will be created by the real events when going forward in time
             this.remove();
         }
+        this.timeAround += deltaTime;
+        if (this.timeAround > this.removeTime) {
+            this.reversibleRemove();
+        }
+    };
+    DeathAnimationLineObject.prototype.reversibleRemove = function () {
+        var oldPosition = this.transform.clonePosition();
+        var oldVelocity = this.transform.cloneVelocity();
+        var oldSpinVelocity = this.transform.aVel;
+        var oldAngle = this.transform.angle;
+        var oldLength = this.lineSprite.length;
+        var oldWidth = this.lineSprite.lineWidth;
+        var oldColor = this.lineSprite.color;
+        var oldTimeAround = this.timeAround;
+        var gameTimeCreated = this.gameTimeCreated;
+        var reCreate = function (engine) {
+            var newObject = new DeathAnimationLineObject(engine, new _game_engine_transform__WEBPACK_IMPORTED_MODULE_2__.Transform(), 0, [[0, 1], [1, 2]]);
+            newObject.transform.pos = oldPosition;
+            newObject.transform.vel = oldVelocity;
+            newObject.transform.aVel = oldSpinVelocity;
+            newObject.transform.angle = oldAngle;
+            newObject.lineSprite.length = oldLength;
+            newObject.lineSprite.lineWidth = oldWidth;
+            newObject.lineSprite.color = oldColor;
+            newObject.gameTimeCreated = gameTimeCreated;
+            newObject.timeAround = oldTimeAround;
+        };
+        this.engineReversibleRemove(reCreate);
     };
     return DeathAnimationLineObject;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_0__.GameObject));
@@ -12971,7 +12877,7 @@ var DeathAnimationArcObject = /** @class */ (function (_super) {
         var angularVelocityVariance = 0.1; // 10%
         var angularVelocity = 0.075 * 0.15 * speed;
         // create a random velocity and random angular velocity
-        var randomVelocity = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.vectorCartesian(2 * Math.random() * Math.PI, velocity + (velocity * velocityVariancePercentage) * Math.random());
+        var randomVelocity = _game_engine_util__WEBPACK_IMPORTED_MODULE_3__.VectorMath.vectorCartesian(2 * Math.random() * Math.PI, velocity + (velocity * velocityVariancePercentage) * Math.random());
         var newVelocity = [randomVelocity[0] + objectTransform.vel[0] * 8, randomVelocity[1] + objectTransform.vel[1] * 8];
         var randomAngularVelocity = (angularVelocity + (angularVelocity * angularVelocityVariance)) * Math.random();
         _this.transform.vel[0] = newVelocity[0];
@@ -12988,6 +12894,12 @@ var DeathAnimationArcObject = /** @class */ (function (_super) {
         return _this;
     }
     DeathAnimationArcObject.prototype.animate = function () { };
+    DeathAnimationArcObject.prototype.reversibleRemove = function () {
+        var oldPosition = this.transform.clonePosition();
+        var oldVelocity = this.transform.cloneVelocity();
+        var oldAngle = this.transform.angle;
+        var oldAngleVelocity = this.transform.aVel;
+    };
     DeathAnimationArcObject.prototype.update = function (deltaTime) {
         this.timeAround += deltaTime;
         if (this.timeAround > this.removeTime) {
@@ -13033,7 +12945,7 @@ var DeathAnimationBezierCurveObject = /** @class */ (function (_super) {
         var angularVelocityVariance = 0.1; // 10%
         var angularVelocity = 0.075 * 0.15;
         // create a random velocity and random angular velocity
-        var randomVelocity = _game_engine_util__WEBPACK_IMPORTED_MODULE_2__.VectorMath.vectorCartesian(2 * Math.random() * Math.PI, velocity + (velocity * velocityVariancePercentage) * Math.random());
+        var randomVelocity = _game_engine_util__WEBPACK_IMPORTED_MODULE_3__.VectorMath.vectorCartesian(2 * Math.random() * Math.PI, velocity + (velocity * velocityVariancePercentage) * Math.random());
         var newVelocity = [randomVelocity[0] + objectTransform.vel[0] * 8, randomVelocity[1] + objectTransform.vel[1] * 8];
         var randomAngularVelocity = (angularVelocity + (angularVelocity * angularVelocityVariance)) * Math.random();
         _this.transform.vel[0] = newVelocity[0];
@@ -13536,11 +13448,31 @@ var PatriotMissileSite = /** @class */ (function (_super) {
         if (this.lives <= 0) {
             new _particles_StrikeTimeParticleExplosion__WEBPACK_IMPORTED_MODULE_1__.ParticleExplosion(this.gameEngine, pos);
             this.createDestructionObjects();
-            this.remove();
+            this.reversibleRemove();
         }
         // if not dead, I can have a different type of explosion
     };
-    PatriotMissileSite.prototype.update = function (deltaTime) {
+    PatriotMissileSite.prototype.reversibleRemove = function () {
+        var oldTimeSinceLaunched = this.timeSinceLaunch = 0;
+        var oldTimeSinceGroupLaunched = this.timeSinceGroupLaunch = 0;
+        var oldPosition = this.transform.clonePosition();
+        var oldGameTimeCreated = this.gameTimeCreated;
+        var reCreate = function (engine) {
+            var newPatriotMissileSite = new PatriotMissileSite(engine, [oldPosition[0], oldPosition[1]]);
+            newPatriotMissileSite.gameTimeCreated = oldGameTimeCreated;
+            newPatriotMissileSite.timeSinceLaunch = oldTimeSinceLaunched;
+            newPatriotMissileSite.timeSinceGroupLaunch = oldTimeSinceGroupLaunched;
+            return newPatriotMissileSite;
+        };
+        this.engineReversibleRemove(reCreate);
+    };
+    PatriotMissileSite.prototype.update = function (deltaTime, gameTime) {
+        // if(this.gameTimeCreated > gameTime) {
+        // no need to track when it was created
+        // since it will be created by the real events when going forward in time
+        // oh and these only get created once at the beginning
+        //     this.remove();
+        // }
         this.animate(deltaTime);
         if (this.isMissileLaunched && !this.isGroupLaunched) {
             this.timeSinceLaunch += deltaTime;
@@ -17204,8 +17136,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game_engine_util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../game_engine/util */ "./src/game_engine/util.ts");
 /* harmony import */ var _game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../game_engine/game_object */ "./src/game_engine/game_object.ts");
 /* harmony import */ var _GEOWarsScript__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../GEOWarsScript */ "./src/GEOWarsScript.ts");
-/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
+/* harmony import */ var _game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../game_engine/line_sprite */ "./src/game_engine/line_sprite.ts");
 /* harmony import */ var _game_engine_game_engine__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../game_engine/game_engine */ "./src/game_engine/game_engine.ts");
+/* harmony import */ var _game_engine_color__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../game_engine/color */ "./src/game_engine/color.ts");
 // direction of the particle is the direction of the velocity vector
 // the direction of the 
 // the particle dies when the hue reaches 0 
@@ -17224,6 +17157,15 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __spreadArray = (undefined && undefined.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 // random movement angle created
 // initial speed (scale)
 // vel = VectorMath.vectorCartesian(angle, scale)
@@ -17273,17 +17215,44 @@ var Particle = /** @class */ (function (_super) {
         _this.dampening = dampening * -0.045 || -0.045;
         return _this;
     }
-    Particle.prototype.update = function (deltaTime) {
-        // this.lineSprite.rectLength -= 0.01 * deltaTime;
-        this.lineSprite.color.a -= this.opacityDropSpeed * deltaTime;
-        // this.lineSprite.hue < 0.06 ||
-        if (this.lineSprite.rectLength < 0.25 || ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1]) + Math.abs(this.transform.vel[2])) < 0.15)) {
-            this.removeCallback();
+    Particle.prototype.update = function (deltaTime, gameTime) {
+        if (this.gameTimeCreated > gameTime) {
+            // no need to track when it was created
+            // since it will be created by the real events when going forward in time
             this.remove();
         }
-        this.transform.acc[0] += this.transform.vel[0] * this.dampening;
-        this.transform.acc[1] += this.transform.vel[1] * this.dampening;
-        this.transform.acc[2] += this.transform.vel[2] * this.dampening;
+        // this.lineSprite.rectLength -= 0.01 * deltaTime;
+        this.lineSprite.color.a += -this.opacityDropSpeed * deltaTime;
+        // this.lineSprite.hue < 0.06 ||
+        if (!this.isTimeReversed && (this.lineSprite.rectLength < 0.25 ||
+            this.lineSprite.color.a < 0.06 ||
+            ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1]) + Math.abs(this.transform.vel[2])) < 0.15))) {
+            this.removeCallback();
+            this.reversibleRemove();
+        }
+        var timeDirection = deltaTime > 0 ? 1 : -1;
+        this.transform.acc[0] += timeDirection * this.transform.vel[0] * this.dampening;
+        this.transform.acc[1] += timeDirection * this.transform.vel[1] * this.dampening;
+        this.transform.acc[2] += timeDirection * this.transform.vel[2] * this.dampening;
+    };
+    Particle.prototype.reversibleRemove = function () {
+        var oldPosition = this.transform.pos;
+        var oldVel = this.transform.vel;
+        var rePos = [oldPosition[0], oldPosition[1], oldPosition[2]];
+        var reVel = [oldVel[0], oldVel[1], oldVel[2]];
+        var colorSerialized = this.color.serializeColor();
+        var dampening = this.dampening;
+        var opacityDropSpeed = this.opacityDropSpeed;
+        var gameTimeCreated = this.gameTimeCreated;
+        var reCreate = function (engine) {
+            var newParticle = new Particle(engine, rePos, reVel, new (_game_engine_color__WEBPACK_IMPORTED_MODULE_4__.Color.bind.apply(_game_engine_color__WEBPACK_IMPORTED_MODULE_4__.Color, __spreadArray([void 0], colorSerialized, false)))(), function () { }, dampening, opacityDropSpeed);
+            newParticle.gameTimeCreated = gameTimeCreated;
+            return newParticle;
+        };
+        this.engineReversibleRemove(reCreate);
+        // provide gameEngine the instructions to recreate it at the moment its destroyed
+        // lineSprite.color.a
+        // transform numbers
     };
     Particle.prototype.animate = function () {
     };
@@ -17358,6 +17327,7 @@ var GEOParticle = /** @class */ (function (_super) {
     };
     return GEOParticle;
 }(_game_engine_game_object__WEBPACK_IMPORTED_MODULE_1__.GameObject));
+
 
 
 
@@ -17438,7 +17408,7 @@ var ParticleSprite = /** @class */ (function (_super) {
         ctx.restore();
     };
     return ParticleSprite;
-}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__.LineSprite));
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_5__.LineSprite));
 
 var StationaryParticleSprite = /** @class */ (function (_super) {
     __extends(StationaryParticleSprite, _super);
@@ -17462,7 +17432,7 @@ var StationaryParticleSprite = /** @class */ (function (_super) {
         ctx.restore();
     };
     return StationaryParticleSprite;
-}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_4__.LineSprite));
+}(_game_engine_line_sprite__WEBPACK_IMPORTED_MODULE_5__.LineSprite));
 
 
 

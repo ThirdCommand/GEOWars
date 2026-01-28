@@ -43,6 +43,14 @@ export class Transform {
 
     }
 
+    cloneVelocity(): [number, number, number] {
+        return [this.vel[0], this.vel[1], this.vel[2]]
+    }
+
+    clonePosition(): [number, number, number] {
+        return [this.pos[0], this.pos[1], this.pos[2]]
+    }
+
     // call up the tree of parent transforms until null
     // performing the transformation each step for the absolute
     absoluteAngle(): number {

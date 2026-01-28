@@ -47,6 +47,21 @@ export class Color {
         return newColor;
     }
 
+    serializeColor(): [ColorType, [number, number, number, number?]] {
+        let dupColors: [number, number, number, number?];
+        const dupColorType = this.colorType;
+        if (this.colorType === "rgb") {
+            dupColors = [this.r, this.g, this.b];
+        } else if (this.colorType === "rgba") {
+            dupColors = [this.r, this.g, this.b, this.a];
+        } else if (this.colorType === "hsl") {
+            dupColors  = [this.h, this.s, this.l];
+        } else if (this.colorType === "hsla") {
+            dupColors = [this.h, this.s, this.l, this.a];
+        }
+        return [dupColorType, dupColors];
+    }
+
     extractColorInfo(colorType: ColorType, colorNumbers: [number, number, number, number?]){
         if (this.colorType === "rgb"){
             this.r = colorNumbers[0];

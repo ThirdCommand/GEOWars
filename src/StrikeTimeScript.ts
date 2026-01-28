@@ -157,9 +157,10 @@ export class StrikeTimeScript {
     // }
 
     update(deltaTime: number) {
-        // TODO: I think this will still be useful in the future
-        // but I don't have my head wrapped around it yet
+
+        // when game time hits zero, no more reversing
         this.gameTime += deltaTime;
+        if(this.gameTime < 0) this.gameTime = 0;
         if(this.playFromRootScene) {
             this.rootScene.update(deltaTime);
         } 

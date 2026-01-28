@@ -49,10 +49,6 @@ export class DeathAnimationLineObject extends GameObject {
 
         const lineAngle = lineAngleRelativeToAurora + objectAngle;
 
-
-
-
-
         this.transform.pos = [lineMidpointPosition[0], lineMidpointPosition[1]];
         this.transform.angle = lineAngle;
         const velocityVariancePercentage = 0.1; // 10%
@@ -79,12 +75,42 @@ export class DeathAnimationLineObject extends GameObject {
 
     animate() {}
 
-    update(deltaTime: number) {
-        this.timeAround += deltaTime;
-        if(this.timeAround > this.removeTime) {
+    update(deltaTime: number, gameTime: number) {
+        if(this.gameTimeCreated > gameTime) {
+            // no need to track when it was created
+            // since it will be created by the real events when going forward in time
             this.remove();
         }
+        this.timeAround += deltaTime;
+        if(this.timeAround > this.removeTime) {
+            this.reversibleRemove();
+        }
 
+    }
+
+    reversibleRemove() {
+        const oldPosition: [number, number, number] = this.transform.clonePosition();
+        const oldVelocity: [number, number, number] = this.transform.cloneVelocity();
+        const oldSpinVelocity = this.transform.aVel;
+        const oldAngle = this.transform.angle;
+        const oldLength = (this.lineSprite as DeathAnimationSprite).length;
+        const oldWidth = (this.lineSprite as DeathAnimationSprite).lineWidth;
+        const oldColor = (this.lineSprite as DeathAnimationSprite).color
+        const oldTimeAround = this.timeAround;
+        const gameTimeCreated = this.gameTimeCreated;
+        const reCreate = (engine: GameEngine) => {
+            const newObject = new DeathAnimationLineObject(engine, new Transform(),0,[[0,1],[1,2]]);
+            newObject.transform.pos = oldPosition;
+            newObject.transform.vel = oldVelocity;
+            newObject.transform.aVel = oldSpinVelocity;
+            newObject.transform.angle = oldAngle;
+            (newObject.lineSprite as DeathAnimationSprite).length = oldLength;
+            (newObject.lineSprite as DeathAnimationSprite).lineWidth = oldWidth;
+            (newObject.lineSprite as DeathAnimationSprite).color = oldColor;
+            newObject.gameTimeCreated = gameTimeCreated;
+            newObject.timeAround = oldTimeAround;
+        }
+        this.engineReversibleRemove(reCreate);
     }
 }
 export class DeathAnimationArcObject extends GameObject {
@@ -167,6 +193,14 @@ export class DeathAnimationArcObject extends GameObject {
     }
 
     animate() {}
+
+    reversibleRemove() {
+        const oldPosition = this.transform.clonePosition();
+        const oldVelocity = this.transform.cloneVelocity();
+        const oldAngle = this.transform.angle;
+        const oldAngleVelocity = this.transform.aVel;
+
+    }
 
     update(deltaTime: number) {
         this.timeAround += deltaTime;

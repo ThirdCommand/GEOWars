@@ -64,17 +64,56 @@ export class Particle extends GameObject { color: Color;
         this.addPhysicsComponent();
         this.dampening = dampening * -0.045 || -0.045;
     }
-    update(deltaTime: number){
-        // this.lineSprite.rectLength -= 0.01 * deltaTime;
-        this.lineSprite.color.a -= this.opacityDropSpeed * deltaTime;
-        // this.lineSprite.hue < 0.06 ||
-        if (this.lineSprite.rectLength < 0.25 || ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1]) + Math.abs(this.transform.vel[2])) < 0.15)) {
-            this.removeCallback();
+    update(deltaTime: number, gameTime: number){
+        if(this.gameTimeCreated > gameTime) {
+            // no need to track when it was created
+            // since it will be created by the real events when going forward in time
             this.remove();
         }
-        this.transform.acc[0] += this.transform.vel[0] * this.dampening;
-        this.transform.acc[1] += this.transform.vel[1] * this.dampening;
-        this.transform.acc[2] += this.transform.vel[2] * this.dampening;
+        // this.lineSprite.rectLength -= 0.01 * deltaTime;
+        this.lineSprite.color.a += -this.opacityDropSpeed * deltaTime;
+        // this.lineSprite.hue < 0.06 ||
+        if (!this.isTimeReversed && (
+            this.lineSprite.rectLength < 0.25 || 
+            this.lineSprite.color.a < 0.06 ||
+            ((Math.abs(this.transform.vel[0]) + Math.abs(this.transform.vel[1]) + Math.abs(this.transform.vel[2])) < 0.15))
+        ) {
+            this.removeCallback();
+            this.reversibleRemove();
+        }
+
+        const timeDirection = deltaTime > 0 ? 1 : -1;
+        this.transform.acc[0] += timeDirection * this.transform.vel[0] * this.dampening;
+        this.transform.acc[1] += timeDirection * this.transform.vel[1] * this.dampening;
+        this.transform.acc[2] += timeDirection * this.transform.vel[2] * this.dampening;
+    }
+
+    reversibleRemove() {
+        const oldPosition = this.transform.pos;
+        const oldVel = this.transform.vel;
+        const rePos: [number, number, number?] = [oldPosition[0], oldPosition[1], oldPosition[2]];
+        const reVel: [number, number, number?] = [oldVel[0], oldVel[1], oldVel[2]];
+        const colorSerialized = this.color.serializeColor();
+        const dampening = this.dampening;
+        const opacityDropSpeed = this.opacityDropSpeed;
+        const gameTimeCreated = this.gameTimeCreated;
+        const reCreate = (engine: GameEngine) => {
+            const newParticle = new Particle(
+                engine, 
+                rePos, 
+                reVel,
+                new Color(...colorSerialized), 
+                () => {}, 
+                dampening, 
+                opacityDropSpeed, 
+            )
+            newParticle.gameTimeCreated = gameTimeCreated;
+            return newParticle;
+        }
+        this.engineReversibleRemove(reCreate);
+        // provide gameEngine the instructions to recreate it at the moment its destroyed
+        // lineSprite.color.a
+        // transform numbers
     }
 
     animate() {

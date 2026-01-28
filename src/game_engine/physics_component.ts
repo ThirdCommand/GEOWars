@@ -10,13 +10,6 @@ export class PhysicsComponent {
 
     reverseTime() {
         this.isTimeReversing = !this.isTimeReversing;
-        const transform = this.transform;
-        
-        transform.aAcc = -transform.aAcc;
-        transform.aVel = -transform.aVel;
-        
-        transform.vel = [-transform.vel[0], -transform.vel[1], -transform.vel[2]];
-        transform.acc = [-transform.acc[0], -transform.acc[1], -transform.acc[2]];
     }
 
 
@@ -25,16 +18,21 @@ export class PhysicsComponent {
         // timeDelta is number of milliseconds since last move
         // if the computer is busy the time delta will be larger
         // in this case the PhysicsObject should move farther in this frame
+
+        // Floating point error bar results in differences between replaying forward, backward, and forward again.
+        // This might be okay
         const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-        this.transform.pos[0] += this.transform.vel[0] * timeScale + (this.transform.acc[0] * (timeScale ** 2)) / 2;
-        this.transform.pos[1] += this.transform.vel[1] * timeScale + (this.transform.acc[1] * (timeScale ** 2)) / 2;
-        this.transform.pos[2] += this.transform.vel[2] * timeScale + (this.transform.acc[2] * (timeScale ** 2)) / 2;
+        
+        const accelerationSign = timeDelta > 0 ? 1 : -1;
+        this.transform.pos[0] += this.transform.vel[0] * timeScale + accelerationSign * (this.transform.acc[0] * (timeScale ** 2)) / 2;
+        this.transform.pos[1] += this.transform.vel[1] * timeScale + accelerationSign * (this.transform.acc[1] * (timeScale ** 2)) / 2;
+        this.transform.pos[2] += this.transform.vel[2] * timeScale + accelerationSign * (this.transform.acc[2] * (timeScale ** 2)) / 2;
         
         this.transform.vel[0] += this.transform.acc[0] * timeScale;
         this.transform.vel[1] += this.transform.acc[1] * timeScale;
         this.transform.vel[2] += this.transform.acc[2] * timeScale;
 
-        this.transform.angle += this.transform.aVel * timeScale + this.transform.aAcc * (timeScale**2)/2;
+        this.transform.angle += this.transform.aVel * timeScale + accelerationSign * this.transform.aAcc * (timeScale**2)/2;
         this.transform.aVel += this.transform.aAcc * timeScale;
 
         this.transform.acc = [0, 0, 0];
@@ -43,16 +41,80 @@ export class PhysicsComponent {
     }
 }
 
+// reversibleAction
+// 1. no action yet, waiting for instructions
+//      every time increment, ask parent component if a new action is started
+// 2. parent component detected action, so when asked it provides it to us
+//      if straight, the action will have a direction, start time/location. reversed direction, reversed end time/location
+//      if turn, the action will have start direction, end direction, start time/location. reversed start/end direction + time/location
+//      every time increment it will ask if the current action is interrupted. 
+//          if straight, an end time/location will be added, and reverse start time/location added
+//          if turn, end time/location/angle will be updated, plus their reverses
+//      if turn completes without interruption
+//          parent is asked for next instruction. if none, the default instruction of straight at the end angle will be created
+
+
+type ActionType = 'Straight' | 'Turn';
+interface DoAction { 
+    (timeDelta: number, gameTime: number, action: Action): Boolean; // true if completed
+}
+
+type ActionData = TurnInformation | AccelerationInformation | WaitInformation | StraightInformation;
+
+type Action = {
+    type: ActionType;
+    actionData: ActionData;
+    reversedData: ActionData;
+}
+
+type TurnInformation = {
+    rotationPoint?: [number, number]; 
+    startingPoint?: [number, number];
+    turnRadius?: number;
+    endPoint?: [number, number];
+    endAngle?: number;
+    gameTimeWhenTurnEnds?: number;
+    nextInstruction?: NextInstructionAccelerate;
+    tangentSpeed?: number;
+    startAngle?: number;
+    gameTimeWhenTurnStarted?: number;
+    rotationDirection?: 1 | -1;
+}
+
+type AccelerationInformation = {
+    isDecelerating?: boolean;
+    accelerationEndPositionIfUninterrupted?: [number, number],
+    endVelocityIfUninterrupted?: [number, number],
+    gameTimeWhenAccelerationEnds?: number,
+    endSpeedIfUninterrupted?: number,
+    nextInstruction?: NextInstructionTurn;
+    acceleration?: number;
+}
+
+type WaitInformation = {
+    startTime?: number;
+    endTime?: number;
+}
+
+type StraightInformation = {
+    velocity?: [number, number];
+    startTime?: number;
+    endTime?: number;
+    startLocation: [number, number];
+    endLocation: [number, number];
+}
+
 export class ReplayablePhysicsComponent {
     transform: Transform;
     gameTime: number;
     instructionsCompleted: string[];
+    reversibleActions: Action[];
     turnInformation: {
         rotationPoint?: [number, number] 
         startingPoint?: [number, number]
         turnRadius?: number
         endPoint?: [number, number]
-        endAngleFromRotationPointIfUninterrupted?: number
+        endAngle?: number
         gameTimeWhenTurnEnds?: number
         nextInstruction?: NextInstructionAccelerate
         tangentSpeed?: number
@@ -113,7 +175,7 @@ export class ReplayablePhysicsComponent {
         gameTimeArchStarted: number,  
         pointWhereArchStarted: [number, number] | null,
         nextInstruction?: NextInstructionAccelerate
-    }) {
+    }): number {
         let {
             rotationPoint,
             turnRadius,
@@ -135,18 +197,19 @@ export class ReplayablePhysicsComponent {
             // console.log('interrupting Turn to change Turn')
         }
 
-        if(this.isTurning) {
-            return this.interruptTurn({
-                rotationPoint,
-                turnRadius,
-                isTurningRight,
-                tangentSpeed,
-                startAngle,
-                endAngle,
-                gameTimeArchStarted,
-                pointWhereArchStarted,
-            });
-        }
+        // if(this.isTurning) {
+        //     return this.interruptTurn({
+        //         rotationPoint,
+        //         turnRadius,
+        //         isTurningRight,
+        //         tangentSpeed,
+        //         startAngle,
+        //         endAngle,
+        //         gameTimeArchStarted,
+        //         pointWhereArchStarted,
+        //     });
+        // }
+
         // will have a precise time and location when the arch started while playing back controls
         // in that case we'll have to piece wise connect the arch and previous section
         // console.log('input for startArchRotation', {
@@ -180,7 +243,7 @@ export class ReplayablePhysicsComponent {
         this.transform.archAngleVelocity = tangentSpeed / this.turnInformation.turnRadius * rotationDirection;
         this.turnInformation.tangentSpeed = tangentSpeed;
         this.turnInformation.rotationPoint = [rotationPoint[0], rotationPoint[1]];
-        this.turnInformation.endAngleFromRotationPointIfUninterrupted = endAngle;
+        this.turnInformation.endAngle = endAngle;
         this.turnInformation.gameTimeWhenTurnEnds = gameTimeArchStarted + Math.abs((angleDifference) / this.transform.archAngleVelocity);
         this.turnInformation.gameTimeWhenTurnStarted = gameTimeArchStarted;
         this.turnInformation.startAngle = startAngle;
@@ -191,13 +254,8 @@ export class ReplayablePhysicsComponent {
             rotationPoint[1] + this.turnInformation.turnRadius * Math.sin(endAngle - Math.PI/2) * rotationDirection
         ]
 
-        if(currentGameTime) {
-            // is this necessary? does it mean we're moving twice in the same frame?
-            // or is this just for replaying commands?
-            // or would that even matter if it was just for replaying commands? 
-            this.move(currentGameTime - gameTimeArchStarted, currentGameTime);
-        }
-        // console.log('colected turn information',this.turnInformation);
+        return this.turnInformation.gameTimeWhenTurnEnds;
+        // console.log('collected turn information',this.turnInformation);
     }
 
     interruptTurn(interruptTurnParams: {
@@ -425,7 +483,7 @@ export class ReplayablePhysicsComponent {
             }
 
         } else if (this.isTurning) {
-            const {endAngleFromRotationPointIfUninterrupted, tangentSpeed, rotationPoint, turnRadius, endPoint, gameTimeWhenTurnEnds, nextInstruction} = this.turnInformation;
+            const {endAngle, tangentSpeed, rotationPoint, turnRadius, endPoint, gameTimeWhenTurnEnds, nextInstruction} = this.turnInformation;
             // great... at the end of the rotation it accelerates to max speed
             // so when I piece together the rotation + straight I have to account for that
             // I just need to find the time that the rotation ended vs the current time
@@ -443,11 +501,11 @@ export class ReplayablePhysicsComponent {
                 this.instructionsCompleted.push(`Turn Completed. Direction: ${this.turnInformation.rotationDirection > 0 ? 'Right' : 'Left'}`);
                 // console.log(this.instructionsCompleted);
 
-                // this.movementTangentAngle = endAngleFromRotationPointIfUninterrupted;
+                // this.movementTangentAngle = endAngle;
                     
                 const endVelocityIfUninterrupted = [
-                    tangentSpeed * Math.cos(endAngleFromRotationPointIfUninterrupted),
-                    tangentSpeed * Math.sin(endAngleFromRotationPointIfUninterrupted)
+                    tangentSpeed * Math.cos(endAngle),
+                    tangentSpeed * Math.sin(endAngle)
                 ]
 
                 this.isTurning = false;

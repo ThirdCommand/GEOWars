@@ -71,6 +71,10 @@ export abstract class GameObject implements controllable{
         }
     }
 
+    engineReversibleRemove(reCreate: (gameEngine: GameEngine) => (any)) {
+        this.gameEngine.reversibleRemove(this, reCreate)
+    }
+
     makeFocussedGameObject(){
         if(this.gameEngine instanceof GameEngine) {
             this.isFocussedGameObject = true;
@@ -239,7 +243,7 @@ export abstract class GameObject implements controllable{
         obj.parentObject = this;
     }
 
-    abstract update(deltaTime: number): void
+    abstract update(deltaTime: number, gameTime: number): void
 
     onCollision?(collider: Collider, type: string): void
 
