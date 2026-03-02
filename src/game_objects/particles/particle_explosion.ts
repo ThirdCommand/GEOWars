@@ -43,7 +43,7 @@ export class ParticleExplosion extends GameObject{
             const colorVarience = colorVarienceDelta * Math.random() - colorVarienceDelta / 2;
             const color = this.currentColor.dup();
             color.a = Math.random() * 0.15 + 0.80;
-            color.h = (color.h + colorVarience) % 360;
+            color.h = ((color.h + colorVarience) % 360 + 360) % 360;
 
             const x = this.transform.absolutePosition()[0];
             const y = this.transform.absolutePosition()[1];

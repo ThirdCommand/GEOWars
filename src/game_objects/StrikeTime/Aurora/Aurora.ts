@@ -3,7 +3,7 @@ import { LineSprite, Spawnable } from "../../../game_engine/line_sprite";
 import { Transform } from "../../../game_engine/transform";
 import { GameEngine } from "../../../game_engine/game_engine";
 import { Camera } from "../../../game_engine/camera";
-import {NextInstructionAccelerate, NextInstructionTurn} from "../../../game_engine/physics_component"
+import {TurnInformation} from "../../../game_engine/physics_component"
 import { EngineExhaust } from "./EngineExhaust";
 import { AirDecelerationParticles } from "./AirDecelerationParticles";
 import { BombBasic } from "../Bombs/BombBasic";
@@ -12,6 +12,20 @@ import { BombReticle } from "./BombReticle";
 import { StrikeTimeScript } from "../../../StrikeTimeScript";
 import { AnimationView } from "../../../AnimationView";
 import { ArcData } from "../../../game_engine/SpriteEditor/Point";
+import { DotGizmo, LineGizmo, ArcGizmo } from "../../particles/Gizmo";
+
+type ControlAction = {
+    type: 'Bomb';
+    time: number;
+    completed: Boolean;
+}
+
+type ActiveCooldown = {
+    time: number;
+    cooldownTime: number;
+    type: string;
+    isCoolingDown: Boolean;
+}
 
 export class Aurora extends GameObject {
     lineSprite: AuroraSprite;
@@ -34,12 +48,19 @@ export class Aurora extends GameObject {
     rightExhaust: EngineExhaust;
     airDecelerationParticles: AirDecelerationParticles;
     bombReticle: BombReticle;
-    bombTiming: {
-        refreshTime: number;
-        reloadTime: number;
-    }
+    bombCooldown: ActiveCooldown;
     destructedColor: string;
     destructionLineWidth: number;
+    JKeyPressed: boolean;
+    buttonActions: ControlAction[];
+    previousControlsDirection: number;
+
+    controlsDirectionGizmo: LineGizmo;
+    startPointGizmo: DotGizmo;
+    rotationPointGizmo: DotGizmo;
+    endPointGizmo: DotGizmo;
+    turnArcGizmo: ArcGizmo;
+
    
 
     constructor(
@@ -56,16 +77,28 @@ export class Aurora extends GameObject {
         this.destructedColor = "rgb(255, 255, 255)";
         this.destructionLineWidth = 1.5;
 
+        this.controlsDirectionGizmo = new LineGizmo(engine, [this.transform.pos[0], this.transform.pos[1]], [this.transform.pos[0], this.transform.pos[1]], "#272af3ff");
+        this.endPointGizmo = new DotGizmo(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], 2, '#1d26a5ff');
+        this.rotationPointGizmo = new DotGizmo(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], 1, '#FFFFFF');
+        this.startPointGizmo = new DotGizmo(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], 4, '#ac2929ff');
+        // new LineGizmo(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], [rotationPoint[0], rotationPoint[1]])
+        this.turnArcGizmo = new ArcGizmo(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], 1, 0, 0, true);
+
         this.radius = 30;
         this.turnRadius = 60;
         this.minSpeed = 1;
         this.maxSpeed = 0.025 * 6;
         this.controlsDirection = [0,0];
+        this.buttonActions = [];
 
-        this.bombTiming = {
-            refreshTime: 0,
-            reloadTime: 2000
-        }
+        this.bombCooldown = {
+            cooldownTime: 2000,
+            isCoolingDown: false,
+            time: 0,
+            type: 'Bomb',
+        };
+
+        this.JKeyPressed = false;
 
         this.jetAcceleration =  0.0001;
         this.jetDeceleration = -0.00035;
@@ -80,7 +113,7 @@ export class Aurora extends GameObject {
         
         this.setAsControllableGameObject();
         this.makeFocussedGameObject();
-        this.addBKeyListener();
+
         this.addBButtonListener();
         this.addJKeyListener();
         this.addReplayablePhysicsComponent();
@@ -90,8 +123,6 @@ export class Aurora extends GameObject {
             -this.lineSprite.length/8,
             17/18* this.lineSprite.length
         ], 5);
-
-        
 
         this.rightExhaust = new EngineExhaust(engine, this.transform, [
             this.lineSprite.length/8,
@@ -107,16 +138,25 @@ export class Aurora extends GameObject {
 
     }
 
-    updateBButtonListener(pressed: boolean) {
-        if(pressed && this.bombTiming.refreshTime > this.bombTiming.reloadTime) {
+    updateBButtonListener(pressed: boolean, playBack?: boolean) {
+        console.log(this.replayablePhysicsComponent.reversibleActions);
+        if(!this.isTimeReversed && pressed && !this.bombCooldown.isCoolingDown) {
             // get the direction that we're going now
             // apply this speed in that direction
             const currentDirection = this.transform.angle;
-            const bombSpeed = 0.05;
+            const bombSpeed = 0.8;
 
             const bombVelocity = VectorMath.vectorCartesian(currentDirection, bombSpeed)
-            new BombBasic(this.gameEngine,[this.transform.pos[0], this.transform.pos[1]], bombVelocity)
-            this.bombTiming.refreshTime = 0;
+            new BombBasic(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], bombVelocity)
+            this.bombCooldown.time = 0;
+            this.bombCooldown.isCoolingDown = true;
+            if (!playBack) {
+                this.buttonActions.push({
+                    type: 'Bomb',
+                    time: this.gameEngine.gameScript.gameTime,
+                    completed: true,
+                });
+            }
         }
     }
     hit() {
@@ -131,88 +171,111 @@ export class Aurora extends GameObject {
             // create three objects for the death animation
         }
     }
-    updateBKeyListener(pressed: boolean) {
-        if(pressed && this.bombTiming.refreshTime > this.bombTiming.reloadTime) {
-            // get the direction that we're going now
-            // apply this speed in that direction
-            const currentDirection = this.transform.angle;
-            const bombSpeed = 0.05;
-
-            const bombVelocity = VectorMath.vectorCartesian(currentDirection, bombSpeed)
-            new BombBasic(this.gameEngine,[this.transform.pos[0], this.transform.pos[1]], bombVelocity)
-            this.bombTiming.refreshTime = 0;
-        }
-    }
 
     animate(delta: number) {
-        let movementDirection = 0;
-        if(this.transform.vel[0] === 0 && this.transform.vel[1] === 0) {
-            movementDirection = this.transform.angle;
-        } else {
-            movementDirection = Math.atan2(
-                this.transform.vel[0],
-                -this.transform.vel[1]
-            );
-        }
-        this.transform.angle = movementDirection;
+        // let movementDirection = 0;
+        // if(this.transform.vel[0] === 0 && this.transform.vel[1] === 0) {
+        //     movementDirection = this.transform.angle;
+        // } else {
+        //     movementDirection = Math.atan2(
+        //         this.transform.vel[0],
+        //         -this.transform.vel[1]
+        //     );
+        // }
+        // this.transform.angle = movementDirection;
     }
 
     updateJKeyListener(pressed: boolean): void {
-        this.gameEngine.reverseTime()
+        if(pressed && !this.JKeyPressed) {
+            console.log(this.replayablePhysicsComponent.reversibleActions);
+            this.JKeyPressed = true;
+            this.gameEngine.reverseTime()
+        } else if(!pressed && this.JKeyPressed){
+            this.JKeyPressed = false;
+            this.gameEngine.reverseTime()
+        }
+
+        
     }
-    update(delta: number) {
+    update(delta: number, gameTime: number) {
         // console.log('updateCalled', `delta: ${delta}`);
-        this.bombTiming.refreshTime += delta;
-        this.bombTiming.refreshTime = this.bombTiming.refreshTime  > this.bombTiming.reloadTime ? this.bombTiming.reloadTime + 1 : this.bombTiming.refreshTime;
-        (this.bombTiming.refreshTime > this.bombTiming.reloadTime || this.bombTiming.refreshTime < 0) ? this.bombReticle.setVisibility(true) : this.bombReticle.setVisibility(false);
+        const shipXPos = this.transform.pos[0];
+        const shipYPos = this.transform.pos[1];
+        this.camera.transform.pos[0] = shipXPos;
+        this.camera.transform.pos[1] = shipYPos;
+
+        if(this.bombCooldown.isCoolingDown) {
+            this.bombCooldown.time += delta;
+            if(this.bombCooldown.time > this.bombCooldown.cooldownTime || this.bombCooldown.time < 0) {
+                this.bombCooldown.time = 0;
+                this.bombCooldown.isCoolingDown = false;
+            }
+        }
+
+       !this.bombCooldown.isCoolingDown ? this.bombReticle.setVisibility(true) : this.bombReticle.setVisibility(false);
+
+        this.buttonActions.forEach((buttonAction) => {
+            if(delta > 0) {
+                if(!buttonAction.completed && gameTime >= buttonAction.time) {
+                    // I need to flip these back on as gameTime goes before their time when reversing
+                    buttonAction.completed = true;
+                    if(buttonAction.type === 'Bomb') {
+                        this.updateBButtonListener(true, true);
+                    }
+                }
+            } else {
+                if(buttonAction.completed && buttonAction.time >= gameTime) {
+                    buttonAction.completed = false;
+                }
+            }
+        })
 
         if(this.replayablePhysicsComponent.movementTangentAngle !== null) {
             this.transform.angle = this.replayablePhysicsComponent.movementTangentAngle;
-            if(this.isTimeReversed) this.transform.angle += Math.PI;
+            if(this.isTimeReversed) this.transform.angle = ((this.transform.angle + Math.PI)%(2*Math.PI) + 2*Math.PI) % Math.PI*2;
         }
 
         if(this.isFocussedGameObject && !this.isTimeReversed) {
             this.movementMechanics();
         }
 
-        const shipXPos = this.transform.pos[0];
-        const shipYPos = this.transform.pos[1];
-        this.camera.transform.pos[0] = shipXPos;
-        this.camera.transform.pos[1] = shipYPos;
+
 
         // visuals (animation)
-        if(this.replayablePhysicsComponent.isAccelerating) {
-            if(this.replayablePhysicsComponent.accelerationInformation.isDecelerating) {
-                this.leftExhaust.isDecelerating = true;
-                this.rightExhaust.isDecelerating = true;
-                this.leftExhaust.isAccelerating = false;
-                this.rightExhaust.isAccelerating = false;
-                this.airDecelerationParticles.isDecelerating = true;
-            } else {
-                this.airDecelerationParticles.isDecelerating = false;;
+        const currentAction = this.replayablePhysicsComponent.getCurrentAction();
+        // if(this.replayablePhysicsComponent.isAccelerating) {
+        //     if(this.replayablePhysicsComponent.accelerationInformation.isDecelerating) {
+        //         this.leftExhaust.isDecelerating = true;
+        //         this.rightExhaust.isDecelerating = true;
+        //         this.leftExhaust.isAccelerating = false;
+        //         this.rightExhaust.isAccelerating = false;
+        //         this.airDecelerationParticles.isDecelerating = true;
+        //     } else {
+        //         this.airDecelerationParticles.isDecelerating = false;;
+        //         this.leftExhaust.isAccelerating = true;
+        //         this.rightExhaust.isAccelerating = true;
+        //     }
+            
+        // } else {
+        //     this.airDecelerationParticles.isDecelerating = false;
+
+        //     this.leftExhaust.isAccelerating = false;
+        //     this.rightExhaust.isAccelerating = false;
+        //     this.leftExhaust.isDecelerating = false;
+        //         this.rightExhaust.isDecelerating = false;
+        // }
+        if(currentAction && currentAction.type === 'Turn') {
+            if((currentAction.actionData as TurnInformation).rotationDirection > 0) {
                 this.leftExhaust.isAccelerating = true;
+                this.rightExhaust.isAccelerating = false;
+            } else {
+                this.leftExhaust.isAccelerating = false;
                 this.rightExhaust.isAccelerating = true;
             }
-            
         } else {
-            this.airDecelerationParticles.isDecelerating = false;
-
             this.leftExhaust.isAccelerating = false;
             this.rightExhaust.isAccelerating = false;
-            this.leftExhaust.isDecelerating = false;
-                this.rightExhaust.isDecelerating = false;
         }
-
-        if(this.replayablePhysicsComponent.isTurning) {
-            if(this.replayablePhysicsComponent.turnInformation.rotationDirection > 0) {
-                this.leftExhaust.isAccelerating = true;
-                this.rightExhaust.isAccelerating = false;
-            } else {
-                this.leftExhaust.isAccelerating = false;
-                this.rightExhaust.isAccelerating = true;
-            }
-        }
-
 
     }
 
@@ -229,61 +292,129 @@ export class Aurora extends GameObject {
         // 3. only initiate turn when relative direction passes a small threshold (1/8th PI lets say)
         const turnThreshold = Math.PI / 8;
         if(!(this.gameEngine instanceof GameEngine)) return;
+        console.log(this.controlsAngle);
 
-        if(this.replayablePhysicsComponent.isTurning) return;
-        if(this.controlsAngle === null) return;
+        if(this.controlsAngle === null) {
+            this.replayablePhysicsComponent.interruptData = null;
+            return;
+        }
+
+        this.controlsDirectionGizmo.transform.pos = [this.transform.pos[0], this.transform.pos[1]];
+        this.controlsDirectionGizmo.lineSprite.endPos = [this.transform.pos[0] + 50 * Math.cos(this.controlsAngle), this.transform.pos[1] + 50 * Math.sin(this.controlsAngle)];
 
         const gameTime = this.gameEngine.gameScript.gameTime;
         if(this.transform.vel[0] === 0 && this.transform.vel[1] === 0) {
             console.log('Only the first acceleration')
             const controlsAngleRoundedRadians = ((Math.round((this.controlsAngle / (2 * Math.PI)) * 16) % 16) / 16) * 2 * Math.PI;
-            this.replayablePhysicsComponent.startAcceleration({acceleration: this.jetAcceleration, endSpeed: this.maxSpeed, gameTimeAccelerationStarted: gameTime, onStartDirection: controlsAngleRoundedRadians})
+            const velocity: [number, number] = [this.maxSpeed * Math.cos(controlsAngleRoundedRadians), this.maxSpeed * Math.sin(controlsAngleRoundedRadians)];
+            this.replayablePhysicsComponent.interruptData = {
+                type: 'Straight',
+                actionParams: {
+                    velocity,
+                }
+            }
             return;
         }
 
-        const currentDirection = (Math.atan2(this.transform.vel[1], this.transform.vel[0]) + Math.PI * 2) % (Math.PI * 2);
+        const currentDirection = this.replayablePhysicsComponent.movementTangentAngle;
         const currentDirectionRounded = this.roundAngleTo16thsDegrees(currentDirection);
         const controlsAngleRounded =  this.roundAngleTo16thsDegrees(this.controlsAngle);
-
-        if(currentDirectionRounded === controlsAngleRounded) {
+        // if(this.previousControlsDirection != this.controlsAngle) {
+        //     this.previousControlsDirection = this.controlsAngle;
+        //     this.replayablePhysicsComponent.interruptData = null;
+        //     return;
+        // }
+        // this.previousControlsDirection = this.controlsAngle;
+        if(
+            currentDirectionRounded === controlsAngleRounded || 
+            !this.replayablePhysicsComponent.getCurrentAction()?.isInterruptAble || 
+            controlsAngleRounded === this.roundAngleTo16thsDegrees((this.replayablePhysicsComponent.getCurrentAction()?.actionData as TurnInformation).endAngle)
+        ) {
+            this.replayablePhysicsComponent.interruptData = null;
             return;
-        } 
+        }
         
-        const angleDifference = controlsAngleRounded - currentDirectionRounded;
-        const isTurningRight = !(angleDifference > 180 || (angleDifference < 0 && angleDifference > -180));
+        let angleDifference = (controlsAngleRounded - currentDirectionRounded) > 0 ? 
+            controlsAngleRounded - currentDirectionRounded : 
+            controlsAngleRounded - currentDirectionRounded + 360;
+
+        const isTurningRight = angleDifference < 180
         // turning right means that the rotation point is to the right relative to the movement direction
         // always at a 90 degree angle
         const tangentAngle = this.replayablePhysicsComponent.movementTangentAngle;
         const turnRadius = this.turnRadius;
         const tangentSpeed = this.maxSpeed;
 
-        const endAngle = controlsAngleRounded/360 * 2 * Math.PI;
+         const endAngle = isTurningRight ? 
+            (((controlsAngleRounded/360 * 2 * Math.PI) + Math.PI/2) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) :
+            (((controlsAngleRounded/360 * 2 * Math.PI) + Math.PI/2) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
 
         // needed for playback 
         const pointWhereArchStarted: [number, number] = [this.transform.pos[0], this.transform.pos[1]];
-        const normalAngle = isTurningRight ? tangentAngle + Math.PI / 2 : tangentAngle - Math.PI / 2 
+
+        const normalAngle = !isTurningRight ? 
+            ((tangentAngle - Math.PI/2) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) :
+            ((tangentAngle + Math.PI/2) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+        // const normalAngle = tangentAngle - Math.PI / 2;
         const rotationPoint: [number, number] = [
             pointWhereArchStarted[0] + turnRadius * Math.cos(normalAngle),
             pointWhereArchStarted[1] + turnRadius * Math.sin(normalAngle) 
         ];
 
+        console.log({rotationPoint, position: this.transform.pos})
+        // const startAngle = isTurningRight ? 
+        //     ((tangentAngle + Math.PI/2) % Math.PI * 2 + 2 * Math.PI) % (2 * Math.PI): 
+        //     ((tangentAngle - Math.PI/2) % Math.PI * 2 + 2 * Math.PI) % (2 * Math.PI);
+        const startAngle = isTurningRight ? 
+            ((tangentAngle + 3 * Math.PI/2) % (Math.PI * 2) + 2 * Math.PI) % (2 * Math.PI): 
+            ((tangentAngle - 3 * Math.PI/2) % (Math.PI * 2) + 2 * Math.PI) % (2 * Math.PI);
+        const rotationDirection = isTurningRight ? -1 : 1;
+
+        const endPoint: [number, number] = [
+            rotationPoint[0] + turnRadius * Math.cos(endAngle) * rotationDirection,
+            rotationPoint[1] + turnRadius * Math.sin(endAngle) * rotationDirection
+        ]
+
+       
+        
+        this.startPointGizmo.transform.pos = this.transform.pos;
+        this.endPointGizmo.transform.pos = endPoint;
+        this.rotationPointGizmo.transform.pos = rotationPoint;
+
+        // new DotGizmo(this.gameEngine, [endPoint[0] / 2, endPoint[1] / 2], 2, '#1d26a5ff');
+
+        // new DotGizmo(this.gameEngine, [rotationPoint[0]/2, rotationPoint[1]/2], 1, '#FFFFFF');
+        // new DotGizmo(this.gameEngine, [this.transform.pos[0] / 2, this.transform.pos[1] / 2], 4, '#ac2929ff');
+        // new LineGizmo(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], [rotationPoint[0], rotationPoint[1]])
+        console.log({isTurningRight,startAngle})
+        this.turnArcGizmo.lineSprite.radius = turnRadius;
+        this.turnArcGizmo.lineSprite.startAngle = startAngle;
+        this.turnArcGizmo.lineSprite.endAngle =  endAngle;
+        this.turnArcGizmo.transform.pos = rotationPoint;
+        this.turnArcGizmo.lineSprite.isTurningRight = isTurningRight;
+        
+        
+        // create a gizmo to display and hopefully figure out wtf is going on
+        // line in direction of movement coming from origin
+        // line in direction of controls coming from origin
+        // dot on the rotation point
+
+
+
         // when this turn ends, the next instruction is straight in the direction of the end angle
-        const endTime = this.replayablePhysicsComponent.startArchRotation({
-            turnRadius, 
-            isTurningRight: isTurningRight, 
-            tangentSpeed, 
-            startAngle: tangentAngle, 
-            endAngle: endAngle, 
-            pointWhereArchStarted, // try to create this later
-            rotationPoint, // try to create this later
-            gameTimeArchStarted: gameTime, // try to create this later
-            // nextInstruction
-        });
-        const instructionData = {
-            controlDirection: endAngle,
-            endTime,
-            reversedDirection: Math.PI + tangentAngle,
-            startTime: gameTime
+        this.replayablePhysicsComponent.interruptData = {
+            type: 'Turn',
+            actionParams: {
+                turnRadius,
+                isTurningRight: isTurningRight,
+                tangentSpeed,
+                startAngle,
+                endAngle,
+                endPoint,
+                pointWhereArchStarted,
+                rotationPoint,
+                gameTimeArchStarted: gameTime,
+            }
         }
         return;
     }
@@ -315,10 +446,10 @@ export class Aurora extends GameObject {
 
     updateLeftControlFocussedStickInput(direction: [number, number]) {
 
-        if (Math.abs(direction[0]) + Math.abs(direction[1]) > 0.20) {
+        if (Math.abs(direction[0]) + Math.abs(direction[1]) > 0.50) {
             // round to nearest 1/16th of a circle
             
-            const angle = (Math.atan2(direction[1], direction[0]) + Math.PI * 2) % (Math.PI * 2);
+            const angle = (Math.atan2(direction[1], direction[0]) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
             const roundedAngle = ((Math.round((angle / (2 * Math.PI)) * 16) % 16) / 16) * 2 * Math.PI;
             this.controlsAngle = roundedAngle;
         } else {

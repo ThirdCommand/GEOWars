@@ -40,11 +40,11 @@ export class Missile extends GameObject {
         this.radius = 10; // visual range, where it would be acceptable for something to be considering hitting it
         this.exist();
         this.lives = 1;
-        this.speed = 0.08;
+        this.speed = 0.2;
 
         this.planeLockedOnTransform = planeLockedOn;
 
-        this.addReplayablePhysicsComponent();
+        this.addPhysicsComponent();
         this.addLineSprite(new MissileSprite(this.transform));
         this.exhaust = new MissileExhaust(engine,this.transform,[
             -this.lineSprite.w / 2, 
@@ -85,11 +85,19 @@ export class Missile extends GameObject {
     }
 
     explode(collider: Collider) {
-        console.log('Aurora Killed/Hit');
         (this,collider.gameObject as Aurora).hit();
         // I should give them an initial velocity too so it looks more kinetic
         new ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], 0.15)
         this.exhaust.remove();
+        const {vel, pos} = this.transform;
+        const gameTimeCreated = this.gameTimeCreated;
+        const planeLockedOn = this.planeLockedOnTransform;
+        const timeAlive = this.timeAlive;
+        this.engineReversibleRemove((gameEngine: GameEngine) => {
+            const newMissile = new Missile(gameEngine, [pos[0], pos[1]], [vel[0],vel[1]], planeLockedOn)
+            newMissile.gameTimeCreated = gameTimeCreated;
+            newMissile.timeAlive = timeAlive
+        })
         this.remove();
         // create missiles at the fire rate while still in range
         // will have to be done reversibly
@@ -105,7 +113,13 @@ export class Missile extends GameObject {
         // if not dead, I can have a different type of explosion
     }
 
-    update(deltaTime: number) {
+    update(deltaTime: number, gameTime: number) {
+        if(this.gameTimeCreated > gameTime) {
+            // tell the patriot missile sight that it unLaunched
+            // no need to track when it was created
+            // since it will be created by the real events when going forward in time
+            this.remove();
+        }
         this.timeAlive += deltaTime;
         if(this.timeAlive > this.lifespan) {
             this.remove();
@@ -136,8 +150,10 @@ export class Missile extends GameObject {
                     -positionDelta[1]
                 );
                 this.lastMovementDirection = movementDirection
+                if (deltaTime < 0) movementDirection += Math.PI;
             } else {
                 movementDirection = this.lastMovementDirection
+                
             }
         }
         this.transform.angle = movementDirection - Math.PI / 2;
@@ -171,7 +187,6 @@ export class MissileSprite extends LineSprite {
         this.drawMissile(ctx);
         ctx.restore();
     }
-
     drawMissile(ctx: CanvasRenderingContext2D) {
         ctx.strokeStyle = "#FFFFFF";
         ctx.lineWidth = 1;

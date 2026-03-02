@@ -109,7 +109,7 @@ export class Weaver extends GameObject {
 
     animate(timeDelta: number) {
         const rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-        this.transform.angle = (this.transform.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2);
+        this.transform.angle = ((this.transform.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2) + Math.PI * 2) % Math.PI*2;
     }
 
     update(timeDelta: number){

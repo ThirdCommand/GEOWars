@@ -497,31 +497,31 @@ export class GameEngine {
     
 
     reverseTime() {
-        if(!this.isTimeReversing){
-            this.isTimeReversing = !this.isTimeReversing;
-            // this.carryOverDelta = 0;
-            // every vector related to time must reverse
-            // any updateGameObject code also needs to account for this
-            // but I can do that there instead
+        // if(!this.isTimeReversing){
+        this.isTimeReversing = !this.isTimeReversing;
+        // this.carryOverDelta = 0;
+        // every vector related to time must reverse
+        // any updateGameObject code also needs to account for this
+        // but I can do that there instead
 
-            // also, the state of reversing should be kept track of
-            // by the game engine so that game objects can behave differently with that info
-            // and maybe they can subscribe to it in case it's important that things
-            // change in that moment exactly?
+        // also, the state of reversing should be kept track of
+        // by the game engine so that game objects can behave differently with that info
+        // and maybe they can subscribe to it in case it's important that things
+        // change in that moment exactly?
 
-            this.physicsComponents.forEach((physicsComponent) => {
-                // any applied forces will now have to be done in the opposite direction
-                // so any applied force will have to consider which direction time 
-                // is going
-                // except for things that are bouncing... that should work the same
+        this.physicsComponents.forEach((physicsComponent) => {
+            // any applied forces will now have to be done in the opposite direction
+            // so any applied force will have to consider which direction time 
+            // is going
+            // except for things that are bouncing... that should work the same
 
-                // This means the same for collider function calls I guess
-                physicsComponent.reverseTime();
-            })
-            this.gameObjects.forEach((gameObject) => {
-                gameObject.reverseTime();
-            })
-        }
+            // This means the same for collider function calls I guess
+            physicsComponent.reverseTime();
+        })
+        this.gameObjects.forEach((gameObject) => {
+            gameObject.reverseTime();
+        })
+        // }
     }
 
     collectPerformanceData(

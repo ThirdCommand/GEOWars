@@ -175,7 +175,7 @@ export class StrikeTimeScript {
 
     changeExplosionColor() {
         this.explosionColorWheel += 1 / 2;
-        this.explosionColorWheel = this.explosionColorWheel % 360;
+        this.explosionColorWheel = (this.explosionColorWheel % 360 + 360) % 360;
     }
 
     tallyScore(gameObject: Scorable) {

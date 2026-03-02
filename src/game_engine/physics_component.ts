@@ -12,8 +12,6 @@ export class PhysicsComponent {
         this.isTimeReversing = !this.isTimeReversing;
     }
 
-
-
     move(timeDelta: number): void {
         // timeDelta is number of milliseconds since last move
         // if the computer is busy the time delta will be larger
@@ -32,7 +30,7 @@ export class PhysicsComponent {
         this.transform.vel[1] += this.transform.acc[1] * timeScale;
         this.transform.vel[2] += this.transform.acc[2] * timeScale;
 
-        this.transform.angle += this.transform.aVel * timeScale + accelerationSign * this.transform.aAcc * (timeScale**2)/2;
+        this.transform.angle = ((this.transform.angle + this.transform.aVel * timeScale + accelerationSign * this.transform.aAcc * (timeScale**2)/2) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2)
         this.transform.aVel += this.transform.aAcc * timeScale;
 
         this.transform.acc = [0, 0, 0];
@@ -54,9 +52,13 @@ export class PhysicsComponent {
 //          parent is asked for next instruction. if none, the default instruction of straight at the end angle will be created
 
 
-type ActionType = 'Straight' | 'Turn';
+type ActionType = 'Straight' | 'Turn' | 'Wait';
 interface DoAction { 
-    (timeDelta: number, gameTime: number, action: Action): Boolean; // true if completed
+    (timeDelta: number, gameTime: number, action: Action, reversiblePhysicsComponent: ReplayablePhysicsComponent): number | null; // remaining time if completed 
+}
+
+interface Interrupt {
+    (thisAction: Action, gameTime: number, transform: Transform): void;
 }
 
 type ActionData = TurnInformation | AccelerationInformation | WaitInformation | StraightInformation;
@@ -64,44 +66,237 @@ type ActionData = TurnInformation | AccelerationInformation | WaitInformation | 
 type Action = {
     type: ActionType;
     actionData: ActionData;
-    reversedData: ActionData;
+    doAction: DoAction;
+    doReversedAction: DoAction;
+    isInterruptAble: boolean;
+    interrupt: Interrupt;
 }
 
-type TurnInformation = {
-    rotationPoint?: [number, number]; 
-    startingPoint?: [number, number];
-    turnRadius?: number;
+export type TurnInformation = {
+    startTime?: number;
+    endTime?: number;
+    startPoint?: [number, number];
     endPoint?: [number, number];
-    endAngle?: number;
-    gameTimeWhenTurnEnds?: number;
-    nextInstruction?: NextInstructionAccelerate;
-    tangentSpeed?: number;
     startAngle?: number;
-    gameTimeWhenTurnStarted?: number;
+    endAngle?: number;
+    turnRadius?: number;
+    rotationPoint?: [number, number]; 
+    tangentSpeed?: number;
     rotationDirection?: 1 | -1;
 }
 
-type AccelerationInformation = {
+export type StraightInformation = {
+    velocity?: [number, number];
+    startTime?: number;
+    endTime?: number;
+    startPoint: [number, number];
+    endPoint: [number, number];
+}
+
+export type AccelerationInformation = {
     isDecelerating?: boolean;
     accelerationEndPositionIfUninterrupted?: [number, number],
     endVelocityIfUninterrupted?: [number, number],
     gameTimeWhenAccelerationEnds?: number,
     endSpeedIfUninterrupted?: number,
-    nextInstruction?: NextInstructionTurn;
     acceleration?: number;
 }
 
-type WaitInformation = {
+export type WaitInformation = {
     startTime?: number;
     endTime?: number;
 }
 
-type StraightInformation = {
-    velocity?: [number, number];
-    startTime?: number;
-    endTime?: number;
-    startLocation: [number, number];
-    endLocation: [number, number];
+export type TurnActionParams = {
+    rotationPoint: [number, number], 
+    turnRadius: number, 
+    endPoint: [number,number],
+    isTurningRight: boolean, 
+    tangentSpeed: number, 
+    startAngle: number, 
+    endAngle: number, 
+    gameTimeArchStarted: number,  
+    pointWhereArchStarted: [number, number] | null,
+}
+
+const doStraight: DoAction = (timeDelta, gameTime, action, reversiblePhysicsComponent): number | null => {
+    // will need a rewrite if I ever want other things to influence 
+    // parent component's position... like wind or something
+    // same with turns
+    const actionData = action.actionData as StraightInformation;
+    const {velocity, startTime, endTime, startPoint, endPoint} = actionData;
+    const transform = reversiblePhysicsComponent.transform;
+    if (!endTime) {
+        transform.vel = [velocity[0], velocity[1]];
+        transform.pos[0] += transform.vel[0] * timeDelta;
+        transform.pos[1] += transform.vel[1] * timeDelta;
+        return null;
+    } 
+
+    if(endTime > gameTime) {
+        const carry = gameTime - endTime;
+        transform.pos[0] = endPoint[0];
+        transform.pos[1] = endPoint[1];
+        return carry;
+    } else {
+        transform.vel = [velocity[0], velocity[1]];
+        transform.pos[0] += transform.vel[0] * timeDelta;
+        transform.pos[1] += transform.vel[1] * timeDelta;
+        return null;
+    }
+}
+
+const doStraightReversed: DoAction = (timeDelta, gameTime, action, reversiblePhysicsComponent): number | null => {
+    const actionData = action.actionData as StraightInformation;
+    const {velocity, startTime, endTime, startPoint, endPoint} = actionData;
+    const transform = reversiblePhysicsComponent.transform;
+
+    if(startTime > gameTime) {
+        const carry = gameTime - startTime;
+        transform.pos[0] = startPoint[0];
+        transform.pos[1] = startPoint[1];
+        return carry;
+    } else {
+        transform.vel = [velocity[0], velocity[1]];
+        transform.pos[0] += transform.vel[0] * timeDelta;
+        transform.pos[1] += transform.vel[1] * timeDelta;
+        return null;
+    }
+}
+
+const doWait: DoAction = (timeDelta, gameTime, action, reversiblePhysicsComponent): number | null => {
+    const actionData = action.actionData as WaitInformation;
+    const {startTime, endTime} = actionData;
+    if(!endTime) return null;
+    if(gameTime > endTime) {
+        return gameTime - endTime;
+    }
+    return null;
+}
+
+const doWaitReverse: DoAction = (timeDelta, gameTime, action, reversiblePhysicsComponent): number | null => {
+    const actionData = action.actionData as WaitInformation;
+    const {startTime, endTime} = actionData;
+    if(gameTime < startTime) {
+        return gameTime - startTime;
+    }
+    return null;
+}
+
+const interruptStraight = (thisAction: Action, gameTime: number, transform: Transform) => {
+    const actionData = thisAction.actionData as StraightInformation;
+    // new action being added after interrupt call is completed
+    // interrupts if new instruction called
+    // or if starting to reverse a straight action that has no end time yet
+    actionData.endTime = gameTime;
+    actionData.endPoint = [transform.pos[0], transform.pos[1]];
+}
+
+const interruptWait = (thisAction: Action, gameTime: number) => {
+    const actionData = thisAction.actionData as WaitInformation
+    actionData.endTime = gameTime;
+}
+
+
+const doTurn: DoAction = (timeDelta, gameTime, action, reversiblePhysicsComponent): number | null => {
+    const turnActionData: TurnInformation = action.actionData as TurnInformation;
+    const isTimeReversed = timeDelta < 0;
+    const {
+        startTime,
+        endTime,
+        // startPoint,
+        endPoint,
+        startAngle,
+        endAngle, 
+        turnRadius, 
+        rotationPoint,
+        tangentSpeed,
+        rotationDirection,
+    } = turnActionData;
+
+    // not sure I need to deal with this here. just return the remaining time if true
+    // and let move pick the next action
+    let timeSinceTurnEnded = null;
+    if(gameTime > endTime) {
+        reversiblePhysicsComponent.transform.pos[0] = endPoint[0];
+        reversiblePhysicsComponent.transform.pos[1] = endPoint[1];
+        timeSinceTurnEnded = gameTime - endTime;
+            
+        const endTangentAngle = rotationDirection === 1 ? 
+            ((endAngle + 3 * Math.PI/2) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) :
+            ((endAngle - 1 * Math.PI/2) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+        // this should be the end tangent angle instead of endAngle
+        const endVelocityIfUninterrupted = [
+            tangentSpeed * Math.cos(endTangentAngle),
+            tangentSpeed * Math.sin(endTangentAngle)
+        ]
+
+        reversiblePhysicsComponent.transform.vel[0] = endVelocityIfUninterrupted[0];
+        reversiblePhysicsComponent.transform.vel[1] = endVelocityIfUninterrupted[1];
+
+    } else {
+        const timeSinceTurnStarted = (gameTime - startTime);
+        const archAngleVelocity = reversiblePhysicsComponent.transform.archAngleVelocity;
+        const newArchAngle = rotationDirection === 1 ? 
+            modAngle(startAngle + -rotationDirection * archAngleVelocity * timeSinceTurnStarted) :
+            modAngle(startAngle + rotationDirection * archAngleVelocity * timeSinceTurnStarted)
+
+        reversiblePhysicsComponent.transform.pos[0] = rotationPoint[0] + turnRadius * Math.cos(newArchAngle);
+        reversiblePhysicsComponent.transform.pos[1] = rotationPoint[1] + turnRadius * Math.sin(newArchAngle);
+    }
+
+    return timeSinceTurnEnded;
+}
+const doTurnReversed: DoAction = (timeDelta, gameTime, action, reversiblePhysicsComponent): number | null => {
+    const turnActionData: TurnInformation = action.actionData as TurnInformation;
+    const {
+        startTime,
+        endTime,
+        startPoint,
+        endPoint,
+        startAngle,
+        endAngle, 
+        turnRadius, 
+        rotationPoint,
+        tangentSpeed,
+        rotationDirection,
+    } = turnActionData;
+
+    // not sure I need to deal with this here. just return the remaining time if true
+    // and let move pick the next action
+    let timeUntilTurnStarts = null;
+    if(gameTime < startTime) {
+        reversiblePhysicsComponent.transform.pos[0] = startPoint[0];
+        reversiblePhysicsComponent.transform.pos[1] = startPoint[1];
+        timeUntilTurnStarts = gameTime - startTime; // should be negative
+            
+        const endVelocityIfUninterrupted = [
+            tangentSpeed * Math.cos(startAngle + Math.PI),
+            tangentSpeed * Math.sin(startAngle + Math.PI)
+        ]
+
+        reversiblePhysicsComponent.transform.vel[0] = endVelocityIfUninterrupted[0];
+        reversiblePhysicsComponent.transform.vel[1] = endVelocityIfUninterrupted[1];
+
+    } else {
+        const timeSinceTurnEnded = (gameTime - endTime);
+        const archAngleVelocity = reversiblePhysicsComponent.transform.archAngleVelocity;
+        // there's got to be a bug here but I'm having trouble wrapping my head around it
+        const newArchAngle = rotationDirection === 1 ?
+            modAngle(startAngle + Math.PI/2 + archAngleVelocity * timeSinceTurnEnded) : 
+            modAngle(0)
+
+        reversiblePhysicsComponent.transform.pos[0] = rotationPoint[0] + turnRadius * Math.cos(newArchAngle);
+        reversiblePhysicsComponent.transform.pos[1] = rotationPoint[1] + turnRadius * Math.sin(newArchAngle);
+    }
+
+    return timeUntilTurnStarts;
+}
+
+const modAngle = (angle: number) => ((angle) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2)
+
+type StraightActionParams = {
+    velocity: [number, number]
 }
 
 export class ReplayablePhysicsComponent {
@@ -109,73 +304,44 @@ export class ReplayablePhysicsComponent {
     gameTime: number;
     instructionsCompleted: string[];
     reversibleActions: Action[];
-    turnInformation: {
-        rotationPoint?: [number, number] 
-        startingPoint?: [number, number]
-        turnRadius?: number
-        endPoint?: [number, number]
-        endAngle?: number
-        gameTimeWhenTurnEnds?: number
-        nextInstruction?: NextInstructionAccelerate
-        tangentSpeed?: number
-        startAngle?: number
-        gameTimeWhenTurnStarted?: number
-        rotationDirection?: 1 | -1
-    }
-    accelerationInformation: {
-        isDecelerating?: boolean;
-        accelerationEndPositionIfUninterrupted?: [number, number],
-        endVelocityIfUninterrupted?: [number, number],
-        gameTimeWhenAccelerationEnds?: number,
-        endSpeedIfUninterrupted?: number,
-        nextInstruction?: NextInstructionTurn;
-        acceleration?: number;
-    }
-    
-    isAccelerating: boolean = false;
-    isTurning: boolean = false;
+    currentActionIdx: number;
+    interruptData: {
+        type: ActionType,
+        actionParams: StraightActionParams | TurnActionParams,
+    } | null;
 
     movementTangentAngle: number | null = null;
 
-    // This will need to be carefully updated
-    // since it kind of implies things
     restSpeed: number | null = null;
 
     constructor(transform: Transform) {
         this.transform = transform;
-        this.accelerationInformation = {};
-        this.turnInformation = {};
         this.instructionsCompleted = [];
-
+        this.reversibleActions = [];
+        this.currentActionIdx = null;
     }
 
-    startSimpleArchRotation(turnParams: {
-
-    }) {
-
+    getCurrentAction(): Action | null {
+        return this.reversibleActions.length ? this.reversibleActions[this.currentActionIdx] : null;
     }
 
-    // to reverse time, I can replay the commands in reverse. in game time is the same
-    // and have them in the opposite direction
+    startNextAction() {
+        if(this.currentActionIdx === null) {
+            this.currentActionIdx = 0;
+        } else {
+            if(this.currentActionIdx >= this.reversibleActions.length - 1) {
+                console.error('missmatch')
+            }
+            this.currentActionIdx += 1;
+        }
+    }
 
-    // game object will have to provide the rotation point.
-    // this makes sense since only it will know what that should be depending on game feel
+    startPreviousAction() {
+        if(this.currentActionIdx === 0) return;
+        this.currentActionIdx -= 1;
+    }
 
-    // the command to rotate will start with accelerating/decelerating to tangent speed
-    // then startArchRotation is called
-
-    startArchRotation(turnParams: {
-        rotationPoint: [number, number], 
-        turnRadius: number, 
-        isTurningRight: boolean, 
-        tangentSpeed: number, 
-        currentGameTime?: number,
-        startAngle: number, 
-        endAngle: number, 
-        gameTimeArchStarted: number,  
-        pointWhereArchStarted: [number, number] | null,
-        nextInstruction?: NextInstructionAccelerate
-    }): number {
+    createArchRotationAction(turnParams: TurnActionParams): Action {
         let {
             rotationPoint,
             turnRadius,
@@ -183,412 +349,279 @@ export class ReplayablePhysicsComponent {
             tangentSpeed,
             startAngle,
             endAngle,
+            endPoint,
             gameTimeArchStarted,
             pointWhereArchStarted,
-            nextInstruction,
-            currentGameTime
         } = turnParams;
 
-        if (this.isAccelerating) {
-            // console.log('interrupting Acceleration to Turn');
-        }
 
-        if(this.isTurning) {
-            // console.log('interrupting Turn to change Turn')
-        }
-
-        // if(this.isTurning) {
-        //     return this.interruptTurn({
-        //         rotationPoint,
-        //         turnRadius,
-        //         isTurningRight,
-        //         tangentSpeed,
-        //         startAngle,
-        //         endAngle,
-        //         gameTimeArchStarted,
-        //         pointWhereArchStarted,
-        //     });
+        // if(isTurningRight && startAngle > endAngle) {
+        // endAngle = endAngle + Math.PI * 2
+        // } else if (!isTurningRight && endAngle > startAngle) {
+        // startAngle = startAngle + Math.PI * 2
         // }
 
-        // will have a precise time and location when the arch started while playing back controls
-        // in that case we'll have to piece wise connect the arch and previous section
-        // console.log('input for startArchRotation', {
-        //     rotationPoint,
-        //     tangentSpeed,
-        //     endAngle,
-        //     gameTimeArchStarted,
-        //     pointWhereArchStarted,
-        // })
-
-         // isRotating should have been made false by the interruption of the rotation
-        this.isAccelerating = false;
-        this.isTurning = true;
-
-        if(isTurningRight && startAngle > endAngle) {
-            endAngle = endAngle + Math.PI * 2
-        } else if (!isTurningRight && endAngle > startAngle) {
-            startAngle = startAngle + Math.PI * 2
-        }
+        // // this means it's crossing over 0 clockwise
+        // if(isTurningRight && startAngle < endAngle) {
+        //     startAngle = startAngle + Math.PI * 2
+        // // this means it's crossing over 0 counterclockwise
+        // } else if (!isTurningRight && startAngle > endAngle) {
+        //     endAngle = endAngle + Math.PI * 2
+        // }
+        //         if(isTurningRight && startAngle < endAngle) {
+        //     startAngle = startAngle + Math.PI * 2
+        // // this means it's crossing over 0 counterclockwise
+        // } else if (!isTurningRight && startAngle > endAngle) {
+        //     endAngle = endAngle + Math.PI * 2
+        // }
 
         const angleDifference = endAngle - startAngle;
 
-        // when replaying an action, we'll need a catchup time function which will be like the move function
-        // we'd run the move function for the previous action up to the time of the new action start
-        // then run the new action's move function for the rest of the time
-        
-        this.turnInformation.startingPoint = pointWhereArchStarted;
-        this.turnInformation.turnRadius = turnRadius;
-        const rotationDirection = isTurningRight ? 1 : -1;
-        this.turnInformation.rotationDirection = rotationDirection;
-        this.transform.archAngleVelocity = tangentSpeed / this.turnInformation.turnRadius * rotationDirection;
-        this.turnInformation.tangentSpeed = tangentSpeed;
-        this.turnInformation.rotationPoint = [rotationPoint[0], rotationPoint[1]];
-        this.turnInformation.endAngle = endAngle;
-        this.turnInformation.gameTimeWhenTurnEnds = gameTimeArchStarted + Math.abs((angleDifference) / this.transform.archAngleVelocity);
-        this.turnInformation.gameTimeWhenTurnStarted = gameTimeArchStarted;
-        this.turnInformation.startAngle = startAngle;
-        this.turnInformation.nextInstruction = nextInstruction
+        // ah... this might be this way because y is flipped for rendering... so annoying
+        const rotationDirection =  isTurningRight ? -1 : 1;
+        this.transform.archAngleVelocity = tangentSpeed / turnRadius * rotationDirection;
 
-        this.turnInformation.endPoint = [
-            rotationPoint[0] + this.turnInformation.turnRadius * Math.cos(endAngle - Math.PI/2) * rotationDirection,
-            rotationPoint[1] + this.turnInformation.turnRadius * Math.sin(endAngle - Math.PI/2) * rotationDirection
-        ]
 
-        return this.turnInformation.gameTimeWhenTurnEnds;
-        // console.log('collected turn information',this.turnInformation);
-    }
-
-    interruptTurn(interruptTurnParams: {
-        rotationPoint: [number, number], 
-        turnRadius: number, 
-        isTurningRight: boolean, 
-        tangentSpeed: number, 
-        startAngle: number, 
-        endAngle: number, 
-        gameTimeArchStarted: number,  
-        pointWhereArchStarted: [number, number] | null,
-    }) {
-        const {
-            rotationPoint,
-            turnRadius,
-            isTurningRight,
-            tangentSpeed,
+        const turnActionData: TurnInformation = {
+            startTime: gameTimeArchStarted,
+            endTime: gameTimeArchStarted + Math.round(
+                Math.abs(angleDifference / this.transform.archAngleVelocity)/20
+            ) * 20,
+            startPoint: [pointWhereArchStarted[0], pointWhereArchStarted[1]],
+            endPoint: [endPoint[0], endPoint[1]],
             startAngle,
             endAngle,
-            gameTimeArchStarted,
-            pointWhereArchStarted,
-        } = interruptTurnParams;
+            turnRadius,
+            rotationDirection,
+            tangentSpeed,
+            rotationPoint: [rotationPoint[0], rotationPoint[1]],
+        }
+
+        return ({
+            type: 'Turn',
+            actionData: turnActionData,
+            doAction: doTurn,
+            doReversedAction: doTurnReversed,
+            isInterruptAble: true,
+            interrupt: () => {},
+        });
     }
 
-    startAcceleration(accelerationParams: {
-        acceleration: number,
-        endSpeed: number, 
-        gameTimeAccelerationStarted: number, 
-        currentGameTime?: number | null, 
-        onStartDirection?: number | null,
-        nextInstruction?: NextInstructionTurn
-    }) {
+    createStraightAction(straightParams: {
+        velocity: [number, number], 
+        startTime: number,
+        endTime?: number,
+        startPoint: [number, number] | null,
+        endPoint?: [number, number],
+    }): Action {
         const {
-            acceleration, 
-            endSpeed, 
-            gameTimeAccelerationStarted, 
-            currentGameTime,
-            onStartDirection,
-            nextInstruction,
-        } = accelerationParams;
-        // console.log('startAccelerationInstruction', accelerationParams)
+            velocity,
+            startTime,
+            endTime,
+            startPoint,
+            endPoint
+        } = straightParams;
 
-        if (this.isAccelerating) {
-            // console.log('interrupting Acceleration to change Acceleration');
-        }
-
-        if(this.isTurning) {
-            // console.log('interrupting Turn to Accelerate instead')
-        }
-
-        // isRotating should have been made false by the interruption of the rotation
-        this.isTurning = false;
-        this.isAccelerating = true;
-
-        const isDecelerating = acceleration < 0;
+        const actionData: StraightInformation = {
+            velocity,
+            startTime,
+            endTime,
+            startPoint,
+            endPoint,
+        };
         
-        let currentSpeed = null;
-        let velocityAngle = null;
-
-        if(onStartDirection) { // only on start
-            currentSpeed = 0;
-            velocityAngle = onStartDirection;
-        } else {
-            currentSpeed = Math.sqrt(this.transform.vel[0]**2 + this.transform.vel[1]**2);
-            velocityAngle = Math.atan2(this.transform.vel[1], this.transform.vel[0]);
+        const straightAction: Action = {
+            type: 'Straight',
+            actionData,
+            doAction: doStraight,
+            doReversedAction: doStraightReversed,
+            isInterruptAble: true,
+            interrupt: interruptStraight,
         }
-        
-        const timeUntilAccelerationEnds = (endSpeed - currentSpeed) / acceleration;
-        const gameTimeWhenAccelerationEnds = timeUntilAccelerationEnds + gameTimeAccelerationStarted;
-        const accelerationDistanceIfUninterrupted = currentSpeed * timeUntilAccelerationEnds + 0.5 * acceleration * timeUntilAccelerationEnds ** 2;
-        const accelerationEndPositionIfUninterrupted: [number, number] = [
-            this.transform.pos[0] + Math.cos(velocityAngle) * accelerationDistanceIfUninterrupted,
-            this.transform.pos[1] + Math.sin(velocityAngle) * accelerationDistanceIfUninterrupted
-        ]
-        const endVelocityIfUninterrupted: [number, number] = [
-            Math.cos(velocityAngle) * endSpeed,
-            Math.sin(velocityAngle) * endSpeed
-        ]
-        // I don't think I want external forces to be applied for replayable physics components
-        this.transform.acc[0] = Math.cos(velocityAngle) * acceleration;
-        this.transform.acc[1] = Math.sin(velocityAngle) * acceleration;
-        const endSpeedIfUninterrupted = endSpeed;
+        return straightAction;
+    } 
 
-        // okay, I think all I have to do, is detect when an instruction will have to be updated,
-        // or ended early with another added.
-        // so all I have to do for now is allow the current instruction to be overwritten
-        // until I'm at the point where I need to keep track of all the instructions
-
-        // ... direction as in positive or negative.... 
-        const accelerationSameDirection = this.accelerationInformation.acceleration > 0 && acceleration > 0 || this.accelerationInformation.acceleration < 0 && acceleration < 0;
-
-        // if it's the opposite direction, then end early and start a next instruction
-        if(!accelerationSameDirection && onStartDirection === null) {
-            const previousInstructionToEnd = this.duplicateAccelerationInstruction();
-            // I should end the current on, then:
-            // I should probably call myself here: this.startAcceleration
-            // end instruction, the same as "usual".. once I've made what usually happens
-
-
-        // Update To Slower/Faster Speed 
-        // case 1: 
-        // accelerating to max speed after a tight turn, 
-        // accelerating still, but now to a slower speed for a less tight turn
-
-        // case 2:
-        // accelerating to turn speed, but now accelerating to max speed
-        // because the turn is canceled
-
-        // case 3:
-        // decelerating for tight turn, but now I'm decelerating 
-        // to a shallow turn with faster speed
-
-        // case 4:
-        // decelerating for shallow turn, but now I'm decelerating to a tighter turn 
-        // slower speed
-        // **********************
-
-
-        // Update acceleration direction
-        // case 1: turning deceleration canceled, now accelerating
-        // case 2: acceleration to max speed canceled, new decelerating
-        // case 3: accelerating to turn speed canceled, turning tighter so decelerating now
-
-        // I need to update the endtime for the acceleration
-        // if it was decelerating but is now accelerating, 
-        // then we also need to add a new instruction for slowing down
+    createWaitAction(startTime: number): Action {
+        const waitData = {
+            startTime
         }
-
-        
-
-        // if interrupting in the same direction, 
-        // we're just updating the end speed
-        // the start time of the acceleration seems to be required to be handled for replay somewhere else
-        this.accelerationInformation = {
-            acceleration,
-            nextInstruction,
-            isDecelerating,
-            gameTimeWhenAccelerationEnds,
-            accelerationEndPositionIfUninterrupted,
-            endVelocityIfUninterrupted,
-            endSpeedIfUninterrupted
-        }
-        // console.log({accelerationInformationCollected: this.accelerationInformation, isAccelerating: this.isAccelerating, currentGameTime})
-        if(currentGameTime) {
-            this.move(currentGameTime - gameTimeAccelerationStarted, currentGameTime);
-        }
+        return ({
+            type: 'Wait',
+            actionData: waitData,
+            isInterruptAble: true,
+            interrupt: interruptWait,
+            doAction: doWait,
+            doReversedAction: doWaitReverse
+        })
     }
 
-    duplicateAccelerationInstruction(): typeof this.accelerationInformation {
-       const  duplicatedAccelerationInstruction: typeof this.accelerationInformation = {
-            isDecelerating: this.accelerationInformation.isDecelerating,
-            accelerationEndPositionIfUninterrupted: [
-                this.accelerationInformation?.accelerationEndPositionIfUninterrupted[0],
-                this.accelerationInformation?.accelerationEndPositionIfUninterrupted[1],
-            ],
-            endVelocityIfUninterrupted: [
-                this.accelerationInformation?.endVelocityIfUninterrupted[0],
-                this.accelerationInformation?.endVelocityIfUninterrupted[1]
-            ],
-            gameTimeWhenAccelerationEnds: this.accelerationInformation.gameTimeWhenAccelerationEnds,
-            endSpeedIfUninterrupted: this.accelerationInformation.endSpeedIfUninterrupted,
-            nextInstruction: this.accelerationInformation.nextInstruction,
-            acceleration: this.accelerationInformation.acceleration
-        };
-        return duplicatedAccelerationInstruction
+    doAction(timeDelta: number, gameTime: number): number | null {
+        const currentAction = this.getCurrentAction();
+        if (!currentAction) return null;
+        let remainderTime = null;
+        if(timeDelta > 0 && currentAction) {
+            remainderTime = currentAction.doAction(timeDelta, gameTime, currentAction, this);
+        } else {
+            remainderTime = currentAction.doReversedAction(timeDelta, gameTime, currentAction, this);
+        }
+
+        if(typeof remainderTime === 'number') {
+            if(timeDelta < 0 && this.currentActionIdx === 0) return null; // before beginning of time I guess?
+            if(timeDelta < 0) {
+                this.startPreviousAction();
+                return this.doAction(remainderTime, gameTime)
+            } 
+            if(this.currentActionIdx === this.reversibleActions.length - 1) {
+                
+                const newAction = this.createStraightAction({
+                    velocity: [this.transform.vel[0], this.transform.vel[1]],
+                    startPoint: [this.transform.pos[0], this.transform.pos[1]],
+                    startTime: gameTime,
+                });
+
+                this.reversibleActions.push(newAction)
+            } 
+            this.startNextAction()
+            const nextAction = this.getCurrentAction();
+            
+            if(nextAction) {
+                this.doAction(remainderTime, gameTime);
+            } else {
+                return remainderTime;
+            }
+        } else {
+            return null;
+        }
     }
 
     move(timeDelta: number, gameTime: number): void {
-        // const timeScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
         const originalPosition = [this.transform.pos[0], this.transform.pos[1]];
 
-        if(this.isAccelerating) {
-            const {
-                endVelocityIfUninterrupted, 
-                gameTimeWhenAccelerationEnds, 
-                accelerationEndPositionIfUninterrupted, 
-                endSpeedIfUninterrupted,
-                nextInstruction
-            } = this.accelerationInformation;
-            // if the game time is after the acceleration should have finished
-            if (gameTime >= gameTimeWhenAccelerationEnds) {
-                // if the game time is after the acceleration should have finished
-                // console.log('Acceleration ended', {
-                //     currentPosition: this.transform.pos, 
-                //     settingPosition: this.accelerationInformation.accelerationEndPositionIfUninterrupted, 
-                //     gameTimeWhenAccelerationEnds: this.accelerationInformation.gameTimeWhenAccelerationEnds, 
-                //     gameTime: gameTime}
-                // );
-                this.instructionsCompleted.push(`${this.accelerationInformation.isDecelerating ? 'negative' : 'positive'} acceleration completed`)
-                // console.log(this.instructionsCompleted);
-                const timeSinceAccelerationEnded = gameTime - gameTimeWhenAccelerationEnds;
-                this.restSpeed = endSpeedIfUninterrupted;
-                if(nextInstruction) {
-                    // finish rotation and then:
-                    this.isAccelerating = false;
-                    this.transform.vel[0] = endVelocityIfUninterrupted[0];
-                    this.transform.vel[1] = endVelocityIfUninterrupted[1];
-                    this.transform.pos[0] = accelerationEndPositionIfUninterrupted[0]
-                    this.transform.pos[1] = accelerationEndPositionIfUninterrupted[1]
-                    this.transform.acc[0] = 0;
-                    this.transform.acc[1] = 0;
-                    this.accelerationInformation = {};
-                    this.applyNextInstruction(nextInstruction, gameTime, gameTimeWhenAccelerationEnds);
+        const currentAction = this.getCurrentAction(); // returns null if no actions
+        let newAction = null;
+        this.interruptData;
+
+        if (currentAction === null || currentAction === undefined) {
+            if(timeDelta < 0) return;
+            if(this.transform.vel[0] === 0 && this.transform.vel[1] === 0) {
+                if(this.interruptData) {
+                    // basically has to be straight
+                    if(this.interruptData.type === 'Straight') {
+                        newAction = this.createStraightAction({
+                            velocity: (this.interruptData.actionParams as StraightActionParams).velocity,
+                            startTime: gameTime,
+                            startPoint: [this.transform.pos[0], this.transform.pos[1]]
+                        })
+                        this.interruptData = null;
+                    }
                 } else {
-                    this.isAccelerating = false;
-                    this.transform.vel[0] = endVelocityIfUninterrupted[0];
-                    this.transform.vel[1] = endVelocityIfUninterrupted[1];
-                    this.transform.pos[0] = accelerationEndPositionIfUninterrupted[0] + timeSinceAccelerationEnded * this.transform.vel[0];
-                    this.transform.pos[1] = accelerationEndPositionIfUninterrupted[1] + timeSinceAccelerationEnded * this.transform.vel[1];
-                    this.transform.acc[0] = 0;
-                    this.transform.acc[1] = 0;
-                    this.accelerationInformation = {};
+                    // this is likely the only true case anyway
+                    newAction = this.createWaitAction(gameTime); // wait instruction
                 }
+            } else {
+                // likely doesn't apply
+                newAction = this.createStraightAction({
+                    velocity: [this.transform.vel[0], this.transform.vel[1]],
+                    startPoint: [this.transform.pos[0], this.transform.pos[1]],
+                    startTime: gameTime,
+                });
+            }
+        } else if (this.interruptData && timeDelta >= 0) {
+            // Only issue is when crossing over 0 angle, it kinda freaks out and change the turn direction
+            // direction of plane is greater than or less than 0, and new input is the opposite
+            if(currentAction.type === 'Turn') {
+                // const currentEndAngle = (currentAction.actionData  as TurnInformation).endAngle
+                // const currentEndDirection = roundAngleTo16thsDegrees(currentEndAngle);
+                // const newEndAngle = (this.interruptData.actionParams as TurnActionParams).endAngle;
+                // const newEndDirection = roundAngleTo16thsDegrees(newEndAngle);
+                // // console.log('interrupting current turn?:', {
+                // //     currentEndDirection,
+                // //     newEndDirection,
+                // //     endAngle: (currentAction.actionData  as TurnInformation).endAngle,
+                // //     endTime: (currentAction.actionData  as TurnInformation).endTime,
+                // //     endPoint: [(currentAction.actionData  as TurnInformation).endPoint[0], (currentAction.actionData  as TurnInformation).endPoint[1]],
+                // // });
+
+                // if(newEndDirection !== currentEndDirection) {
+                //     // console.log('interruptingAnyway')
+                //     const interruptRotationDirection = (this.interruptData.actionParams as TurnActionParams).isTurningRight ? 1 : -1
+                //     const rotationPoint = (currentAction.actionData as TurnInformation).rotationPoint;
+                //     const endAngle =  (this.interruptData.actionParams as TurnActionParams).endAngle;
+                //     const startTime = (currentAction.actionData as TurnInformation).startTime;
+                //     (currentAction.actionData as TurnInformation).endAngle = endAngle;
+                //     const startAngle = (currentAction.actionData as TurnInformation).startAngle;
+                //     const turnRadius = (currentAction.actionData as TurnInformation).turnRadius;
+
+                //     const newAngleDifferenceWithOriginalStartAngle = endAngle - startAngle;
+
+                //     (currentAction.actionData as TurnInformation).endTime = startTime + Math.round((Math.abs(newAngleDifferenceWithOriginalStartAngle /this.transform.archAngleVelocity))/20) * 20;
+                //     (currentAction.actionData as TurnInformation).endPoint = [
+                //         rotationPoint[0] + turnRadius * Math.cos((currentAction.actionData as TurnInformation).endAngle - Math.PI/2) * interruptRotationDirection,
+                //         rotationPoint[1] + turnRadius * Math.sin((currentAction.actionData as TurnInformation).endAngle - Math.PI/2) * interruptRotationDirection
+                //     ];
+                //     // console.log('new turn action:', {
+                //     //     endAngle: (currentAction.actionData  as TurnInformation).endAngle,
+                //     //     endTime: (currentAction.actionData  as TurnInformation).endTime,
+                //     //     endPoint: [(currentAction.actionData  as TurnInformation).endPoint[0], (currentAction.actionData  as TurnInformation).endPoint[1]]
+                //     // });
+                // }
+                
                 
             } else {
-                // apply the acceleration
-                this.transform.pos[0] += this.transform.vel[0] * timeDelta + (this.transform.acc[0] * (timeDelta * timeDelta)) / 2;
-                this.transform.pos[1] += this.transform.vel[1] * timeDelta + (this.transform.acc[1] * (timeDelta * timeDelta)) / 2;
-                this.transform.vel[0] += this.transform.acc[0] * timeDelta;
-                this.transform.vel[1] += this.transform.acc[1] * timeDelta;
-                // this.transform.pos[0] += this.transform.vel[0] * timeScale + (this.transform.acc[0] * (timeScale * timeScale)) / 2;
-                // this.transform.pos[1] += this.transform.vel[1] * timeScale + (this.transform.acc[1] * (timeScale * timeScale)) / 2;
-                // this.transform.vel[0] += this.transform.acc[0] * timeScale;
-                // this.transform.vel[1] += this.transform.acc[1] * timeScale;
-            }
+                currentAction.interrupt(currentAction, gameTime, this.transform);
+                if(this.interruptData.type === 'Turn') {
+                    // allow interruption if the turn end angle is 
 
-        } else if (this.isTurning) {
-            const {endAngle, tangentSpeed, rotationPoint, turnRadius, endPoint, gameTimeWhenTurnEnds, nextInstruction} = this.turnInformation;
-            // great... at the end of the rotation it accelerates to max speed
-            // so when I piece together the rotation + straight I have to account for that
-            // I just need to find the time that the rotation ended vs the current time
-            // if rotation, rotate around the rotation point
-            // using archAngleVelocity
-
-            // in reverse, I'll also have to know the time that the acceleration ended
-            // to apply it in reverse
-            if(gameTime > gameTimeWhenTurnEnds) {
-                this.transform.pos[0] = endPoint[0];
-                this.transform.pos[1] = endPoint[1];
-                const timeSinceTurnEnded = gameTime - gameTimeWhenTurnEnds;
-                // console.log('Turning ended');
-
-                this.instructionsCompleted.push(`Turn Completed. Direction: ${this.turnInformation.rotationDirection > 0 ? 'Right' : 'Left'}`);
-                // console.log(this.instructionsCompleted);
-
-                // this.movementTangentAngle = endAngle;
+                    // ah crap... the start and rotation points are wrong since we're off by 20ms
+                    // I should have this be reactive instead of listening for something that happened last frame
+                    const {rotationPoint, turnRadius, isTurningRight, tangentSpeed, startAngle, endAngle, pointWhereArchStarted, endPoint} = this.interruptData.actionParams as TurnActionParams
+                    console.log('interrupting straight for a turn somehow', {endAngle, startAngle, gameTime})
+                    newAction = this.createArchRotationAction(
+                        {
+                            rotationPoint, 
+                            turnRadius, 
+                            endPoint,
+                            isTurningRight, 
+                            tangentSpeed, 
+                            startAngle, 
+                            endAngle, 
+                            pointWhereArchStarted,
+                            gameTimeArchStarted: gameTime
+                        }
+                    )
                     
-                const endVelocityIfUninterrupted = [
-                    tangentSpeed * Math.cos(endAngle),
-                    tangentSpeed * Math.sin(endAngle)
-                ]
-
-                this.isTurning = false;
-                this.transform.vel[0] = endVelocityIfUninterrupted[0];
-                this.transform.vel[1] = endVelocityIfUninterrupted[1];
-                // then we need to do the next instruction, which will be a straight acceleration
-                // for the aurora
-                // if no next instruction given, then maintain the current speed
-                if(nextInstruction) {
-                    // finish rotation and then:
-
-                    this.applyNextInstruction(nextInstruction, gameTime, gameTimeWhenTurnEnds);
-                } else {
-                    
-                    this.transform.pos[0] += timeSinceTurnEnded * this.transform.vel[0];
-                    this.transform.pos[1] += timeSinceTurnEnded * this.transform.vel[1];
-
-                    this.restSpeed = tangentSpeed;
-
-                    this.turnInformation = {};
-                    
+                } else if (this.interruptData.type === 'Straight') {
+                    newAction = this.createStraightAction({
+                        velocity: (this.interruptData.actionParams as StraightActionParams).velocity,
+                        startTime: gameTime,
+                        startPoint: [this.transform.pos[0], this.transform.pos[1]]
+                    })
                 }
-            } else {
-                // I'll need starting game time, and current game time. Then 
-
-                // I think I need to apply the movement based on where it should be at what game time,
-                // instead of incrementing
-                const timeSinceTurnStarted = (gameTime - this.turnInformation.gameTimeWhenTurnStarted);
-                const archAngleVelocity = this.transform.archAngleVelocity;
-                const newArchAngle = this.turnInformation.startAngle - Math.PI/2 + archAngleVelocity * timeSinceTurnStarted;
-                // likely the issue:
-                this.transform.pos[0] = rotationPoint[0] + this.turnInformation.rotationDirection * turnRadius * Math.cos(newArchAngle);
-                this.transform.pos[1] = rotationPoint[1] + this.turnInformation.rotationDirection * turnRadius * Math.sin(newArchAngle);
+                
             }
-            
-        } else {
-            // no acceleration, so just moving
-            
-            this.transform.pos[0] += this.transform.vel[0] * timeDelta;
-            this.transform.pos[1] += this.transform.vel[1] * timeDelta;
-            // this.transform.pos[0] += this.transform.vel[0] * timeScale;
-            // this.transform.pos[1] += this.transform.vel[1] * timeScale;
         }
+
+        if(newAction) {
+            this.reversibleActions.push(newAction);
+            this.startNextAction();
+        }
+        
+
+        this.doAction(timeDelta, gameTime)
+
+        // add straight actions next
+        // then add wait action
+        // then create them in the cases where needed
+        // then figure out asking the parent component for interruption
+        // maybe every parentComponent update() it will call this with an interrupt to apply
+        // if applicable? it could even ask this component if interrupting is allowed 
+        // this state. if so, then it gives this component the interrupt command
+        // it can ask the Action if it can be interrupted
+        this.interruptData = null
         this.movementTangentAngle = (Math.atan2(
             this.transform.pos[1] - originalPosition[1],
             this.transform.pos[0] - originalPosition[0]
         ) + Math.PI * 2) % (Math.PI * 2);
-
-        
-        
-    }
-    applyNextInstruction(nextInstruction: NextInstructionAccelerate | NextInstructionTurn, currentGameTime: number, gameTimeItStarts: number) {
-        if(nextInstruction.type === 'accelerate') {
-            this.startAcceleration({
-                acceleration: nextInstruction.acceleration, 
-                endSpeed: nextInstruction.endSpeed,
-                currentGameTime,
-                gameTimeAccelerationStarted: gameTimeItStarts
-            });
-        }
-        if(nextInstruction.type === 'turn') {
-            const {turnRadius, isTurningRight, tangentSpeed, endAngle, startAngle, nextInstruction: followupInstruction} = nextInstruction;
-            const currentPosition = [this.transform.pos[0], this.transform.pos[1]];
-            const pointWhereArchStarted: [number, number] = [currentPosition[0], currentPosition[1]];
-            const normalAngle = isTurningRight ? startAngle + Math.PI / 2 : startAngle - Math.PI / 2 
-            const rotationPoint: [number, number] = [
-                pointWhereArchStarted[0] + turnRadius * Math.cos(normalAngle),
-                pointWhereArchStarted[1] + turnRadius * Math.sin(normalAngle) 
-            ];
-            this.startArchRotation({
-                turnRadius, 
-                isTurningRight, 
-                tangentSpeed, 
-                startAngle, 
-                endAngle, 
-                pointWhereArchStarted, // try to create this later
-                rotationPoint, // try to create this later
-                gameTimeArchStarted: gameTimeItStarts, // try to create this later
-                currentGameTime: currentGameTime,
-                nextInstruction: followupInstruction
-            })
-        }
-
     }
 }
 
@@ -609,4 +642,9 @@ export type NextInstructionTurn = {
     endAngle: number,
     startAngle: number,
     nextInstruction: NextInstructionAccelerate
+}
+
+
+ function roundAngleTo16thsDegrees(radians: number) {
+        return ((Math.round(radians / (2 * Math.PI) * 16) % 16) / 16) * 360
 }

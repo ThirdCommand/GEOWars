@@ -22,8 +22,8 @@ export class BombBasic extends GameObject {
 
     constructor(engine: GameEngine | AnimationView, pos: [number, number], vel: [number, number]) {
         super(engine);
-        this.transform.pos = pos;
-        this.transform.vel = vel;
+        this.transform.pos = [pos[0], pos[1]];
+        this.transform.vel = [vel[0], vel[1]];
         this.explosionRadius = 20;
 
         this.exist();
@@ -33,8 +33,7 @@ export class BombBasic extends GameObject {
         this.spinSpeed = 0.05;
 
         this.gameElementsInExplosionRange = [];
-
-        this.addReplayablePhysicsComponent();
+        this.addPhysicsComponent();
         this.addLineSprite(new BombSprite(this.transform));
     }
 
@@ -44,9 +43,9 @@ export class BombBasic extends GameObject {
     }
 
     explode() {
-        new ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], 0.05)
-        const position: [number, number] = [this.transform.pos[0], this.transform.pos[1]]
-        const vel: [number, number] = [this.transform.vel[0], this.transform.vel[1]]
+        new ParticleExplosion(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], 0.05);
+        const position: [number, number] = [this.transform.pos[0], this.transform.pos[1]];
+        const vel: [number, number] = [this.transform.vel[0], this.transform.vel[1]];
         const gameTimeCreated = this.gameTimeCreated;
         const bombFuseTime = this.bombFuseTime;
         this.engineReversibleRemove((gameEngine: GameEngine) => {
@@ -63,7 +62,7 @@ export class BombBasic extends GameObject {
     }
 
     update(deltaTime: number, gameTime: number) {
-         if(this.gameTimeCreated > gameTime) {
+        if(this.gameTimeCreated > gameTime) {
             // no need to track when it was created
             // since it will be created by the real events when going forward in time
             this.remove();
@@ -84,7 +83,7 @@ export class BombBasic extends GameObject {
 
     animate(timeDelta: number) {
         const rotationSpeedScale = timeDelta / NORMAL_FRAME_TIME_DELTA;
-        this.transform.angle = (this.transform.angle + this.spinSpeed * rotationSpeedScale) % (Math.PI * 2);
+        this.transform.angle = ((this.transform.angle + this.spinSpeed * rotationSpeedScale) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
         this.lineSprite.w = 3 * easeOutQuart(this.bombTime / this.bombFuseTime + 0.01);
         // 3 is the original width
     }

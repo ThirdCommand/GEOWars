@@ -11,6 +11,15 @@ import {DeathAnimationLineObject} from "../DeathAnimation/DeathAnimation";
 
 type TargetableObject = Aurora;
 
+type ActiveCooldown = {
+    time: number;
+    cooldownTime: number;
+    type: string;
+    isCoolingDown: Boolean;
+    gameTimesCooldownsFinished: {time: number, data: {}}[];
+}
+
+
 const DeathAnimationLineBaseObjectWithSpeed = (
     engine: GameEngine | AnimationView,
     objectTransform: Transform,// position of the parent object
@@ -27,18 +36,14 @@ export class PatriotMissileSite extends GameObject {
     lineSprite: PatriotMissileSiteSprite;
     lives: number;
 
-    isMissileLaunched: boolean;
     missilesPerGroup: number;
     numberOfMissilesLaunched: number;
-    reloadTime: number;
 
-    isGroupLaunched: boolean;
-    groupReloadTime: number;
-
-    timeSinceLaunch: number;
-    timeSinceGroupLaunch: number;
     destructedColor: string;
     destructionLineWidth: number;
+
+    groupLaunchCooldown: ActiveCooldown;
+    missileCooldown: ActiveCooldown;
 
     constructor(engine: GameEngine | AnimationView, pos: [number, number]) {
         super(engine);
@@ -50,16 +55,22 @@ export class PatriotMissileSite extends GameObject {
         this.destructionLineWidth = 1.5;
 
         this.missilesPerGroup = 3;
-
         this.numberOfMissilesLaunched = 0;
-        this.isMissileLaunched = false;
-        this.isGroupLaunched = false;
 
-        this.reloadTime = 350;
-        this.groupReloadTime = 3000;
-
-        this.timeSinceLaunch = 0;
-        this.timeSinceGroupLaunch = 0;
+        this.groupLaunchCooldown = {
+            cooldownTime: 3000,
+            isCoolingDown: false,
+            gameTimesCooldownsFinished: [],
+            time: 0,
+            type: 'GroupLaunch'
+        }
+        this.missileCooldown = {
+            cooldownTime: 350,
+            isCoolingDown: false,
+            gameTimesCooldownsFinished: [],
+            time: 0,
+            type: 'MissileLaunch'
+        }
 
         this.exist();
 
@@ -74,20 +85,18 @@ export class PatriotMissileSite extends GameObject {
     }
 
     onCollision(collider: Collider, type: string){
-        if (type === "LaunchRange"){
+        if (type === "LaunchRange" && !this.isTimeReversed){
             this.startLaunchSequence(collider);
         }
     }
 
     startLaunchSequence(airplaneDetected: Collider) {
-
-        if(!this.isMissileLaunched) { 
-            console.log('launching');
-            this.isMissileLaunched = true;
+        if(!this.missileCooldown.isCoolingDown && !this.groupLaunchCooldown.isCoolingDown) { 
+            this.missileCooldown.isCoolingDown = true;
             this.numberOfMissilesLaunched += 1;
 
             if(this.numberOfMissilesLaunched >= 3) {
-                this.isGroupLaunched = true;
+                this.groupLaunchCooldown.isCoolingDown = true;
             }
 
             const airplanePosition = airplaneDetected.gameObject.transform.pos;
@@ -104,39 +113,39 @@ export class PatriotMissileSite extends GameObject {
             ]
             const launchedMissile = new Missile(this.gameEngine, [this.transform.pos[0], this.transform.pos[1]], vel, airplaneDetected.gameObject.transform)
         }
-        console.log('launch missile sequencing')
         // create missiles at the fire rate while still in range
         // will have to be done reversibly
     }
 
-    hit(){
+    hit() {
         this.lives -= 1;
         const pos = this.transform.absolutePosition();
         if (this.lives <= 0) {
             new ParticleExplosion(this.gameEngine, pos);
-            this.createDestructionObjects()
+            this.createDestructionObjects();
             this.reversibleRemove();
         } 
         // if not dead, I can have a different type of explosion
     }
 
     reversibleRemove() {
-        const oldTimeSinceLaunched = this.timeSinceLaunch = 0;
-        const oldTimeSinceGroupLaunched = this.timeSinceGroupLaunch = 0;
+        const oldGroupLaunchCooldown = this.groupLaunchCooldown;
+        const oldNumberOfMissilesLaunched = this.numberOfMissilesLaunched;
+        const oldMissileCooldown = this.missileCooldown;
         const oldPosition = this.transform.clonePosition();
         const oldGameTimeCreated = this.gameTimeCreated;
         const reCreate = (engine: GameEngine) => {
             const newPatriotMissileSite = new PatriotMissileSite(
                 engine, 
                 [oldPosition[0], oldPosition[1]]
-            )
+            );
             newPatriotMissileSite.gameTimeCreated = oldGameTimeCreated;
-            newPatriotMissileSite.timeSinceLaunch = oldTimeSinceLaunched;
-            newPatriotMissileSite.timeSinceGroupLaunch = oldTimeSinceGroupLaunched;
+            newPatriotMissileSite.missileCooldown = oldMissileCooldown;
+            newPatriotMissileSite.groupLaunchCooldown = oldGroupLaunchCooldown;
+            newPatriotMissileSite.numberOfMissilesLaunched = oldNumberOfMissilesLaunched;
             return newPatriotMissileSite;
         }
         this.engineReversibleRemove(reCreate);
-
     }
 
     update(deltaTime: number, gameTime: number) {
@@ -147,22 +156,50 @@ export class PatriotMissileSite extends GameObject {
         //     this.remove();
         // }
         this.animate(deltaTime);
-        if(this.isMissileLaunched && !this.isGroupLaunched) {
-            this.timeSinceLaunch += deltaTime
-            if(this.timeSinceLaunch > this.reloadTime) {
-                this.isMissileLaunched = false;
-                this.timeSinceLaunch = 0;
-            }
 
+        const missileCooldownCompletedTimes = this.missileCooldown.gameTimesCooldownsFinished;
+        const groupCooldownCompletedTimes = this.groupLaunchCooldown.gameTimesCooldownsFinished;
+
+        if(missileCooldownCompletedTimes.length && missileCooldownCompletedTimes[missileCooldownCompletedTimes.length - 1].time > gameTime) {
+            this.numberOfMissilesLaunched -= 1;
+            this.missileCooldown.time = this.missileCooldown.cooldownTime;
+            this.missileCooldown.isCoolingDown = true;
+            missileCooldownCompletedTimes.pop();
         }
-        if(this.isGroupLaunched) {
-            this.timeSinceGroupLaunch += deltaTime;
-            if(this.timeSinceGroupLaunch > this.groupReloadTime) {
-                this.isMissileLaunched = false;
+
+        if(groupCooldownCompletedTimes.length && groupCooldownCompletedTimes[groupCooldownCompletedTimes.length - 1].time > gameTime) {
+            this.numberOfMissilesLaunched = 3;
+            this.groupLaunchCooldown.time = this.groupLaunchCooldown.cooldownTime;
+            this.groupLaunchCooldown.isCoolingDown = true;
+            groupCooldownCompletedTimes.pop();
+        }
+
+        if(this.missileCooldown.isCoolingDown) {
+            this.missileCooldown.time += deltaTime;
+            if(this.missileCooldown.time > this.missileCooldown.cooldownTime) {
+                this.missileCooldown.isCoolingDown = false;
+                this.missileCooldown.time = 0;
+                this.missileCooldown.gameTimesCooldownsFinished.push(
+                    {
+                        time: gameTime,
+                        // can switch to using this in the future if I'm not tracking it right
+                        data: {numberOfMissilesLaunched: this.numberOfMissilesLaunched}
+                    }
+                )
+            }
+        }
+        if(this.groupLaunchCooldown.isCoolingDown) {
+            this.groupLaunchCooldown.time += deltaTime;
+            if(this.groupLaunchCooldown.time > this.groupLaunchCooldown.cooldownTime) {
                 this.numberOfMissilesLaunched = 0;
-                this.timeSinceLaunch = 0;
-                this.isGroupLaunched = false;
-                this.timeSinceGroupLaunch = 0;
+                this.groupLaunchCooldown.isCoolingDown = false;
+                this.groupLaunchCooldown.time = 0;
+                this.groupLaunchCooldown.gameTimesCooldownsFinished.push(
+                    {
+                        time: gameTime, 
+                        data: {}
+                    }
+                )
             }
         }
     }

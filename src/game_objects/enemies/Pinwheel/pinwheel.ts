@@ -37,7 +37,7 @@ export class Pinwheel extends GameObject {
 
     animate(deltaTime: number) {
         const rotationSpeedScale = deltaTime / NORMAL_FRAME_TIME_DELTA;
-        this.transform.angle = (this.transform.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2);
+        this.transform.angle = ((this.transform.angle + this.rotation_speed * rotationSpeedScale) % (Math.PI * 2) + Math.PI * 2) % Math.PI*2;
     }
 
     update(deltaTime: number){
